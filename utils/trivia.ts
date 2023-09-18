@@ -14,10 +14,12 @@ export function saveTriviaStatus(data: TriviaStatus): void {
 }
 
 export function getSettings(): GameSettings | undefined {
-	const localSettings = localStorage.getItem("settings");
-
-	if (localSettings) {
-		const settings = JSON.parse(localSettings) as GameSettings;
-		return settings;
+	if (typeof window !== 'undefined') {
+		const localSettings = localStorage.getItem("settings");
+	
+		if (localSettings) {
+			const settings = JSON.parse(localSettings) as GameSettings;
+			return settings;
+		}
 	}
 }

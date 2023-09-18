@@ -24,12 +24,10 @@ export default async function TriviaPage({
 	const questions = sortArrayRandomly<TriviaQuestion>(triviaData.questions);
 
 	return (
-		<main className="mx-4">
-			<TriviaGame
-				id={triviaData.id}
-				name={triviaData.name}
-				questions={questions}
-			/>
-		</main>
+		<TriviaGame
+			id={triviaData.id}
+			name={triviaData.name}
+			questions={questions}
+		/>
 	);
 }

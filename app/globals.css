@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .time-bar {
+    animation: timeProgress 60s linear forwards;
+  }
+}
+
+@keyframes timeProgress {
+  0% {
+    width: 100%
+  }
+
+  100% {
+    width: 0%;
+  }
+}

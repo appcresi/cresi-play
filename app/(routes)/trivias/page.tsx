@@ -69,7 +69,7 @@ export default async function Trivias(): Promise<JSX.Element> {
 					</h2>
 				</span>
 
-				<Image src={illustration} alt="Ilustración de personas jugando por internet" placeholder="blur" className="contrast-150 rounded-xl" />
+				<Image src={illustration} alt="Ilustración de personas jugando por internet" placeholder="blur" className="contrast-125 rounded-xl" width={400} />
 			</section>
 
 			<TriviaSettings />

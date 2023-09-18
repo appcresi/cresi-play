@@ -8,21 +8,17 @@ import { getSettings } from "@/utils/trivia";
 
 const DEFAULT_TIME = 60;
 
+const OPTION_COLORS: Record<number, string> = {
+	0: "bg-red-300",
+	1: "bg-blue-300",
+	2: "bg-yellow-300",
+	3: "bg-green-300",
+}
+
 function sortQuestionOptions(question: TriviaQuestion): string[] {
 	return sortArrayRandomly<string>(
 		Object.values(question.options).concat(question.answer),
 	);
-}
-
-function calculateTimeLeft(
-	isReaderEnabled: boolean,
-	timeSetInSeconds: number,
-): number {
-	if (isReaderEnabled) {
-		return timeSetInSeconds + 60;
-	}
-
-	return timeSetInSeconds ?? DEFAULT_TIME;
 }
 
 type TriviaGameProps = Pick<Trivia, "id" | "questions" | "name">;
@@ -46,12 +42,7 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 
 	const handleTimeLeft = useCallback(
 		() =>
-			setTimeLeft(
-				calculateTimeLeft(
-					settings?.reader ?? false,
-					settings?.time ?? DEFAULT_TIME,
-				),
-			),
+			setTimeLeft(settings?.time ?? DEFAULT_TIME),
 		[settings],
 	);
 
@@ -121,24 +112,38 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 
 	return (
 		<>
-			<main className="mx-4">
-				<p>
-					Pregunta: {currentQuestion + 1} de {questions.length}
-				</p>
-				<p>Tiempo restante: {timeLeft}</p>
-				<p>{questions[currentQuestion].question}</p>
-				<div>
-					{options.map((option) => (
-						<button
-							type="button"
-							key={option}
-							disabled={timeLeft === 0 || timeLeft === undefined}
-							onClick={() => handleAnswer(option)}
-						>
-							{option}
-						</button>
-					))}
+			<main className="px-4 min-h-screen flex flex-col justify-evenly bg-primary-light">
+				<span className="py-4 flex gap-2 justify-center items-center">
+					<h1 className="text-lg font-bold">{trivia.name}</h1>
+					<h2 className="text-gray-600">{questions.length} preguntas</h2>
+				</span>
+				
+				<div className="flex flex-col gap-2 items-center">
+					<p className="font-medium">Tiempo restante</p>
+
+					<div className="w-full h-2 rounded-full bg-gray-300">
+						{(timeLeft !== undefined && timeLeft > 0) && <div style={{ animation: `timeProgress ${settings?.time ?? DEFAULT_TIME}s linear forwards` }} className="w-full bg-primary h-2 rounded-full" />}
+					</div>
 				</div>
+						
+				<span>
+					<p className="my-2 text-gray-600">Pregunta {currentQuestion + 1}</p>
+					<p className="my-4 text-xl font-semibold">{questions[currentQuestion].question}</p>
+					<div className="flex flex-col gap-2 justify-center">
+						{options.map((option, index) => (
+							<button
+								type="button"
+								key={option}
+								aria-details={`Opción ${index}: ${option}`}
+								disabled={timeLeft === 0 || timeLeft === undefined}
+								onClick={() => handleAnswer(option)}
+								className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]}`}
+							>
+								{option}
+							</button>
+						))}
+					</div>
+				</span>
 			</main>
 
 			<Toaster />
