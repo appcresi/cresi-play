@@ -4,6 +4,9 @@ import { API_URL } from "@/utils/server";
 import { IconCards } from "@tabler/icons-react";
 import { Metadata } from "next";
 import { TriviaCard } from "./components/TriviaCard";
+import Image from "next/image";
+import illustration from "@/public/illustration-2.jpg"
+import TriviaSettings from "./components/TriviaSettings";
 
 /* We choose to omit irrelevant fields (and their long content) to optimize algorithms. */
 
@@ -56,16 +59,24 @@ export default async function Trivias(): Promise<JSX.Element> {
 
 	return (
 		<main className="mx-4">
-			<section className="min-h-screen flex flex-col justify-center">
-				<h1 className="my-4 text-5xl font-bold text-primary">Trivias</h1>
-				<h2 className="text-lg text-gray-600">
-					Estos juegos de preguntas sirven para poner a prueba el nivel de
-					conocimiento sobre diversas temáticas y, además, seguir aprendiendo a
-					través del análisis retroactivo de cada partida. ¡Descubrilas todas!
-				</h2>
+			<section className="min-h-screen flex flex-col gap-4 justify-center">
+				<span>
+					<h1 className="my-4 text-5xl font-bold text-primary">Trivias</h1>
+					<h2 className="text-lg text-gray-600">
+						Estos juegos de preguntas sirven para poner a prueba el nivel de
+						conocimiento sobre diversas temáticas y, además, seguir aprendiendo a
+						través del análisis retroactivo de cada partida. ¡Descubrilas todas!
+					</h2>
+				</span>
 
+				<Image src={illustration} alt="Ilustración de personas jugando por internet" placeholder="blur" className="contrast-150 rounded-xl" />
+			</section>
+
+			<TriviaSettings />
+
+			<section>
 				{Object.keys(indexesByLevel).map((level) => (
-					<div>
+					<div key={level}>
 						<span className="my-8 flex gap-2 items-center">
 							<IconCards size={36} />
 							<h3 className="text-4xl font-bold">Nivel {level}</h3>

@@ -1,6 +1,6 @@
 "use client";
 
-import { TriviaIndexFields } from "@/types/trivia";
+import { TriviaIndexFields, TriviaStatus } from "@/types/trivia";
 import { getTriviaStatus } from "@/utils/trivia";
 import {
 	IconArrowNarrowRight,
@@ -8,9 +8,16 @@ import {
 	IconTrophyOff,
 } from "@tabler/icons-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function TriviaCard(index: TriviaIndexFields): JSX.Element {
-	const triviaStatus = getTriviaStatus(index.id);
+	const [triviaStatus, setTriviaStatus] = useState<TriviaStatus>()
+
+	useEffect(() => {
+		setTriviaStatus(
+			getTriviaStatus(index.id)
+		)
+	}, [])
 
 	return (
 		<article className="w-full p-4 gap-4 flex flex-col rounded-lg border-2 border-primary">
