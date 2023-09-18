@@ -4,7 +4,7 @@ import { Trivia, TriviaAnsweredQuestion, TriviaQuestion } from "@/types/trivia";
 import { sortArrayRandomly } from "@/utils/array";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { useSettings } from "../hooks/useSettings";
+import { getSettings } from "@/utils/trivia";
 
 const DEFAULT_TIME = 60;
 
@@ -28,17 +28,15 @@ function calculateTimeLeft(
 type TriviaGameProps = Pick<Trivia, "id" | "questions" | "name">;
 
 export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
-	const { settings } = useSettings();
 	const [isFinished, setIsFinished] = useState<boolean>(false);
 	const [currentQuestion, setCurrentQuestion] = useState<number>(0);
+	const [score, setScore] = useState<number>(0);
+	const [timeLeft, setTimeLeft] = useState<number | undefined>(() => getSettings()?.time ?? DEFAULT_TIME)
 	const [answeredQuestions, setAnsweredQuestions] = useState<
 		TriviaAnsweredQuestion[]
 	>([]);
-	const [timeLeft, setTimeLeft] = useState<number | undefined>(
-		settings?.time ?? 60,
-	);
-	const [score, setScore] = useState<number>(0);
 
+	const settings = getSettings();
 	const questions = trivia.questions;
 
 	const options = useMemo(

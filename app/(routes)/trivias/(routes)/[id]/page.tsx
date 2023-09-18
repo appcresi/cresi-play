@@ -5,7 +5,6 @@ import TriviaGame from "../../components/TriviaGame";
 
 /** Return the trivia corresponding to the ID, from the back-end. */
 async function getTriviaById(id: string): Promise<Trivia> {
-	console.log(id);
 	const response = await fetch(API_URL.concat(`/trivias/${id}`), {
 		next: { revalidate: 3600 },
 	});

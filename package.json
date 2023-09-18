@@ -11,6 +11,7 @@
     "biome:run_unsafe": "biome lint . --apply-unsafe && biome format . --write && biome check . --apply-unsafe"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.17",
     "@tabler/icons-react": "^2.34.0",
     "@types/node": "20.6.2",
     "@types/react": "18.2.21",

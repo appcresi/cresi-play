@@ -12,3 +12,12 @@ export function getTriviaStatus(id: string): TriviaStatus | undefined {
 export function saveTriviaStatus(data: TriviaStatus): void {
 	localStorage.setItem(`trivia-${data.id}`, JSON.stringify(data));
 }
+
+export function getSettings(): GameSettings | undefined {
+	const localSettings = localStorage.getItem("settings");
+
+	if (localSettings) {
+		const settings = JSON.parse(localSettings) as GameSettings;
+		return settings;
+	}
+}
