@@ -1,10 +1,11 @@
 "use client";
 
-import { Trivia, TriviaAnsweredQuestion, TriviaQuestion } from "@/types/trivia";
+import { Trivia, TriviaAnsweredQuestion, TriviaQuestion, TriviaStatus } from "@/types/trivia";
 import { sortArrayRandomly } from "@/utils/array";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { getSettings } from "@/utils/trivia";
+import { getSettings, getTriviaStatus, saveTriviaStatus } from "@/utils/trivia";
+import TriviaReview from "./TriviaReview";
 
 const DEFAULT_TIME = 60;
 
@@ -74,6 +75,7 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 				{
 					question: questions[currentQuestion].question,
 					answer: questions[currentQuestion].answer,
+					resume: questions[currentQuestion].resume,
 					isCorrect: answer === questions[currentQuestion].answer,
 					userAnswer: answer,
 				},
@@ -81,6 +83,27 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 		},
 		[questions, currentQuestion, answeredQuestions],
 	);
+
+	const handleFinish = useCallback(() => {
+		const status = getTriviaStatus(trivia.id)
+
+		const actualPercentage = Math.round((score / questions.length) * 100)
+		
+		const higherPercentage =
+			typeof status !== "undefined" && status.percentage > actualPercentage
+				? status.percentage
+				: actualPercentage
+
+		const updatedTrivia: TriviaStatus = {
+			id: status?.id ?? trivia.id,
+			percentage: higherPercentage,
+			completed: higherPercentage >= 80,
+		}
+
+		saveTriviaStatus(updatedTrivia)
+
+		toast.success("Se guardó tu progreso.")
+	}, [isFinished])
 
 	useEffect(() => {
 		if (!isFinished) {
@@ -104,10 +127,14 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 	}, [timeLeft, isFinished, handleContinue]);
 
 	if (isFinished) {
-		<>
-			<Toaster />
-			<p>{score}</p>
-		</>;
+		handleFinish()
+
+		return (
+			<>
+				<Toaster />
+				<TriviaReview score={score} triviaLength={questions.length} answeredQuestions={answeredQuestions} />
+			</>
+		)
 	}
 
 	return (
@@ -137,7 +164,7 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 								aria-details={`Opción ${index}: ${option}`}
 								disabled={timeLeft === 0 || timeLeft === undefined}
 								onClick={() => handleAnswer(option)}
-								className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]}`}
+								className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]} disabled:bg-gray-300 disabled:text-gray-800`}
 							>
 								{option}
 							</button>

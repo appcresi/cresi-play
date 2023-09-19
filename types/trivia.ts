@@ -24,13 +24,14 @@ export interface TriviaQuestion {
 export interface TriviaAnsweredQuestion {
 	question: string;
 	answer: string;
+	resume: string;
 	userAnswer: string;
 	isCorrect: boolean;
 }
 
 export interface TriviaStatus {
 	id: string;
-	percentage: string;
+	percentage: number;
 	completed: boolean;
 }
 
