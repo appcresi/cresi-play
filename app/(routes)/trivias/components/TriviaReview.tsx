@@ -2,6 +2,7 @@ import { TriviaAnsweredQuestion } from "@/types/trivia"
 import { Disclosure, Transition } from "@headlessui/react"
 import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown } from "@tabler/icons-react"
 import Link from "next/link"
+import { useState } from "react"
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
 
 // Label renderer for pie chart
@@ -44,11 +45,12 @@ const renderCustomizedLabel = ({
 
 interface TriviaReviewProps {
   score: number,
+	triviaName: string,
 	triviaLength: number,
   answeredQuestions: TriviaAnsweredQuestion[]
 }
 
-export default function TriviaReview({ score, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
+export default function TriviaReview({ score, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
   const COLORS: Record<string, string> = {
     "Respuestas correctas": "#10B981",
 		"Respuestas incorrectas": "#EF4444",
@@ -58,6 +60,8 @@ export default function TriviaReview({ score, triviaLength, answeredQuestions }:
     { name: "Respuestas correctas", value: score },
     { name: "Respuestas incorrectas", value: triviaLength - score },
   ]
+
+	const completionPercentage = Math.round((score / triviaLength) * 100)
 
   const isCompleted = isTriviaCompleted(score, triviaLength)
 
@@ -75,6 +79,8 @@ export default function TriviaReview({ score, triviaLength, answeredQuestions }:
 								? "¡Felicitaciones! esto es fruto de tus ganas por seguir aprendiendo."
 								: "¡No te rindas! el aprendizaje puede ser un proceso largo y tedioso, pero es igual de útil y gratificante."}
 						</p>
+
+						{isCompleted && <CertificatePreparation trivia={triviaName} percentage={completionPercentage} /> }
 					</span>
 
 					<Link href="/trivias" className="w-fit px-4 py-2 flex gap-2 items-center rounded-full font-semibold bg-primary text-white">
@@ -191,6 +197,33 @@ function QuestionReview({ index, question }: QuestionReviewProps): JSX.Element {
 					</>
 				)}
 			</Disclosure>
+		</div>
+	);
+}
+
+interface CertificatePreparationProps {
+	trivia: string
+	percentage: number
+}
+
+function CertificatePreparation(props: CertificatePreparationProps): JSX.Element {
+	const [name, setName] = useState<string>()
+
+	const handleName = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value.trim())
+
+	return (
+		<div className="flex flex-col gap-4 items-center">
+			<label>
+				Inserta tu nombre para descargar tu certificado.
+
+				<input onChange={handleName} />
+			</label>
+
+			{(name && name.length > 0) && (
+				<Link href={`/trivias/certificado?name=${name}&trivia=${props.trivia}&percentage=${props.percentage}`}>
+					Obtener certificado
+				</Link>
+			)}
 		</div>
 	);
 }

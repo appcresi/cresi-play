@@ -132,7 +132,12 @@ export default function TriviaGame(trivia: TriviaGameProps): JSX.Element {
 		return (
 			<>
 				<Toaster />
-				<TriviaReview score={score} triviaLength={questions.length} answeredQuestions={answeredQuestions} />
+				<TriviaReview
+					score={score}
+					triviaName={trivia.name}
+					triviaLength={questions.length}
+					answeredQuestions={answeredQuestions}
+				/>
 			</>
 		)
 	}
