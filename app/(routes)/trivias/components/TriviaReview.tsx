@@ -4,6 +4,9 @@ import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown } from 
 import Link from "next/link"
 import { useState } from "react"
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts"
+import jwt from "jsonwebtoken"
+import { signJwt } from "@/utils/jwt"
+import { useRouter } from "next/navigation"
 
 // Label renderer for pie chart
 
@@ -208,21 +211,35 @@ interface CertificatePreparationProps {
 
 function CertificatePreparation(props: CertificatePreparationProps): JSX.Element {
 	const [name, setName] = useState<string>()
+	const router = useRouter()
 
 	const handleName = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value.trim())
 
-	return (
-		<div className="flex flex-col gap-4 items-center">
-			<label>
-				Inserta tu nombre para descargar tu certificado.
+	const handlePrepareCertificate = () => {
+		fetch("/api/certificado", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name, trivia: props.trivia, percentage: props.percentage })
+		})
+		.then((response) => response.json().then((value) => {
+			router.push(`/trivias/certificado?token=${value.token}`)
+		}))
+		.catch((error) => console.error(error))
+	}
 
-				<input onChange={handleName} />
+	return (
+		<div className="my-4 flex flex-col gap-4">
+			<label className="flex flex-col gap-2">
+				Ingresá tu nombre para descargar tu certificado 
+
+				<input onChange={handleName} className="w-fit p-2 rounded-lg border border-primary" />
 			</label>
 
 			{(name && name.length > 0) && (
-				<Link href={`/trivias/certificado?name=${name}&trivia=${props.trivia}&percentage=${props.percentage}`}>
+				<button type="button" onClick={handlePrepareCertificate} className="px-4 py-2 w-fit flex gap-2 items-center font-semibold rounded-full bg-primary text-white">
 					Obtener certificado
-				</Link>
+					<IconArrowRight />
+				</button>
 			)}
 		</div>
 	);
