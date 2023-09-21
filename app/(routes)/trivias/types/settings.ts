@@ -1,3 +1,3 @@
 interface GameSettings {
-	time: number;
+  time: number
 }

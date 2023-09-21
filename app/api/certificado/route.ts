@@ -1,8 +1,8 @@
-import { decodeJwt, signJwt } from "@/utils/jwt";
-import { NextRequest, NextResponse } from "next/server";
+import { decodeJwt, signJwt } from '@/utils/jwt'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest): Promise<NextResponse<unknown>> {
-  const token = request.headers.get("Authorization")
+export async function GET (request: NextRequest): Promise<NextResponse<unknown>> {
+  const token = request.headers.get('Authorization')
 
   if (!token) {
     return NextResponse.next()
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<unknown>> 
   return NextResponse.json(decoded)
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse<unknown>> {
+export async function POST (request: NextRequest): Promise<NextResponse<unknown>> {
   const requestBody = await request.json()
 
   const jwt = signJwt(requestBody)

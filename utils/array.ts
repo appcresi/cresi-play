@@ -1,3 +1,3 @@
-export function sortArrayRandomly<T>(array: Array<T>): Array<T> {
-	return array.sort(() => Math.random() - 0.5);
+export function sortArrayRandomly<T> (array: T[]): T[] {
+  return array.sort(() => Math.random() - 0.5)
 }
