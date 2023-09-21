@@ -23,7 +23,7 @@ export const metadata = {
 
 export default function Home (): JSX.Element {
   return (
-    <main className='mx-auto max-w-5xl flex flex-col items-center gap-8'>
+    <main className='mx-auto px-4 max-w-5xl flex flex-col items-center gap-8'>
       <section className='min-h-screen flex flex-col items-center justify-center lg:w-full lg:flex-row lg:justify-evenly'>
         <span className='p-4 flex flex-col items-center gap-8 text-center'>
           <div className='flex gap-2 items-center'>

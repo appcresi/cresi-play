@@ -57,7 +57,7 @@ export default async function Trivias (): Promise<JSX.Element> {
   const indexesByLevel = organizeIndexesByLevel(indexes)
 
   return (
-    <main className='mx-auto max-w-5xl'>
+    <main className='mx-auto px-4 max-w-5xl'>
       <section className='min-h-screen flex flex-col gap-4 justify-center items-center md:flex-row md:items-center lg:justify-evenly'>
         <span className='md:max-w-sm'>
           <h1 className='my-4 text-5xl font-bold text-primary md:text-6xl'>Trivias</h1>
