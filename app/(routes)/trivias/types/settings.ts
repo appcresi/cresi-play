@@ -1,3 +1,3 @@
-interface GameSettings {
+export interface GameSettings {
   time: number
 }

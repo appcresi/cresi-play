@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET (request: NextRequest): Promise<NextResponse<unknown>> {
   const token = request.headers.get('Authorization')
 
-  if (!token) {
+  if (token === null) {
     return NextResponse.next()
   }
 

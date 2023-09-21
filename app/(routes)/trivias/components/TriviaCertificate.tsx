@@ -18,7 +18,7 @@ export default function TriviaCertificate (): JSX.Element {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
-  if (!token) {
+  if (token === null) {
     return <p>No tienes un código válido.</p>
   }
 
@@ -32,9 +32,11 @@ export default function TriviaCertificate (): JSX.Element {
     ).catch((error) => console.error(error))
   }, [])
 
+  const filename = typeof data !== 'undefined' ? data.name.replace(' ', '').toLowerCase().concat('-', data.trivia, '-cresi.pdf') : 'certificado-cresi.pdf'
+
   const { toPDF, targetRef } = usePDF({
+    filename,
     method: 'save',
-    filename: `${data?.name?.replace(' ', '')}-${data?.trivia}-cresi.pdf`,
     page: { margin: Margin.SMALL, orientation: 'landscape' }
   })
 

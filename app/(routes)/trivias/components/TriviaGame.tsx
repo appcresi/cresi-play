@@ -1,7 +1,7 @@
 'use client'
 
 import { Trivia, TriviaAnsweredQuestion, TriviaQuestion, TriviaStatus } from '@/types/trivia'
-import { sortArrayRandomly } from '@/utils/array'
+import { sortArrayRandomly } from '@/utils/helpers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { getSettings, getTriviaStatus, saveTriviaStatus } from '@/utils/trivia'
@@ -89,10 +89,7 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
 
     const actualPercentage = Math.round((score / questions.length) * 100)
 
-    const higherPercentage =
-			typeof status !== 'undefined' && status.percentage > actualPercentage
-			  ? status.percentage
-			  : actualPercentage
+    const higherPercentage = typeof status !== 'undefined' && status.percentage > actualPercentage ? status.percentage : actualPercentage
 
     const updatedTrivia: TriviaStatus = {
       id: status?.id ?? trivia.id,
@@ -132,6 +129,7 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
     return (
       <>
         <Toaster />
+
         <TriviaReview
           score={score}
           triviaName={trivia.name}
@@ -144,13 +142,13 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
 
   return (
     <>
-      <main className='px-4 min-h-screen flex flex-col justify-evenly bg-primary-light'>
+      <main className='px-4 min-h-screen flex flex-col justify-evenly bg-primary-light lg:gap-12 lg:justify-center'>
         <span className='py-4 flex gap-2 justify-center items-center'>
           <h1 className='text-lg font-bold'>{trivia.name}</h1>
           <h2 className='text-gray-600'>{questions.length} preguntas</h2>
         </span>
 
-        <div className='flex flex-col gap-2 items-center'>
+        <div className='flex flex-col gap-2 items-center lg:w-64 lg:mx-auto'>
           <p className='font-medium'>Tiempo restante</p>
 
           <div className='w-full h-2 rounded-full bg-gray-300'>
@@ -158,10 +156,10 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
           </div>
         </div>
 
-        <span>
-          <p className='my-2 text-gray-600'>Pregunta {currentQuestion + 1}</p>
-          <p className='my-4 text-xl font-semibold'>{questions[currentQuestion].question}</p>
-          <div className='flex flex-col gap-2 justify-center'>
+        <span className='lg:mx-auto lg:min-w-[16em] lg:max-w-2xl'>
+          <p className='my-2 text-gray-600 lg:text-xl'>Pregunta {currentQuestion + 1}</p>
+          <p className='my-4 text-xl font-semibold lg:text-2xl'>{questions[currentQuestion].question}</p>
+          <div className='flex flex-col gap-2 justify-center lg:min-w-full lg:grid lg:grid-cols-2'>
             {options.map((option, index) => (
               <button
                 type='button'
@@ -169,7 +167,7 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
                 aria-details={`Opción ${index}: ${option}`}
                 disabled={timeLeft === 0 || timeLeft === undefined}
                 onClick={() => handleAnswer(option)}
-                className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]} disabled:bg-gray-300 disabled:text-gray-800`}
+                className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]} lg:min-h-[6em] lg:min-w-[12em] disabled:bg-gray-300 disabled:text-gray-800`}
               >
                 {option}
               </button>

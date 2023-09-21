@@ -1,10 +1,12 @@
-import { Trivia, TriviaIndexFields } from '@/types/trivia'
-import { API_URL } from '@/utils/server'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
+import type { CustomResponse } from '@/types/response'
+import type { Trivia, TriviaIndexFields } from '@/types/trivia'
+import { API_URL } from '@/utils/helpers'
 import Image from 'next/image'
 import illustration from '@/public/illustration-2.jpg'
 import TriviaSettings from './components/TriviaSettings'
 import TriviaGrid from './components/TriviaGrid'
+import { IconExternalLink } from '@tabler/icons-react'
 
 /* We choose to omit irrelevant fields (and their long content) to optimize algorithms. */
 
@@ -55,18 +57,30 @@ export default async function Trivias (): Promise<JSX.Element> {
   const indexesByLevel = organizeIndexesByLevel(indexes)
 
   return (
-    <main className='mx-4'>
-      <section className='min-h-screen flex flex-col gap-4 justify-center'>
-        <span>
-          <h1 className='my-4 text-5xl font-bold text-primary'>Trivias</h1>
+    <main className='mx-auto max-w-5xl'>
+      <section className='min-h-screen flex flex-col gap-4 justify-center items-center md:flex-row md:items-center lg:justify-evenly'>
+        <span className='md:max-w-sm'>
+          <h1 className='my-4 text-5xl font-bold text-primary md:text-6xl'>Trivias</h1>
           <h2 className='text-lg text-gray-600'>
             Estos juegos de preguntas sirven para poner a prueba el nivel de
             conocimiento sobre diversas temáticas y, además, seguir aprendiendo a
             través del análisis retroactivo de cada partida. ¡Descubrilas todas!
           </h2>
+
+          <a
+            href='https://cresi.com.ar/buscar'
+            target='_blank'
+            rel='noreferrer'
+            className='px-4 py-2 my-4 w-fit flex items-center gap-1 font-semibold rounded-full bg-primary-light text-primary-dark'
+          >
+            ¿De dónde salen las preguntas?
+            <IconExternalLink />
+          </a>
         </span>
 
-        <Image src={illustration} alt='Ilustración de personas jugando por internet' placeholder='blur' className='contrast-125 rounded-xl' width={400} />
+        <span className='w-64 h-48 relative lg:w-80 lg:h-64'>
+          <Image src={illustration} alt='Ilustración de personas jugando por internet' placeholder='blur' className='contrast-125 rounded-xl' fill />
+        </span>
       </section>
 
       <TriviaSettings />

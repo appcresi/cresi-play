@@ -1,16 +1,17 @@
 'use client'
 
+import type { GameSettings } from '../types/settings'
 import { Dialog, Transition } from '@headlessui/react'
 import { IconSettings } from '@tabler/icons-react'
 import { Fragment, useState } from 'react'
-import { useSettings } from '../hooks/useSettings'
+import { getSettings, saveSettings } from '@/utils/trivia'
 
 export default function TriviaSettings (): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const { settings, setSettings } = useSettings()
+  const settings = getSettings()
 
   function handleChangeSettings ({ time }: Partial<GameSettings>): void {
-    setSettings({ time: time ?? settings?.time ?? 60 })
+    saveSettings({ time: time ?? settings?.time ?? 60 })
   }
 
   return (

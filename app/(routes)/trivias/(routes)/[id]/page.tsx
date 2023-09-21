@@ -1,14 +1,15 @@
-import { Trivia, TriviaQuestion } from '@/types/trivia'
-import { sortArrayRandomly } from '@/utils/array'
-import { API_URL } from '@/utils/server'
+import type { Metadata } from 'next'
+import type { CustomResponse } from '@/types/response'
+import type { Trivia, TriviaQuestion } from '@/types/trivia'
+import { sortArrayRandomly, API_URL } from '@/utils/helpers'
 import TriviaGame from '../../components/TriviaGame'
-import { Metadata } from 'next'
 
 /** Return the trivia corresponding to the ID, from the back-end. */
 async function getTriviaById (id: string): Promise<Trivia> {
   const response = await fetch(API_URL.concat(`/trivias/${id}`), {
     next: { revalidate: 3600 }
   })
+
   const body = (await response.json()) as CustomResponse<Trivia>
 
   if (typeof body.data === 'undefined' || body.hasError) {

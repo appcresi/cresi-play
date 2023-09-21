@@ -1,0 +1,2 @@
+export const DEFAULT_TIME_IN_SECONDS = 60
+export const COMPLETION_PERCENTAGE = 80

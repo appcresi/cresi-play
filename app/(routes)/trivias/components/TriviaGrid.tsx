@@ -27,7 +27,7 @@ export default function TriviaGrid ({ indexesByLevel }: TriviaGridProps): JSX.El
         <Tab.Panels>
           {Object.keys(indexesByLevel).map((level) => (
             <Tab.Panel key={level}>
-              <ul className='flex flex-col gap-4'>
+              <ul className='flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3'>
                 {indexesByLevel[Number(level)].map((value) => (
                   <li key={value.id}>
                     <TriviaCard {...value} />

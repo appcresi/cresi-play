@@ -1,11 +1,9 @@
 import { TriviaAnsweredQuestion } from '@/types/trivia'
 import { Disclosure, Transition } from '@headlessui/react'
-import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown } from '@tabler/icons-react'
+import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink } from '@tabler/icons-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import jwt from 'jsonwebtoken'
-import { signJwt } from '@/utils/jwt'
 import { useRouter } from 'next/navigation'
 
 // Label renderer for pie chart
@@ -26,7 +24,7 @@ const renderCustomizedLabel = ({
   innerRadius,
   outerRadius,
   percent
-}: LabelRenderer) => {
+}: LabelRenderer): JSX.Element => {
   const RADIAN = Math.PI / 180
 
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5
@@ -69,7 +67,7 @@ export default function TriviaReview ({ score, triviaName, triviaLength, answere
   const isCompleted = isTriviaCompleted(score, triviaLength)
 
   return (
-    <section className='p-4'>
+    <section className='p-4 lg:mx-auto lg:max-w-5xl'>
       <div className='flex flex-wrap justify-center items-center lg:justify-between'>
         <span className='flex flex-col gap-4 lg:max-w-[50%]'>
           <span>
@@ -78,9 +76,7 @@ export default function TriviaReview ({ score, triviaName, triviaLength, answere
             </h1>
 
             <p className='max-w-[48ch] text-lg text-gray-600'>
-              {isCompleted
-							  ? '¡Felicitaciones! esto es fruto de tus ganas por seguir aprendiendo.'
-							  : '¡No te rindas! el aprendizaje puede ser un proceso largo y tedioso, pero es igual de útil y gratificante.'}
+              {isCompleted ? '¡Felicitaciones! esto es fruto de tus ganas por seguir aprendiendo.' : '¡No te rindas! el aprendizaje puede ser un proceso largo y tedioso, pero es igual de útil y gratificante.'}
             </p>
 
             {isCompleted && <CertificatePreparation trivia={triviaName} percentage={completionPercentage} />}
@@ -147,9 +143,7 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
         {index + 1}) {question.question}
       </p>
       <p
-        className={`p-2 rounded-lg text-white ${
-					question.isCorrect ? 'bg-green-700' : 'bg-red-600'
-				}`}
+        className={`p-2 rounded-lg text-white ${question.isCorrect ? 'bg-green-700' : 'bg-red-600'}`}
       >
         Respondiste: <b>{question.userAnswer}</b>
       </p>
@@ -159,13 +153,15 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
 
         <p className='flex gap-2 items-center'>
           ¿Hubo una equivocación?
-          <Link
-            href={`/contacto/?question=${question.question}`}
+          <a
+            href={`https://cresi.com.ar/contacto/?question=${question.question}`}
+            target='_blank'
+            rel='noreferrer'
             className='flex gap-1 items-center text-red-700'
           >
             <p>Contactános</p>
-            <IconArrowRight />
-          </Link>
+            <IconExternalLink />
+          </a>
         </p>
       </span>
 
@@ -179,9 +175,7 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
               </span>
 
               <IconChevronDown
-                className={`${
-									open ? 'rotate-180 transform' : ''
-								} transition duration-100`}
+                className={`${open ? 'rotate-180 transform' : ''} transition duration-100`}
               />
             </Disclosure.Button>
 
@@ -213,16 +207,16 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
   const [name, setName] = useState<string>()
   const router = useRouter()
 
-  const handleName = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value.trim())
+  const handleName = (e: React.ChangeEvent<HTMLInputElement>): void => setName(e.target.value.trim())
 
-  const handlePrepareCertificate = () => {
+  const handlePrepareCertificate = (): void => {
     fetch('/api/certificado', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, trivia: props.trivia, percentage: props.percentage })
     })
       .then(async (response) => await response.json().then((value) => {
-        router.push(`/trivias/certificado?token=${value.token}`)
+        router.push(`/trivias/certificado?token=${String(value.token)}`)
       }))
       .catch((error) => console.error(error))
   }
@@ -235,7 +229,7 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
         <input onChange={handleName} className='w-fit p-2 rounded-lg border border-primary' />
       </label>
 
-      {(name && name.length > 0) && (
+      {(typeof name !== 'undefined' && name.length > 0) && (
         <button type='button' onClick={handlePrepareCertificate} className='px-4 py-2 w-fit flex gap-2 items-center font-semibold rounded-full bg-primary text-white'>
           Obtener certificado
           <IconArrowRight />

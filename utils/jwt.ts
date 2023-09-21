@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 
 export function signJwt (payload: Record<string, any>): string {
   const JWT_SECRET = process.env.JWT_SECRET
-  if (!JWT_SECRET) {
+  if (typeof JWT_SECRET === 'undefined') {
     throw new Error('Missing JWT_SECRET')
   }
 
@@ -14,7 +14,7 @@ export function signJwt (payload: Record<string, any>): string {
 
 export function decodeJwt (token: string): Record<string, any> {
   const JWT_SECRET = process.env.JWT_SECRET
-  if (!JWT_SECRET) {
+  if (typeof JWT_SECRET === 'undefined') {
     throw new Error('Missing JWT_SECRET')
   }
 

@@ -19,11 +19,13 @@ export function TriviaCard (index: TriviaIndexFields): JSX.Element {
     )
   }, [])
 
+  const isCompleted = triviaStatus?.completed ?? false
+
   return (
-    <article className={`w-full p-4 gap-4 flex flex-col rounded-lg ${triviaStatus?.completed ? 'bg-gradient-to-r from-amber-400 to-orange-300' : 'border-2 border-primary'}`}>
+    <article className={`w-full p-4 gap-4 flex flex-col rounded-lg ${isCompleted ? 'bg-gradient-to-r from-amber-400 to-orange-300' : 'border-2 border-primary'}`}>
       <span className='flex gap-2 items-center'>
         <h3 className='text-xl font-semibold'>{index.name}</h3>
-        {triviaStatus?.completed
+        {isCompleted
           ? (
             <IconTrophyFilled />
             )

@@ -1,3 +1,4 @@
+import { GameSettings } from '@/app/(routes)/trivias/types/settings'
 import { TriviaStatus } from '@/types/trivia'
 
 export function getTriviaStatus (id: string): TriviaStatus | undefined {
@@ -21,5 +22,11 @@ export function getSettings (): GameSettings | undefined {
       const settings = JSON.parse(localSettings) as GameSettings
       return settings
     }
+  }
+}
+
+export function saveSettings (settings: GameSettings): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('settings', JSON.stringify(settings))
   }
 }

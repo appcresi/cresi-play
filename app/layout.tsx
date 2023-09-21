@@ -12,14 +12,10 @@ export const metadata: Metadata = {
   icons: ['/cresi-logo.ico']
 }
 
-export default function RootLayout ({
-  children
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout ({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang='es' className={monaSans.className}>
-      <body className='max-w-6xl mx-auto'>{children}</body>
+      <body>{children}</body>
     </html>
   )
 }
