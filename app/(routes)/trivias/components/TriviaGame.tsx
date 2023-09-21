@@ -5,9 +5,8 @@ import { sortArrayRandomly } from '@/utils/helpers'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { getSettings, getTriviaStatus, saveTriviaStatus } from '@/utils/trivia'
+import { DEFAULT_TIME_IN_SECONDS } from '@/utils/constants'
 import TriviaReview from './TriviaReview'
-
-const DEFAULT_TIME = 60
 
 const OPTION_COLORS: Record<number, string> = {
   0: 'bg-red-300',
@@ -28,10 +27,8 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
   const [isFinished, setIsFinished] = useState<boolean>(false)
   const [currentQuestion, setCurrentQuestion] = useState<number>(0)
   const [score, setScore] = useState<number>(0)
-  const [timeLeft, setTimeLeft] = useState<number | undefined>(() => getSettings()?.time ?? DEFAULT_TIME)
-  const [answeredQuestions, setAnsweredQuestions] = useState<
-  TriviaAnsweredQuestion[]
-  >([])
+  const [timeLeft, setTimeLeft] = useState<number | undefined>(() => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS)
+  const [answeredQuestions, setAnsweredQuestions] = useState<TriviaAnsweredQuestion[]>([])
 
   const settings = getSettings()
   const questions = trivia.questions
@@ -43,7 +40,7 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
 
   const handleTimeLeft = useCallback(
     () =>
-      setTimeLeft(settings?.time ?? DEFAULT_TIME),
+      setTimeLeft(settings?.time ?? DEFAULT_TIME_IN_SECONDS),
     [settings]
   )
 
@@ -152,7 +149,7 @@ export default function TriviaGame (trivia: TriviaGameProps): JSX.Element {
           <p className='font-medium'>Tiempo restante</p>
 
           <div className='w-full h-2 rounded-full bg-gray-300'>
-            {(timeLeft !== undefined && timeLeft > 0) && <div style={{ animation: `timeProgress ${settings?.time ?? DEFAULT_TIME}s linear forwards` }} className='w-full bg-primary h-2 rounded-full' />}
+            {(timeLeft !== undefined && timeLeft > 0) && <div style={{ animation: `timeProgress ${settings?.time ?? DEFAULT_TIME_IN_SECONDS}s linear forwards` }} className='w-full bg-primary h-2 rounded-full' />}
           </div>
         </div>
 

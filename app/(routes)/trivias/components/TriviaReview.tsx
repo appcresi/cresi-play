@@ -1,10 +1,11 @@
 import { TriviaAnsweredQuestion } from '@/types/trivia'
 import { Disclosure, Transition } from '@headlessui/react'
 import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink } from '@tabler/icons-react'
-import Link from 'next/link'
-import { useState } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { useState } from 'react'
+import { COMPLETION_PERCENTAGE } from '@/utils/constants'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 // Label renderer for pie chart
 
@@ -240,7 +241,6 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
 }
 
 const isTriviaCompleted = (score: number, totalQuestions: number): boolean => {
-  const DEFAULT_COMPLETION_PERCENTAGE = 80
   const completionPercentage = Math.round((score / totalQuestions) * 100)
-  return completionPercentage >= DEFAULT_COMPLETION_PERCENTAGE
+  return completionPercentage >= COMPLETION_PERCENTAGE
 }
