@@ -23,16 +23,21 @@ export function TriviaCard (index: TriviaIndexFields): JSX.Element {
 
   return (
     <article className={`w-full p-4 gap-4 flex flex-col rounded-lg ${isCompleted ? 'bg-gradient-to-r from-amber-400 to-orange-300' : 'border-2 border-primary'}`}>
-      <span className='flex gap-2 items-center'>
-        <h3 className='text-xl font-semibold'>{index.name}</h3>
+      <div className='flex items-center justify-between'>
+        <span className='flex flex-col gap-2'>
+          <h3 className='text-xl font-semibold'>{index.name}</h3>
+          <p className='text-gray-600'>Nivel: {index.level ?? 1}</p>
+        </span>
+
         {isCompleted
           ? (
             <IconTrophyFilled />
             )
           : (
             <IconTrophyOff className='text-gray-400' />
-            )}
-      </span>
+            )
+        }
+      </div>
 
       <p>
         Mejor intento: <b>{triviaStatus?.percentage ?? 0}%</b>
