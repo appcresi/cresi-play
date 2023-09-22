@@ -3,7 +3,7 @@ export function sortArrayRandomly<T> (array: T[]): T[] {
 }
 
 function formatApiUrl (): string {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
+  const API_URL = process.env.API_URL
 
   if (typeof API_URL === 'undefined') {
     throw new Error('API_URL is not defined')
