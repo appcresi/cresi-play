@@ -8,6 +8,7 @@ import TriviaSettings from './components/TriviaSettings'
 import TriviaGrid from './components/TriviaGrid'
 import { IconExternalLink } from '@tabler/icons-react'
 import { generateTriviaPathFromName } from '@/utils/trivia'
+import TriviaSearch from './components/TriviaSearch'
 
 /* We choose to omit irrelevant fields (and their long content) to optimize algorithms. */
 
@@ -85,6 +86,8 @@ export default async function Trivias (): Promise<JSX.Element> {
       </section>
 
       <TriviaSettings />
+
+      <TriviaSearch indexes={indexes} />
 
       <TriviaGrid indexesByLevel={indexesByLevel} />
     </main>
