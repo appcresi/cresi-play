@@ -62,7 +62,7 @@ export default function TriviaSettings (): JSX.Element {
 
                   <span className='flex gap-2 items-center'>
                     <p>Tiempo de juego</p>
-                    <select value={settings?.time ?? 60} onChange={(e) => { handleChangeSettings({ time: Number(e.target.value) }) }}>
+                    <select onChange={(e) => { handleChangeSettings({ time: Number(e.target.value) }) }}>
                       {[10, 15, 30, 45, 60].map((time) => (
                         <option value={time} key={time}>
                           {time} segundos
