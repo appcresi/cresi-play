@@ -4,7 +4,6 @@ export interface Trivia {
   updated_at: string
   name: string
   author: string
-  category: string
   level?: number
   questions: TriviaQuestion[]
   user_id: string
