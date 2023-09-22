@@ -36,7 +36,7 @@ export async function generateMetadata ({ params }: { params: { id: string } }):
   }
 }
 
-export async function generateStaticParams (): Promise<Array<{ params: { id: string } }>> {
+export async function generateStaticParams (): Promise<Array<{ id: string }>> {
   const response = await fetch(API_URL.concat('/trivias'))
   const body = await response.json() as CustomResponse<Trivia[]>
 
@@ -48,9 +48,7 @@ export async function generateStaticParams (): Promise<Array<{ params: { id: str
     throw new Error('No data found')
   }
 
-  return body.data.map(trivia => ({
-    params: { id: generateTriviaPathFromName(trivia.name, trivia.level ?? 1) }
-  }))
+  return body.data.map(trivia => ({ id: generateTriviaPathFromName(trivia.name, trivia.level ?? 1) }))
 }
 
 interface TriviaGameProps {
