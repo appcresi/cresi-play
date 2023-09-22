@@ -1,3 +1,4 @@
+import { type Metadata } from 'next'
 import { type CustomResponse } from '@/types/response'
 import { type Trivia, type TriviaQuestion } from '@/types/trivia'
 import { API_URL, sortArrayRandomly } from '@/utils/helpers'
@@ -17,6 +18,22 @@ async function getTriviaById (id: string): Promise<Trivia | undefined> {
   }
 
   return body.data.find(trivia => generateTriviaPathFromName(trivia.name, trivia.level ?? 1) === id)
+}
+
+export async function generateMetadata ({ params }: { params: { id: string } }): Promise<Metadata> {
+  const trivia = await getTriviaById(params.id)
+
+  if (typeof trivia === 'undefined') {
+    return {
+      title: 'No se encontró la trivia | CrESI',
+      description: 'No se encontró la trivia que estás buscando. ¡Probá con otra!'
+    }
+  }
+
+  return {
+    title: `Aprendé sobre ${trivia.name} jugando a nuestra trivia | CrESI`,
+    description: `A través de esta trivia vas a poder aprender sobre ${trivia.name} de una manera divertida y entretenida. ¡Jugá ahora!`
+  }
 }
 
 export async function generateStaticParams (): Promise<Array<{ params: { id: string } }>> {
