@@ -1,4 +1,4 @@
-import { TriviaAnsweredQuestion } from '@/types/trivia'
+import { type TriviaAnsweredQuestion } from '@/types/trivia'
 import { Disclosure, Transition } from '@headlessui/react'
 import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink } from '@tabler/icons-react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
@@ -208,7 +208,7 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
   const [name, setName] = useState<string>()
   const router = useRouter()
 
-  const handleName = (e: React.ChangeEvent<HTMLInputElement>): void => setName(e.target.value.trim())
+  const handleName = (e: React.ChangeEvent<HTMLInputElement>): void => { setName(e.target.value.trim()) }
 
   const handlePrepareCertificate = (): void => {
     fetch('/api/certificado', {
@@ -216,10 +216,12 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, trivia: props.trivia, percentage: props.percentage })
     })
-      .then(async (response) => await response.json().then((value) => {
-        router.push(`/trivias/certificado?token=${String(value.token)}`)
-      }))
-      .catch((error) => console.error(error))
+      .then(async (response) => {
+        await response.json().then((value) => {
+          router.push(`/trivias/certificado?token=${String(value.token)}`)
+        })
+      })
+      .catch((error) => { console.error(error) })
   }
 
   return (

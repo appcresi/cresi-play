@@ -1,7 +1,7 @@
-import { CustomResponse } from '@/types/response'
-import { Trivia } from '@/types/trivia'
+import type { CustomResponse } from '@/types/response'
+import type { Trivia } from '@/types/trivia'
 import { API_URL } from '@/utils/helpers'
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function GET (
   request: NextRequest,

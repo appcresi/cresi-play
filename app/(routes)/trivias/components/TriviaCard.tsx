@@ -1,6 +1,6 @@
 'use client'
 
-import { TriviaIndexFields, TriviaStatus } from '@/types/trivia'
+import { type TriviaIndexFields, type TriviaStatus } from '@/types/trivia'
 import { getTriviaStatus } from '@/utils/trivia'
 import {
   IconArrowNarrowRight,

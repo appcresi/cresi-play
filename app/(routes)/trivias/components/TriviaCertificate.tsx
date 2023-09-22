@@ -27,9 +27,11 @@ export default function TriviaCertificate (): JSX.Element {
       headers: {
         Authorization: token
       }
-    }).then(async (response) => await response.json()
-      .then((value) => setData(value))
-    ).catch((error) => console.error(error))
+    }).then(async (response) => {
+      await response.json()
+        .then((value) => { setData(value) })
+    }
+    ).catch((error) => { console.error(error) })
   }, [])
 
   const filename = typeof data !== 'undefined' ? data.name.replace(' ', '').toLowerCase().concat('-', data.trivia, '-cresi.pdf') : 'certificado-cresi.pdf'
@@ -49,7 +51,7 @@ export default function TriviaCertificate (): JSX.Element {
         <p className='my-2 text-gray-600'>Nota: podrían verse incoherencias estéticas en ciertos dispositivos pero es posible descargar el certificado en cualquier caso.</p>
         <button
           type='button'
-          onClick={() => toPDF()}
+          onClick={() => { toPDF() }}
           className='px-4 py-2 my-6  flex gap-2 items-center rounded-full font-semibold bg-primary text-white'
         >
           Descargar
@@ -62,7 +64,7 @@ export default function TriviaCertificate (): JSX.Element {
           <h1 className='my-4 text-4xl font-semibold'>Certificado de CRESI</h1>
           <h2 className='text-xl'>SE EXTIENDE ESTA CERTIFICACIÓN A</h2>
           <p className='my-4 text-6xl font-semibold text-primary'>{data?.name.toLocaleUpperCase()}</p>
-          <p className='my-6 text-xl'>Por haber aprobado la trivia <b>"{data?.trivia}"</b>, con un porcentaje del {data?.percentage}% de aciertos.</p>
+          <p className='my-6 text-xl'>Por haber aprobado la trivia <b>&quot;{data?.trivia}&quot;</b>, con un porcentaje del {data?.percentage}% de aciertos.</p>
           <p className='mt-6 text-gray-600'>{date}</p>
 
           <div className='mt-24 w-full flex justify-evenly'>

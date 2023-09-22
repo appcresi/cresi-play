@@ -1,6 +1,6 @@
 'use client'
 
-import { TriviaIndexFields } from '@/types/trivia'
+import { type TriviaIndexFields } from '@/types/trivia'
 import { TriviaCard } from './TriviaCard'
 import { Tab } from '@headlessui/react'
 import { Fragment } from 'react'

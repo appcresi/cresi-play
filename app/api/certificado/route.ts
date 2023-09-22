@@ -1,5 +1,5 @@
 import { decodeJwt, signJwt } from '@/utils/jwt'
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 
 export async function GET (request: NextRequest): Promise<NextResponse<unknown>> {
   const token = request.headers.get('Authorization')

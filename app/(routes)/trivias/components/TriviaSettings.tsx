@@ -18,7 +18,7 @@ export default function TriviaSettings (): JSX.Element {
     <>
       <button
         type='button'
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true) }}
         className='px-4 py-2 mx-auto flex items-center gap-1 rounded-full font-semibold bg-primary text-white'
       >
         <IconSettings />
@@ -29,7 +29,7 @@ export default function TriviaSettings (): JSX.Element {
         <Dialog
           as='div'
           open={isOpen}
-          onClose={() => setIsOpen(false)}
+          onClose={() => { setIsOpen(false) }}
           className='relative z-10'
         >
           <Transition.Child
@@ -62,7 +62,7 @@ export default function TriviaSettings (): JSX.Element {
 
                   <span className='flex gap-2 items-center'>
                     <p>Tiempo de juego</p>
-                    <select value={settings?.time ?? 60} onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}>
+                    <select value={settings?.time ?? 60} onChange={(e) => { handleChangeSettings({ time: Number(e.target.value) }) }}>
                       {[10, 15, 30, 45, 60].map((time) => (
                         <option value={time} key={time}>
                           {time} segundos
@@ -78,7 +78,7 @@ export default function TriviaSettings (): JSX.Element {
 
                     <button
                       type='button'
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => { setIsOpen(false) }}
                       className='px-4 py-2 flex items-center gap-1 rounded-full font-semibold bg-primary-light text-primary-dark'
                     >
                       Cerrar
