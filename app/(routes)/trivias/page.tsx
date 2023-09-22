@@ -7,16 +7,15 @@ import illustration from '@/public/illustration-2.jpg'
 import TriviaSettings from './components/TriviaSettings'
 import TriviaGrid from './components/TriviaGrid'
 import { IconExternalLink } from '@tabler/icons-react'
-import { generateTriviaPathFromName } from '@/utils/trivia'
 import TriviaSearch from './components/TriviaSearch'
 
 /* We choose to omit irrelevant fields (and their long content) to optimize algorithms. */
 
 /** Return to client only indexing required values from a trivia. */
 function getOnlyIndexFields (trivia: Trivia): TriviaIndexFields {
-  const { name, level } = trivia
+  const { id, name, level } = trivia
 
-  return { id: generateTriviaPathFromName(name, level ?? 1), name, level }
+  return { id, name, level }
 }
 
 /** Return an object for every available level of trivias, with their corresponding set of trivias. */

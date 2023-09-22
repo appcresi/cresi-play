@@ -2,12 +2,11 @@ import { type Metadata } from 'next'
 import { type CustomResponse } from '@/types/response'
 import { type Trivia, type TriviaQuestion } from '@/types/trivia'
 import { API_URL, sortArrayRandomly } from '@/utils/helpers'
-import { generateTriviaPathFromName } from '@/utils/trivia'
 import TriviaGame from '../../components/TriviaGame'
 
-async function getTriviaById (id: string): Promise<Trivia | undefined> {
-  const response = await fetch(API_URL.concat('/trivias'), { cache: 'no-store' })
-  const body = await response.json() as CustomResponse<Trivia[]>
+async function getTriviaById (id: string): Promise<Trivia> {
+  const response = await fetch(API_URL.concat(`/trivias/${id}`), { cache: 'no-store' })
+  const body = await response.json() as CustomResponse<Trivia>
 
   if (body.hasError && typeof body.error !== 'undefined') {
     throw new Error(body.error)
@@ -17,7 +16,7 @@ async function getTriviaById (id: string): Promise<Trivia | undefined> {
     throw new Error('No data found')
   }
 
-  return body.data.find(trivia => generateTriviaPathFromName(trivia.name, trivia.level ?? 1) === id)
+  return body.data
 }
 
 export async function generateMetadata ({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -34,21 +33,6 @@ export async function generateMetadata ({ params }: { params: { id: string } }):
     title: `Aprendé sobre ${trivia.name} jugando a nuestra trivia | CrESI`,
     description: `A través de esta trivia vas a poder aprender sobre ${trivia.name} de una manera divertida y entretenida. ¡Jugá ahora!`
   }
-}
-
-export async function generateStaticParams (): Promise<Array<{ id: string }>> {
-  const response = await fetch(API_URL.concat('/trivias'))
-  const body = await response.json() as CustomResponse<Trivia[]>
-
-  if (body.hasError && typeof body.error !== 'undefined') {
-    throw new Error(body.error)
-  }
-
-  if (typeof body.data === 'undefined') {
-    throw new Error('No data found')
-  }
-
-  return body.data.map(trivia => ({ id: generateTriviaPathFromName(trivia.name, trivia.level ?? 1) }))
 }
 
 interface TriviaGameProps {
