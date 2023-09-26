@@ -2,6 +2,8 @@ import { type Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 
+import Analytics from '@/components/Analytics'
+
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
   display: 'swap',
@@ -16,6 +18,8 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
   return (
     <html lang='es' className={monaSans.className}>
       <body>{children}</body>
+
+      <Analytics />
     </html>
   )
 }
