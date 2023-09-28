@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 
 import Analytics from '@/components/Analytics'
+import Adsense from '@/components/Adsense'
 
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
@@ -20,6 +21,7 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
       <body>{children}</body>
 
       <Analytics />
+      <Adsense />
     </html>
   )
 }
