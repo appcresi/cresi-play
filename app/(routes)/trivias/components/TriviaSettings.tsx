@@ -19,10 +19,11 @@ export default function TriviaSettings (): JSX.Element {
       <button
         type='button'
         onClick={() => { setIsOpen(true) }}
-        className='px-4 py-2 mx-auto flex items-center gap-1 rounded-full font-semibold bg-primary text-white'
+        className='px-8 py-8 mx-auto flex items-center gap-2 rounded-full font-semibold text-4xl bg-primary text-white'
+
       >
         <IconSettings />
-        Abrir configuración
+        
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>

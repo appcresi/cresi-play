@@ -8,10 +8,10 @@ import { DEFAULT_TIME_IN_SECONDS } from '@/utils/constants'
 import TriviaReview from './TriviaReview'
 
 const OPTION_COLORS: Record<number, string> = {
-  0: 'bg-red-300',
-  1: 'bg-blue-300',
-  2: 'bg-yellow-300',
-  3: 'bg-green-300'
+  0: 'bg-red-500 hover:bg-red-400',
+  1: 'bg-blue-500 hover:bg-blue-400',
+  2: 'bg-yellow-500 hover:bg-yellow-400',
+  3: 'bg-green-500 hover:bg-green-400'
 }
 
 interface TriviaGameProps {
@@ -110,6 +110,35 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
     }
   }, [timeLeft, isFinished, handleContinue])
 
+  const getColor = (timeLeft: number, totalTime: number) => {
+    const ratio = timeLeft / totalTime
+    const red = Math.min(255, Math.floor((1 - ratio) * 255))
+    const green = Math.min(255, Math.floor(ratio * 255))
+    return `rgb(${red}, ${green}, 0)`
+  }
+
+  const getAnsweredColor = (questionsAnswered: number, totalQuestions: number) => {
+    const ratio = questionsAnswered / totalQuestions
+    const red = Math.min(255, Math.floor((1 - ratio) * 255))
+    const green = Math.min(255, Math.floor(ratio * 255))
+    return `rgb(${red}, ${green}, 0)`
+  }
+
+  const handleFullscreen = () => {
+    const element = document.documentElement
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      element.requestFullscreen().catch(err => {
+        toast.error(`Error al intentar entrar en pantalla completa: ${err.message}`)
+      })
+    }
+  }
+
+  // Calculate the number of questions answered
+  const questionsAnswered = currentQuestion
+  const progressPercent = (questionsAnswered / items.length) * 100
+
   if (isFinished) {
     handleFinish()
 
@@ -129,23 +158,40 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
 
   return (
     <>
-      <main className='px-4 min-h-screen flex flex-col justify-evenly bg-primary-light lg:gap-12 lg:justify-center'>
+      <main className='px-4 min-h-screen flex flex-col justify-evenly bg-gray-200 text-black lg:gap-12 lg:justify-center'>
         <span className='py-4 flex gap-2 justify-center items-center'>
-          <h1 className='text-lg font-bold'>{name}</h1>
-          <h2 className='text-gray-600'>{items.length} preguntas</h2>
+          <h1 className='text-2xl font-bold'>{name}</h1>
         </span>
 
-        <div className='flex flex-col gap-2 items-center lg:w-64 lg:mx-auto'>
-          <p className='font-medium'>Tiempo restante</p>
+        {/* Combined Time Remaining and Questions Answered */}
+        <div className='flex justify-center gap-8 mb-4'>
+          {/* Time Remaining */}
+          <div className='flex flex-col items-center'>
+            <p className='font-medium'>Tiempo</p>
+            <div className='relative w-12 h-12'>
+              <svg className='absolute inset-0' viewBox='0 0 24 24'>
+                <circle className='text-gray-300' strokeWidth='4' stroke='currentColor' fill='none' cx='12' cy='12' r='10' />
+                <circle className='text-current' strokeWidth='4' strokeLinecap='round' strokeDasharray='62.83185307179586' strokeDashoffset={(62.83185307179586 * (timeLeft ?? 0)) / (settings?.time ?? DEFAULT_TIME_IN_SECONDS)} stroke={getColor(timeLeft ?? 0, settings?.time ?? DEFAULT_TIME_IN_SECONDS)} fill='none' cx='12' cy='12' r='10' style={{ transition: 'stroke-dashoffset 1s linear, stroke 1s linear' }} />
+              </svg>
+              <div className='flex items-center justify-center absolute inset-0 text-xl font-semibold'>{timeLeft ?? 0}</div>
+            </div>
+          </div>
 
-          <div className='w-full h-2 rounded-full bg-gray-300'>
-            {(timeLeft !== undefined && timeLeft > 0) && <div style={{ animation: `timeProgress ${settings?.time ?? DEFAULT_TIME_IN_SECONDS}s linear forwards` }} className='w-full bg-primary h-2 rounded-full' />}
+          {/* Questions Answered */}
+          <div className='flex flex-col items-center'>
+            <p className='font-medium'>Preguntas</p>
+            <div className='relative w-12 h-12'>
+              <svg className='absolute inset-0' viewBox='0 0 24 24'>
+                <circle className='text-gray-300' strokeWidth='4' stroke='currentColor' fill='none' cx='12' cy='12' r='10' />
+                <circle className='text-current' strokeWidth='4' strokeLinecap='round' strokeDasharray='62.83185307179586' strokeDashoffset={(62.83185307179586 * questionsAnswered) / items.length} stroke={getAnsweredColor(questionsAnswered, items.length)} fill='none' cx='12' cy='12' r='10' style={{ transition: 'stroke-dashoffset 1s linear, stroke 1s linear' }} />
+              </svg>
+              <div className='flex items-center justify-center absolute inset-0 text-xs font-semibold'>{questionsAnswered}/{items.length}</div>
+            </div>
           </div>
         </div>
 
-        <span className='lg:mx-auto lg:min-w-[16em] lg:max-w-2xl'>
-          <p className='my-2 text-gray-600 lg:text-xl'>Pregunta {currentQuestion + 1}</p>
-          <p className='my-4 text-xl font-semibold lg:text-2xl'>{items[currentQuestion].question.question}</p>
+        <div className='flex flex-col items-center lg:mx-auto lg:min-w-[16em] lg:max-w-2xl'>
+          <p className='my-4 text-2xl font-semibold lg:text-3xl text-center'>{items[currentQuestion].question.question}</p>
           <div className='flex flex-col gap-2 justify-center lg:min-w-full lg:grid lg:grid-cols-2'>
             {items[currentQuestion].options.map((option, index) => (
               <button
@@ -154,13 +200,22 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
                 aria-details={`Opción ${index}: ${option}`}
                 disabled={timeLeft === 0 || timeLeft === undefined}
                 onClick={() => { handleAnswer(option) }}
-                className={`w-full py-2 px-4 rounded-md ${OPTION_COLORS[index]} lg:min-h-[6em] lg:min-w-[12em] disabled:bg-gray-300 disabled:text-gray-800`}
+                className={`w-full py-3 px-4 rounded-md shadow-md text-lg transition duration-300 ease-in-out ${OPTION_COLORS[index]} lg:min-h-[6em] lg:min-w-[12em] disabled:bg-gray-300 disabled:text-gray-800`}
               >
                 {option}
               </button>
             ))}
           </div>
-        </span>
+        </div>
+
+        {/* Floating Fullscreen Button */}
+        <button
+          type='button'
+          onClick={handleFullscreen}
+          className='fixed bottom-4 left-4 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
+        >
+          Pantalla Completa
+        </button>
       </main>
 
       <Toaster />
