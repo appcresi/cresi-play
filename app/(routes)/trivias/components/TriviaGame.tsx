@@ -26,6 +26,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
   const [score, setScore] = useState<number>(0)
   const [timeLeft, setTimeLeft] = useState<number | undefined>(() => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS)
   const [answeredQuestions, setAnsweredQuestions] = useState<TriviaAnsweredQuestion[]>([])
+  const [isNightMode, setIsNightMode] = useState<boolean>(false) // Estado para el modo nocturno
 
   const settings = getSettings()
 
@@ -139,6 +140,10 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
   const questionsAnswered = currentQuestion
   const progressPercent = (questionsAnswered / items.length) * 100
 
+  const toggleNightMode = () => {
+    setIsNightMode(prev => !prev)
+  }
+
   if (isFinished) {
     handleFinish()
 
@@ -158,7 +163,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
 
   return (
     <>
-      <main className='px-4 min-h-screen flex flex-col justify-evenly bg-gray-200 text-black lg:gap-12 lg:justify-center'>
+      <main className={`px-4 min-h-screen flex flex-col justify-evenly ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} lg:gap-12 lg:justify-center`}>
         <span className='py-4 flex gap-2 justify-center items-center'>
           <h1 className='text-2xl font-bold'>{name}</h1>
         </span>
@@ -185,7 +190,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
                 <circle className='text-gray-300' strokeWidth='4' stroke='currentColor' fill='none' cx='12' cy='12' r='10' />
                 <circle className='text-current' strokeWidth='4' strokeLinecap='round' strokeDasharray='62.83185307179586' strokeDashoffset={(62.83185307179586 * questionsAnswered) / items.length} stroke={getAnsweredColor(questionsAnswered, items.length)} fill='none' cx='12' cy='12' r='10' style={{ transition: 'stroke-dashoffset 1s linear, stroke 1s linear' }} />
               </svg>
-              <div className='flex items-center justify-center absolute inset-0 text-xs font-semibold'>{questionsAnswered}/{items.length}</div>
+              <div className='flex items-center justify-center absolute inset-0 text-xs font-semibold'>{questionsAnswered + 1}/{items.length}</div>
             </div>
           </div>
         </div>
@@ -215,6 +220,15 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
           className='fixed bottom-4 left-4 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
         >
           Pantalla Completa
+        </button>
+
+        {/* Floating Night Mode Button */}
+        <button
+          type='button'
+          onClick={toggleNightMode}
+          className='fixed bottom-4 right-4 py-2 px-4 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
+        >
+          {isNightMode ? 'Modo Día' : 'Modo Noche'}
         </button>
       </main>
 
