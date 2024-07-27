@@ -43,7 +43,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
     } else {
       setCurrentQuestion(currentQuestion + 1)
     }
-  }, [currentQuestion])
+  }, [currentQuestion, handleTimeLeft, items.length])
 
   const handleAnswer = useCallback(
     (answer: string) => {
@@ -69,7 +69,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
         }
       ])
     },
-    [currentQuestion, answeredQuestions]
+    [currentQuestion, answeredQuestions, handleContinue, score]
   )
 
   const handleFinish = useCallback(() => {
@@ -88,7 +88,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
     saveTriviaStatus(updatedTrivia)
 
     toast.success('Se guardó tu progreso.')
-  }, [isFinished])
+  }, [id, score, items.length])
 
   useEffect(() => {
     if (!isFinished) {
@@ -163,40 +163,41 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
 
   return (
     <>
-      <main className={`px-4 min-h-screen flex flex-col justify-evenly ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} lg:gap-12 lg:justify-center`}>
-        <span className='py-4 flex gap-2 justify-center items-center'>
-          <h1 className='text-2xl font-bold'>{name}</h1>
-        </span>
+      <main className={`px-4 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} lg:gap-8 lg:justify-center`}>
 
         {/* Combined Time Remaining and Questions Answered */}
-        <div className='flex justify-center gap-8 mb-4'>
+        <div className='flex justify-center gap-10 mb-4'>
           {/* Time Remaining */}
           <div className='flex flex-col items-center'>
-            <p className='font-medium'>Tiempo</p>
-            <div className='relative w-12 h-12'>
+            <p className='font-medium text-lg'>Tiempo</p>
+            <div className='relative w-16 h-16'>
               <svg className='absolute inset-0' viewBox='0 0 24 24'>
                 <circle className='text-gray-300' strokeWidth='4' stroke='currentColor' fill='none' cx='12' cy='12' r='10' />
                 <circle className='text-current' strokeWidth='4' strokeLinecap='round' strokeDasharray='62.83185307179586' strokeDashoffset={(62.83185307179586 * (timeLeft ?? 0)) / (settings?.time ?? DEFAULT_TIME_IN_SECONDS)} stroke={getColor(timeLeft ?? 0, settings?.time ?? DEFAULT_TIME_IN_SECONDS)} fill='none' cx='12' cy='12' r='10' style={{ transition: 'stroke-dashoffset 1s linear, stroke 1s linear' }} />
               </svg>
-              <div className='flex items-center justify-center absolute inset-0 text-xl font-semibold'>{timeLeft ?? 0}</div>
+              <div className='flex items-center justify-center absolute inset-0 text-2xl font-semibold'>{timeLeft ?? 0}</div>
             </div>
           </div>
 
-          {/* Questions Answered */}
+          {/* Questions Answered (without circle) */}
           <div className='flex flex-col items-center'>
-            <p className='font-medium'>Preguntas</p>
-            <div className='relative w-12 h-12'>
-              <svg className='absolute inset-0' viewBox='0 0 24 24'>
-                <circle className='text-gray-300' strokeWidth='4' stroke='currentColor' fill='none' cx='12' cy='12' r='10' />
-                <circle className='text-current' strokeWidth='4' strokeLinecap='round' strokeDasharray='62.83185307179586' strokeDashoffset={(62.83185307179586 * questionsAnswered) / items.length} stroke={getAnsweredColor(questionsAnswered, items.length)} fill='none' cx='12' cy='12' r='10' style={{ transition: 'stroke-dashoffset 1s linear, stroke 1s linear' }} />
-              </svg>
-              <div className='flex items-center justify-center absolute inset-0 text-xs font-semibold'>{questionsAnswered + 1}/{items.length}</div>
+            <p className='font-medium text-lg'>Preguntas</p>
+            <div className='relative w-16 h-16 flex items-center justify-center'>
+              <div className='text-lg font-semibold'>
+                {questionsAnswered + 1}/{items.length}
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Trivia Name */}
+        <div className='flex justify-center mb-6'>
+          <h1 className='text-3xl font-bold'>{name}</h1>
+        </div>
+
+        {/* Current Question */}
         <div className='flex flex-col items-center lg:mx-auto lg:min-w-[16em] lg:max-w-2xl'>
-          <p className='my-4 text-2xl font-semibold lg:text-3xl text-center'>{items[currentQuestion].question.question}</p>
+          <p className='my-4 text-3xl font-semibold lg:text-4xl text-center'>{items[currentQuestion].question.question}</p>
           <div className='flex flex-col gap-2 justify-center lg:min-w-full lg:grid lg:grid-cols-2'>
             {items[currentQuestion].options.map((option, index) => (
               <button
@@ -226,7 +227,7 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
         <button
           type='button'
           onClick={toggleNightMode}
-          className='fixed top-4 right-4 py-2 px-4 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
+          className='fixed bottom-4 right-4 py-2 px-4 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
         >
           {isNightMode ? 'Modo Día' : 'Modo Noche'}
         </button>
