@@ -213,20 +213,20 @@ export default function TriviaGame ({ id, name, items }: TriviaGameProps): JSX.E
           </div>
         </div>
 
-        {/* Floating Fullscreen Button */}
+        {/* Floating Fullscreen Button (hidden on mobile) */}
         <button
           type='button'
           onClick={handleFullscreen}
-          className='fixed bottom-4 left-4 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
+          className='hidden lg:block fixed bottom-4 left-4 py-2 px-4 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
         >
           Pantalla Completa
         </button>
 
-        {/* Floating Night Mode Button */}
+        {/* Floating Night Mode Button (top-right) */}
         <button
           type='button'
           onClick={toggleNightMode}
-          className='fixed bottom-4 right-4 py-2 px-4 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
+          className='fixed top-4 right-4 py-2 px-4 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
         >
           {isNightMode ? 'Modo Día' : 'Modo Noche'}
         </button>
