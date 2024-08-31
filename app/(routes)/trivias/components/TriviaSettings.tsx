@@ -1,36 +1,42 @@
-'use client'
+'use client';
 
-import type { GameSettings } from '../types/settings'
-import { Dialog, Transition } from '@headlessui/react'
-import { IconSettings } from '@tabler/icons-react'
-import { Fragment, useState } from 'react'
-import { getSettings, saveSettings } from '@/utils/trivia'
+import type { GameSettings } from '../types/settings';
+import { Dialog, Transition } from '@headlessui/react';
+import { IconSettings } from '@tabler/icons-react';
+import { Fragment, useState } from 'react';
+import { getSettings, saveSettings } from '@/utils/trivia';
 
-export default function TriviaSettings (): JSX.Element {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const settings = getSettings()
+export default function TriviaSettings(): JSX.Element {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const settings = getSettings();
+  const [selectedTime, setSelectedTime] = useState<number>(
+    settings?.time ?? 60
+  );
 
-  function handleChangeSettings ({ time }: Partial<GameSettings>): void {
-    saveSettings({ time: time ?? settings?.time ?? 60 })
+  function handleChangeSettings({ time }: Partial<GameSettings>): void {
+    setSelectedTime(time ?? selectedTime); // Actualizar el estado con el tiempo seleccionado
+    saveSettings({ time: time ?? selectedTime });
   }
 
   return (
     <>
       <button
         type='button'
-        onClick={() => { setIsOpen(true) }}
+        onClick={() => {
+          setIsOpen(true);
+        }}
         className='px-8 py-8 mx-auto flex items-center gap-2 rounded-full font-semibold text-4xl bg-primary text-white'
-
       >
         <IconSettings />
-        
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog
           as='div'
           open={isOpen}
-          onClose={() => { setIsOpen(false) }}
+          onClose={() => {
+            setIsOpen(false);
+          }}
           className='relative z-10'
         >
           <Transition.Child
@@ -63,8 +69,13 @@ export default function TriviaSettings (): JSX.Element {
 
                   <span className='flex gap-2 items-center'>
                     <p>Tiempo de juego</p>
-                    <select onChange={(e) => { handleChangeSettings({ time: Number(e.target.value) }) }}>
-                      {[10, 15, 30, 45, 60].map((time) => (
+                    <select
+                      value={selectedTime} // Establecer el valor del select
+                      onChange={(e) => {
+                        handleChangeSettings({ time: Number(e.target.value) });
+                      }}
+                    >
+                      {[10, 15, 30, 45, 60, 90, 120].map((time) => (
                         <option value={time} key={time}>
                           {time} segundos
                         </option>
@@ -79,7 +90,9 @@ export default function TriviaSettings (): JSX.Element {
 
                     <button
                       type='button'
-                      onClick={() => { setIsOpen(false) }}
+                      onClick={() => {
+                        setIsOpen(false);
+                      }}
                       className='px-4 py-2 flex items-center gap-1 rounded-full font-semibold bg-primary-light text-primary-dark'
                     >
                       Cerrar
@@ -92,5 +105,5 @@ export default function TriviaSettings (): JSX.Element {
         </Dialog>
       </Transition>
     </>
-  )
+  );
 }
