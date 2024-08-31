@@ -75,7 +75,7 @@ export default function TriviaSettings(): JSX.Element {
                         handleChangeSettings({ time: Number(e.target.value) });
                       }}
                     >
-                      {[10, 15, 30, 45, 60, 90, 120].map((time) => (
+                      {[15, 30, 45, 60, 90, 120].map((time) => (
                         <option value={time} key={time}>
                           {time} segundos
                         </option>
