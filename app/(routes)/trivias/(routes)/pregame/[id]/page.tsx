@@ -4,14 +4,11 @@ import Link from 'next/link';
 import QRCode from 'react-qr-code';
 import { IconArrowNarrowLeft } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
-
-// import type { Resource } from 'types/resource';
-// import type { CustomResponse } from 'types/response';
-// import Button from 'components/Button';
-// import Swal from 'sweetalert2';
+import { type CustomResponse } from '@/types/response';
+import { Trivia } from '@/types/trivia';
 
 // Función para obtener los workshops desde la API
-async function getWorkshops(id: string): Promise<Resource[]> {
+async function getWorkshops(id: string): Promise<Trivia> {
   try {
     const response = await fetch(`${API_URL}/trivias/${id}`, {
       cache: 'no-store', // Evita el caché del lado del cliente
@@ -22,46 +19,23 @@ async function getWorkshops(id: string): Promise<Resource[]> {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
     }
 
-    const body = (await response.json()) as CustomResponse<Resource[]>;
+    const body = (await response.json()) as CustomResponse<Trivia>;
+
+    console.log(body);
 
     // Verifica si hay algún error en el cuerpo de la respuesta
-    if (body.hasError) {
-      throw new Error(`API Error: ${body.message}`);
+    if (body.hasError || !body.data) {
+      throw new Error(
+        `API Error: ${body.message || 'No se encontraron datos.'}`
+      );
     }
 
-    // Elimina las preguntas como lo hacías antes
-    let i = 0;
-    body.data.questions.map((question) => {
-      i++;
-    });
-    body.data.questions = i;
-    console.log('body', body);
     return body.data;
   } catch (error) {
     console.error('Error fetching trivia:', error);
     throw new Error('Failed to fetch trivia. Please try again later.');
   }
 }
-
-// Función para copiar al portapapeles
-// const copyToClipboard = async () => {
-//   const currentUrl = window.location.href; // Obtiene la URL actual
-//   navigator.clipboard
-//     .writeText(currentUrl) // Copia la URL al portapapeles
-//     .then(() => {
-//       Swal.fire({
-//         position: 'top-end',
-//         icon: 'success',
-//         title: '¡Enlace copiado!',
-//         showConfirmButton: false,
-//         timer: 1500,
-//         width: '20rem',
-//         padding: '0.75rem',
-//         toast: true,
-//       });
-//     })
-//     .catch(() => {});
-// };
 
 // Componente de servidor para mostrar los datos
 export default async function Page({ params }: { params: { id: string } }) {
@@ -90,7 +64,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           </p>
           <p>
             <strong>Preguntas: </strong>
-            {data.questions}
+            {data.questions.length}
           </p>
           <p>
             <strong>Creado el: </strong>
