@@ -25,7 +25,7 @@ export default function TriviaSettings(): JSX.Element {
         onClick={() => {
           setIsOpen(true);
         }}
-        className='px-8 py-8 mx-auto flex items-center gap-2 rounded-full font-semibold text-4xl bg-primary text-white'
+        className='fixed bottom-4 right-4 px-4 py-4 flex items-center gap-2 rounded-full font-semibold text-4xl bg-primary text-white'
       >
         <IconSettings />
       </button>
