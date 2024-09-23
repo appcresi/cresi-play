@@ -14,7 +14,6 @@ async function getWorkshops(id: string): Promise<Trivia> {
       cache: 'no-store', // Evita el caché del lado del cliente
     });
 
-    // Verifica si la respuesta fue exitosa
     if (!response.ok) {
       throw new Error(`Error: ${response.status} - ${response.statusText}`);
     }
