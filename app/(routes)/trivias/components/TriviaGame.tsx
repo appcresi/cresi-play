@@ -31,6 +31,9 @@ export default function TriviaGame({
   items,
 }: TriviaGameProps): JSX.Element {
   const [isFinished, setIsFinished] = useState<boolean>(false);
+  const [correctAnswer, setCorrectIndex] = useState<string | undefined>(
+    undefined
+  );
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number | undefined>(
@@ -60,6 +63,7 @@ export default function TriviaGame({
   const handleAnswer = useCallback(
     (answer: string) => {
       setTimeLeft(undefined);
+      setCorrectIndex(items[currentQuestion].question.answer);
 
       if (answer === items[currentQuestion].question.answer) {
         setScore(score + 1);
@@ -266,7 +270,13 @@ export default function TriviaGame({
                 onClick={() => {
                   handleAnswer(option);
                 }}
-                className={`w-full py-3 px-4 rounded-md shadow-md text-lg transition duration-300 ease-in-out ${OPTION_COLORS[index]} lg:min-h-[6em] lg:min-w-[12em] disabled:bg-gray-300 disabled:text-gray-800`}
+                className={`w-full py-3 px-4 rounded-md shadow-md text-lg transition duration-300 ease-in-out ${
+                  OPTION_COLORS[index]
+                } lg:min-h-[6em] lg:min-w-[12em] ${
+                  option === correctAnswer
+                    ? ''
+                    : 'disabled:bg-gray-300 disabled:text-gray-800'
+                }`}
               >
                 {option}
               </button>
