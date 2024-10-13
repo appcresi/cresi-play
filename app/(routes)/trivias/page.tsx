@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import type { CustomResponse } from '@/types/response';
 import type { Trivia, TriviaIndexFields } from '@/types/trivia';
 import { API_URL } from '@/utils/helpers';
-import Image from 'next/image';
-import illustration from '@/public/illustration-2.jpg';
 import TriviaSettings from './components/TriviaSettings';
 import TriviaGrid from './components/TriviaGrid';
 import { IconExternalLink } from '@tabler/icons-react';
@@ -52,19 +50,18 @@ export default async function Trivias(): Promise<JSX.Element> {
 
   return (
     <main className='mx-auto px-4 max-w-5xl'>
-      <section className='flex flex-col gap-4 justify-center items-center md:flex-row md:items-center lg:justify-evenly py-8'>
-        <span className='md:max-w-sm'>
-          <h1 className='my-4 text-4xl font-bold text-primary md:text-5xl'>
-            Trivias
-          </h1>
-          <h2 className='text-lg text-gray-600'>
-            ¡Es hora de jugar! Aquí encontrarás una variedad de trivias
-            clasificadas por niveles. Usa el buscador para encontrar fácilmente
-            la trivia que te interese. Además, puedes ajustar el tiempo de juego
-            haciendo clic en el botón de configuración.
-          </h2>
-
-          <a
+      <section className='flex flex-col gap-4 justify-start items-start pt-8 pb-1'>
+            <p className="font-medium text-primary">
+              Aprender más, para amar mejor
+            </p>
+            <h1 className='my-4 text-6xl font-bold'>Trivia</h1>
+            <h2 className='text-xl text-gray-700'>
+                ¡Es hora de jugar! Aquí encontrarás una variedad de trivias
+                clasificadas por niveles. Usa el buscador para encontrar fácilmente
+                la trivia que te interese. Además, puedes ajustar el tiempo de juego
+                haciendo clic en el botón de configuración.
+            </h2>
+            <a
             href='https://cresi.com.ar/buscar'
             target='_blank'
             rel='noreferrer'
@@ -73,26 +70,15 @@ export default async function Trivias(): Promise<JSX.Element> {
             ¿De dónde salen las preguntas?
             <IconExternalLink />
           </a>
-        </span>
 
-        <span className='w-64 h-48 relative lg:w-80 lg:h-64'>
-          <Image
-            src={illustration}
-            alt='Ilustración de personas jugando por internet'
-            placeholder='blur'
-            className='contrast-125 rounded-xl'
-            fill
-          />
-        </span>
       </section>
-
       <TriviaSearch indexes={indexes} />
-
       <TriviaGrid indexesByLevel={indexesByLevel} />
 
       <div className='fixed bottom-6 right-6'>
         <TriviaSettings />
       </div>
+
     </main>
   );
 }

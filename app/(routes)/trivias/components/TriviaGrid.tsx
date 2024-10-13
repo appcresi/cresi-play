@@ -12,7 +12,6 @@ interface TriviaGridProps {
 export default function TriviaGrid ({ indexesByLevel }: TriviaGridProps): JSX.Element {
   return (
     <section className='my-4'>
-      <h3 className='my-6 text-4xl text-center font-bold'>Trivias por nivel</h3>
       <Tab.Group>
         <Tab.List className='my-4 flex gap-4 justify-center items-center'>
           {Object.keys(indexesByLevel).map((level) => (

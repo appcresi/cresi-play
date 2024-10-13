@@ -2,10 +2,11 @@
 import { API_URL } from '@/utils/helpers';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
-import { IconArrowNarrowLeft } from '@tabler/icons-react';
+import { IconArrowNarrowLeft, IconArrowNarrowRight } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
 import { type CustomResponse } from '@/types/response';
 import { Trivia } from '@/types/trivia';
+import type { Metadata } from 'next';
 
 // Función para obtener los workshops desde la API
 async function getWorkshops(id: string): Promise<Trivia> {
@@ -36,6 +37,11 @@ async function getWorkshops(id: string): Promise<Trivia> {
   }
 }
 
+export const metadata: Metadata = {
+  title: 'Presentación trivias | CrESI',
+  description:
+    'Poné a prueba tus conocimientos con nuestras trivias y aprendé mientras jugás.',
+};
 // Componente de servidor para mostrar los datos
 export default async function Page({ params }: { params: { id: string } }) {
   const data = await getWorkshops(params.id);
@@ -47,7 +53,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       </Link>
       <h2 className='font-bold text-5xl my-8'>Trivia</h2>
 
-      <div className='flex flex-row  justify-evenly items-center w-full'>
+      <div className='flex flex-col md:flex-row justify-evenly items-center w-full'>
         <div className='flex flex-col text-2xl '>
           <p>
             <strong>Nombre: </strong>
@@ -93,6 +99,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         className='px-12 mt-4 font-semibold flex justify-center items-center p-2 bg-violet-600 text-2xl rounded-3xl text-white hover:bg-violet-400'
       >
         Jugar
+        <IconArrowNarrowRight />
       </Link>
       <TriviaSettings />
     </div>
