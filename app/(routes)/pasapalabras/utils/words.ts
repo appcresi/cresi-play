@@ -12,14 +12,14 @@ B: [
   { palabra: "Beso", definicion: "Un acto de intimidad y afecto que involucra el contacto de los labios entre dos personas como expresión de amor, deseo o respeto." },
   { palabra: "Bisexualidad", definicion: "Orientación sexual en la que una persona se siente atraída tanto por individuos de su propio género como por individuos del otro género." },
   { palabra: "Belleza", definicion: "Atributo subjetivo que se refiere a la apariencia física atractiva de una persona, que puede influir en la atracción sexual y emocional." },
-  { palabra: "Bromance", definicion: "Un vínculo íntimo y afectuoso entre dos hombres, caracterizado por una estrecha amistad pero sin connotaciones sexuales." },
+  { palabra: "Bienestar", definicion: "Estado de satisfacción y salud física y emocional que permite sentirse feliz y pleno." },
   { palabra: "Biología", definicion: "La ciencia que estudia los organismos vivos y sus procesos vitales, incluyendo aquellos relacionados con la sexualidad humana." }
 ],
 C: [
   { palabra: "Coito", definicion: "La penetración sexual del pene en la vagina durante el acto sexual." },
   { palabra: "Condón", definicion: "Un dispositivo de barrera utilizado durante el coito para prevenir el embarazo y proteger contra enfermedades de transmisión sexual." },
   { palabra: "Clítoris", definicion: "Un órgano sexual femenino extremadamente sensible y altamente erógeno, ubicado en la parte superior de la vulva." },
-  { palabra: "Cervix", definicion: "El cuello uterino, es la parte inferior del útero que se proyecta dentro de la vagina y juega un papel crucial en el ciclo menstrual y durante el parto." },
+  { palabra: "Cervix", definicion: "En el cuello uterino, es la parte inferior del útero que se proyecta dentro de la vagina y juega un papel crucial en el ciclo menstrual y durante el parto." },
   { palabra: "Consentimiento", definicion: "La aprobación voluntaria y explícita de todas las partes involucradas en una actividad sexual, libre de coerción o presión." }
 ],
 D: [
@@ -89,7 +89,7 @@ N: [
       { palabra: "Noviazgo", definicion: "Relación amorosa entre dos personas que comparten emociones, expectativas y compromiso mutuo, con el objetivo de consolidar una relación duradera." },
       { palabra: "Nudismo", definicion: "Práctica social y cultural que implica la desnudez como expresión de libertad y aceptación del cuerpo humano en un contexto específico." },
       { palabra: "Negación", definicion: "Actitud de rechazo o resistencia hacia deseos sexuales o emocionales, con el fin de controlar impulsos o preservar la integridad personal." },
-      { palabra: "Ninfomanía", definicion: "Náuseas: Sensación de malestar en el estómago que a menudo precede al vómito y puede ser causada por diversas razones, como enfermedades, mareos o embarazo." },
+      { palabra: "Náuseas", definicion: "Sensación de malestar en el estómago que a menudo precede al vómito y puede ser causada por diversas razones, como enfermedades, mareos o embarazo." },
       { palabra: "Necesidad", definicion: "Impulso básico o requerimiento emocional, físico o psicológico relacionado con la satisfacción sexual o emocional." }
   ],
   O: [
@@ -100,11 +100,11 @@ N: [
       { palabra: "Oxitocina", definicion: "Una hormona producida en el cerebro que desempeña un papel en la regulación del parto, la lactancia y la formación de vínculos emocionales." }
   ],
   P: [
-      { palabra: "Placer", definicion: "El placer se refiere a la sensación de satisfacción física o emocional intensa experimentada durante una actividad agradable, como las relaciones sexuales." },
-      { palabra: "Pene", definicion: "El pene es un órgano sexual masculino responsable de la reproducción y la liberación de semen durante el acto sexual." },
-      { palabra: "Próstata", definicion: "La próstata es una glándula del sistema reproductor masculino que se encuentra debajo de la vejiga y produce fluido seminal." },
-      { palabra: "Pubertad", definicion: "La pubertad es el período de desarrollo físico y hormonal durante el cual ocurren cambios en el cuerpo que preparan a una persona para la reproducción sexual." },
-      { palabra: "Penetración", definicion: "La penetración se refiere al acto de introducir parcial o completamente un objeto o parte del cuerpo en la abertura corporal de otra persona." }
+      { palabra: "Placer", definicion: "Sensación de satisfacción física o emocional intensa experimentada durante una actividad agradable, como las relaciones sexuales." },
+      { palabra: "Pene", definicion: "Órgano sexual masculino responsable de la reproducción y la liberación de semen durante el acto sexual." },
+      { palabra: "Próstata", definicion: "Glándula del sistema reproductor masculino que se encuentra debajo de la vejiga y produce fluido seminal." },
+      { palabra: "Pubertad", definicion: "Período de desarrollo físico y hormonal durante el cual ocurren cambios en el cuerpo que preparan a una persona para la reproducción sexual." },
+      { palabra: "Penetración", definicion: "Acto de introducir parcial o completamente un objeto o parte del cuerpo en la abertura corporal de otra persona." }
   ],
   R: [
       { palabra: "Romance", definicion: "El estado emocional de amor o atracción intensa entre dos personas que implica ternura, pasión y conexión emocional." },
@@ -121,10 +121,10 @@ N: [
       { palabra: "Sexualidad", definicion: "La expresión y manifestación de la identidad sexual de una persona, incluye aspectos biológicos, emocionales, sociales y culturales." }
   ],
   T: [
-      { palabra: "Testículos", definicion: "Los testículos son glándulas reproductoras masculinas que producen espermatozoides y hormonas sexuales." },
-      { palabra: "Testosterona", definicion: "La testosterona es una hormona sexual masculina que desempeña un papel fundamental en el desarrollo sexual y características secundarias masculinas." },
-      { palabra: "Ternura", definicion: "La ternura es un sentimiento de afecto suave y cariñoso, típicamente asociado con relaciones íntimas y emocionales." },
-      { palabra: "Tabú", definicion: "Un tabú es una práctica, objeto o idea prohibida o considerada inaceptable dentro de una determinada cultura o sociedad." },
+      { palabra: "Testículos", definicion: "Glándulas reproductoras masculinas que producen espermatozoides y hormonas sexuales." },
+      { palabra: "Testosterona", definicion: "Hormona sexual masculina que desempeña un papel fundamental en el desarrollo sexual y características secundarias masculinas." },
+      { palabra: "Ternura", definicion: "Sentimiento de afecto suave y cariñoso, típicamente asociado con relaciones íntimas y emocionales." },
+      { palabra: "Tabú", definicion: "Práctica, objeto o idea prohibida o considerada inaceptable dentro de una determinada cultura o sociedad." },
       { palabra: "Transexual", definicion: "Persona aquella cuya identidad de género difiere de su sexo asignado al nacer, y que puede buscar modificar su cuerpo mediante terapia hormonal o cirugía." }
   ],
  U: [
@@ -136,7 +136,7 @@ N: [
   ],
   V: [
       { palabra: "Vagina", definicion: "Canal muscular elástico en el aparato reproductor que conecta el útero con el exterior del cuerpo y sirve como canal para el flujo menstrual, el parto y el coito." },
-      { palabra: "Vulva", definicion: "La vulva es la parte externa de los órganos genitales femeninos, que incluye los labios mayores, los labios menores, el clítoris y la abertura vaginal." },
+      { palabra: "Vulva", definicion: "Parte externa de los órganos genitales femeninos, que incluye los labios mayores, los labios menores, el clítoris y la abertura vaginal." },
       { palabra: "Vasectomía", definicion: "Procedimiento quirúrgico permanente, en el cual se cortan o bloquean los conductos deferentes para evitar la liberación de espermatozoides." },
       { palabra: "Vello", definicion: "Pelo que crece en diversas partes del cuerpo, incluyendo las áreas genitales, y puede tener una función en la protección y la atracción sexual." },
       { palabra: "Voyerismo", definicion: "Comportamiento sexual caracterizado por la excitación al observar a otras personas mientras se desvisten, están desnudas sin consentimiento." }

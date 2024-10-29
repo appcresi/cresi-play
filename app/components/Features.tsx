@@ -1,9 +1,7 @@
 import {
 	IconAB2,
 	IconCards,
-	IconPresentation,
-	IconSchool,
-	IconHeart
+	IconPresentation
 } from "@tabler/icons-react";
 import Button from "../../components/Button"
 import Link from "next/link";
