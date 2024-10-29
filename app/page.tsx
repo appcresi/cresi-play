@@ -13,7 +13,9 @@ import {
   IconTrendingUp
 } from '@tabler/icons-react'
 
-import cresiLogo from '@/public/cresi-logo.webp'
+import Features from "./components/Features";
+
+
 import illustration from '@/public/illustration-1.jpg'
 
 export const metadata = {
@@ -24,46 +26,29 @@ export const metadata = {
 export default function Home (): JSX.Element {
   return (
     <main className='mx-auto px-4 max-w-5xl flex flex-col items-center gap-8'>
-      <section className='min-h-screen flex flex-col items-center justify-center lg:w-full lg:flex-row lg:justify-evenly'>
-        <span className='p-4 flex flex-col items-center gap-8 text-center'>
-          <div className='flex gap-2 items-center'>
-            <p className='text-gray-600'>Un proyecto de</p>
-            <Image src={cresiLogo} alt='Logotipo de CrESI' width={64} />
-          </div>
-
-          <h1 className='text-6xl font-bold text-primary'>Aprendé jugando</h1>
-          <h2 className='text-xl text-gray-600 lg:max-w-[48ch]'>
-            A través de juegos de trivia, vas a poder ampliar tus conocimientos
-            en diversas temáticas de una forma interactiva y divertida.
+       <section className='flex flex-col gap-4 justify-start items-start pt-8 pb-1'>
+          <p className="font-medium text-primary">
+            Aprender más, para cuidarse mejor
+          </p>
+          <h1 className='mb-2 text-6xl font-bold'>Aprendé Jugando</h1>
+          <h2 className='mb-2 text-xl text-gray-700'>
+            Nunca aprender fue tan fácil como con CrESI. Nuestra plataforma está diseñada para que, 
+            a través de juegos de trivia, puedas adquirir nuevos conocimientos de manera entretenida y accesible.
+            Ya no se trata de estudiar de forma tradicional, sino de sumergirte en una experiencia interactiva que
+             te permitirá descubrir y reforzar conceptos clave sobre diversas temáticas.
           </h2>
-
-          <Link
-            href='/trivias'
-            className='px-4 py-2 flex gap-2 justify-center items-center rounded-full font-bold bg-primary text-primary-light'
-          >
-            Comenzá a jugar
-            <IconArrowNarrowRight />
-          </Link>
 
           <a
             href='https://cresi.com.ar'
             target='_blank'
             rel='noreferrer'
-            className='flex items-center gap-1 underline text-primary-dark'
+            className='px-2 py-1 w-fit flex items-center gap-1 font-semibold rounded-full bg-primary-light text-primary-dark mb-2'
           >
             ¿Quiénes somos?
             <IconExternalLink />
           </a>
-        </span>
-
-        <Image
-          src={illustration}
-          alt='Ilustración de personas aprendiendo juntas'
-          width={400}
-          priority
-        />
       </section>
-
+      <Features />
       <section>
         <SectionChip>
           Una nueva experiencia
