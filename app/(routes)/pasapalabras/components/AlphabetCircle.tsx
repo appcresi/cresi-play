@@ -13,7 +13,7 @@ const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters
   const center = 128;
 
   return (
-    <div className="relative w-64 h-64 mx-auto my-10">
+    <div className="relative w-64 h-64">
       <div>
         {letters.map((letter, index) => {
           const angle = (index / letters.length) * 2 * Math.PI;
@@ -24,12 +24,15 @@ const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters
           const isPassed = passedLetters.has(letter);
           const isCurrent = letter === currentLetter;
 
+          // Define the class names based on the conditions
+          const classNames = `absolute flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-300 
+            ${isGuessed ? 'bg-green-500 text-white' : isPassed ? 'bg-gray-500 text-white' : 'bg-violet-500'}
+            ${isCurrent && isIncorrect ? 'bg-red-500 text-white' : ''}`;
+
           return (
             <div
               key={letter}
-              className={`absolute flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-300 
-                ${isGuessed ? 'bg-green-500 text-white' : isPassed ? 'bg-gray-500 text-white' : 'bg-violet-500'}
-                ${isCurrent && isIncorrect ? 'bg-red-500 text-white' : ''}`}
+              className={classNames}
               style={{ left: `${x}px`, top: `${y}px` }}
             >
               {letter}

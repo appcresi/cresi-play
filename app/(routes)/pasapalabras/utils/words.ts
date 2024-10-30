@@ -6,13 +6,19 @@ export const palabras = {
   { palabra: "Abstinencia", definicion: "Decisión voluntaria de abstenerse de participar en actividades sexuales." },
   { palabra: "Ano", definicion: "Orificio de salida del tracto digestivo en el cuerpo humano." },
   { palabra: "Anticonceptivo", definicion: "Sustancia o dispositivo utilizado para prevenir el embarazo durante las relaciones sexuales." },
-  { palabra: "Asexualidad", definicion: "Orientación sexual caracterizada por la falta de atracción sexual hacia otros." }
+  { palabra: "Autonomía", definicion: "Capacidad de tomar decisiones y cuidar de uno mismo, aprendiendo a decir lo que quieres y a proteger tu cuerpo."},
+  { palabra: "Asexualidad", definicion: "Orientación sexual caracterizada por la falta de atracción sexual hacia otros." },
+  { palabra: "Acoso", definicion: "Comportamiento de molestar o incomodar a alguien de manera repetida, que no es correcto y que se debe detener." },
+  { palabra: "Adolescencia", definicion: "Etapa de la vida en la que los niños crecen y se convierten en jóvenes, donde experimentan muchos cambios en su cuerpo y emociones." },
+  { palabra: "Amistad", definicion: "Relación especial entre dos o más personas que se cuidan y se apoyan mutuamente, compartiendo buenos momentos." }
 ],
 B: [
   { palabra: "Beso", definicion: "Un acto de intimidad y afecto que involucra el contacto de los labios entre dos personas como expresión de amor, deseo o respeto." },
   { palabra: "Bisexualidad", definicion: "Orientación sexual en la que una persona se siente atraída tanto por individuos de su propio género como por individuos del otro género." },
   { palabra: "Belleza", definicion: "Atributo subjetivo que se refiere a la apariencia física atractiva de una persona, que puede influir en la atracción sexual y emocional." },
   { palabra: "Bienestar", definicion: "Estado de satisfacción y salud física y emocional que permite sentirse feliz y pleno." },
+  { palabra: "Barreras", definicion: "Medidas de protección, como los preservativos, que ayudan a prevenir embarazos e infecciones al tener relaciones sexuales." },
+  { palabra: "Bullying", definicion: " Comportamiento de molestar o intimidar a otros niños en la escuela, que debe ser detenido para crear un ambiente seguro." },
   { palabra: "Biología", definicion: "La ciencia que estudia los organismos vivos y sus procesos vitales, incluyendo aquellos relacionados con la sexualidad humana." }
 ],
 C: [

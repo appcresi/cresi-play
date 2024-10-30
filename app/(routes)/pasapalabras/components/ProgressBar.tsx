@@ -7,14 +7,13 @@ interface ProgressBarProps {
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress, total }) => {
   return (
-    <div className="my-4">
-      <div className="bg-gray-200 rounded-full">
-        <div
-          className="bg-blue-500 rounded-full h-2"
-          style={{ width: `${(progress / total) * 100}%` }}
-        />
+    <div className="flex flex-col items-center">
+      <p className="font-medium text-lg">Palabras</p>
+      <div className="relative w-16 h-16 flex items-center justify-center">
+        <div className='flex items-center justify-center absolute inset-0 text-2xl font-semibold'>
+          {progress}/{total}
+        </div>
       </div>
-      <p className="text-center">{progress} de {total} palabras</p>
     </div>
   );
 };

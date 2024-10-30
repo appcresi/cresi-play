@@ -21,32 +21,38 @@ const Home = () => {
   const [progress, setProgress] = useState(0);
   const [isIncorrect, setIsIncorrect] = useState(false);
   const [isNightMode, setIsNightMode] = useState(false);
-  
-  // Array para almacenar las palabras ya jugadas
   const [usedWords, setUsedWords] = useState<{ palabra: string; definicion: string }[]>([]);
+  
+  const [timeLeft, setTimeLeft] = useState(30); // Timer state
+  const [timerActive, setTimerActive] = useState(false); // Timer control state
 
   const maxWords = 20;
 
-  // Función para obtener la siguiente palabra
   const getNextWord = () => {
     const currentLetter = letters[currentLetterIndex];
     const wordsForLetter = palabras[currentLetter];
-
-    // Filtrar las palabras que ya han sido usadas
     const unusedWords = wordsForLetter.filter(word => !usedWords.some(uw => uw.palabra === word.palabra));
 
     if (unusedWords.length > 0) {
       const randomIndex = Math.floor(Math.random() * unusedWords.length);
       setCurrentWord(unusedWords[randomIndex]);
-      setUsedWords(prev => [...prev, unusedWords[randomIndex]]); // Agregar palabra usada
+      setUsedWords(prev => [...prev, unusedWords[randomIndex]]);
+      resetTimer(); // Reset timer when getting a new word
     } else {
       moveToNextLetter();
     }
   };
 
+  const resetTimer = () => {
+    setTimeLeft(30);
+    setTimerActive(true);
+  };
+
   const moveToNextLetter = () => {
     setCurrentLetterIndex((prevIndex) => (prevIndex + 1) % letters.length);
     setIsIncorrect(false);
+    setProgress((prev) => prev + 1);
+    resetTimer(); // Reset timer when moving to next letter
   };
 
   const handleSubmit = (value: string) => {
@@ -58,9 +64,11 @@ const Home = () => {
     } else {
       toast.error('Incorrecto. Intenta de nuevo.');
       setIsIncorrect(true);
+      // Mueve a la siguiente letra después de un breve retraso
+      setTimeout(() => {
+        moveToNextLetter();
+      }, 1000); // Espera 1 segundo antes de mover a la siguiente letra
     }
-    setProgress((prev) => prev + 1);
-
     if (progress + 1 === maxWords) {
       handleGameEnd();
     }
@@ -70,8 +78,6 @@ const Home = () => {
     const currentLetter = letters[currentLetterIndex];
     setPassedLetters((prev) => new Set(prev).add(currentLetter));
     moveToNextLetter();
-    setProgress((prev) => prev + 1);
-
     if (progress + 1 === maxWords) {
       handleGameEnd();
     }
@@ -79,10 +85,7 @@ const Home = () => {
 
   const handleHelp = () => {
     if (currentWord) {
-      const scrambledLetters = currentWord.palabra
-        .split('')
-        .sort(() => Math.random() - 0.5)
-        .join('-');
+      const scrambledLetters = currentWord.palabra.split('').sort(() => Math.random() - 0.5).join('-');
       toast.success(`Pista: La palabra tiene ${currentWord.palabra.length} letras: ${scrambledLetters}`);
     }
   };
@@ -103,8 +106,8 @@ const Home = () => {
     setScore(0);
     setProgress(0);
     setIsIncorrect(false);
-    setUsedWords([]); // Reiniciar el array de palabras usadas
-    getNextWord();
+    setUsedWords([]);
+    resetTimer(); // Reset timer when resetting the game
   };
 
   const toggleNightMode = () => {
@@ -125,13 +128,58 @@ const Home = () => {
     getNextWord();
   }, [currentLetterIndex]);
 
+  // Timer logic
+  useEffect(() => {
+    if (!timerActive) return;
+
+    if (timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+      return () => clearTimeout(timerId);
+    } else {
+      handlePass(); // Automatically pass if time runs out
+      setTimerActive(false); // Stop timer
+    }
+  }, [timerActive, timeLeft]);
+
   return (
-    <main
-        className={`px-4 min-h-screen flex flex-col justify-center ${
-          isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'
-        } lg:gap-8 lg:justify-center`}
-      >
-      <section className='flex flex-col gap-4 justify-center items-center pt-8 pb-1 text-center'>
+    <main className={`px-4 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-8`}>
+      <div className="flex flex-col lg:flex-row gap-4 items-center justify-center">
+        <ScoreCounter score={score} />
+        <ProgressBar progress={progress} total={maxWords} />
+        {/* Timer Display */}
+        <div className="flex flex-col items-center"> 
+          <p className="font-medium text-lg">Tiempo</p>
+          <div className="relative w-16 h-16">
+            <svg className="absolute inset-0" viewBox="0 0 24 24">
+              <circle className="text-gray-300" strokeWidth="4" stroke="currentColor" fill="none" cx="12" cy="12" r="10" />
+              <circle
+                className="text-current"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray="62.83185307179586"
+                strokeDashoffset={62.83185307179586 * (timeLeft / 30)} // Calculate the dash offset
+                stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
+                fill="none"
+                cx="12"
+                cy="12"
+                r="10"
+                style={{
+                  transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
+                }}
+              />
+            </svg>
+            <div className="flex items-center justify-center absolute inset-0 text-2xl font-semibold">
+              {timeLeft}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed w-full top-8 lg:static text-center">
+        {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
+      </div>
+
+      <section className="flex flex-col gap-8 items-center pt-8 pb-8 text-center">
         <div className="relative flex justify-center items-center">
           <AlphabetCircle 
             letters={letters} 
@@ -140,48 +188,18 @@ const Home = () => {
             isIncorrect={isIncorrect} 
             currentLetter={letters[currentLetterIndex]} 
           />
-          {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
+          <div className="absolute inset-0 flex justify-center items-center">
+            {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
+          </div>
         </div>
-        {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
-        <ScoreCounter score={score} />
-        <ProgressBar progress={progress} total={maxWords} />
+
         <Toaster />
 
-        {/* Floating Night Mode Button (bottom-right) */}
-        <button
-          type='button'
-          onClick={toggleNightMode}
-          className='fixed bottom-2 right-4 py-1 px-2 bg-gray-900 rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
-        >
-          {isNightMode ? (
-            <Image
-              src='/sun-mode.svg'
-              alt='Modo Diurno'
-              width={18}
-              height={12}
-            />
-          ) : (
-            <Image
-              src='/night-mode.svg'
-              alt='Modo Nocturno'
-              width={18}
-              height={12}
-            />
-          )}
+        <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-2 px-3 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
+          <Image src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} alt="Modo" width={20} height={20} />
         </button>
-
-        {/* Floating Fullscreen Button (hidden on mobile) */}
-        <button
-          type='button'
-          onClick={handleFullscreen}
-          className='hidden lg:block fixed bottom-2 left-4 py-1 px-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
-        >
-          <Image
-            src='/full-screen.svg'
-            alt='Pantalla Completa'
-            width={18}
-            height={12}
-          />
+        <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-2 px-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
+          <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
         </button>
       </section>
     </main>
