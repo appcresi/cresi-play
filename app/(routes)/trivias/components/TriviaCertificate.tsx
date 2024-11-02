@@ -75,7 +75,7 @@ export default function TriviaCertificate (): JSX.Element {
             </div>
 
             <div>
-              <p className='my-2 text-lg'>Ticiano Morvan</p>
+              <p className='my-2 text-lg'>Gladys Cabral</p>
               <div className='w-48 h-1 rounded-full bg-primary-dark' />
               <p className='my-1 text-gray-600'>CTO</p>
             </div>

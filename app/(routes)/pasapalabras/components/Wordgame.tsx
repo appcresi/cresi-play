@@ -7,6 +7,7 @@ import InputField from './InputField';
 import ScoreCounter from './ScoreCounter';
 import ProgressBar from './ProgressBar';
 import toast, { Toaster } from 'react-hot-toast';
+import FinalReport from './FinalReport'; // Importa el nuevo componente
 import Image from 'next/image';
 
 type LetterKey = keyof typeof palabras;
@@ -22,10 +23,12 @@ const Home = () => {
   const [isIncorrect, setIsIncorrect] = useState(false);
   const [isNightMode, setIsNightMode] = useState(false);
   const [usedWords, setUsedWords] = useState<{ palabra: string; definicion: string }[]>([]);
-  
+  const [incorrectLetters, setIncorrectLetters] = useState<Set<string>>(new Set());
+  const [showFinalReport, setShowFinalReport] = useState(false); // Estado para mostrar el informe final
+  const [correctWords, setCorrectWords] = useState<{ palabra: string; definicion: string }[]>([]); // Palabras correctas
+  const [incorrectWords, setIncorrectWords] = useState<{ palabra: string; definicion: string }[]>([]); // Palabras incorrectas
   const [timeLeft, setTimeLeft] = useState(30); // Timer state
   const [timerActive, setTimerActive] = useState(false); // Timer control state
-
   const maxWords = 20;
 
   const getNextWord = () => {
@@ -52,35 +55,35 @@ const Home = () => {
     setCurrentLetterIndex((prevIndex) => (prevIndex + 1) % letters.length);
     setIsIncorrect(false);
     setProgress((prev) => prev + 1);
-    resetTimer(); // Reset timer when moving to next letter
   };
 
-  const [incorrectLetters, setIncorrectLetters] = useState<Set<string>>(new Set());
 
-// Modificar handleSubmit para actualizar incorrectLetters en caso de error
-const handleSubmit = (value: string) => {
-  if (!currentWord) return;
-  if (currentWord && value.toLowerCase() === currentWord.palabra.toLowerCase()) {
-    setGuessedLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
-    setScore((prev) => prev + 1);
-    toast.success('¡Correcto!');
-    moveToNextLetter();
-  } else {
-    toast.error('Incorrecto. Intenta de nuevo.');
-    setIncorrectLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
-    setIsIncorrect(true);
+
+  const handleSubmit = (value: string) => {
+    if (!currentWord) return;
+    const cleanedInput = value.replace(/\s+/g, '').toLowerCase();
     
-    // Mueve a la siguiente letra después de un breve retraso
-    setTimeout(() => {
+    if (cleanedInput === currentWord.palabra.toLowerCase()) {
+      setGuessedLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
+      setScore((prev) => prev + 1);
+      setCorrectWords((prev) => [...prev, currentWord]); // Agregar palabra correcta
+      toast.success('¡Correcto!');
       moveToNextLetter();
-    }, 1000); // Espera 1 segundo antes de mover a la siguiente letra
-  }
+    } else {
+      toast.error('Incorrecto. Intenta de nuevo.');
+      setIncorrectLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
+      setIncorrectWords((prev) => [...prev, currentWord]); // Agregar palabra incorrecta
+      setIsIncorrect(true);
+      
+      setTimeout(() => {
+        moveToNextLetter();
+      }, 1000);
+    }
 
-  if (progress + 1 === maxWords) {
-    handleGameEnd();
-  }
-};
-
+    if (progress + 1 === maxWords) {
+      handleGameEnd();
+    }
+  };
 
   const handlePass = () => {
     const currentLetter = letters[currentLetterIndex];
@@ -90,7 +93,6 @@ const handleSubmit = (value: string) => {
       handleGameEnd();
     }
   };
-
   const handleHelp = () => {
     if (currentWord) {
       const scrambledLetters = currentWord.palabra.split('').sort(() => Math.random() - 0.5).join('-');
@@ -99,25 +101,32 @@ const handleSubmit = (value: string) => {
   };
 
   const handleGameEnd = () => {
-    const playAgain = window.confirm('¡Has completado las 20 palabras! ¿Quieres jugar otra vez?');
-    if (playAgain) {
-      resetGame();
-    } else {
-      window.location.href = '/';
-    }
+    setShowFinalReport(true); // Muestra el informe final
   };
 
   const resetGame = () => {
     setCurrentLetterIndex(0);
-    setGuessedLetters(new Set()); // Limpia las letras adivinadas
-    setPassedLetters(new Set());  // Limpia las letras pasadas
-    setIncorrectLetters(new Set()); // Limpia las letras incorrectas
+    setGuessedLetters(new Set());
+    setPassedLetters(new Set());
+    setIncorrectLetters(new Set());
     setScore(0);
     setProgress(0);
     setIsIncorrect(false);
     setUsedWords([]);
+    setShowFinalReport(false);
+    getNextWord(); // Get the first word for the new game
     resetTimer(); // Reinicia el temporizador
   };
+
+  const handlePlayAgain = () => {
+    resetGame();
+    setShowFinalReport(false); // Oculta el informe final al reiniciar
+  };
+
+  const handleGoBack = () => {
+    window.location.href = '/'; // Lógica para volver a la página anterior
+  };
+
 
   const toggleNightMode = () => {
     setIsNightMode((prev) => !prev);
@@ -137,7 +146,7 @@ const handleSubmit = (value: string) => {
     getNextWord();
   }, [currentLetterIndex]);
 
-  // Timer logic
+// Timer logic
   useEffect(() => {
     if (!timerActive) return;
 
@@ -151,59 +160,71 @@ const handleSubmit = (value: string) => {
   }, [timerActive, timeLeft]);
 
   return (
-    <main className={`px-2 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-4`}>
-      <div className="flex flex-row gap-2 items-center justify-center">
-        <ScoreCounter score={score} />
-        <ProgressBar progress={progress} total={maxWords} />
-        {/* Timer Display */}
-        <div className="flex flex-col items-center">
-          <p className="font-medium text-base sm:text-xs md:text-sm">Tiempo</p> {/* Ajuste de tamaño de letra */}
-          <div className="relative w-10 h-10 sm:w-8 sm:h-8 md:w-10 md:h-10">
-            <svg className="absolute inset-0" viewBox="0 0 24 24">
-              <circle className="text-gray-300" strokeWidth="3" stroke="currentColor" fill="none" cx="12" cy="12" r="9" />
-              <circle
-                className="text-current"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray="56.548667764616276" // Update the dash array to match the new radius
-                strokeDashoffset={56.548667764616276 * (timeLeft / 30)} // Update the dash offset calculation
-                stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
-                fill="none"
-                cx="12"
-                cy="12"
-                r="9" // Update the radius to match the smaller size
-                style={{
-                  transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
-                }}
-              />
-            </svg>
-            <div className="flex items-center justify-center absolute inset-0 text-lg sm:text-base md:text-xl font-semibold">
-              {timeLeft}
+    <main className={`px-2 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'text-black'} gap-4`}>
+      {/* Si el juego ha terminado, muestra el informe final */}
+      {showFinalReport ? (
+        <FinalReport 
+          correctWords={correctWords}
+          incorrectWords={incorrectWords}
+          onPlayAgain={handlePlayAgain}
+          onGoBack={handleGoBack}
+        />
+      ) : (
+        <>
+          <div className="flex flex-row gap-2 items-center justify-center">
+            <ScoreCounter score={score} />
+            <ProgressBar progress={progress} total={maxWords} />
+            {/* Timer Display */}
+            <div className="flex flex-col items-center">
+              <p className="font-medium text-base sm:text-xs md:text-sm">Tiempo</p> {/* Ajuste de tamaño de letra */}
+              <div className="relative w-10 h-10 sm:w-8 sm:h-8 md:w-10 md:h-10">
+                <svg className="absolute inset-0" viewBox="0 0 24 24">
+                  <circle className="text-gray-300" strokeWidth="3" stroke="currentColor" fill="none" cx="12" cy="12" r="9" />
+                  <circle
+                    className="text-current"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray="56.548667764616276" // Update the dash array to match the new radius
+                    strokeDashoffset={56.548667764616276 * (timeLeft / 30)} // Update the dash offset calculation
+                    stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
+                    fill="none"
+                    cx="12"
+                    cy="12"
+                    r="9" // Update the radius to match the smaller size
+                    style={{
+                      transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
+                    }}
+                  />
+                </svg>
+                <div className="flex items-center justify-center absolute inset-0 text-lg sm:text-base md:text-xl font-semibold">
+                  {timeLeft}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="text-center p-2 sm:p-1 border-2 border-violet-600 rounded-lg mt-1 mb-2">
-        {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
-      </div>
-
-      <section className="flex flex-col gap-4 items-center pt-4 pb-4 text-center">
-        <div className="relative flex justify-center items-center">
-          <AlphabetCircle 
-            letters={letters} 
-            guessedLetters={guessedLetters} 
-            passedLetters={passedLetters} 
-            incorrectLetters={incorrectLetters} 
-            currentLetter={letters[currentLetterIndex]} 
-          />
-
-          <div className="absolute inset-0 flex justify-center items-center">
-            {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
+          <div className="text-center p-2 sm:p-1 border-2 border-violet-600 rounded-lg mt-1 mb-2">
+            {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
           </div>
-        </div>
 
-        <Toaster />
+          <section className="flex flex-col gap-4 items-center pt-4 pb-4 text-center">
+            <div className="relative flex justify-center items-center">
+              <AlphabetCircle 
+                letters={letters} 
+                guessedLetters={guessedLetters} 
+                passedLetters={passedLetters} 
+                incorrectLetters={incorrectLetters} 
+                currentLetter={letters[currentLetterIndex]} 
+              />
+              <div className="absolute inset-0 flex justify-center items-center">
+                {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
+              </div>
+            </div>
+
+            <Toaster />
+          </section>
+        </>
+      )}
 
         <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-1 px-2 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
           <Image src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} alt="Modo" width={20} height={20} />
@@ -211,10 +232,7 @@ const handleSubmit = (value: string) => {
         <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-1 px-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
           <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
         </button>
-      </section>
     </main>
-
-
   );
 };
 
