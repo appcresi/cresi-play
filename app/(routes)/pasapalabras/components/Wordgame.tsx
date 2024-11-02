@@ -151,44 +151,44 @@ const handleSubmit = (value: string) => {
   }, [timerActive, timeLeft]);
 
   return (
-    <main className={`px-4 h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-8 overflow-hidden relative`}>
-      <div className="flex flex-row gap-4 items-center justify-center">
+    <main className={`px-2 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-4`}>
+      <div className="flex flex-row gap-2 items-center justify-center">
         <ScoreCounter score={score} />
         <ProgressBar progress={progress} total={maxWords} />
         {/* Timer Display */}
         <div className="flex flex-col items-center">
-          <p className="font-medium text-lg">Tiempo</p>
-          <div className="relative w-16 h-16">
+          <p className="font-medium text-base sm:text-xs md:text-sm">Tiempo</p> {/* Ajuste de tamaño de letra */}
+          <div className="relative w-10 h-10 sm:w-8 sm:h-8 md:w-10 md:h-10">
             <svg className="absolute inset-0" viewBox="0 0 24 24">
-              <circle className="text-gray-300" strokeWidth="4" stroke="currentColor" fill="none" cx="12" cy="12" r="10" />
+              <circle className="text-gray-300" strokeWidth="3" stroke="currentColor" fill="none" cx="12" cy="12" r="9" />
               <circle
                 className="text-current"
-                strokeWidth="4"
+                strokeWidth="3"
                 strokeLinecap="round"
-                strokeDasharray="62.83185307179586"
-                strokeDashoffset={62.83185307179586 * (timeLeft / 30)} // Calculate the dash offset
+                strokeDasharray="56.548667764616276" // Update the dash array to match the new radius
+                strokeDashoffset={56.548667764616276 * (timeLeft / 30)} // Update the dash offset calculation
                 stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
                 fill="none"
                 cx="12"
                 cy="12"
-                r="10"
+                r="9" // Update the radius to match the smaller size
                 style={{
                   transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
                 }}
               />
             </svg>
-            <div className="flex items-center justify-center absolute inset-0 text-2xl font-semibold">
+            <div className="flex items-center justify-center absolute inset-0 text-lg sm:text-base md:text-xl font-semibold">
               {timeLeft}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="text-center p-6 border-2 border-violet-600 rounded-lg mt-4">
+      <div className="text-center p-2 sm:p-1 border-2 border-violet-600 rounded-lg mt-1 mb-2">
         {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
       </div>
 
-      <section className="flex flex-col gap-8 items-center pt-8 pb-8 text-center overflow-y-auto">
+      <section className="flex flex-col gap-4 items-center pt-4 pb-4 text-center">
         <div className="relative flex justify-center items-center">
           <AlphabetCircle 
             letters={letters} 
@@ -205,14 +205,15 @@ const handleSubmit = (value: string) => {
 
         <Toaster />
 
-        <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-2 px-3 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
+        <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-1 px-2 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
           <Image src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} alt="Modo" width={20} height={20} />
         </button>
-        <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-2 px-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
+        <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-1 px-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
           <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
         </button>
       </section>
     </main>
+
 
   );
 };
