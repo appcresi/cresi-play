@@ -151,12 +151,12 @@ const handleSubmit = (value: string) => {
   }, [timerActive, timeLeft]);
 
   return (
-    <main className={`px-4 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-8`}>
+    <main className={`px-4 h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-8 overflow-hidden relative`}>
       <div className="flex flex-row gap-4 items-center justify-center">
         <ScoreCounter score={score} />
         <ProgressBar progress={progress} total={maxWords} />
         {/* Timer Display */}
-        <div className="flex flex-col items-center"> 
+        <div className="flex flex-col items-center">
           <p className="font-medium text-lg">Tiempo</p>
           <div className="relative w-16 h-16">
             <svg className="absolute inset-0" viewBox="0 0 24 24">
@@ -188,15 +188,15 @@ const handleSubmit = (value: string) => {
         {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
       </div>
 
-      <section className="flex flex-col gap-8 items-center pt-8 pb-8 text-center">
+      <section className="flex flex-col gap-8 items-center pt-8 pb-8 text-center overflow-y-auto">
         <div className="relative flex justify-center items-center">
-        <AlphabetCircle 
-          letters={letters} 
-          guessedLetters={guessedLetters} 
-          passedLetters={passedLetters} 
-          incorrectLetters={incorrectLetters} 
-          currentLetter={letters[currentLetterIndex]} 
-        />
+          <AlphabetCircle 
+            letters={letters} 
+            guessedLetters={guessedLetters} 
+            passedLetters={passedLetters} 
+            incorrectLetters={incorrectLetters} 
+            currentLetter={letters[currentLetterIndex]} 
+          />
 
           <div className="absolute inset-0 flex justify-center items-center">
             {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
@@ -213,6 +213,7 @@ const handleSubmit = (value: string) => {
         </button>
       </section>
     </main>
+
   );
 };
 
