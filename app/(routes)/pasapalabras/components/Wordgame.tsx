@@ -55,24 +55,32 @@ const Home = () => {
     resetTimer(); // Reset timer when moving to next letter
   };
 
-  const handleSubmit = (value: string) => {
-    if (currentWord && value.toLowerCase() === currentWord.palabra.toLowerCase()) {
-      setGuessedLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
-      setScore((prev) => prev + 1);
-      toast.success('¡Correcto!');
+  const [incorrectLetters, setIncorrectLetters] = useState<Set<string>>(new Set());
+
+// Modificar handleSubmit para actualizar incorrectLetters en caso de error
+const handleSubmit = (value: string) => {
+  if (!currentWord) return;
+  if (currentWord && value.toLowerCase() === currentWord.palabra.toLowerCase()) {
+    setGuessedLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
+    setScore((prev) => prev + 1);
+    toast.success('¡Correcto!');
+    moveToNextLetter();
+  } else {
+    toast.error('Incorrecto. Intenta de nuevo.');
+    setIncorrectLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
+    setIsIncorrect(true);
+    
+    // Mueve a la siguiente letra después de un breve retraso
+    setTimeout(() => {
       moveToNextLetter();
-    } else {
-      toast.error('Incorrecto. Intenta de nuevo.');
-      setIsIncorrect(true);
-      // Mueve a la siguiente letra después de un breve retraso
-      setTimeout(() => {
-        moveToNextLetter();
-      }, 1000); // Espera 1 segundo antes de mover a la siguiente letra
-    }
-    if (progress + 1 === maxWords) {
-      handleGameEnd();
-    }
-  };
+    }, 1000); // Espera 1 segundo antes de mover a la siguiente letra
+  }
+
+  if (progress + 1 === maxWords) {
+    handleGameEnd();
+  }
+};
+
 
   const handlePass = () => {
     const currentLetter = letters[currentLetterIndex];
@@ -101,13 +109,14 @@ const Home = () => {
 
   const resetGame = () => {
     setCurrentLetterIndex(0);
-    setGuessedLetters(new Set());
-    setPassedLetters(new Set());
+    setGuessedLetters(new Set()); // Limpia las letras adivinadas
+    setPassedLetters(new Set());  // Limpia las letras pasadas
+    setIncorrectLetters(new Set()); // Limpia las letras incorrectas
     setScore(0);
     setProgress(0);
     setIsIncorrect(false);
     setUsedWords([]);
-    resetTimer(); // Reset timer when resetting the game
+    resetTimer(); // Reinicia el temporizador
   };
 
   const toggleNightMode = () => {
@@ -143,7 +152,7 @@ const Home = () => {
 
   return (
     <main className={`px-4 min-h-screen flex flex-col justify-center ${isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} gap-8`}>
-      <div className="flex flex-col lg:flex-row gap-4 items-center justify-center">
+      <div className="flex flex-row gap-4 items-center justify-center">
         <ScoreCounter score={score} />
         <ProgressBar progress={progress} total={maxWords} />
         {/* Timer Display */}
@@ -175,19 +184,20 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="fixed w-full top-8 lg:static text-center">
+      <div className="text-center p-6 border-2 border-violet-600 rounded-lg mt-4">
         {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
       </div>
 
       <section className="flex flex-col gap-8 items-center pt-8 pb-8 text-center">
         <div className="relative flex justify-center items-center">
-          <AlphabetCircle 
-            letters={letters} 
-            guessedLetters={guessedLetters} 
-            passedLetters={passedLetters}
-            isIncorrect={isIncorrect} 
-            currentLetter={letters[currentLetterIndex]} 
-          />
+        <AlphabetCircle 
+          letters={letters} 
+          guessedLetters={guessedLetters} 
+          passedLetters={passedLetters} 
+          incorrectLetters={incorrectLetters} 
+          currentLetter={letters[currentLetterIndex]} 
+        />
+
           <div className="absolute inset-0 flex justify-center items-center">
             {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
           </div>

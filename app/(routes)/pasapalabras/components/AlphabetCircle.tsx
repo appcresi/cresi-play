@@ -4,11 +4,11 @@ interface AlphabetCircleProps {
   letters: string[];
   guessedLetters: Set<string>;
   passedLetters: Set<string>;
-  isIncorrect: boolean;
+  incorrectLetters: Set<string>;
   currentLetter: string;
 }
 
-const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters, passedLetters, isIncorrect, currentLetter }) => {
+const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters, passedLetters, incorrectLetters, currentLetter }) => {
   const radius = 140;
   const center = 128;
 
@@ -22,12 +22,16 @@ const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters
 
           const isGuessed = guessedLetters.has(letter);
           const isPassed = passedLetters.has(letter);
+          const isIncorrect = incorrectLetters.has(letter);
           const isCurrent = letter === currentLetter;
 
-          // Define the class names based on the conditions
+          // Aplicar el color basado en las condiciones
           const classNames = `absolute flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-300 
-            ${isGuessed ? 'bg-green-500 text-white' : isPassed ? 'bg-gray-500 text-white' : 'bg-violet-500'}
-            ${isCurrent && isIncorrect ? 'bg-red-500 text-white' : ''}`;
+            ${isGuessed ? 'bg-green-500 text-white' : 
+              isPassed ? 'bg-gray-500 text-white' : 
+              isIncorrect ? 'bg-red-500 text-white' : 
+              'bg-violet-500'} 
+            ${isCurrent ? 'text-white' : ''}`;
 
           return (
             <div
