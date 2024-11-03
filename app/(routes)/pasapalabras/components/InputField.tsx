@@ -23,8 +23,8 @@ const InputField: React.FC<InputFieldProps> = ({ onSubmit, onPass, onHelp }) => 
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full max-w-md"
-          placeholder="Ingresa tu respuesta"
+          className="border-b-2 bg-transparent border-violet-200 focus:border-violet-500 p-2 w-4/5 max-w-md text-center outline-none"
+          placeholder="Respuesta"
         />
       </div>
       
@@ -57,7 +57,7 @@ const InputField: React.FC<InputFieldProps> = ({ onSubmit, onPass, onHelp }) => 
 
       {/* Leyenda de cantidad de caracteres */}
       <p className="mt-2 text-sm text-gray-500">
-        Caracteres ingresados: {inputValue.length}
+        Letras: {inputValue.length}
       </p>
     </form>
 

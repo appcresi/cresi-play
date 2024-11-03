@@ -36,11 +36,12 @@ const FinalReport: React.FC<FinalReportProps> = ({
 
   // Message based on performance
   const performanceMessage = percentageCorrect > 65 
-    ? "¡Felicidades! Has obtenido más del 65% de respuestas correctas." 
-    : "¡Ánimo! Puedes mejorar, sigue practicando.";
+    ? "¡Felicidades! Has obtenido más del 65% de respuestas correctas. Hay muchas palabras y definiciones para seguir aprendiendo. ¿Jugamos de nuevo?" 
+    : "¡Ánimo! Puedes mejorar, sigue practicando. Recuerda que lo importante es seguir practicando. ¿Jugamos de nuevo?";
 
   return (
-    <div className="p-2">
+    <section className='p-4 lg:mx-auto lg:max-w-5xl'>
+    <div className="flex flex-wrap justify-center items-center lg:justify-between">
         <span className='flex flex-col gap-4 lg:max-w-[50%]'>
             <span>
                 <h1 className='my-4 text-4xl font-bold'>
@@ -191,6 +192,7 @@ const FinalReport: React.FC<FinalReportProps> = ({
         </button>
       </div>
     </div>
+  </section>
   );
 };
 

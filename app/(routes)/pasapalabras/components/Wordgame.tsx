@@ -171,36 +171,9 @@ const Home = () => {
         />
       ) : (
         <>
-          <div className="flex flex-row gap-2 items-center justify-center">
+          <div className="flex flex-row gap-10 items-center justify-center">
             <ScoreCounter score={score} />
             <ProgressBar progress={progress} total={maxWords} />
-            {/* Timer Display */}
-            <div className="flex flex-col items-center">
-              <p className="font-medium text-base sm:text-xs md:text-sm">Tiempo</p> {/* Ajuste de tamaño de letra */}
-              <div className="relative w-10 h-10 sm:w-8 sm:h-8 md:w-10 md:h-10">
-                <svg className="absolute inset-0" viewBox="0 0 24 24">
-                  <circle className="text-gray-300" strokeWidth="3" stroke="currentColor" fill="none" cx="12" cy="12" r="9" />
-                  <circle
-                    className="text-current"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeDasharray="56.548667764616276" // Update the dash array to match the new radius
-                    strokeDashoffset={56.548667764616276 * (timeLeft / 30)} // Update the dash offset calculation
-                    stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
-                    fill="none"
-                    cx="12"
-                    cy="12"
-                    r="9" // Update the radius to match the smaller size
-                    style={{
-                      transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
-                    }}
-                  />
-                </svg>
-                <div className="flex items-center justify-center absolute inset-0 text-lg sm:text-base md:text-xl font-semibold">
-                  {timeLeft}
-                </div>
-              </div>
-            </div>
           </div>
 
           <div className="text-center p-2 sm:p-1 border-2 border-violet-600 rounded-lg mt-1 mb-2">
@@ -209,6 +182,32 @@ const Home = () => {
 
           <section className="flex flex-col gap-4 items-center pt-4 pb-4 text-center">
             <div className="relative flex justify-center items-center">
+              {/* Timer circle wrapper */}
+              <div className="absolute w-56 h-56 sm:w-48 sm:h-48 md:w-56 md:h-56 flex justify-center items-center">
+                <svg className="absolute inset-0" viewBox="0 0 80 80">
+                  <circle className="text-gray-300" strokeWidth="4" stroke="currentColor" fill="none" cx="40" cy="40" r="34" />
+                  <circle
+                    className="text-current"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="213.628"
+                    strokeDashoffset={213.628 * (timeLeft / 30)}
+                    stroke={timeLeft > 20 ? "green" : timeLeft > 10 ? "orange" : "red"}
+                    fill="none"
+                    cx="40"
+                    cy="40"
+                    r="34"
+                    style={{
+                      transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
+                    }}
+                  />
+                </svg>
+                <div className="absolute bottom-4 flex items-center justify-center text-xl sm:text-lg md:text-2xl font-semibold">
+                  {timeLeft}
+                </div>
+              </div>
+
+              {/* Alphabet circle inside the timer circle */}
               <AlphabetCircle 
                 letters={letters} 
                 guessedLetters={guessedLetters} 
@@ -216,23 +215,25 @@ const Home = () => {
                 incorrectLetters={incorrectLetters} 
                 currentLetter={letters[currentLetterIndex]} 
               />
+
               <div className="absolute inset-0 flex justify-center items-center">
                 {currentWord && <InputField onSubmit={handleSubmit} onPass={handlePass} onHelp={handleHelp} />}
               </div>
             </div>
-
             <Toaster />
           </section>
         </>
       )}
 
-        <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-1 px-2 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
-          <Image src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} alt="Modo" width={20} height={20} />
-        </button>
-        <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-1 px-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
-          <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
-        </button>
+      <button onClick={toggleNightMode} className='fixed bottom-4 right-4 py-1 px-2 bg-gray-900 text-white rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'>
+        <Image src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} alt="Modo" width={20} height={20} />
+      </button>
+      <button onClick={handleFullscreen} className='hidden lg:block fixed bottom-4 left-4 py-1 px-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'>
+        <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
+      </button>
     </main>
+
+
   );
 };
 
