@@ -11,6 +11,7 @@ import { getSettings, getTriviaStatus, saveTriviaStatus } from '@/utils/trivia';
 import { DEFAULT_TIME_IN_SECONDS } from '@/utils/constants';
 import TriviaReview from './TriviaReview';
 import Image from 'next/image';
+import Swal from 'sweetalert2';
 
 const OPTION_COLORS: Record<number, string> = {
   0: 'bg-red-500 hover:bg-red-400',
@@ -67,9 +68,21 @@ export default function TriviaGame({
 
       if (answer === items[currentQuestion].question.answer) {
         setScore(score + 1);
-        toast.success('¡Respuesta correcta!', { duration: 1000 });
+        Swal.fire({
+          icon: "success",
+          title: "¡Genial!",
+          text: "¡Respuesta correcta!",
+          showConfirmButton: false,
+          timer: 1500
+        });
       } else {
-        toast.error('¡Respuesta incorrecta!', { duration: 1000 });
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "¡Respuesta incorrecta!",
+          showConfirmButton: false,
+          timer: 1500
+        });
       }
 
       setTimeout(() => {
@@ -240,7 +253,7 @@ export default function TriviaGame({
           </div>
 
           {/* Questions Answered (without circle) */}
-          <div className='flex flex-col items-center'>
+          <div className='flex flex-col items-center' >
             <p className='font-medium text-lg'>Preguntas</p>
             <div className='relative w-16 h-16 flex items-center justify-center'>
               <div className='text-lg font-semibold'>
@@ -257,7 +270,7 @@ export default function TriviaGame({
 
         {/* Current Question */}
         <div className='flex flex-col items-center'>
-          <p className='my-4 text-3xl font-semibold lg:text-4xl text-center'>
+          <p className='my-4 text-3xl font-semibold lg:text-4xl text-center animate-slide-in-right' key={`question-${items[currentQuestion].question.question}`} >
             {items[currentQuestion].question.question}
           </p>
           <div className='flex flex-col gap-2 justify-center lg:min-w-full lg:grid lg:grid-cols-2'>

@@ -17,7 +17,22 @@ const config: Config = {
           dark: colors.violet[900],
           light: colors.violet[100]
         }
-      }
+      },
+			keyframes: {
+				'slide-in-right': {
+				  '0%': { 
+					opacity: '0', 
+					transform: 'translateX(100%)' 
+				  },
+				  '100%': { 
+					opacity: '1', 
+					transform: 'translateX(0)' 
+				  }
+				}
+			  },
+			  animation: {
+				'slide-in-right': 'slide-in-right 0.5s ease-out'
+			  }
     }
   },
   plugins: []

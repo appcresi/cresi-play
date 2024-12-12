@@ -1,7 +1,8 @@
 import {
 	IconAB2,
 	IconCards,
-	IconPresentation
+	IconPresentation,
+	IconHeart
 } from "@tabler/icons-react";
 import Button from "../../components/Button"
 import Link from "next/link";
@@ -27,6 +28,13 @@ const features: Feature[] = [
 			"Descubrí todas las palabra nuevas escondidas detrás de la definición.",
 		icon: <IconAB2	size={32} />,
 		route: "/pasapalabras",
+	},
+	{
+		title: "Simulador de Grooming",
+		description:
+			"Identificá y evitá situaciones de grooming en línea, practicando respuestas seguras.",
+		icon: <IconHeart	size={32} />,
+		route: "/simulador",
 	},
 	{
 		title: "Nuevas Trivias",
