@@ -73,7 +73,7 @@ export default function TriviaGame({
           title: "¡Genial!",
           text: "¡Respuesta correcta!",
           showConfirmButton: false,
-          timer: 1500
+          timer: 500
         });
       } else {
         Swal.fire({
@@ -81,7 +81,7 @@ export default function TriviaGame({
           title: "Oops...",
           text: "¡Respuesta incorrecta!",
           showConfirmButton: false,
-          timer: 1500
+          timer: 500
         });
       }
 
