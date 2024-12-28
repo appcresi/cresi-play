@@ -255,6 +255,11 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [currentLessonData, setCurrentLessonData] = useState<GameLevel | null>(null);
 
+  // Estados para manejo táctil
+  const [touchStartTime, setTouchStartTime] = useState<number>(0);
+  const [touchedWord, setTouchedWord] = useState<Word | null>(null);
+  const [touchedBlankId, setTouchedBlankId] = useState<string | null>(null);
+
   useEffect(() => {
     setIsClient(true);
     const lessonData = gameLevels.find(level => level.title === lessonTitle);
@@ -274,6 +279,40 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     setTextParts(newTextParts);
     setShowFeedback(false);
     setFeedbackMessage('');
+    setIsLevelComplete(false);
+  };
+
+  // Funciones para manejo táctil
+  const handleTouchStart = (
+    e: React.TouchEvent,
+    word: Word | null,
+    blankId?: string
+  ) => {
+    e.preventDefault();
+    setTouchStartTime(Date.now());
+    setTouchedWord(word);
+    if (blankId) {
+      setTouchedBlankId(blankId);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, targetBlankId?: string) => {
+    e.preventDefault();
+    const touchEndTime = Date.now();
+    const touchDuration = touchEndTime - touchStartTime;
+
+    // Solo procesar si el toque fue breve (para evitar scrolling)
+    if (touchDuration < 500 && touchedWord) {
+      if (targetBlankId) {
+        handleDrop(targetBlankId);
+      } else if (touchedBlankId) {
+        handleDropToPool();
+      }
+    }
+
+    // Limpiar estados
+    setTouchedWord(null);
+    setTouchedBlankId(null);
   };
 
   const handleDragStart = (word: Word | null, blankId?: string) => {
@@ -286,13 +325,14 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const handleDrop = (targetBlankId: string) => {
-    if (!draggedWord) return;
+    if (!draggedWord && !touchedWord) return;
+    
+    const wordToMove = draggedWord || touchedWord;
+    if (!wordToMove) return;
 
-    // Find the target blank and check if it already has a word
     const targetBlank = blanks.find(blank => blank.id === targetBlankId);
     if (!targetBlank) return;
 
-    // If there's already a word in the target blank, add it back to the pool
     if (targetBlank.filledWord && targetBlank.filledWordId) {
       const wordToReturn: Word = {
         id: targetBlank.filledWordId,
@@ -302,10 +342,9 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       setWords(prevWords => [...prevWords, wordToReturn]);
     }
 
-    // If we're dragging from another blank, remove the word from that blank
-    if (draggedBlankId) {
+    if (draggedBlankId || touchedBlankId) {
       setBlanks(prevBlanks => prevBlanks.map(blank => {
-        if (blank.id === draggedBlankId) {
+        if (blank.id === (draggedBlankId || touchedBlankId)) {
           return {
             ...blank,
             filledWord: undefined,
@@ -315,17 +354,15 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
         return blank;
       }));
     } else {
-      // Remove the dragged word from the pool only if it came from the pool
-      setWords(prevWords => prevWords.filter(word => word.id !== draggedWord.id));
+      setWords(prevWords => prevWords.filter(word => word.id !== wordToMove.id));
     }
 
-    // Place the dragged word in the target blank
     setBlanks(prevBlanks => prevBlanks.map(blank => {
       if (blank.id === targetBlankId) {
         return {
           ...blank,
-          filledWord: draggedWord.text,
-          filledWordId: draggedWord.id
+          filledWord: wordToMove.text,
+          filledWordId: wordToMove.id
         };
       }
       return blank;
@@ -333,16 +370,22 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
     setDraggedWord(null);
     setDraggedBlankId(null);
+    setTouchedWord(null);
+    setTouchedBlankId(null);
     setShowFeedback(false);
   };
 
   const handleDropToPool = () => {
-    if (!draggedWord || !draggedBlankId) return;
+    if (!draggedWord && !touchedWord) return;
+    if (!draggedBlankId && !touchedBlankId) return;
 
-    setWords(prevWords => [...prevWords, draggedWord]);
+    const wordToReturn = draggedWord || touchedWord;
+    if (!wordToReturn) return;
+
+    setWords(prevWords => [...prevWords, wordToReturn]);
 
     setBlanks(prevBlanks => prevBlanks.map(blank => {
-      if (blank.id === draggedBlankId) {
+      if (blank.id === (draggedBlankId || touchedBlankId)) {
         return {
           ...blank,
           filledWord: undefined,
@@ -354,6 +397,8 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
     setDraggedWord(null);
     setDraggedBlankId(null);
+    setTouchedWord(null);
+    setTouchedBlankId(null);
     setShowFeedback(false);
   };
 
@@ -388,7 +433,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
   const isWordCorrect = (blank: Blank) => {
     if (!blank.filledWord) return null;
-    return blank.correctWord === blank.filledWord;
+    return blank.filledWord === blank.correctWord;
   };
 
   const handleNextLevel = () => {
@@ -398,15 +443,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
         initializeLevel(newLevel, currentLessonData.lecciones);
         return newLevel;
       });
-      setIsLevelComplete(false);
     }
   };
 
   const resetGame = () => {
     setCurrentLevel(0);
     setScore(0);
-    setIsLevelComplete(false);
-    setShowFeedback(false);
     if (currentLessonData) {
       initializeLevel(0, currentLessonData.lecciones);
     }
@@ -418,29 +460,27 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
   return (
     <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-    <div className="space-y-6">
-      {/* Header con información de la lección */}
-      <div className="flex justify-between items-center">
-        <div className="text-xl font-semibold text-violet-600">
-          {currentLessonData.title} - Nivel: {currentLevel + 1}/{currentLessonData.lecciones.length}
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div className="text-xl font-semibold text-violet-600">
+            {currentLessonData.title} - Nivel: {currentLevel + 1}/{currentLessonData.lecciones.length}
+          </div>
+          <div className="text-xl font-semibold text-gray-700">
+            Puntuación: <span className="text-violet-600">{score}</span>
+          </div>
         </div>
-        <div className="text-xl font-semibold text-gray-700">
-          Puntuación: <span className="text-violet-600">{score}</span>
-        </div>
-      </div>
-  
-      {/* Feedback del nivel */}
-      {showFeedback && (
-        <div
-          className={`p-3 rounded text-center ${
+
+        {/* Feedback */}
+        {showFeedback && (
+          <div className={`p-3 rounded text-center ${
             isLevelComplete
               ? 'bg-green-100 text-green-800'
               : 'bg-yellow-100 text-yellow-800'
-          }`}
-        >
-          {feedbackMessage}
-        </div>
-      )}
+          }`}>
+            {feedbackMessage}
+          </div>
+        )}
   
       {/* Texto interactivo con espacios en blanco */}
       <div className="text-lg leading-relaxed text-gray-800">
