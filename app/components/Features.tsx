@@ -37,6 +37,13 @@ const features: Feature[] = [
 		route: "/simulador",
 	},
 	{
+		title: "Completa Palabras",
+		description:
+			"Aprender más sobre sexualidad, completando el texto con la palabra correcta.",
+		icon: <IconHeart	size={32} />,
+		route: "/completapalabras",
+	},
+	{
 		title: "Nuevas Trivias",
 		description:
 			"¡Novedad! Jugá a la nueva trivia incorporada actualmente sobre: ALIMENTACIÓN",

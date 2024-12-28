@@ -7,13 +7,64 @@ import ResponseButtons from './ResponseButtons';
 
 const ChatSimulator: React.FC = () => {
   const [messages, setMessages] = useState<{ content: string; sender: 'user' | 'bot' }[]>([
-    { content: 'Hola, ¿puedes decirme dónde vives?', sender: 'bot' },
+    { content: 'Hola, ¿puedes decirme a qué escuela vas? Así sé si vivimos cerca.', sender: 'bot' },
   ]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [shuffledAnswers, setShuffledAnswers] = useState<any[]>([]);
   const [score, setScore] = useState(0);
   const [isSimulatorComplete, setIsSimulatorComplete] = useState(false);
+  const [lives, setLives] = useState(3);
 
+  const handleResponse = (response: string) => {
+    const correctAnswer = questions[currentQuestionIndex].correctAnswer;
+
+    if (response === correctAnswer) {
+      setScore(prevScore => prevScore + 10);
+      Swal.fire({
+        title: '¡Correcto!',
+        text: `¡Has dado la respuesta correcta! +10 puntos. Puntuación total: ${score + 10}`,
+        icon: 'success',
+        confirmButtonText: 'Genial',
+      });
+    } else {
+      setLives(prevLives => prevLives - 1);
+      Swal.fire({
+        title: '¡Cuidado!',
+        text: 'Podrías estar dando información importante a un desconocido. Mantén siempre tu privacidad.',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+      });
+    }
+
+    setMessages((prev) => [...prev, { content: response, sender: 'user' }]);
+
+    const nextQuestionIndex = currentQuestionIndex + 1;
+
+    if (nextQuestionIndex < questions.length && lives > 0) {
+      setCurrentQuestionIndex(nextQuestionIndex);
+      setMessages((prev) => [
+        ...prev,
+        { content: questions[nextQuestionIndex].question, sender: 'bot' },
+      ]);
+    } else {
+      setIsSimulatorComplete(true);
+      setMessages((prev) => [
+        ...prev,
+        { 
+          content: `Gracias por completar el simulador. Recuerda: tu seguridad en línea es importante. Puntuación final: ${score + 10} puntos.`, 
+          sender: 'bot' 
+        },
+      ]);
+    }
+  };
+
+  const resetSimulator = () => {
+    setMessages([{ content: 'Hola, ¿puedes decirme dónde vives?', sender: 'bot' }]);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setLives(3);
+    setIsSimulatorComplete(false);
+  };
   const questions = [
     {
         question: 'Oye, eres muy genial. ¿En qué escuela estudias? Mis papás dicen que conocer nuevos amigos es bueno.',
@@ -138,54 +189,8 @@ const ChatSimulator: React.FC = () => {
     return array.sort(() => Math.random() - 0.5);
   };
 
-  const handleResponse = (response: string) => {
-    const correctAnswer = questions[currentQuestionIndex].correctAnswer;
 
-    if (response === correctAnswer) {
-      setScore(prevScore => prevScore + 10);
-      Swal.fire({
-        title: '¡Correcto!',
-        text: `¡Has dado la respuesta correcta! +10 puntos. Puntuación total: ${score + 10}`,
-        icon: 'success',
-        confirmButtonText: 'Genial',
-      });
-    } else {
-      Swal.fire({
-        title: '¡Cuidado!',
-        text: 'Podrías estar dando información importante a un desconocido. Mantén siempre tu privacidad.',
-        icon: 'warning',
-        confirmButtonText: 'Entendido',
-      });
-    }
 
-    setMessages((prev) => [...prev, { content: response, sender: 'user' }]);
-
-    const nextQuestionIndex = currentQuestionIndex + 1;
-
-    if (nextQuestionIndex < questions.length) {
-      setCurrentQuestionIndex(nextQuestionIndex);
-      setMessages((prev) => [
-        ...prev,
-        { content: questions[nextQuestionIndex].question, sender: 'bot' },
-      ]);
-    } else {
-      setIsSimulatorComplete(true);
-      setMessages((prev) => [
-        ...prev,
-        { 
-          content: `Gracias por completar el simulador. Recuerda: tu seguridad en línea es importante. Puntuación final: ${score + 10} puntos.`, 
-          sender: 'bot' 
-        },
-      ]);
-    }
-  };
-
-  const resetSimulator = () => {
-    setMessages([{ content: 'Hola, ¿puedes decirme dónde vives?', sender: 'bot' }]);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setIsSimulatorComplete(false);
-  };
 
   return (
       <ChatLayout>
