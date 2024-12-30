@@ -9,7 +9,6 @@ import {
   IconPill,
   IconBabyCarriage
 } from "@tabler/icons-react";
-import Button from "./Button";
 import WordDragGame from "./WordDragGame";
 
 interface Feature {

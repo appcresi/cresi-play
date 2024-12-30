@@ -13,35 +13,13 @@ import TriviaReview from './TriviaReview';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 
+
 const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
   0: 'bg-[#FF6B6B] hover:bg-red-400',
   1: 'bg-[#4ADE80] hover:bg-green-400',
   2: 'bg-[#FFD93D] hover:bg-yellow-400',
   3: 'bg-blue-500 hover:bg-blue-400',
 };
-
-const ComicBurst = ({ text, className }: { text: string; className: string }) => (
-  <div className={`absolute transform ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-24 h-24">
-      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
-            fill="#FF6B6B" stroke="black" strokeWidth="3" />
-      <text x="50" y="55" textAnchor="middle" 
-            className="font-bold text-white text-sm">
-        {text}
-      </text>
-    </svg>
-  </div>
-);
-
-const ComicStar = ({ className }: { className: string }) => (
-  <div className={`absolute ${className}`}>
-    <svg width="40" height="40" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r="45" fill="#FFD93D" stroke="black" strokeWidth="2"/>
-      <text x="50" y="55" textAnchor="middle" className="text-2xl">⭐</text>
-    </svg>
-  </div>
-);
-
 
 interface TriviaGameProps {
   id: string;
@@ -226,29 +204,28 @@ export default function TriviaGame({
     <main className={`min-h-screen ${
       isNightMode ? 'bg-gray-800 text-white' : 'bg-[#FFE5E5]'
     } font-bold relative overflow-hidden`}>
-      {/* Decorative elements */}
-      <ComicStar className="top-10 right-10 animate-bounce delay-100" />
-      <ComicStar className="bottom-20 left-10 animate-bounce delay-300" />
-      <ComicBurst text="¡WOW!" className="top-10 left-10 animate-pulse" />
-      
+            
       <div className="mx-auto px-4 max-w-5xl relative pt-8">
         {/* Timer and Progress Section */}
-        <section className="mb-8">
-          <div className="bg-white border-4 border-black p-6 rounded-lg 
-                         shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
+        <section className="mb-4 py-4"> {/* Reduce margen inferior */}
+          <div className="bg-white border-4 border-black p-4 rounded-lg 
+                          shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
             <div className="flex justify-between items-center">
               {/* Timer */}
               <div className="text-center">
-                <p className="text-[#FF6B6B] text-xl mb-2">Tiempo</p>
-                <div className="text-4xl font-black text-black">
+                <p className="text-[#FF6B6B] text-lg mb-1">Tiempo</p> {/* Reduce tamaño de texto y margen */}
+                <div className="text-2xl font-black text-black"> {/* Reduce tamaño de texto */}
                   {timeLeft ?? 0}s
                 </div>
               </div>
-              
+              <h1 className="text-1xl sm:text-4xl font-black text-[#4ADE80] mb-6"
+                style={{ textShadow: '3px 3px 0 #000' }}>
+              {name}
+              </h1>
               {/* Progress */}
               <div className="text-center">
-                <p className="text-[#4ADE80] text-xl mb-2">Progreso</p>
-                <div className="text-4xl font-black text-black">
+                <p className="text-[#4ADE80] text-lg mb-1">Progreso</p> {/* Reduce tamaño de texto y margen */}
+                <div className="text-2xl font-black text-black"> {/* Reduce tamaño de texto */}
                   {currentQuestion + 1}/{items.length}
                 </div>
               </div>
@@ -256,15 +233,12 @@ export default function TriviaGame({
           </div>
         </section>
 
+
         {/* Question Section */}
         <section className="mb-8">
-          <div className="bg-white border-4 border-black p-8 rounded-lg 
+          <div className="bg-white border-4 border-black p-8 rounded-lg text-center
                          shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
-            <h1 className="text-4xl font-black text-[#4ADE80] mb-6"
-                style={{ textShadow: '3px 3px 0 #000' }}>
-              {name}
-            </h1>
-            
+                       
             <p className="text-2xl text-gray-800 leading-relaxed">
               {items[currentQuestion].question.question}
             </p>
@@ -290,14 +264,15 @@ export default function TriviaGame({
 
         {/* Control Buttons */}
         <div className="fixed bottom-6 right-6 flex gap-4">
-          <button
-            onClick={handleFullscreen}
-            className="bg-[#4ADE80] p-4 rounded-full border-4 border-black
-                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
-                     transition-all duration-300"
-          >
-            <Image src="/full-screen.svg" alt="Pantalla Completa" width={24} height={24} />
-          </button>
+        <button
+          onClick={handleFullscreen}
+          className="bg-[#4ADE80] p-4 rounded-full border-4 border-black
+                  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                  transition-all duration-300 hidden sm:block"
+        >
+          <Image src="/full-screen.svg" alt="Pantalla Completa" width={24} height={24} />
+        </button>
+
           
           <button
             onClick={() => setIsNightMode(!isNightMode)}

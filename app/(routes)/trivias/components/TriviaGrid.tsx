@@ -5,32 +5,7 @@ import { Tab } from '@headlessui/react';
 import { type TriviaIndexFields } from '@/types/trivia';
 import { TriviaCard } from './TriviaCard';
 import classNames from 'classnames';
-
-interface ComicBurstProps {
-  text: string;
-  className: string;
-}
-
-const ComicBurst: React.FC<ComicBurstProps> = ({ text, className }) => (
-  <div className={`absolute transform ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-16 h-16">
-      <path
-        d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z"
-        fill="#FF6B6B"
-        stroke="black"
-        strokeWidth="3"
-      />
-      <text
-        x="50"
-        y="55"
-        textAnchor="middle"
-        className="font-bold text-white text-xs"
-      >
-        {text}
-      </text>
-    </svg>
-  </div>
-);
+import ComicBurst from '@/components/ComicBurst';
 
 interface TriviaGridProps {
   indexesByLevel: Record<number, TriviaIndexFields[]>;

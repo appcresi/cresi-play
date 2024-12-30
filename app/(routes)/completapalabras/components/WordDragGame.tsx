@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   IconStar
 } from "@tabler/icons-react";
+import ComicBurst from '@/components/ComicBurst';
 
 type Lesson = {
   text: string;
@@ -244,26 +245,6 @@ const createWordsForLevel = (correctWords: string[], extraWords: string[]) => {
   return words.sort(() => Math.random() - 0.5);
 };
 
-const ComicBurst: React.FC<{ text: string; className?: string }> = ({ text, className = '' }) => (
-  <div className={`relative transform ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-16 h-16">
-      <path
-        d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z"
-        fill="#FF6B6B"
-        stroke="black"
-        strokeWidth="3"
-      />
-      <text
-        x="50"
-        y="55"
-        textAnchor="middle"
-        className="font-bold text-white text-xs"
-      >
-        {text}
-      </text>
-    </svg>
-  </div>
-);
 
 const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
@@ -483,18 +464,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="relative bg-white border-4 border-black rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+    <div className="p-1 max-w-4xl mx-auto">
         {/* Header con estilo cómic */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="relative bg-black text-white px-6 py-3 rounded-full transform -rotate-2">
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative bg-black text-white px-6 py-3 rounded-full transform -rotate-2 text-center">
             <h2 className="text-xl font-black">{currentLessonData?.title} - Nivel {currentLevel + 1}/{currentLessonData?.lecciones.length}</h2>
-          </div>
-          <div className="relative">
-            <ComicBurst 
-              text={`${score} pts`}
-              className="transform rotate-12"
-            />
+            <h2>{`${score} pts`}</h2>
           </div>
         </div>
 
@@ -579,7 +554,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform transition-all duration-300
                      hover:scale-105 hover:-rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           >
-            🔄 Reiniciar juego
+            Reiniciar juego
           </button>
 
           {!isLevelComplete && (
@@ -589,17 +564,16 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
                        shadow-[4px_4px_0px_0px_#FF6B6B] transform transition-all duration-300
                        hover:scale-105 hover:rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#FF6B6B]"
             >
-              ✨ Comprobar respuestas
+              Comprobar respuestas
             </button>
           )}
 
           {isLevelComplete && currentLevel === currentLessonData?.lecciones.length - 1 && (
             <div className="relative bg-yellow-100 border-4 border-black rounded-full px-6 py-3 transform rotate-2">
-              <span className="font-black text-lg">🎉 ¡Felicitaciones! Has completado todos los niveles</span>
+              <span className="font-black text-lg">¡Felicitaciones! Has completado todos los niveles</span>
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };

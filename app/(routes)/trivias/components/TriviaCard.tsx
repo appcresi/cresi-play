@@ -11,24 +11,8 @@ import {
   IconBolt,
   IconStar
 } from '@tabler/icons-react';
+import ComicBurst from '@/components/ComicBurst';
 
-interface ComicStarburstProps {
-  className?: string;
-}
-
-const ComicStarburst = ({ className = '' }: ComicStarburstProps): JSX.Element => (
-  <div className={`absolute ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-16 h-16">
-      <path
-        d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z"
-        fill="#FFD93D"
-        stroke="black"
-        strokeWidth="3"
-      />
-      <IconStar className="absolute inset-0 m-auto text-white" size={24} />
-    </svg>
-  </div>
-);
 
 export function TriviaCard(index: TriviaIndexFields): JSX.Element {
   const [triviaStatus, setTriviaStatus] = useState<TriviaStatus | undefined>(undefined);
@@ -76,7 +60,7 @@ export function TriviaCard(index: TriviaIndexFields): JSX.Element {
           <div className="relative transform transition-transform hover:scale-110">
             {isCompleted ? (
               <>
-                <ComicStarburst className="-top-4 -right-4 animate-spin-slow" />
+                <ComicBurst text="¡WOW!" className="-top-4 -right-4 animate-spin-slow" />
                 <IconTrophyFilled size={32} className="text-black animate-pulse" />
               </>
             ) : (
