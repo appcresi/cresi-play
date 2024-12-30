@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout ({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang='es' className={monaSans.className}>
-      <body>{children}</body>
+      <body className='bg-[#FFE5E5]'>{children}</body>
       <Analytics />
       <Adsense />
     </html>

@@ -40,159 +40,148 @@ const FinalReport: React.FC<FinalReportProps> = ({
     : "¡Ánimo! Puedes mejorar, sigue practicando. Recuerda que lo importante es seguir practicando. ¿Jugamos de nuevo?";
 
   return (
-    <section className='p-4 lg:mx-auto lg:max-w-5xl'>
-    <div className="flex flex-wrap justify-center items-center lg:justify-between">
-        <span className='flex flex-col gap-4 lg:max-w-[50%]'>
-            <span>
-                <h1 className='my-4 text-4xl font-bold'>
-                ¡Pasapalabra ESI!
-                </h1>
+    <section className="p-8 lg:mx-auto lg:max-w-5xl">
+      <div className="flex flex-wrap justify-center items-center gap-8 lg:justify-between">
+        {/* Header Section */}
+        <div className="flex flex-col gap-6 lg:max-w-[50%]">
+          <div className="bg-yellow-200 p-6 rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
+            <h1 className="text-4xl font-bold mb-4">¡Pasapalabra ESI!</h1>
+            <p className="text-lg">{performanceMessage}</p>
+          </div>
 
-                <p className='max-w-[48ch] text-lg text-gray-600'>
-                    {performanceMessage}
-                </p>
-            </span>
-            <button onClick={onPlayAgain} className="w-fit px-4 py-2 flex gap-2 items-center rounded-full font-semibold bg-primary text-white">
+          <button 
+            onClick={onPlayAgain}
+            className="w-fit px-6 py-3 flex gap-2 items-center rounded-full font-bold bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+          >
             <IconArrowLeft />
             Jugar de Nuevo
-            </button>
-        </span>
+          </button>
+        </div>
 
-        <div className="mb-1" style={{ height: '300px' }}> {/* Adjusted margin here */}
-        <ResponsiveContainer>
-          <PieChart>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length > 0 && payload[0].value !== undefined) {
-                  return (
-                    <div className="bg-white border border-gray-300 p-2 rounded shadow-lg">
-                      <p>{payload[0].name}: {payload[0].value} ({calculatePercentage(payload[0].value as number)}%)</p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              label
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={['#10B981', '#ef4444', '#6b7280'][index]} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+        {/* Stats Section */}
+        <div className="bg-white p-6 rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
+          <div style={{ height: '300px' }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload?.length) {
+                      return (
+                        <div className="bg-white border-2 border-black p-3 rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                          <p className="font-bold">{payload[0].name}: {payload[0].value} ({calculatePercentage(payload[0].value as number)}%)</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={['#10B981', '#ef4444', '#6b7280'][index]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <ul className="mt-4 space-y-2 font-bold">
+            {[
+              { color: '#10B981', label: 'Correctas', value: correctCount },
+              { color: '#ef4444', label: 'Incorrectas', value: incorrectCount },
+              { color: '#6b7280', label: 'Pasadas', value: passedWordsCount }
+            ].map((item) => (
+              <li key={item.label} className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded border-2 border-black" style={{ backgroundColor: item.color }}></span>
+                {item.label}: {calculatePercentage(item.value)}%
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      <div className="mb-1"> {/* Adjusted margin here */}
-        <ul className="list-disc pl-5">
-          <li className='list-none'>
-            <span className="inline-block w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#10B981' }}></span>
-            Correctas: {calculatePercentage(correctCount)}%
-          </li>
-          <li className='list-none'>
-            <span className="inline-block w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#ef4444' }}></span>
-            Incorrectas: {calculatePercentage(incorrectCount)}%
-          </li>
-          <li className='list-none'>
-            <span className="inline-block w-4 h-4 mr-2 rounded" style={{ backgroundColor: '#6b7280' }}></span>
-            Pasadas: {calculatePercentage(passedWordsCount)}%
-          </li>
-        </ul>
-      </div>
-
-      {/* Only display this section if there are correct words */}
-      {correctCount > 0 && (
-        <Disclosure>
-          {({ open }) => (
-            <>
-              <Disclosure.Button className="w-full p-2 flex items-center justify-between rounded-lg bg-primary-light text-primary-dark mb-1">
-                <span className='flex gap-2 items-center'>
+      {/* Words Review Section */}
+      <div className="mt-8 space-y-4">
+        {correctCount > 0 && (
+          <Disclosure>
+            {({ open }) => (
+              <div className="bg-green-100 rounded-xl border-2 border-black">
+                <Disclosure.Button className="w-full p-4 flex items-center justify-between font-bold">
+                  <span className="flex gap-2 items-center">
                     <IconAlertCircle />
                     <p>Palabras Correctas</p>
-                </span>
-                <IconChevronDown
-                className={`${open ? 'rotate-180 transform' : ''} transition duration-100`}
-                />
-              </Disclosure.Button>
-              <Transition
-                show={open}
-                enter="transition ease-out duration-200"
-                enterFrom="transform scale-95 opacity-0"
-                enterTo="transform scale-100 opacity-100"
-                leave="transition ease-in duration-200"
-                leaveFrom="transform scale-100 opacity-100"
-                leaveTo="transform scale-95 opacity-0"
-              >
-                <Disclosure.Panel className="px-4 pt-2 pb-2 text-gray-600">
-                  <ul className="list-disc pl-5">
-                    {correctWords.map((word, index) => (
-                      <li key={index}>
-                        <strong>{word.palabra}</strong>: {word.definicion}
-                      </li>
-                    ))}
-                  </ul>
-                </Disclosure.Panel>
-              </Transition>
-            </>
-          )}
-        </Disclosure>
-      )}
+                  </span>
+                  <IconChevronDown className={`${open ? 'rotate-180' : ''} transition-transform`} />
+                </Disclosure.Button>
+                <Transition
+                  show={open}
+                  enter="transition-all duration-200"
+                  enterFrom="opacity-0 -translate-y-2"
+                  enterTo="opacity-100 translate-y-0"
+                >
+                  <Disclosure.Panel className="p-4 border-t-2 border-black bg-white">
+                    <ul className="space-y-2">
+                      {correctWords.map((word, index) => (
+                        <li key={index} className="transform hover:-translate-y-1 transition-transform">
+                          <strong>{word.palabra}</strong>: {word.definicion}
+                        </li>
+                      ))}
+                    </ul>
+                  </Disclosure.Panel>
+                </Transition>
+              </div>
+            )}
+          </Disclosure>
+        )}
 
-      {/* Only display this section if there are incorrect words */}
-      {incorrectCount > 0 && (
-        <Disclosure>
-          {({ open }) => (
-            <>
-              <Disclosure.Button className="w-full p-2 flex items-center justify-between rounded-lg bg-primary-light text-primary-dark">
-                <span className='flex gap-2 items-center'>
+        {incorrectCount > 0 && (
+          <Disclosure>
+            {({ open }) => (
+              <div className="bg-red-100 rounded-xl border-2 border-black">
+                <Disclosure.Button className="w-full p-4 flex items-center justify-between font-bold">
+                  <span className="flex gap-2 items-center">
                     <IconAlertCircle />
                     <p>Palabras Incorrectas</p>
-                </span>
-                <IconChevronDown
-                className={`${open ? 'rotate-180 transform' : ''} transition duration-100`}
-                />
-              </Disclosure.Button>
-              <Transition
-                show={open}
-                enter="transition ease-out duration-200"
-                enterFrom="transform scale-95 opacity-0"
-                enterTo="transform scale-100 opacity-100"
-                leave="transition ease-in duration-200"
-                leaveFrom="transform scale-100 opacity-100"
-                leaveTo="transform scale-95 opacity-0"
-              >
-                <Disclosure.Panel className="px-4 pt-2 pb-2 text-gray-600">
-                  <ul className="list-disc pl-5">
-                    {incorrectWords.map((word, index) => (
-                      <li key={index}>
-                        <strong>{word.palabra}</strong>: {word.definicion}
-                      </li>
-                    ))}
-                  </ul>
-                </Disclosure.Panel>
-              </Transition>
-            </>
-          )}
-        </Disclosure>
-      )}
+                  </span>
+                  <IconChevronDown className={`${open ? 'rotate-180' : ''} transition-transform`} />
+                </Disclosure.Button>
+                <Transition
+                  show={open}
+                  enter="transition-all duration-200"
+                  enterFrom="opacity-0 -translate-y-2"
+                  enterTo="opacity-100 translate-y-0"
+                >
+                  <Disclosure.Panel className="p-4 border-t-2 border-black bg-white">
+                    <ul className="space-y-2">
+                      {incorrectWords.map((word, index) => (
+                        <li key={index} className="transform hover:-translate-y-1 transition-transform">
+                          <strong>{word.palabra}</strong>: {word.definicion}
+                        </li>
+                      ))}
+                    </ul>
+                  </Disclosure.Panel>
+                </Transition>
+              </div>
+            )}
+          </Disclosure>
+        )}
 
-      <div className="flex justify-between mt-4">
-        
-        <button onClick={onGoBack} className="w-fit px-4 py-2 flex gap-2 items-center rounded-full font-semibold bg-primary text-white">
+        <button 
+          onClick={onGoBack}
+          className="mt-8 px-6 py-3 flex gap-2 items-center rounded-full font-bold bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+        >
           <IconExternalLink />
           Volver
         </button>
       </div>
-    </div>
-  </section>
+    </section>
   );
 };
 

@@ -67,15 +67,15 @@ export default async function Trivias(): Promise<JSX.Element> {
             </h1>
             
             <h2 className="hidden md:block text-xl text-gray-700 leading-relaxed">
-              <span className="text-[#FF6B6B]">¡KAPOW!</span> ¡Es hora de jugar! 
-              <span className="text-[#4ADE80]">¡ZAP!</span> Encuentra tu trivia perfecta 
-              <span className="text-[#FFD93D]">¡BOOM!</span> Ajusta el tiempo y ¡a divertirse!
+              <span className="text-[#FF6B6B]">¡GENIAL!</span> ¡Es hora de jugar! 
+              <span className="text-[#4ADE80]"> ¡VAMOS!</span> Encuentra tu trivia perfecta. 
+              <span className="text-[#FFD93D]"> ¿ESTÁS LISTO?</span> Ajusta el tiempo y ¡a divertirse!
             </h2>
 
             <a href="https://cresi.com.ar/buscar"
                target="_blank"
                rel="noreferrer"
-               className="inline-block mt-6 px-6 py-3 bg-[#FFD93D] text-black rounded-full font-black 
+               className="hidden md:inline-block mt-6 px-6 py-3 bg-[#FFD93D] text-black rounded-full font-black 
                         border-4 border-black transform hover:scale-105 hover:-rotate-3 
                         transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               ¿De dónde salen las preguntas?

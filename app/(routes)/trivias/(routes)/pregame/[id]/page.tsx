@@ -49,25 +49,39 @@ export default async function Page({ params }: { params: Params }) {
   return (
     <main className="min-h-screen bg-[#FFE5E5] font-bold relative overflow-hidden">
       {/* Decorative elements */}
-      <ComicBurst text="¡POW!" className="top-20 right-20 animate-pulse" />
+      <ComicBurst text="¡POW!" className="top-10 right-10 animate-pulse z-10" />
       
       <div className="mx-auto px-4 max-w-5xl relative pt-8">
         {/* Back button */}
         <Link 
           href="/trivias" 
-          className="fixed top-8 left-8 bg-[#4ADE80] p-4 rounded-full border-4 border-black
+          className="fixed top-4 left-4 bg-[#4ADE80] p-2 sm:p-4 rounded-full border-2 sm:border-4 border-black
                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
                     transition-all duration-300"
         >
-          <IconArrowNarrowLeft size={32} />
+          <IconArrowNarrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
         </Link>
+
 
         {/* Title */}
         <div className="text-center mb-12">
-          <h2 className="text-6xl font-black text-[#4ADE80] transform hover:scale-105 transition-transform"
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-[#4ADE80] mb-4 transform hover:scale-105 transition-transform"
               style={{ textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
             ¡TRIVIA!
           </h2>
+        </div>
+        {/* Play Button */}
+        <div className="flex justify-center mt-8 mb-6 sm:mt-12 sm:mb-8">
+          <Link
+            href={`/trivias/${data.id}`}
+            className="bg-[#4ADE80] px-6 py-3 sm:px-12 sm:py-4 rounded-full font-black text-lg sm:text-2xl
+                      border-2 sm:border-4 border-black transform hover:scale-105 hover:-rotate-3 
+                      transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                      flex items-center gap-2"
+          >
+            ¡JUGAR AHORA!
+            <IconArrowNarrowRight className="w-5 h-5 sm:w-8 sm:h-8" />
+          </Link>
         </div>
 
         {/* Main content */}
@@ -129,19 +143,7 @@ export default async function Page({ params }: { params: Params }) {
           </div>
         </div>
 
-        {/* Play Button */}
-        <div className="flex justify-center mt-12 mb-8">
-          <Link
-            href={`/trivias/${data.id}`}
-            className="bg-[#4ADE80] px-12 py-4 rounded-full font-black text-2xl
-                     border-4 border-black transform hover:scale-105 hover:-rotate-3 
-                     transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                     flex items-center gap-2"
-          >
-            ¡JUGAR AHORA!
-            <IconArrowNarrowRight size={32} />
-          </Link>
-        </div>
+        
 
         {/* Settings Button */}
         <div className="fixed bottom-6 right-6 transform hover:scale-110 transition-transform">

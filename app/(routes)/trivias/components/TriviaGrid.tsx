@@ -53,7 +53,7 @@ export default function TriviaGrid({
                         className="absolute -top-4 -right-4 animate-pulse"
                       />
                     )}
-                    NIVEL {numericLevel}
+                    <p className='hidden sm:inline-flex'>NIVEL</p> {numericLevel}
                   </button>
                 )}
               </Tab>

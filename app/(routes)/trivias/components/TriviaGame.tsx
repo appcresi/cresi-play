@@ -235,15 +235,18 @@ export default function TriviaGame({
 
 
         {/* Question Section */}
-        <section className="mb-8">
-          <div className="bg-white border-4 border-black p-8 rounded-lg text-center
-                         shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
-                       
-            <p className="text-2xl text-gray-800 leading-relaxed">
+        <section className="mb-4 sm:mb-8">
+          <div 
+            className="bg-white border-2 sm:border-4 border-black p-4 sm:p-8 rounded-lg text-center 
+                      shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
+                      transform rotate-1"
+          >
+            <p className="text-lg sm:text-2xl text-gray-800 leading-relaxed">
               {items[currentQuestion].question.question}
             </p>
           </div>
         </section>
+
 
         {/* Options Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">

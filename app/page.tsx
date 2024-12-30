@@ -12,7 +12,6 @@ import Features from "./components/Features";
 import type { Metadata } from "next";
 import ComicBurst from '@/components/ComicBurst';
 
-
 export const metadata: Metadata = {
   title: "CrESI | Jugar",
   description:
@@ -30,15 +29,15 @@ const ComicHome = () => {
         <div className="relative mx-auto px-8 max-w-7xl pt-16">
           <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 rounded-lg transform -rotate-2 hover:rotate-0 transition-all duration-300">
             <p className="text-[#FF6B6B] text-xl transform rotate-2 animate-pulse">¡POW! 💥</p>
-            <h1 className="text-6xl mb-4 font-black text-[#4ADE80] transform rotate-2 hover:scale-105 transition-transform" style={{ 
-              textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'
-            }}>
+            <h1 className="text-4xl sm:text-6xl mb-4 font-black text-[#4ADE80] transform rotate-2 hover:scale-105 transition-transform" 
+            style={{textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'}}>
               ¡Aprendé Jugando!
             </h1>
-            <h2 className="text-xl text-gray-700 transform rotate-2">
-              <span className="text-[#FF6B6B]">¡KAPOW!</span> Nunca aprender fue tan divertido como con CrESI. 
-              <span className="text-[#4ADE80]">¡ZAP!</span> Sumérgete en una experiencia interactiva.
-              <span className="text-[#FFD93D]">¡BOOM!</span>
+
+            <h2 className="hidden md:block text-xl text-gray-700 transform rotate-2">
+              <span className="text-[#FF6B6B]">¡GENIAL!</span> Nunca aprender fue tan divertido como con CrESI. 
+              <span className="text-[#4ADE80]">¡VAMOS!</span> Sumérgete en una experiencia interactiva.
+              <span className="text-[#FFD93D]">¡JUGUEMOS!</span>
             </h2>
           </div>
         </div>
