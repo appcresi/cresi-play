@@ -275,16 +275,16 @@ export default function TriviaGame({
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {items[currentQuestion].options.map((option, index) => (
             <button
-              key={option}
-              onClick={() => handleAnswer(option)}
-              disabled={timeLeft === 0 || timeLeft === undefined}
-              className={`${OPTION_COLORS[index]} p-6 rounded-lg font-black text-xl
-                         border-4 border-black transform hover:scale-105 hover:-rotate-2
-                         transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                         disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {option}
-            </button>
+            key={option}
+            onClick={() => handleAnswer(option)}
+            disabled={timeLeft === 0 || timeLeft === undefined}
+            className={`${OPTION_COLORS[index as 0 | 1 | 2 | 3]} p-6 rounded-lg font-black text-xl
+                       border-4 border-black transform hover:scale-105 hover:-rotate-2
+                       transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                       disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {option}
+          </button>
           ))}
         </section>
 
