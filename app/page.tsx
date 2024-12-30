@@ -1,155 +1,155 @@
-import { type Metadata } from 'next'
-
-import Image from 'next/image'
-import Link from 'next/link'
-
+import React from 'react';
+import Link from 'next/link';
 import {
   IconArrowNarrowRight,
   IconBrain,
   IconBulb,
   IconCheck,
   IconExternalLink,
-  IconSchool,
   IconTrendingUp
-} from '@tabler/icons-react'
-
+} from '@tabler/icons-react';
 import Features from "./components/Features";
+import type { Metadata } from "next";
 
 
-import illustration from '@/public/illustration-1.jpg'
+export const metadata: Metadata = {
+  title: "CrESI | Jugar",
+  description:
+    "¡Aprendé jugando con CrESI! Pon a prueba tus conocimientos con nuestras trivia y juegos didácticos.",
+};
 
-export const metadata = {
-  title: 'Aprendé jugando y poné a prueba tus conocimientos',
-  description: 'Conocé la nueva forma de aprender y educar sobre diversas temáticas sociales, como la educación sexual, la violencia y la salud.'
-} satisfies Metadata
 
-export default function Home (): JSX.Element {
-  return (
-    <main className='mx-auto px-4 max-w-5xl flex flex-col items-center gap-8'>
-       <section className='flex flex-col gap-4 justify-start items-start pt-8 pb-1'>
-          <p className="font-medium text-primary">
-            Aprender más, para cuidarse mejor
-          </p>
-          <h1 className='mb-2 text-6xl font-bold'>Aprendé Jugando</h1>
-          <h2 className='mb-2 text-xl text-gray-700'>
-            Nunca aprender fue tan fácil como con CrESI. Nuestra plataforma está diseñada para que, 
-            a través de juegos de trivia, puedas adquirir nuevos conocimientos de manera entretenida y accesible.
-            Ya no se trata de estudiar de forma tradicional, sino de sumergirte en una experiencia interactiva que
-             te permitirá descubrir y reforzar conceptos clave sobre diversas temáticas.
-          </h2>
-
-          <a
-            href='https://cresi.com.ar'
-            target='_blank'
-            rel='noreferrer'
-            className='px-2 py-1 w-fit flex items-center gap-1 font-semibold rounded-full bg-primary-light text-primary-dark mb-2'
-          >
-            ¿Quiénes somos?
-            <IconExternalLink />
-          </a>
-      </section>
-      <Features />
-      <section>
-        <SectionChip>
-          Una nueva experiencia
-          <IconSchool />
-        </SectionChip>
-
-        <h3 className='my-4 text-3xl font-bold lg:my-8 lg:text-5xl'>
-          Educar distinto, aprender mejor.
-        </h3>
-        <p className='text-gray-600 lg:text-xl'>
-          Creemos que los textos interminables y de poca utilidad real no tienen
-          que ser la única forma de enseñar y aprender, por lo que desarrollamos
-          experiencias educativas con enfoque en la interactividad y la
-          re-jugabilidad, para que el aprendizaje sea una experiencia divertida
-          para todos.
-        </p>
-
-        <ul className='my-4 flex flex-col gap-6 lg:grid lg:grid-cols-2'>
-          <li>
-            <span className='my-4 flex gap-2 items-center text-primary lg:text-xl'>
-              <IconBrain />
-              Poné a prueba tu conocimiento
-            </span>
-
-            <p className='lg:text-lg'>
-              Con nuestros juegos vas a poder darte cuenta de lo mucho (¡o lo
-              poco!) que sabías sobre muchas temáticas.
-            </p>
-          </li>
-
-          <li>
-            <span className='my-4 flex gap-2 items-center text-primary lg:text-xl'>
-              <IconCheck />
-              <p>Aprendé de tus errores, al detalle</p>
-            </span>
-
-            <p className='lg:text-lg'>
-              Con cada partida que jueges, vas a poder acceder a estadísticas
-              detalladas y más información sobre cada pregunta.
-            </p>
-          </li>
-
-          <li>
-            <span className='my-4 flex gap-2 items-center text-primary lg:text-xl'>
-              <IconTrendingUp />
-              <p>Compartí tu progreso</p>
-            </span>
-
-            <p className='lg:text-lg'>
-              Cuando completás una trivia, podés acceder a un certificado para
-              compartir con tus contactos en redes sociales o en donde lo
-              necesites.
-            </p>
-          </li>
-
-          <li>
-            <span className='my-4 flex gap-2 items-center text-primary lg:text-xl'>
-              <IconBulb />
-              <p>Involucrate con tu aprendizaje</p>
-            </span>
-
-            <p className='lg:text-lg'>
-              Proveemos gratuitamente diversos recursos y juegos didácticos para
-              seguir aprendiendo. ¿Querés conocerlos? Visitá nuestra{' '}
-              <a
-                href='https://cresi.com.ar'
-                target='_blank'
-                rel='noreferrer'
-                className='w-fit underline text-primary-dark'
-              >
-                página principal.
-              </a>
-            </p>
-          </li>
-        </ul>
-      </section>
-
-      <section className='flex flex-col items-center'>
-        <h3 className='my-4 text-3xl font-bold lg:my-8 lg:text-5xl'>
-          ¿Todo listo?
-        </h3>
-        <p className='text-center text-gray-700 lg:text-xl'>
-          Conocé la nueva experiencia educativa que tenemos para vos.
-        </p>
-
-        <Link
-          href='/trivias'
-          className='my-6 px-4 py-2 flex gap-2 justify-center items-center rounded-full font-bold bg-primary text-primary-light'
-        >
-          Comenzá a jugar
-          <IconArrowNarrowRight />
-        </Link>
-      </section>
-    </main>
-  )
+interface ComicBurstProps {
+  text: string;
+  className: string;
 }
 
-function SectionChip ({ children }: { children: React.ReactNode }): JSX.Element {
-  return (
-    <div className='my-6 px-4 py-2 w-fit flex gap-2 items-center justify-center rounded-full bg-primary-light text-primary-dark lg:text-lg'>
-      {children}
+const ComicBurst: React.FC<ComicBurstProps> = ({ text, className }) => (
+  <div className={`absolute transform rotate-12 ${className}`}>
+    <div className="relative">
+      <svg viewBox="0 0 100 100" className="w-24 h-24">
+        <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
+              fill="#FF6B6B" stroke="black" strokeWidth="2" />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">
+        {text}
+      </span>
     </div>
-  )
-}
+  </div>
+);
+
+const ComicHome = () => {
+  return (
+    <main className="min-h-screen bg-[#FFE5E5] font-bold overflow-hidden">
+      {/* Decorative elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 right-10 animate-bounce delay-100">
+          <svg width="50" height="50" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#FFD93D" stroke="black" strokeWidth="2"/>
+            <text x="50" y="55" textAnchor="middle" className="text-2xl">⭐</text>
+          </svg>
+        </div>
+        <div className="absolute bottom-20 left-10 animate-bounce delay-300">
+          <svg width="40" height="40" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#4ADE80" stroke="black" strokeWidth="2"/>
+            <text x="50" y="55" textAnchor="middle" className="text-2xl">✨</text>
+          </svg>
+        </div>
+      </div>
+
+      {/* Comic-style header with enhanced effects */}
+      <div className="mx-auto px-4 max-w-5xl relative mb-4">
+        <ComicBurst text="¡WOW!" className="absolute top-4 right-4 z-10" />
+        <ComicBurst text="¡BAM!" className="absolute bottom-1 left-1 z-10" />
+        <div className="absolute inset-0 bg-[#FF6B6B] opacity-10 transform rotate-3"></div>
+        <div className="relative mx-auto px-8 max-w-7xl pt-16">
+          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 rounded-lg transform -rotate-2 hover:rotate-0 transition-all duration-300">
+            <p className="text-[#FF6B6B] text-xl transform rotate-2 animate-pulse">¡POW! 💥</p>
+            <h1 className="text-6xl mb-4 font-black text-[#4ADE80] transform rotate-2 hover:scale-105 transition-transform" style={{ 
+              textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'
+            }}>
+              ¡Aprendé Jugando!
+            </h1>
+            <h2 className="text-xl text-gray-700 transform rotate-2">
+              <span className="text-[#FF6B6B]">¡KAPOW!</span> Nunca aprender fue tan divertido como con CrESI. 
+              <span className="text-[#4ADE80]">¡ZAP!</span> Sumérgete en una experiencia interactiva.
+              <span className="text-[#FFD93D]">¡BOOM!</span>
+            </h2>
+          </div>
+        </div>
+      </div>
+      <Features />
+      {/* Features section with enhanced comic panels */}
+      <div className="mx-auto px-4 max-w-5xl mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {[
+          {
+            icon: <IconBrain size={32} />,
+            title: "¡CRASH! ¡Desafía tu mente!",
+            content: "Pon a prueba tus conocimientos con nuestras trivia",
+            color: "#FF6B6B"
+          },
+          {
+            icon: <IconCheck size={32} />,
+            title: "¡ZING! ¡Aprende de tus errores!",
+            content: "Estadísticas detalladas y explicaciones para cada pregunta",
+            color: "#4ADE80"
+          },
+          {
+            icon: <IconTrendingUp size={32} />,
+            title: "¡WOOSH! ¡Comparte tu éxito!",
+            content: "Obtén certificados y presume tus logros",
+            color: "#FFD93D"
+          },
+          {
+            icon: <IconBulb size={32} />,
+            title: "¡POP! ¡Involúcrate!",
+            content: "Recursos gratuitos y juegos didácticos para todos",
+            color: "#FF6B6B"
+          }
+        ].map((feature, index) => (
+          <div key={index} 
+               className="bg-white border-4 border-black p-6 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 transition-all duration-300"
+               style={{ backgroundColor: `${feature.color}15` }}>
+            <div className="flex items-center gap-3 mb-4" style={{ color: feature.color }}>
+              <div className="transform hover:rotate-12 transition-transform">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-black">{feature.title}</h3>
+            </div>
+            <p className="text-gray-700">{feature.content}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Enhanced call to action */}
+      <div className="mx-auto px-4 max-w-5xl my-16">
+        <div className="relative bg-[#4ADE80] text-white border-4 border-black p-8 rounded-lg shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center overflow-hidden">
+          <ComicBurst text="¡YAY!" className="-top-4 -right-4 animate-spin-slow" />
+          <h2 className="text-4xl font-black mb-4 animate-pulse" style={{
+            textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'
+          }}>
+            ¡BOOM! ¿Listo para la aventura?
+          </h2>
+          <Link href="/trivias" 
+                className="inline-block bg-[#FFD93D] text-black px-8 py-4 rounded-full font-black border-4 border-black transform hover:scale-110 hover:-rotate-3 transition-all duration-300">
+            ¡COMENZÁ AHORA! <IconArrowNarrowRight className="inline ml-2 animate-bounce" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Enhanced footer */}
+      <div className="bg-[#FF6B6B] text-white p-4 text-center">
+        <a
+          href="https://cresi.com.ar"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 font-black hover:scale-110 transition-transform"
+        >
+          ¡DESCUBRE NUESTRA HISTORIA! <IconExternalLink className="animate-bounce" />
+        </a>
+      </div>
+    </main>
+  );
+};
+
+export default ComicHome;

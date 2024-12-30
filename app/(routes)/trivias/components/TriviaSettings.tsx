@@ -1,9 +1,9 @@
 'use client';
 
-import type { GameSettings } from '../types/settings';
+import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { IconSettings } from '@tabler/icons-react';
-import { Fragment, useState } from 'react';
+import type { GameSettings } from '../types/settings';
 import { getSettings, saveSettings } from '@/utils/trivia';
 
 export default function TriviaSettings(): JSX.Element {
@@ -14,90 +14,109 @@ export default function TriviaSettings(): JSX.Element {
   );
 
   function handleChangeSettings({ time }: Partial<GameSettings>): void {
-    setSelectedTime(time ?? selectedTime); // Actualizar el estado con el tiempo seleccionado
+    setSelectedTime(time ?? selectedTime);
     saveSettings({ time: time ?? selectedTime });
   }
 
   return (
     <>
       <button
-        type='button'
-        onClick={() => {
-          setIsOpen(true);
-        }}
-        className='fixed bottom-4 right-4 px-4 py-4 flex items-center gap-2 rounded-full font-semibold text-4xl bg-primary text-white'
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="p-4 flex items-center justify-center text-4xl text-white 
+                 transition-transform duration-300 hover:scale-110"
       >
         <IconSettings />
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog
-          as='div'
-          open={isOpen}
-          onClose={() => {
-            setIsOpen(false);
-          }}
-          className='relative z-10'
+          as="div"
+          className="relative z-50"
+          onClose={() => setIsOpen(false)}
         >
           <Transition.Child
             as={Fragment}
-            enter='transition ease-out duration-300'
-            enterFrom='transform opacity-0'
-            enterTo='transform opacity-100'
-            leave='transition ease-in duration-200'
-            leaveFrom='transform opacity-100'
-            leaveTo='transform opacity-0'
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
           >
-            <div className='fixed inset-0 bg-black bg-opacity-25' />
+            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" />
           </Transition.Child>
 
-          <div className='fixed inset-0 overflow-y-auto'>
-            <div className='min-h-full flex items-center justify-center'>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child
                 as={Fragment}
-                enter='transition ease-out duration-300'
-                enterFrom='transform opacity-0 scale-95'
-                enterTo='transform opacity-100 scale-100'
-                leave='transition ease-in duration-200'
-                leaveFrom='transform opacity-100 scale-100'
-                leaveTo='transform opacity-0 scale-95'
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className='p-4 max-w-[95%] rounded-lg bg-white'>
-                  <Dialog.Title as='h3' className='mb-4 text-xl font-semibold'>
-                    Configuración del juego
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden 
+                                      bg-white border-4 border-black rounded-lg 
+                                      shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
+                                      p-6 transition-all">
+                  {/* Title with comic style */}
+                  <Dialog.Title 
+                    className="text-3xl font-black text-[#4ADE80] mb-6"
+                    style={{ textShadow: '2px 2px 0 #000' }}
+                  >
+                    ¡Configuración!
                   </Dialog.Title>
 
-                  <span className='flex gap-2 items-center'>
-                    <p>Tiempo de juego</p>
-                    <select
-                      value={selectedTime} // Establecer el valor del select
-                      onChange={(e) => {
-                        handleChangeSettings({ time: Number(e.target.value) });
-                      }}
-                    >
-                      {[15, 30, 45, 60, 90, 120].map((time) => (
-                        <option value={time} key={time}>
-                          {time} segundos
-                        </option>
-                      ))}
-                    </select>
-                  </span>
+                  {/* Time selection */}
+                  <div className="mb-8">
+                    <label className="flex flex-col gap-4">
+                      <span className="text-xl font-bold text-[#FF6B6B]">
+                        Tiempo de juego
+                      </span>
+                      <select
+                        value={selectedTime}
+                        onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}
+                        className="w-full p-3 text-lg font-bold bg-white border-4 border-black rounded-lg
+                                 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                                 focus:outline-none focus:ring-2 focus:ring-[#4ADE80]
+                                 transform transition-transform hover:scale-105"
+                      >
+                        {[15, 30, 45, 60, 90, 120].map((time) => (
+                          <option value={time} key={time}>
+                            {time} segundos
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
 
-                  <span className='mt-4 flex items-center'>
-                    <p className='text-sm text-gray-600'>
-                      Los cambios se aplican automáticamente.
+                  {/* Footer */}
+                  <div className="flex items-center justify-between mt-8">
+                    <p className="text-sm font-bold text-gray-600">
+                      ¡Los cambios se aplican automáticamente! 🚀
                     </p>
-
+                    
                     <button
-                      type='button'
-                      onClick={() => {
-                        setIsOpen(false);
-                      }}
-                      className='px-4 py-2 flex items-center gap-1 rounded-full font-semibold bg-primary-light text-primary-dark'
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="bg-[#4ADE80] px-6 py-2 rounded-full font-black text-white
+                               border-4 border-black transform hover:scale-105 hover:-rotate-2 
+                               transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                     >
-                      Cerrar
+                      ¡LISTO!
                     </button>
-                  </span>
+                  </div>
+
+                  {/* Decorative elements */}
+                  <div className="absolute -top-2 -right-2 w-16 h-16">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
+                            fill="#FFD93D" stroke="black" strokeWidth="3" />
+                    </svg>
+                  </div>
                 </Dialog.Panel>
               </Transition.Child>
             </div>

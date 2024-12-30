@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import ChatLayout from './ChatLayout';
 import MessageBubble from './MessageBubble';
 import ResponseButtons from './ResponseButtons';
+import GameStatusBar from './GameStatusBar';
 
 const ChatSimulator: React.FC = () => {
   const [messages, setMessages] = useState<{ content: string; sender: 'user' | 'bot' }[]>([
@@ -15,6 +16,13 @@ const ChatSimulator: React.FC = () => {
   const [isSimulatorComplete, setIsSimulatorComplete] = useState(false);
   const [lives, setLives] = useState(3);
 
+  const swalCustomClass = {
+    popup: 'bg-purple-900 text-white rounded-2xl',
+    title: 'text-white',
+    htmlContainer: 'text-purple-100',
+    confirmButton: 'bg-purple-600 hover:bg-purple-500',
+  };
+
   const handleResponse = (response: string) => {
     const correctAnswer = questions[currentQuestionIndex].correctAnswer;
 
@@ -25,6 +33,10 @@ const ChatSimulator: React.FC = () => {
         text: `¡Has dado la respuesta correcta! +10 puntos. Puntuación total: ${score + 10}`,
         icon: 'success',
         confirmButtonText: 'Genial',
+        background: '#312e81',
+        color: '#ffffff',
+        iconColor: '#22c55e',
+        confirmButtonColor: '#7c3aed'
       });
     } else {
       setLives(prevLives => prevLives - 1);
@@ -33,6 +45,10 @@ const ChatSimulator: React.FC = () => {
         text: 'Podrías estar dando información importante a un desconocido. Mantén siempre tu privacidad.',
         icon: 'warning',
         confirmButtonText: 'Entendido',
+        background: '#312e81',
+        color: '#ffffff',
+        iconColor: '#eab308',
+        confirmButtonColor: '#7c3aed'
       });
     }
 
@@ -193,29 +209,42 @@ const ChatSimulator: React.FC = () => {
 
 
   return (
-      <ChatLayout>
-        {messages.map((msg, index) => (
-          <MessageBubble key={index} content={msg.content} sender={msg.sender} />
-        ))}
-        {!isSimulatorComplete ? (
-          <ResponseButtons
-            options={shuffledAnswers.map((answer) => ({
-              text: answer.text,
-              onClick: () => handleResponse(answer.text),
-            }))}
-          />
-        ) : (
-          <div className="flex flex-col items-center">
-            <p className="mb-4 text-lg font-semibold">Puntuación final: {score + 10} puntos</p>
-            <button 
-              onClick={resetSimulator}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
-            >
-              Reiniciar Simulador
-            </button>
-          </div>
-        )}
-      </ChatLayout>
+    <>
+    <GameStatusBar
+      title="Simulador de Chat Seguro"
+      score={score}
+      lives={lives}
+      level={currentQuestionIndex + 1}
+    />
+    <ChatLayout>
+      {messages.map((msg, index) => (
+        <MessageBubble key={index} content={msg.content} sender={msg.sender} />
+      ))}
+      {!isSimulatorComplete ? (
+        <ResponseButtons
+          options={shuffledAnswers.map((answer) => ({
+            text: answer.text,
+            onClick: () => handleResponse(answer.text),
+          }))}
+        />
+      ) : (
+        <div className="flex flex-col items-center p-6 bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 rounded-2xl text-white">
+          <p className="mb-4 text-xl font-bold">
+            Puntuación final: {score + 10} puntos
+          </p>
+          <button 
+            onClick={resetSimulator}
+            className="mt-4 px-8 py-3 bg-purple-600 text-white rounded-xl 
+                     hover:bg-purple-500 active:bg-purple-700 
+                     transform transition duration-300 hover:scale-105 active:scale-95
+                     shadow-lg hover:shadow-xl"
+          >
+            Reiniciar Simulador
+          </button>
+        </div>
+      )}
+    </ChatLayout>
+  </>
   );
 };
 

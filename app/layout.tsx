@@ -19,7 +19,6 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
   return (
     <html lang='es' className={monaSans.className}>
       <body>{children}</body>
-
       <Analytics />
       <Adsense />
     </html>

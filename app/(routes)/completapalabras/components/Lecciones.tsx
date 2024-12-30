@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import {
-  IconBookDownload,
-  IconCards,
-  IconPresentation,
+  IconAccessible,
   IconTrophyFilled,
   IconTrophyOff,
+  IconGenderBigender,
+  IconPill,
+  IconBabyCarriage
 } from "@tabler/icons-react";
 import Button from "./Button";
 import WordDragGame from "./WordDragGame";
@@ -20,27 +21,23 @@ interface Feature {
 const features: Feature[] = [
   {
     title: "Pubertad",
-    description:
-      "En esta lección aprenderás sobre los principales cambios que ocurren al inicio de la pubertad.",
-    icon: <IconBookDownload size={32} />,
+    description: "En esta lección aprenderás sobre los principales cambios que ocurren al inicio de la pubertad.",
+    icon: <IconAccessible size={32} />,
   },
   {
     title: "Sexualidad",
-    description:
-      "¿La sexualidad es solo lo biológico? Aprendé más sobre la diferencia entre sexo, género, orientación sexual.",
-    icon: <IconPresentation size={32} />,
+    description: "¿La sexualidad es solo lo biológico? Aprendé más sobre la diferencia entre sexo, género, orientación sexual.",
+    icon: <IconGenderBigender size={32} />,
   },
   {
     title: "Planificación Familiar",
-    description:
-      "¿Querés formar una familia? ¿Sabés cómo cuidarte y con qué? Aprendé más sobre métodos anticonceptivos.",
-    icon: <IconCards size={32} />,
+    description: "¿Querés formar una familia? ¿Sabés cómo cuidarte y con qué? Aprendé más sobre métodos anticonceptivos.",
+    icon: <IconBabyCarriage size={32} />,
   },
   {
     title: "Métodos anticonceptivos",
-    description:
-      "Profundizá tus conocimientos sobre los métodos anticonceptivos y cómo se utilizan.",
-    icon: <IconCards size={32} />,
+    description: "Profundizá tus conocimientos sobre los métodos anticonceptivos y cómo se utilizan.",
+    icon: <IconPill size={32} />,
   },
 ];
 
@@ -52,55 +49,65 @@ export default function Features(): JSX.Element {
     setSelectedFeature(title);
   };
 
-  // Obtener el porcentaje de correctas desde localStorage, pero solo en el cliente
   useEffect(() => {
     const storedPercentages: Record<string, number | null> = {};
-
     features.forEach((feature) => {
       const percentage = localStorage.getItem(feature.title);
       storedPercentages[feature.title] = percentage ? parseFloat(percentage) : null;
     });
-
     setCorrectPercentages(storedPercentages);
-  }, []); // Solo se ejecuta una vez cuando el componente se monta
+  }, []);
 
   return (
-    <section className="lg:my-20">
+    <section className="lg:my-20 px-4">
       {!selectedFeature ? (
         <>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
             {features.map((feature) => {
               const correctPercentage = correctPercentages[feature.title];
-
-              // Lógica para mostrar la copa o la copa tachada
               const TrophyIcon = correctPercentage && correctPercentage > 65 ? IconTrophyFilled : IconTrophyOff;
 
               return (
                 <li
-                  className="p-6 flex flex-col rounded-3xl bg-primary-light h-full"
                   key={feature.title}
+                  className="relative group transform transition-transform hover:scale-105"
                 >
-                  <span className="my-6 w-fit flex gap-2 items-center">
-                    {feature.icon}
-                    <p className="text-3xl font-semibold">{feature.title}</p>
-                  </span>
-                  <p className="text-lg text-gray-700">{feature.description}</p>
-                  {/* Mostrar el ícono de la copa o copa tachada */}
-                  {correctPercentage !== null && (
-                    <div className="mt-2 flex items-center">
-                      <TrophyIcon size={24} className="text-yellow-500" />
-                      <p className="ml-2 text-sm text-gray-500">
-                        {correctPercentage}%
-                      </p>
+                  {/* Comic-style panel with "boom" effect border */}
+                  <div className="absolute inset-0 bg-white rounded-lg transform rotate-2 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" />
+                  
+                  {/* Content container */}
+                  <div className="relative p-8 bg-primary-light rounded-lg border-4 border-black transform -rotate-1 hover:rotate-0 transition-transform">
+                    {/* Header with icon and title */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 bg-white rounded-full border-2 border-black">
+                        {feature.icon}
+                      </div>
+                      <h3 className="text-2xl font-bold font-comic">{feature.title}</h3>
                     </div>
-                  )}
-                  <div className="mt-auto flex justify-end">
-                    <Button
-                      variant="primary"
-                      onClick={() => handleDiscover(feature.title)}
-                    >
-                      Descubrir
-                    </Button>
+                    
+                    {/* Description in speech bubble style */}
+                    <div className="relative bg-white p-4 rounded-lg border-2 border-black mb-6">
+                      <div className="absolute w-4 h-4 bg-white border-l-2 border-b-2 border-black transform rotate-45 -top-2 left-8" />
+                      <p className="text-lg">{feature.description}</p>
+                    </div>
+
+                    {/* Trophy and percentage */}
+                    {correctPercentage !== null && (
+                      <div className="flex items-center gap-2 mb-4">
+                        <TrophyIcon size={24} className="text-yellow-500" />
+                        <span className="text-sm font-bold">{correctPercentage}%</span>
+                      </div>
+                    )}
+
+                    {/* Action button */}
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => handleDiscover(feature.title)}
+                        className="px-6 py-3 bg-black text-white font-black rounded-full border-2 border-black transform transition-all duration-300 hover:scale-105 hover:-rotate-3 shadow-[4px_4px_0px_0px_#FF6B6B]"
+                      >
+                        ¡DESCUBRIR!
+                      </button>
+                    </div>
                   </div>
                 </li>
               );
@@ -108,9 +115,7 @@ export default function Features(): JSX.Element {
           </ul>
         </>
       ) : (
-        <WordDragGame
-          lessonTitle={selectedFeature}
-        />
+        <WordDragGame lessonTitle={selectedFeature} />
       )}
     </section>
   );

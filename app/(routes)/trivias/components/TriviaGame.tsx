@@ -13,12 +13,35 @@ import TriviaReview from './TriviaReview';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
 
-const OPTION_COLORS: Record<number, string> = {
-  0: 'bg-red-500 hover:bg-red-400',
-  1: 'bg-blue-500 hover:bg-blue-400',
-  2: 'bg-yellow-500 hover:bg-yellow-400',
-  3: 'bg-green-500 hover:bg-green-400',
+const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
+  0: 'bg-[#FF6B6B] hover:bg-red-400',
+  1: 'bg-[#4ADE80] hover:bg-green-400',
+  2: 'bg-[#FFD93D] hover:bg-yellow-400',
+  3: 'bg-blue-500 hover:bg-blue-400',
 };
+
+const ComicBurst = ({ text, className }: { text: string; className: string }) => (
+  <div className={`absolute transform ${className}`}>
+    <svg viewBox="0 0 100 100" className="w-24 h-24">
+      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
+            fill="#FF6B6B" stroke="black" strokeWidth="3" />
+      <text x="50" y="55" textAnchor="middle" 
+            className="font-bold text-white text-sm">
+        {text}
+      </text>
+    </svg>
+  </div>
+);
+
+const ComicStar = ({ className }: { className: string }) => (
+  <div className={`absolute ${className}`}>
+    <svg width="40" height="40" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="#FFD93D" stroke="black" strokeWidth="2"/>
+      <text x="50" y="55" textAnchor="middle" className="text-2xl">⭐</text>
+    </svg>
+  </div>
+);
+
 
 interface TriviaGameProps {
   id: string;
@@ -186,11 +209,9 @@ export default function TriviaGame({
 
   if (isFinished) {
     handleFinish();
-
     return (
       <>
         <Toaster />
-
         <TriviaReview
           score={score}
           triviaName={name}
@@ -202,140 +223,99 @@ export default function TriviaGame({
   }
 
   return (
-    <>
-      <main
-        className={`px-4 min-h-screen flex flex-col justify-center ${
-          isNightMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'
-        } lg:gap-8 lg:justify-center`}
-      >
-        {/* Combined Time Remaining and Questions Answered */}
-        <div className='flex justify-center gap-10 mb-4'>
-          {/* Time Remaining */}
-          <div className='flex flex-col items-center'>
-            <p className='font-medium text-lg'>Tiempo</p>
-            <div className='relative w-16 h-16'>
-              <svg className='absolute inset-0' viewBox='0 0 24 24'>
-                <circle
-                  className='text-gray-300'
-                  strokeWidth='4'
-                  stroke='currentColor'
-                  fill='none'
-                  cx='12'
-                  cy='12'
-                  r='10'
-                />
-                <circle
-                  className='text-current'
-                  strokeWidth='4'
-                  strokeLinecap='round'
-                  strokeDasharray='62.83185307179586'
-                  strokeDashoffset={
-                    (62.83185307179586 * (timeLeft ?? 0)) /
-                    (settings?.time ?? DEFAULT_TIME_IN_SECONDS)
-                  }
-                  stroke={getColor(
-                    timeLeft ?? 0,
-                    settings?.time ?? DEFAULT_TIME_IN_SECONDS
-                  )}
-                  fill='none'
-                  cx='12'
-                  cy='12'
-                  r='10'
-                  style={{
-                    transition: 'stroke-dashoffset 1s linear, stroke 1s linear',
-                  }}
-                />
-              </svg>
-              <div className='flex items-center justify-center absolute inset-0 text-2xl font-semibold'>
-                {timeLeft ?? 0}
+    <main className={`min-h-screen ${
+      isNightMode ? 'bg-gray-800 text-white' : 'bg-[#FFE5E5]'
+    } font-bold relative overflow-hidden`}>
+      {/* Decorative elements */}
+      <ComicStar className="top-10 right-10 animate-bounce delay-100" />
+      <ComicStar className="bottom-20 left-10 animate-bounce delay-300" />
+      <ComicBurst text="¡WOW!" className="top-10 left-10 animate-pulse" />
+      
+      <div className="mx-auto px-4 max-w-5xl relative pt-8">
+        {/* Timer and Progress Section */}
+        <section className="mb-8">
+          <div className="bg-white border-4 border-black p-6 rounded-lg 
+                         shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
+            <div className="flex justify-between items-center">
+              {/* Timer */}
+              <div className="text-center">
+                <p className="text-[#FF6B6B] text-xl mb-2">Tiempo</p>
+                <div className="text-4xl font-black text-black">
+                  {timeLeft ?? 0}s
+                </div>
+              </div>
+              
+              {/* Progress */}
+              <div className="text-center">
+                <p className="text-[#4ADE80] text-xl mb-2">Progreso</p>
+                <div className="text-4xl font-black text-black">
+                  {currentQuestion + 1}/{items.length}
+                </div>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* Questions Answered (without circle) */}
-          <div className='flex flex-col items-center' >
-            <p className='font-medium text-lg'>Preguntas</p>
-            <div className='relative w-16 h-16 flex items-center justify-center'>
-              <div className='text-lg font-semibold'>
-                {questionsAnswered + 1}/{items.length}
-              </div>
-            </div>
+        {/* Question Section */}
+        <section className="mb-8">
+          <div className="bg-white border-4 border-black p-8 rounded-lg 
+                         shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
+            <h1 className="text-4xl font-black text-[#4ADE80] mb-6"
+                style={{ textShadow: '3px 3px 0 #000' }}>
+              {name}
+            </h1>
+            
+            <p className="text-2xl text-gray-800 leading-relaxed">
+              {items[currentQuestion].question.question}
+            </p>
           </div>
-        </div>
+        </section>
 
-        {/* Trivia Name */}
-        <div className='flex justify-center mb-6'>
-          <h1 className='text-3xl font-bold'>{name}</h1>
-        </div>
+        {/* Options Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {items[currentQuestion].options.map((option, index) => (
+            <button
+              key={option}
+              onClick={() => handleAnswer(option)}
+              disabled={timeLeft === 0 || timeLeft === undefined}
+              className={`${OPTION_COLORS[index]} p-6 rounded-lg font-black text-xl
+                         border-4 border-black transform hover:scale-105 hover:-rotate-2
+                         transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                         disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {option}
+            </button>
+          ))}
+        </section>
 
-        {/* Current Question */}
-        <div className='flex flex-col items-center'>
-          <p className='my-4 text-3xl font-semibold lg:text-4xl text-center animate-slide-in-right' key={`question-${items[currentQuestion].question.question}`} >
-            {items[currentQuestion].question.question}
-          </p>
-          <div className='flex flex-col gap-2 justify-center lg:min-w-full lg:grid lg:grid-cols-2'>
-            {items[currentQuestion].options.map((option, index) => (
-              <button
-                type='button'
-                key={option}
-                aria-details={`Opción ${index}: ${option}`}
-                disabled={timeLeft === 0 || timeLeft === undefined}
-                onClick={() => {
-                  handleAnswer(option);
-                }}
-                className={`w-full py-3 px-4 rounded-md shadow-md text-lg transition duration-300 ease-in-out ${
-                  OPTION_COLORS[index]
-                } lg:min-h-[6em] lg:min-w-[12em] ${
-                  option === correctAnswer
-                    ? ''
-                    : 'disabled:bg-gray-300 disabled:text-gray-800'
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Floating Fullscreen Button (hidden on mobile) */}
-        <button
-          type='button'
-          onClick={handleFullscreen}
-          className='hidden lg:block fixed bottom-2 left-4 py-1 px-2  bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-400 transition duration-300 z-50'
-        >
-          <Image
-            src='/full-screen.svg'
-            alt='Pantalla Completa'
-            width={18}
-            height={12}
-          />
-        </button>
-
-        {/* Floating Night Mode Button (top-right) */}
-        <button
-          type='button'
-          onClick={toggleNightMode}
-          className='fixed bottom-2 right-4 py-1 px-2 bg-gray-900 rounded-lg shadow-md hover:bg-gray-700 transition duration-300 z-50'
-        >
-          {isNightMode ? (
+        {/* Control Buttons */}
+        <div className="fixed bottom-6 right-6 flex gap-4">
+          <button
+            onClick={handleFullscreen}
+            className="bg-[#4ADE80] p-4 rounded-full border-4 border-black
+                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                     transition-all duration-300"
+          >
+            <Image src="/full-screen.svg" alt="Pantalla Completa" width={24} height={24} />
+          </button>
+          
+          <button
+            onClick={() => setIsNightMode(!isNightMode)}
+            className="bg-[#FFD93D] p-4 rounded-full border-4 border-black
+                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                     transition-all duration-300"
+          >
             <Image
-              src='/sun-mode.svg'
-              alt='Pantalla Completa'
-              width={18}
-              height={12}
+              src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'}
+              alt={isNightMode ? 'Modo Día' : 'Modo Noche'}
+              width={24}
+              height={24}
             />
-          ) : (
-            <Image
-              src='/night-mode.svg'
-              alt='Pantalla Completa'
-              width={18}
-              height={12}
-            />
-          )}
-        </button>
-      </main>
-
+          </button>
+        </div>
+      </div>
+      
       <Toaster />
-    </>
+    </main>
   );
 }

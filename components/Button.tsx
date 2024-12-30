@@ -12,15 +12,15 @@ interface ButtonProps
 }
 
 const buttonBaseStyle =
-	"group px-4 py-2 flex gap-x-2 justify-center items-center rounded-full font-semibold transition duration-150";
+	"group inline-flex items-end justify-end gap-x-2 rounded-full px-4 py-2 font-semibold transition-all duration-150";
 
 const buttonStyles: Record<ButtonProps["variant"], string> = {
-	primary: buttonBaseStyle.concat(" ", "bg-primary text-white"),
-	secondary: buttonBaseStyle.concat(" ", "bg-primary-light text-primary"),
-	ghost: buttonBaseStyle.concat(" ", "bg-primary-light/60 text-primary-dark"),
+	primary: buttonBaseStyle.concat(" ", "bg-blue-600 text-white hover:bg-blue-700"),
+	secondary: buttonBaseStyle.concat(" ", "bg-blue-100 text-blue-600 hover:bg-blue-200"),
+	ghost: buttonBaseStyle.concat(" ", "bg-blue-50 text-blue-800 hover:bg-blue-100"),
 	outline: buttonBaseStyle.concat(
 		" ",
-		"border-2 border-primary text-primary-dark",
+		"bg-red-600 text-white hover:bg-red-700",
 	),
 	danger: buttonBaseStyle.concat(" ", "bg-red-600 text-white"),
 };
@@ -42,7 +42,7 @@ export default function Button({
 			{children}
 
 			{typeof icon === "undefined" ? (
-				<IconArrowRight className="transition duration-150 group-hover:translate-x-1" />
+				<IconArrowRight className="transition-transform duration-150 group-hover:translate-x-1" />
 			) : (
 				icon
 			)}

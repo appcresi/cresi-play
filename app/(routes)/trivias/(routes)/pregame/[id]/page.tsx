@@ -1,18 +1,28 @@
-//test de deploy de prueba ignorar linea
-import { API_URL } from '@/utils/helpers';
+import React from 'react';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
 import { IconArrowNarrowLeft, IconArrowNarrowRight } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
+import { API_URL } from '@/utils/helpers';
 import { type CustomResponse } from '@/types/response';
-import { Trivia } from '@/types/trivia';
+import { type Trivia } from '@/types/trivia';
 import type { Metadata } from 'next';
 
-// Función para obtener los workshops desde la API
+// Types
+interface Params {
+  id: string;
+}
+
+export const metadata: Metadata = {
+  title: 'Presentación trivias | CrESI',
+  description: 'Poné a prueba tus conocimientos con nuestras trivias y aprendé mientras jugás.',
+};
+
+// Workshop fetching function
 async function getWorkshops(id: string): Promise<Trivia> {
   try {
     const response = await fetch(`${API_URL}/trivias/${id}`, {
-      cache: 'no-store', // Evita el caché del lado del cliente
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -21,13 +31,8 @@ async function getWorkshops(id: string): Promise<Trivia> {
 
     const body = (await response.json()) as CustomResponse<Trivia>;
 
-    console.log(body);
-
-    // Verifica si hay algún error en el cuerpo de la respuesta
     if (body.hasError || !body.data) {
-      throw new Error(
-        `API Error: ${body.message || 'No se encontraron datos.'}`
-      );
+      throw new Error(`API Error: ${body.message || 'No se encontraron datos.'}`);
     }
 
     return body.data;
@@ -37,71 +42,138 @@ async function getWorkshops(id: string): Promise<Trivia> {
   }
 }
 
-export const metadata: Metadata = {
-  title: 'Presentación trivias | CrESI',
-  description:
-    'Poné a prueba tus conocimientos con nuestras trivias y aprendé mientras jugás.',
-};
-// Componente de servidor para mostrar los datos
-export default async function Page({ params }: { params: { id: string } }) {
+const ComicBurst = ({ text, className }: { text: string; className: string }) => (
+  <div className={`absolute transform ${className}`}>
+    <svg viewBox="0 0 100 100" className="w-24 h-24">
+      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
+            fill="#FF6B6B" stroke="black" strokeWidth="3" />
+      <text x="50" y="55" textAnchor="middle" 
+            className="font-bold text-white text-sm">
+        {text}
+      </text>
+    </svg>
+  </div>
+);
+
+const ComicStar = ({ className }: { className: string }) => (
+  <div className={`absolute ${className}`}>
+    <svg width="40" height="40" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="#FFD93D" stroke="black" strokeWidth="2"/>
+      <text x="50" y="55" textAnchor="middle" className="text-2xl">⭐</text>
+    </svg>
+  </div>
+);
+
+export default async function Page({ params }: { params: Params }) {
   const data = await getWorkshops(params.id);
 
   return (
-    <div className='flex flex-col min-h-screen justify-start items-center'>
-      <Link href='/trivias' className='fixed top-8 left-8'>
-        <IconArrowNarrowLeft className='ml-4' size={40} />
-      </Link>
-      <h2 className='font-bold text-5xl my-8'>Trivia</h2>
+    <main className="min-h-screen bg-[#FFE5E5] font-bold relative overflow-hidden">
+      {/* Decorative elements */}
+      <ComicStar className="top-10 right-10 animate-bounce delay-100" />
+      <ComicStar className="bottom-20 left-10 animate-bounce delay-300" />
+      <ComicBurst text="¡POW!" className="top-20 right-20 animate-pulse" />
+      
+      <div className="mx-auto px-4 max-w-5xl relative pt-8">
+        {/* Back button */}
+        <Link 
+          href="/trivias" 
+          className="fixed top-8 left-8 bg-[#4ADE80] p-4 rounded-full border-4 border-black
+                    shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                    transition-all duration-300"
+        >
+          <IconArrowNarrowLeft size={32} />
+        </Link>
 
-      <div className='flex flex-col md:flex-row justify-evenly items-center w-full'>
-        <div className='flex flex-col text-2xl '>
-          <p>
-            <strong>Nombre: </strong>
-            {data.name}
-          </p>
-          <p>
-            <strong>Autor: </strong>
-            {data.author}
-          </p>
-          <p>
-            <strong>Nivel: </strong>
-            {data.level}
-          </p>
-          <p>
-            <strong>Preguntas: </strong>
-            {data.questions.length}
-          </p>
-          <p>
-            <strong>Creado el: </strong>
-            {new Date(data.created_at).toLocaleDateString('es-AR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: '2-digit',
-            })}
-          </p>
+        {/* Title */}
+        <div className="text-center mb-12">
+          <h2 className="text-6xl font-black text-[#4ADE80] transform hover:scale-105 transition-transform"
+              style={{ textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
+            ¡TRIVIA!
+          </h2>
         </div>
-        <div className=' flex flex-col gap-y-4 justify-center items-center rounded-3xl bg-violet-500 p-1'>
-          <div className='flex flex-col gap-y-4 justify-center items-center rounded-3xl bg-violet-500 p-4'>
-            <h4 className='text-2xl text-white font-bold text center'>
-              Compartir
-            </h4>
-            <QRCode
-              size={200}
-              style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-              value={'https://jugar.cresi.com.ar/trivias/pregame/' + data.id}
-              viewBox={`0 0 256 256`}
-            />
+
+        {/* Main content */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          {/* Info Card */}
+          <div className="w-full md:w-1/2">
+            <div className="bg-white border-4 border-black p-8 rounded-lg 
+                           shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
+                           transform -rotate-2 hover:rotate-0 transition-all duration-300">
+              <div className="space-y-4 text-xl">
+                <p className="flex items-center gap-2">
+                  <span className="text-[#FF6B6B] font-black">Nombre:</span>
+                  <span className="font-bold">{data.name}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[#4ADE80] font-black">Autor:</span>
+                  <span className="font-bold">{data.author}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[#FFD93D] font-black">Nivel:</span>
+                  <span className="font-bold">{data.level}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[#FF6B6B] font-black">Preguntas:</span>
+                  <span className="font-bold">{data.questions.length}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[#4ADE80] font-black">Creado el:</span>
+                  <span className="font-bold">
+                    {new Date(data.created_at).toLocaleDateString('es-AR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: '2-digit',
+                    })}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* QR Code Card */}
+          <div className="w-full md:w-1/2">
+            <div className="bg-white border-4 border-black p-8 rounded-lg 
+                           shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
+                           transform rotate-2 hover:rotate-0 transition-all duration-300">
+              <h4 className="text-3xl font-black text-[#4ADE80] mb-6 text-center"
+                  style={{ textShadow: '2px 2px 0 #000' }}>
+                ¡Compartir!
+              </h4>
+              <div className="bg-white p-4 rounded-lg border-4 border-black text-center flex justify-center items-center">
+                <QRCode
+                  size={256}
+                  style={{ height: 'auto', maxWidth: '50%', width: '50%' }}
+                  value={`https://jugar.cresi.com.ar/trivias/pregame/${data.id}`}
+                  viewBox={`0 0 256 256`}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Play Button */}
+        <div className="flex justify-center mt-12 mb-8">
+          <Link
+            href={`/trivias/${data.id}`}
+            className="bg-[#4ADE80] px-12 py-4 rounded-full font-black text-2xl
+                     border-4 border-black transform hover:scale-105 hover:-rotate-3 
+                     transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                     flex items-center gap-2"
+          >
+            ¡JUGAR AHORA!
+            <IconArrowNarrowRight size={32} />
+          </Link>
+        </div>
+
+        {/* Settings Button */}
+        <div className="fixed bottom-6 right-6 transform hover:scale-110 transition-transform">
+          <div className="bg-[#4ADE80] rounded-full border-4 border-black 
+                         shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <TriviaSettings />
           </div>
         </div>
       </div>
-      <Link
-        href={'/trivias/' + data.id}
-        className='px-12 mt-4 font-semibold flex justify-center items-center p-2 bg-violet-600 text-2xl rounded-3xl text-white hover:bg-violet-400'
-      >
-        Jugar
-        <IconArrowNarrowRight />
-      </Link>
-      <TriviaSettings />
-    </div>
+    </main>
   );
 }

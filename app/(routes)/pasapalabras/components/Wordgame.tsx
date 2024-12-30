@@ -171,12 +171,16 @@ const Home = () => {
         />
       ) : (
         <>
-          <div className="flex flex-row gap-10 items-center justify-center">
-            <ScoreCounter score={score} />
-            <ProgressBar progress={progress} total={maxWords} />
+           <div className="flex flex-row gap-10 items-center justify-center">
+            <div className="p-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white transform rotate-2">
+              <ScoreCounter score={score} />
+            </div>
+            <div className="p-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white transform -rotate-2">
+              <ProgressBar progress={progress} total={maxWords} />
+            </div>
           </div>
 
-          <div className="text-center p-2 sm:p-1 border-2 border-violet-600 rounded-lg mt-1 mb-2">
+          <div className="text-center p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white mx-4 transform hover:scale-[1.02] transition-transform">
             {currentWord && <DefinitionDisplay definition={currentWord.definicion} />}
           </div>
 
@@ -232,8 +236,6 @@ const Home = () => {
         <Image src='/full-screen.svg' alt='Pantalla Completa' width={20} height={20} />
       </button>
     </main>
-
-
   );
 };
 

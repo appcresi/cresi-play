@@ -1,5 +1,8 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import {
+  IconStar
+} from "@tabler/icons-react";
 
 type Lesson = {
   text: string;
@@ -241,6 +244,27 @@ const createWordsForLevel = (correctWords: string[], extraWords: string[]) => {
   return words.sort(() => Math.random() - 0.5);
 };
 
+const ComicBurst: React.FC<{ text: string; className?: string }> = ({ text, className = '' }) => (
+  <div className={`relative transform ${className}`}>
+    <svg viewBox="0 0 100 100" className="w-16 h-16">
+      <path
+        d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z"
+        fill="#FF6B6B"
+        stroke="black"
+        strokeWidth="3"
+      />
+      <text
+        x="50"
+        y="55"
+        textAnchor="middle"
+        className="font-bold text-white text-xs"
+      >
+        {text}
+      </text>
+    </svg>
+  </div>
+);
+
 const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [score, setScore] = useState(0);
@@ -459,111 +483,126 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="text-xl font-semibold text-violet-600">
-            {currentLessonData.title} - Nivel: {currentLevel + 1}/{currentLessonData.lecciones.length}
+    <div className="p-8 max-w-4xl mx-auto">
+      <div className="relative bg-white border-4 border-black rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+        {/* Header con estilo cómic */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="relative bg-black text-white px-6 py-3 rounded-full transform -rotate-2">
+            <h2 className="text-xl font-black">{currentLessonData?.title} - Nivel {currentLevel + 1}/{currentLessonData?.lecciones.length}</h2>
           </div>
-          <div className="text-xl font-semibold text-gray-700">
-            Puntuación: <span className="text-violet-600">{score}</span>
+          <div className="relative">
+            <ComicBurst 
+              text={`${score} pts`}
+              className="transform rotate-12"
+            />
           </div>
         </div>
 
-        {/* Feedback */}
+        {/* Feedback con estilo cómic */}
         {showFeedback && (
-          <div className={`p-3 rounded text-center ${
-            isLevelComplete
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
+          <div className={`relative p-4 mb-6 border-4 border-black rounded-lg transform transition-all duration-300 ${
+            isLevelComplete 
+              ? 'bg-green-100 rotate-2' 
+              : 'bg-yellow-100 -rotate-1'
           }`}>
-            {feedbackMessage}
+            <div className="absolute -top-2 -left-2">
+              <IconStar className="w-8 h-8 text-yellow-500 animate-spin" />
+            </div>
+            <p className="text-center font-bold text-lg">{feedbackMessage}</p>
           </div>
         )}
-  
-      {/* Texto interactivo con espacios en blanco */}
-      <div className="text-lg leading-relaxed text-gray-800">
-        {textParts.map((part, index) => (
-          <React.Fragment key={index}>
-            {part}
-            {index < blanks.length && (
-              <span
-                draggable={!!blanks[index].filledWord}
-                onDragStart={() =>
-                  blanks[index].filledWord &&
-                  handleDragStart(
-                    {
-                      id: blanks[index].filledWordId || '',
-                      text: blanks[index].filledWord || '',
-                      isCorrect: blanks[index].filledWord === blanks[index].correctWord,
-                    },
-                    blanks[index].id
-                  )
-                }
-                onDragOver={handleDragOver}
-                onDrop={() => handleDrop(blanks[index].id)}
-                className={`inline-block mx-1 px-3 py-1 min-w-20 border-2 rounded ${
-                  blanks[index].filledWord
-                    ? isWordCorrect(blanks[index])
-                      ? 'bg-green-100 border-green-500 cursor-move'
-                      : 'bg-red-100 border-red-500 cursor-move'
-                    : 'border-violet-400 border-dashed text-violet-600'
-                }`}
-              >
-                {blanks[index].filledWord || '____'}
-              </span>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-  
-      {/* Pool de palabras */}
-      <div
-        className="flex flex-wrap gap-2 p-4 bg-violet-50 rounded-lg border border-violet-300"
-        onDragOver={handleDragOver}
-        onDrop={handleDropToPool}
-      >
-        {words.map((word) => (
-          <div
-            key={word.id}
-            draggable
-            onDragStart={() => handleDragStart(word)}
-            className="px-3 py-1 bg-white border border-violet-400 rounded-full shadow-sm cursor-move hover:bg-violet-100 transition-colors"
-          >
-            {word.text}
+
+        {/* Texto con espacios en blanco estilo cómic */}
+        <div className="relative bg-white border-4 border-black rounded-lg p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="text-lg leading-relaxed">
+            {textParts.map((part, index) => (
+              <React.Fragment key={index}>
+                {part}
+                {index < blanks.length && (
+                  <span
+                    draggable={!!blanks[index].filledWord}
+                    onDragStart={() =>
+                      blanks[index].filledWord &&
+                      handleDragStart(
+                        {
+                          id: blanks[index].filledWordId || '',
+                          text: blanks[index].filledWord || '',
+                          isCorrect: blanks[index].filledWord === blanks[index].correctWord,
+                        },
+                        blanks[index].id
+                      )
+                    }
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(blanks[index].id)}
+                    className={`inline-block mx-1 px-3 py-1 min-w-20 border-2 rounded-full transition-all duration-300 transform hover:scale-105 ${
+                      blanks[index].filledWord
+                        ? isWordCorrect(blanks[index])
+                          ? 'bg-green-100 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-move rotate-1'
+                          : 'bg-red-100 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-move -rotate-1'
+                        : 'border-black border-dashed text-black'
+                    }`}
+                  >
+                    {blanks[index].filledWord || '____'}
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
           </div>
-        ))}
-      </div>
-  
-      {/* Botones de acción */}
-      <div className="flex gap-4 justify-center mt-6">
-        <button
-          onClick={resetGame}
-          className="px-4 py-2 bg-violet-500 text-white rounded shadow hover:bg-violet-600 transition-colors"
+        </div>
+
+        {/* Pool de palabras estilo cómic */}
+        <div
+          className="relative bg-violet-100 border-4 border-black rounded-lg p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform rotate-1"
+          onDragOver={handleDragOver}
+          onDrop={handleDropToPool}
         >
-          Reiniciar juego
-        </button>
-  
-        {!isLevelComplete && (
-          <button
-            onClick={checkAnswers}
-            className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600 transition-colors"
-          >
-            Comprobar respuestas
-          </button>
-        )}
-  
-        {isLevelComplete && currentLevel === currentLessonData.lecciones.length - 1 && (
-          <div className="px-4 py-2 bg-violet-100 text-violet-800 rounded shadow">
-            ¡Felicitaciones! Has completado todos los niveles
+          <div className="flex flex-wrap gap-3">
+            {words.map((word) => (
+              <div
+                key={word.id}
+                draggable
+                onDragStart={() => handleDragStart(word)}
+                className="px-4 py-2 bg-white border-2 border-black rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-move 
+                         transform transition-all duration-300 hover:scale-110 hover:-rotate-3"
+              >
+                <span className="font-bold">{word.text}</span>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* Botones de acción estilo cómic */}
+        <div className="flex gap-6 justify-center">
+          <button
+            onClick={resetGame}
+            className="px-6 py-3 bg-white border-4 border-black text-black font-black rounded-full
+                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform transition-all duration-300
+                     hover:scale-105 hover:-rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+          >
+            🔄 Reiniciar juego
+          </button>
+
+          {!isLevelComplete && (
+            <button
+              onClick={checkAnswers}
+              className="px-6 py-3 bg-black text-white font-black rounded-full
+                       shadow-[4px_4px_0px_0px_#FF6B6B] transform transition-all duration-300
+                       hover:scale-105 hover:rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#FF6B6B]"
+            >
+              ✨ Comprobar respuestas
+            </button>
+          )}
+
+          {isLevelComplete && currentLevel === currentLessonData?.lecciones.length - 1 && (
+            <div className="relative bg-yellow-100 border-4 border-black rounded-full px-6 py-3 transform rotate-2">
+              <span className="font-black text-lg">🎉 ¡Felicitaciones! Has completado todos los niveles</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-  
   );
 };
 
 export default WordDragGame;
+
