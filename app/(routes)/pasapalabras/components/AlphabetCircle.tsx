@@ -13,7 +13,7 @@ const AlphabetCircle: React.FC<AlphabetCircleProps> = ({ letters, guessedLetters
   const center = 128;
 
   return (
-    <div className="relative w-64 h-64">
+    <div className="relative w-64 h-64 ">
       <div>
         {letters.map((letter, index) => {
           const angle = (index / letters.length) * 2 * Math.PI;

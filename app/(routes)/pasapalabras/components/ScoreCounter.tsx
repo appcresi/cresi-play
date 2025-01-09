@@ -14,8 +14,6 @@ const ScoreCounter: React.FC<ScoreCounterProps> = ({ score }) => {
         </div>
       </div>
     </div>
-
-
   );
 };
 

@@ -50,9 +50,9 @@ const GameStatusBar = ({
         </div>
 
             {/* Stats Container */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 h-[50px]">
               {/* Score */}
-              <div className="bg-[#FF6B6B] border-2 text-center border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all">
+              <div className="h-full bg-[#FF6B6B] border-2 text-center border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex flex-col justify-center">
                 <div className="text-sm font-bold text-white lg:text-xs">Score</div>
                 <div className={`text-2xl font-black lg:text-xl ${isScoreAnimating ? 'animate-bounce text-[#FFD93D]' : 'text-white'}`}>
                   {score.toLocaleString()}
@@ -60,10 +60,10 @@ const GameStatusBar = ({
               </div>
 
               {/* Level */}
-              <div className="bg-[#4ADE80] border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex items-center space-x-2">
+              <div className="h-full bg-[#4ADE80] border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex items-center space-x-2">
                 <IconStarFilled 
                   size={24} 
-                  className="text-[#FFD93D] lg:size-[20px] hidden md:block"
+                  className="text-[#FFD93D] lg:size-[20px] hidden md:block transition-all duration-300 transform hover:scale-110 hover:rotate-12"
                   stroke={2}
                 />
                 <div className="text-center">
@@ -73,7 +73,7 @@ const GameStatusBar = ({
               </div>
 
               {/* Lives */}
-              <div className="flex items-center space-x-1 bg-white border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all">
+              <div className="h-full flex items-center space-x-1 bg-white border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all">
                 {[...Array(3)].map((_, i) => (
                   i < lives ? (
                     <IconHeartFilled

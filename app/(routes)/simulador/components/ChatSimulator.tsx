@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import ChatLayout from './ChatLayout';
 import MessageBubble from './MessageBubble';
 import ResponseButtons from './ResponseButtons';
-import GameStatusBar from './GameStatusBar';
+import GameStatusBar from '@/components/GameStatusBar';  
 
 const ChatSimulator: React.FC = () => {
   const [messages, setMessages] = useState<{ content: string; sender: 'user' | 'bot' }[]>([
@@ -81,6 +81,16 @@ const ChatSimulator: React.FC = () => {
     setLives(3);
     setIsSimulatorComplete(false);
   };
+
+  useEffect(() => {
+    const answers = questions[currentQuestionIndex]?.answers || [];
+    setShuffledAnswers(shuffleArray(answers));
+  }, [currentQuestionIndex]);
+
+  const shuffleArray = (array: any[]) => {
+    return array.sort(() => Math.random() - 0.5);
+  };
+
   const questions = [
     {
         question: 'Oye, eres muy genial. ¿En qué escuela estudias? Mis papás dicen que conocer nuevos amigos es bueno.',
@@ -196,19 +206,7 @@ const ChatSimulator: React.FC = () => {
     }
 ];
 
-  useEffect(() => {
-    const answers = questions[currentQuestionIndex]?.answers || [];
-    setShuffledAnswers(shuffleArray(answers));
-  }, [currentQuestionIndex]);
-
-  const shuffleArray = (array: any[]) => {
-    return array.sort(() => Math.random() - 0.5);
-  };
-
-
-
-
-  return (
+return (
     <>
     <GameStatusBar
       title="Simulador de Chat Seguro"
