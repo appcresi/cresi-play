@@ -174,9 +174,9 @@ const ChatSimulator: React.FC = () => {
     },
     {
         question: 'Somos casi mejores amigos. Todavía no conozco a tu familia. ¿Me muestras una foto de tu familia?',
-        correctAnswer: 'No tengos fotos de mi familia ahora',
+        correctAnswer: 'No tengo fotos de mi familia ahora',
         answers: [
-            { text: 'No tengos fotos de mi familia ahora' },
+            { text: 'No tengo fotos de mi familia ahora' },
             { text: 'Claro, te la envío.' },
         ],
     },

@@ -5,7 +5,15 @@ export const gameLevels: GameLevel[] = [
       title: "Pubertad",
       lecciones: [
         {
-          text: "La pubertad marca el fin de la {niñez}, y nos damos cuenta porque experimentamos grandes {cambios} tanto {físicos}, como {emocionales} y psicológicos. Y para qué se dan tantos cambios, para alcanzar la capacidad de {reproducirnos}. En las {mujeres}, los cambios más importantes son: Crecimiento de los {senos}, aparición del {vello corporal}, aumento del {sudor}, los {ovarios} comienzan a {ovular} y con eso aparecerá la {menstruación}. En los {varones}, los cambios que se dan son: {Crecimiento} de los testículos y el pene, aparición del {vello corporal}, aumento del {sudor}, cambios en la {voz}, los {testículos} empezarán a producir {espermatozoides} y con eso aparecerá la {eyaculación}.",
+          text: "La pubertad marca el fin de la {niñez}, y nos damos cuenta porque experimentamos grandes {cambios} tanto {físicos}, como {emocionales} y psicológicos. Y para qué se dan tantos cambios, para alcanzar la capacidad de {reproducirnos}.",
+          extraWords: ['adolescencia', 'hormonas', 'madurez']
+        },
+        {
+          text: "En las {mujeres}, los cambios más importantes son: Crecimiento de los {senos}, aparición del {vello corporal}, aumento del {sudor}, los {ovarios} comienzan a {ovular} y con eso aparecerá la {menstruación}.",
+          extraWords: ['adolescencia', 'hormonas', 'madurez']
+        },
+        {
+          text: "En los {varones}, los cambios que se dan son: {Crecimiento} de los testículos y el pene, aparición del {vello corporal}, aumento del {sudor}, cambios en la {voz}, los {testículos} empezarán a producir {espermatozoides} y con eso aparecerá la {eyaculación}.",
           extraWords: ['adolescencia', 'hormonas', 'madurez']
         },
         {
@@ -13,11 +21,19 @@ export const gameLevels: GameLevel[] = [
           extraWords: ['confusión', 'adolescentes', 'pubertad']
         },
         {
-          text: "Entre los cambios físicos que nombramos aparecieron dos palabras que quizás no conocías: {eyaculación} y {menstruación}. Para hablar de {eyaculación} conviene que empecemos viendo cómo está formado el {aparato sexual masculino}. Está formado por {órganos internos} y externos. Los principales {órganos externos} son los {testículos}, el {epidídimo} y el {pene}. Los {testículos} se alojan en el {escroto}. Las estructuras internas son los {conductos deferentes} y glándulas como la {próstata}.",
+          text: "Entre los cambios físicos que nombramos aparecieron dos palabras que quizás no conocías: {eyaculación} y {menstruación}. Para hablar de {eyaculación} conviene que empecemos viendo cómo está formado el {aparato sexual masculino}. Está formado por {órganos internos} y externos.",
           extraWords: ['sistema', 'genitales', 'fertilidad']
         },
         {
-          text: "Al llegar la {adolescencia}, los {testículos} comienzan a producir {espermatozoides}, para lo cual necesitan estar a una temperatura menor a la {corporal}, por eso están alojados en el {escroto}. Cuando se produce una {estimulación sexual}, los {espermatozoides} viajan por los {conductos deferentes}. A su vez, las {vesículas seminales} y la {próstata} se contraen, expulsando el {semen} que se combina con los {espermatozoides} y viajan por la {uretra}. Al llegar al {orgasmo}, o al punto de mayor {tensión sexual}, el semen es expulsado a través del {pene} hacia afuera, produciendo la {eyaculación}.",
+          text: "Los principales {órganos externos} son los {testículos}, el {epidídimo} y el {pene}. Los {testículos} se alojan en el {escroto}. Las estructuras internas son los {conductos deferentes} y glándulas como la {próstata}.",
+          extraWords: ['sistema', 'genitales', 'fertilidad']
+        },
+        {
+          text: "Al llegar la {adolescencia}, los {testículos} comienzan a producir {espermatozoides}, para lo cual necesitan estar a una temperatura menor a la {corporal}, por eso están alojados en el {escroto}. ",
+          extraWords: ['madurez', 'reproducción', 'testosterona']
+        },
+        {
+          text: "Cuando se produce una {estimulación sexual}, los {espermatozoides} viajan por los {conductos deferentes}. A su vez, las {vesículas seminales} y la {próstata} se contraen, expulsando el {semen} que se combina con los {espermatozoides} y viajan por la {uretra}. Al llegar al {orgasmo}, o al punto de mayor {tensión sexual}, el semen es expulsado a través del {pene} hacia afuera, produciendo la {eyaculación}.",
           extraWords: ['madurez', 'reproducción', 'testosterona']
         },
         {

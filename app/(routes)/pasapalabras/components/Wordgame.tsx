@@ -9,7 +9,7 @@ import FinalReport from './FinalReport';
 import Image from 'next/image';
 import GameStatusBar from '@/components/GameStatusBar'; 
 import PurchaseModal from '@/components/PurchaseModal'; 
-import { IconHeartPlus } from '@tabler/icons-react';
+
 
 type LetterKey = keyof typeof palabras;
 const letters = Object.keys(palabras) as LetterKey[];

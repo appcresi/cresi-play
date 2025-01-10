@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled } from '@tabler/icons-react';
+import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox } from '@tabler/icons-react';
 
 interface GameStatusProps {
   title?: string;
   score?: number;
   lives?: number;
   level?: number;
+  timeLeft?: number;
+  currentQuestion?: number;
+  totalQuestions?: number;
 }
-
 
 const GameStatusBar = ({
   title = "Super Game",
   score = 0,
   lives = 3,
-  level = 1
+  level = 1,
+  timeLeft,
+  currentQuestion = 0,
+  totalQuestions = 0
 }: GameStatusProps) => {
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
   const [prevScore, setPrevScore] = useState(score);
@@ -28,29 +33,44 @@ const GameStatusBar = ({
   }, [score, prevScore]);
 
   return (
-    <div className="fixed top-0 left-0 right-0  p-2">
+    <div className="fixed top-0 left-0 right-0 p-2">
       <div className="relative mx-auto max-w-7xl">
         <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-4 rounded-lg transform hover:rotate-0 transition-all duration-300">
           <div className="flex items-center justify-between">
             {/* Game Title */}
             <div className="flex items-center space-x-3">
-          <IconTrophy 
-            size={32} 
-            className="text-[#FFD93D] animate-bounce hidden md:block" 
-            stroke={2}
-          />
-          <h1 
-            className="hidden md:block text-2xl font-black" 
-            style={{ 
-              textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' 
-            }}
-          >
-            <span className="text-[#4ADE80]">{title}</span>
-          </h1>
-        </div>
+              <IconTrophy 
+                size={32} 
+                className="text-[#FFD93D] animate-bounce hidden md:block" 
+                stroke={2}
+              />
+              <h1 
+                className="hidden md:block text-2xl font-black" 
+                style={{ 
+                  textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000' 
+                }}
+              >
+                <span className="text-[#4ADE80]">{title}</span>
+              </h1>
+            </div>
 
             {/* Stats Container */}
             <div className="flex items-center space-x-2 h-[50px]">
+              {/* Questions Counter */}
+              <div className="h-full bg-purple-500 border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex items-center space-x-2">
+                <IconCheckbox 
+                  size={24} 
+                  className="text-white lg:size-[20px] hidden md:block" 
+                  stroke={2}
+                />
+                <div className="text-center">
+                  <div className="text-sm font-bold text-white lg:text-xs">Preguntas</div>
+                  <div className="text-xl font-black text-white lg:text-lg">
+                    {currentQuestion}/{totalQuestions}
+                  </div>
+                </div>
+              </div>
+
               {/* Score */}
               <div className="h-full bg-[#FF6B6B] border-2 text-center border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex flex-col justify-center">
                 <div className="text-sm font-bold text-white lg:text-xs">Score</div>
@@ -58,6 +78,23 @@ const GameStatusBar = ({
                   {score.toLocaleString()}
                 </div>
               </div>
+
+              {/* Timer */}
+              {typeof timeLeft === 'number' && (
+                <div className="h-full bg-[#FFD93D] border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex items-center space-x-2">
+                  <IconClock 
+                    size={24} 
+                    className="text-black lg:size-[20px] hidden md:block" 
+                    stroke={2}
+                  />
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-black lg:text-xs">Time</div>
+                    <div className={`text-xl font-black lg:text-lg ${timeLeft <= 5 ? 'text-[#FF6B6B] animate-pulse' : 'text-black'}`}>
+                      {timeLeft}s
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Level */}
               <div className="h-full bg-[#4ADE80] border-2 border-black rounded-lg px-4 py-2 lg:px-3 lg:py-1 lg:scale-90 transform hover:scale-105 transition-all flex items-center space-x-2">

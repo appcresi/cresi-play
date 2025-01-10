@@ -46,26 +46,27 @@ const renderCustomizedLabel = ({
 }
 
 interface TriviaReviewProps {
-  score: number
+  correctAnswers: number
   triviaName: string
   triviaLength: number
   answeredQuestions: TriviaAnsweredQuestion[]
 }
 
-export default function TriviaReview ({ score, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
+
+export default function TriviaReview ({ correctAnswers, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
   const COLORS: Record<string, string> = {
     'Respuestas correctas': '#10B981',
     'Respuestas incorrectas': '#EF4444'
   }
 
   const data = [
-    { name: 'Respuestas correctas', value: score },
-    { name: 'Respuestas incorrectas', value: triviaLength - score }
+    { name: 'Respuestas correctas', value: correctAnswers },
+    { name: 'Respuestas incorrectas', value: triviaLength - correctAnswers }
   ]
 
-  const completionPercentage = Math.round((score / triviaLength) * 100)
+  const completionPercentage = Math.round((correctAnswers / triviaLength) * 100)
 
-  const isCompleted = isTriviaCompleted(score, triviaLength)
+  const isCompleted = isTriviaCompleted(correctAnswers, triviaLength)
 
   return (
     <section className="p-8 lg:mx-auto lg:max-w-5xl">
@@ -113,7 +114,7 @@ export default function TriviaReview ({ score, triviaName, triviaLength, answere
           </ResponsiveContainer>
 
           <p className="mt-4 font-bold text-lg">
-            ¡Contestaste correctamente {score} de {triviaLength}!
+            ¡Contestaste correctamente {correctAnswers} de {triviaLength}!
           </p>
         </div>
       </div>

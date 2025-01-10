@@ -3,6 +3,7 @@ import React from 'react';
 interface GameControlsProps {
   onReset: () => void;
   onCheck: () => void;
+  onBuyLife: () => void;
   isComplete: boolean;
   isLastLevel: boolean;
   onNext: () => void;

@@ -12,7 +12,8 @@ import { DEFAULT_TIME_IN_SECONDS } from '@/utils/constants';
 import TriviaReview from './TriviaReview';
 import Image from 'next/image';
 import Swal from 'sweetalert2';
-
+import GameStatusBar from '@/components/GameStatusBar';
+import PurchaseModal from '@/components/PurchaseModal';
 
 const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
   0: 'bg-[#FF6B6B] hover:bg-red-400',
@@ -20,6 +21,11 @@ const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
   2: 'bg-[#FFD93D] hover:bg-yellow-400',
   3: 'bg-blue-500 hover:bg-blue-400',
 };
+
+const CORRECT_ANSWER_POINTS = 100;
+const INCORRECT_ANSWER_PENALTY = 50;
+const EXTRA_LIFE_COST = 200;
+const INITIAL_LIVES = 3;
 
 interface TriviaGameProps {
   id: string;
@@ -33,26 +39,46 @@ export default function TriviaGame({
   items,
 }: TriviaGameProps): JSX.Element {
   const [isFinished, setIsFinished] = useState<boolean>(false);
-  const [correctAnswer, setCorrectIndex] = useState<string | undefined>(
-    undefined
-  );
+  const [isGameOver, setIsGameOver] = useState<boolean>(false);
+  const [correctAnswer, setCorrectIndex] = useState<string | undefined>(undefined);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
+  const [lives, setLives] = useState<number>(INITIAL_LIVES);
   const [timeLeft, setTimeLeft] = useState<number | undefined>(
     () => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS
   );
-  const [answeredQuestions, setAnsweredQuestions] = useState<
-    TriviaAnsweredQuestion[]
-  >([]);
-  const [isNightMode, setIsNightMode] = useState<boolean>(false); // Estado para el modo nocturno
+  const [answeredQuestions, setAnsweredQuestions] = useState<TriviaAnsweredQuestion[]>([]);
+  const [isNightMode, setIsNightMode] = useState<boolean>(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
+  const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false);
 
   const settings = getSettings();
 
   const handleTimeLeft = useCallback(() => {
     setTimeLeft(settings?.time ?? DEFAULT_TIME_IN_SECONDS);
+    setIsTimerPaused(false);
   }, [settings]);
 
+  const handlePurchaseLife = () => {
+    if (score >= EXTRA_LIFE_COST) {
+      setScore(prevScore => prevScore - EXTRA_LIFE_COST);
+      setLives(prevLives => prevLives + 1);
+      setShowPurchaseModal(false);
+      if (isGameOver) {
+        setIsGameOver(false);
+        handleTimeLeft();
+      }
+    }
+  };
+
+  const handleGameOver = () => {
+    setIsGameOver(true);
+    setTimeLeft(undefined);
+    setShowPurchaseModal(true);
+  };
+
   const handleContinue = useCallback(() => {
+    if (isGameOver) return;
     handleTimeLeft();
 
     if (currentQuestion === items.length - 1) {
@@ -60,15 +86,52 @@ export default function TriviaGame({
     } else {
       setCurrentQuestion(currentQuestion + 1);
     }
-  }, [currentQuestion, handleTimeLeft, items.length]);
+  }, [currentQuestion, handleTimeLeft, items.length, isGameOver]);
+
+  const handleTimeOut = useCallback(() => {
+    if (isTimerPaused) return;
+    
+    setIsTimerPaused(true);
+    toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
+    
+    setLives(prevLives => {
+      const newLives = prevLives - 1;
+      if (newLives <= 0) {
+        handleGameOver();
+        return 0;
+      }
+      return newLives;
+    });
+
+    setAnsweredQuestions([
+      ...answeredQuestions,
+      {
+        question: items[currentQuestion].question.question,
+        answer: items[currentQuestion].question.answer,
+        resume: items[currentQuestion].question.resume,
+        isCorrect: false,
+        userAnswer: "Sin respuesta - Tiempo agotado",
+      },
+    ]);
+
+    setTimeout(() => {
+      if (lives > 1) {
+        handleContinue();
+      }
+    }, 2000);
+  }, [answeredQuestions, currentQuestion, handleContinue, isTimerPaused, items, lives]);
 
   const handleAnswer = useCallback(
     (answer: string) => {
+      if (isGameOver) return;
+      setIsTimerPaused(true);
       setTimeLeft(undefined);
       setCorrectIndex(items[currentQuestion].question.answer);
 
-      if (answer === items[currentQuestion].question.answer) {
-        setScore(score + 1);
+      const isCorrect = answer === items[currentQuestion].question.answer;
+      
+      if (isCorrect) {
+        setScore(score + CORRECT_ANSWER_POINTS);
         Swal.fire({
           icon: "success",
           title: "¡Genial!",
@@ -77,6 +140,15 @@ export default function TriviaGame({
           timer: 500
         });
       } else {
+        setScore(prevScore => Math.max(0, prevScore - INCORRECT_ANSWER_PENALTY));
+        setLives(prevLives => {
+          const newLives = prevLives - 1;
+          if (newLives <= 0) {
+            handleGameOver();
+            return 0;
+          }
+          return newLives;
+        });
         Swal.fire({
           icon: "error",
           title: "Oops...",
@@ -86,9 +158,11 @@ export default function TriviaGame({
         });
       }
 
-      setTimeout(() => {
-        handleContinue();
-      }, 1000);
+      if (!isGameOver) {
+        setTimeout(() => {
+          handleContinue();
+        }, 1000);
+      }
 
       setAnsweredQuestions([
         ...answeredQuestions,
@@ -96,18 +170,25 @@ export default function TriviaGame({
           question: items[currentQuestion].question.question,
           answer: items[currentQuestion].question.answer,
           resume: items[currentQuestion].question.resume,
-          isCorrect: answer === items[currentQuestion].question.answer,
+          isCorrect,
           userAnswer: answer,
         },
       ]);
     },
-    [currentQuestion, answeredQuestions, handleContinue, score]
+    [currentQuestion, answeredQuestions, handleContinue, score, isGameOver, items]
   );
+  const getCorrectAnswersCount = useCallback(() => {
+    return answeredQuestions.filter(q => q.isCorrect).length;
+  }, [answeredQuestions]);
+
+  const calculateCorrectAnswersPercentage = useCallback(() => {
+    const correctAnswers = getCorrectAnswersCount();
+    return Math.round((correctAnswers / items.length) * 100);
+  }, [getCorrectAnswersCount, items.length]);
 
   const handleFinish = useCallback(() => {
     const status = getTriviaStatus(id);
-
-    const actualPercentage = Math.round((score / items.length) * 100);
+    const actualPercentage = calculateCorrectAnswersPercentage();
 
     const higherPercentage =
       typeof status !== 'undefined' && status.percentage > actualPercentage
@@ -121,23 +202,29 @@ export default function TriviaGame({
     };
 
     saveTriviaStatus(updatedTrivia);
-
     toast.success('Se guardó tu progreso.');
-  }, [id, score, items.length]);
+  }, [id, calculateCorrectAnswersPercentage]);
+
+  const resetGame = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setLives(INITIAL_LIVES);
+    setIsGameOver(false);
+    setIsFinished(false);
+    setAnsweredQuestions([]);
+    setIsTimerPaused(false);
+    handleTimeLeft();
+  };
 
   useEffect(() => {
-    if (!isFinished) {
+    if (!isFinished && !isGameOver && !isTimerPaused) {
       if (typeof timeLeft === 'undefined') return;
 
       if (timeLeft === 0) {
-        toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
-
-        setTimeout(() => {
-          handleContinue();
-        }, 2000);
+        handleTimeOut();
       } else if (timeLeft > 0) {
         const interval = setInterval(() => {
-          setTimeLeft((current) => Number(current) - 1);
+          setTimeLeft((current) => (current ? current - 1 : current));
         }, 1000);
 
         return () => {
@@ -145,24 +232,7 @@ export default function TriviaGame({
         };
       }
     }
-  }, [timeLeft, isFinished, handleContinue]);
-
-  const getColor = (timeLeft: number, totalTime: number) => {
-    const ratio = timeLeft / totalTime;
-    const red = Math.min(255, Math.floor((1 - ratio) * 255));
-    const green = Math.min(255, Math.floor(ratio * 255));
-    return `rgb(${red}, ${green}, 0)`;
-  };
-
-  const getAnsweredColor = (
-    questionsAnswered: number,
-    totalQuestions: number
-  ) => {
-    const ratio = questionsAnswered / totalQuestions;
-    const red = Math.min(255, Math.floor((1 - ratio) * 255));
-    const green = Math.min(255, Math.floor(ratio * 255));
-    return `rgb(${red}, ${green}, 0)`;
-  };
+  }, [timeLeft, isFinished, isGameOver, isTimerPaused, handleTimeOut]);
 
   const handleFullscreen = () => {
     const element = document.documentElement;
@@ -177,21 +247,13 @@ export default function TriviaGame({
     }
   };
 
-  // Calculate the number of questions answered
-  const questionsAnswered = currentQuestion;
-  const progressPercent = (questionsAnswered / items.length) * 100;
-
-  const toggleNightMode = () => {
-    setIsNightMode((prev) => !prev);
-  };
-
   if (isFinished) {
     handleFinish();
     return (
       <>
         <Toaster />
         <TriviaReview
-          score={score}
+          correctAnswers={getCorrectAnswersCount()}
           triviaName={name}
           triviaLength={items.length}
           answeredQuestions={answeredQuestions}
@@ -203,95 +265,106 @@ export default function TriviaGame({
   return (
     <main className={`min-h-screen ${
       isNightMode ? 'bg-gray-800 text-white' : 'bg-[#FFE5E5]'
-    } font-bold relative overflow-hidden`}>
-            
-      <div className="mx-auto px-4 max-w-5xl relative pt-8">
-        {/* Timer and Progress Section */}
-        <section className="mb-4 py-4"> {/* Reduce margen inferior */}
-          <div className="bg-white border-4 border-black p-4 rounded-lg 
-                          shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
-            <div className="flex justify-between items-center">
-              {/* Timer */}
-              <div className="text-center">
-                <p className="text-[#FF6B6B] text-lg mb-1">Tiempo</p> {/* Reduce tamaño de texto y margen */}
-                <div className="text-2xl font-black text-black"> {/* Reduce tamaño de texto */}
-                  {timeLeft ?? 0}s
-                </div>
-              </div>
-              <h1 className="text-1xl sm:text-4xl font-black text-[#4ADE80] mb-6"
-                style={{ textShadow: '3px 3px 0 #000' }}>
-              {name}
-              </h1>
-              {/* Progress */}
-              <div className="text-center">
-                <p className="text-[#4ADE80] text-lg mb-1">Progreso</p> {/* Reduce tamaño de texto y margen */}
-                <div className="text-2xl font-black text-black"> {/* Reduce tamaño de texto */}
-                  {currentQuestion + 1}/{items.length}
-                </div>
-              </div>
+    } font-bold relative overflow-hidden pt-24`}>
+      
+      <GameStatusBar 
+        title={name}
+        score={score}
+        lives={lives}
+        level={currentQuestion + 1}
+        timeLeft={timeLeft}
+        currentQuestion={currentQuestion + 1}
+        totalQuestions={items.length}
+      />
+
+      {isGameOver ? (
+        <div className="mx-auto px-4 max-w-5xl">
+          <div className="bg-white border-4 border-black p-8 rounded-lg text-center 
+                        shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
+            <h2 className="text-2xl font-bold mb-4">¡Game Over!</h2>
+            <p className="mb-4">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
+            <div className="flex justify-center gap-4">
+              <button 
+                onClick={() => setShowPurchaseModal(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
+                         border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                Comprar Vida Extra
+              </button>
+              <button 
+                onClick={resetGame}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600
+                         border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                Reiniciar Juego
+              </button>
             </div>
           </div>
-        </section>
-
-
-        {/* Question Section */}
-        <section className="mb-4 sm:mb-8">
-          <div 
-            className="bg-white border-2 sm:border-4 border-black p-4 sm:p-8 rounded-lg text-center 
-                      shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
-                      transform rotate-1"
-          >
-            <p className="text-lg sm:text-2xl text-gray-800 leading-relaxed">
-              {items[currentQuestion].question.question}
-            </p>
-          </div>
-        </section>
-
-
-        {/* Options Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items[currentQuestion].options.map((option, index) => (
-            <button
-            key={option}
-            onClick={() => handleAnswer(option)}
-            disabled={timeLeft === 0 || timeLeft === undefined}
-            className={`${OPTION_COLORS[index as 0 | 1 | 2 | 3]} p-6 rounded-lg font-black text-xl
-                       border-4 border-black transform hover:scale-105 hover:-rotate-2
-                       transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                       disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {option}
-          </button>
-          ))}
-        </section>
-
-        {/* Control Buttons */}
-        <div className="fixed bottom-6 right-6 flex gap-4">
-        <button
-          onClick={handleFullscreen}
-          className="bg-[#4ADE80] p-4 rounded-full border-4 border-black
-                  shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
-                  transition-all duration-300 hidden sm:block"
-        >
-          <Image src="/full-screen.svg" alt="Pantalla Completa" width={24} height={24} />
-        </button>
-
-          
-          <button
-            onClick={() => setIsNightMode(!isNightMode)}
-            className="bg-[#FFD93D] p-4 rounded-full border-4 border-black
-                     shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
-                     transition-all duration-300"
-          >
-            <Image
-              src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'}
-              alt={isNightMode ? 'Modo Día' : 'Modo Noche'}
-              width={24}
-              height={24}
-            />
-          </button>
         </div>
-      </div>
+      ) : (
+        <div className="mx-auto px-4 max-w-5xl">
+          <section className="mb-4 sm:mb-8">
+            <div className="bg-white border-2 sm:border-4 border-black p-4 sm:p-8 rounded-lg text-center 
+                          shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
+                          transform rotate-1">
+              <p className="text-lg sm:text-2xl text-gray-800 leading-relaxed">
+                {items[currentQuestion].question.question}
+              </p>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {items[currentQuestion].options.map((option, index) => (
+              <button
+                key={option}
+                onClick={() => handleAnswer(option)}
+                disabled={timeLeft === 0 || timeLeft === undefined}
+                className={`${OPTION_COLORS[index as 0 | 1 | 2 | 3]} p-6 rounded-lg font-black text-xl
+                           border-4 border-black transform hover:scale-105 hover:-rotate-2
+                           transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                           disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {option}
+              </button>
+            ))}
+          </section>
+
+          <div className="fixed bottom-6 right-6 flex gap-4">
+            <button
+              onClick={handleFullscreen}
+              className="bg-[#4ADE80] p-4 rounded-full border-4 border-black
+                      shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                      transition-all duration-300 hidden sm:block"
+            >
+              <Image src="/full-screen.svg" alt="Pantalla Completa" width={24} height={24} />
+            </button>
+
+            <button
+              onClick={() => setIsNightMode(!isNightMode)}
+              className="bg-[#FFD93D] p-4 rounded-full border-4 border-black
+                       shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                       transition-all duration-300"
+            >
+              <Image
+                src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'}
+                alt={isNightMode ? 'Modo Día' : 'Modo Noche'}
+                width={24}
+                height={24}
+              />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <PurchaseModal 
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+        onPurchase={handlePurchaseLife}
+        canAfford={score >= EXTRA_LIFE_COST}
+        cost={EXTRA_LIFE_COST}
+        itemName="vida extra"
+        description="¿Comprar una vida extra?"
+      />
       
       <Toaster />
     </main>
