@@ -10,6 +10,7 @@ const monaSans = localFont({
   display: 'swap',
   variable: '--font-mona-sans'
 })
+import ComicBurgerMenu from '@/components/ComicBurgerMenu';
 
 export const metadata: Metadata = {
   icons: ['/cresi-logo.ico']
@@ -19,6 +20,7 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
   return (
     <html lang='es' className={monaSans.className}>
       <body className='bg-[#FFE5E5]'>{children}</body>
+      <ComicBurgerMenu />
       <Analytics />
       <Adsense />
     </html>

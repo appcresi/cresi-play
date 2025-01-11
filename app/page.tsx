@@ -12,6 +12,8 @@ import Features from "./components/Features";
 import type { Metadata } from "next";
 import ComicBurst from '@/components/ComicBurst';
 
+
+
 export const metadata: Metadata = {
   title: "CrESI | Jugar",
   description:
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
 const ComicHome = () => {
   return (
     <main className="min-h-screen bg-[#FFE5E5] font-bold overflow-hidden">
+      
       {/* Comic-style header with enhanced effects */}
       <div className="mx-auto px-4 max-w-5xl relative mb-4">
         <ComicBurst text="¡WOW!" className="absolute top-4 right-4 z-10" />
