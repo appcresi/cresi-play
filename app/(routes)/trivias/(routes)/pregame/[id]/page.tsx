@@ -52,17 +52,7 @@ export default async function Page({ params }: { params: Params }) {
       <ComicBurst text="¡POW!" className="top-10 right-10 animate-pulse z-10" />
       
       <div className="mx-auto px-4 max-w-5xl relative pt-8">
-        {/* Back button */}
-        <Link 
-          href="/trivias" 
-          className="fixed top-4 left-4 bg-[#4ADE80] p-2 sm:p-4 rounded-full border-2 sm:border-4 border-black
-                    shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
-                    transition-all duration-300"
-        >
-          <IconArrowNarrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
-        </Link>
-
-
+     
         {/* Title */}
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-[#4ADE80] mb-4 transform hover:scale-105 transition-transform"

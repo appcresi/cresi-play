@@ -5,7 +5,8 @@ import {
   IconCards,
   IconPresentation,
   IconShieldCheck,
-  IconBrandPnpm
+  IconBrandPnpm,
+  IconPacman
 } from "@tabler/icons-react";
 
 const ComicSplash = ({ text, className }: { text: string; className: string }) => (
@@ -55,14 +56,24 @@ const features = [
     color: "#FF6B6B"
   },
   {
+    title: "DataMuncher",
+    description: "¡A comer! Recorré el laberinto y respondé preguntas para ganar puntos y evitar a las bacterias.",
+    icon: <IconPacman    size={32} />,
+    route: "/datamuncher",
+    splashText: "¡A jugar!",
+    color: "#4ADE80"
+  }
+  ,
+  {
     title: "Nuevas Trivias",
     description: "¡Novedad! Jugá a la nueva trivia incorporada actualmente sobre: ALIMENTACIÓN",
     icon: <IconPresentation size={32} />,
     route: "https://jugar.cresi.com.ar/trivias/pregame/2305b679-1b36-444a-986f-1d4f6a797d51",
     splashText: "¡WOW!",
-    color: "#4ADE80"
+    color: "#FFD93D"
   }
 ];
+
 
 const Features = () => {
   return (
