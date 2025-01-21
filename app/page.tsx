@@ -15,11 +15,48 @@ import ComicBurst from '@/components/ComicBurst';
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://jugar.cresi.com.ar"),
   title: "CrESI | Jugar",
   description:
     "¡Aprendé jugando con CrESI! Pon a prueba tus conocimientos con nuestras trivia y juegos didácticos.",
+  keywords: [
+    "CrESI",
+    "juegos educativos",
+    "trivia didácticas",
+    "educación sexual integral",
+    "aprender jugando",
+    "juegos para adolescentes",
+    "ESI",
+    "cresi",
+  ],
+  openGraph: {
+    title: "CrESI | Jugar",
+    description:
+      "¡Aprendé jugando con CrESI! Pon a prueba tus conocimientos con nuestras trivia y juegos didácticos.",
+    url: "https://jugar.cresi.com.ar/",
+    siteName: "CrESI",
+    images: [
+      {
+        url: "illustration-1.jpg",
+        width: 1200,
+        height: 630,
+        alt: "CrESI - Aprendé jugando con nuestras trivias y juegos didácticos.",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CrESI | Jugar",
+    description:
+      "¡Aprendé jugando con CrESI! Pon a prueba tus conocimientos con nuestras trivia y juegos didácticos.",
+    images: ["illustration-1.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
-
 
 const ComicHome = () => {
   return (

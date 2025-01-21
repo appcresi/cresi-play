@@ -11,10 +11,50 @@ import ComicBurst from '@/components/ComicBurst';
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://jugar.cresi.com.ar"),
   title: "CrESI | Trivia",
   description:
-    "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad.",
+    "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
+  keywords: [
+    "CrESI",
+    "trivia",
+    "juegos educativos",
+    "trivia didácticas",
+    "educación sexual integral",
+    "trivia ESI",
+    "preguntas y respuestas",
+    "juegos para jóvenes",
+    "aprender jugando",
+  ],
+  openGraph: {
+    title: "CrESI | Trivia",
+    description:
+      "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
+    url: "https://jugar.cresi.com.ar/trivias",
+    siteName: "CrESI",
+    images: [
+      {
+        url: "illustration-1.jpg",
+        width: 1200,
+        height: 630,
+        alt: "CrESI Trivia - Responde más de 700 preguntas distribuidas en temáticas y niveles.",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CrESI | Trivia",
+    description:
+      "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
+    images: ["illustration-1.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  }
 };
+
 
 
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {

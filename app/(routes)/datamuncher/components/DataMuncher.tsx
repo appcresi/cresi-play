@@ -315,52 +315,54 @@ const DataMuncher = () => {
  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-blue-700 p-4 transition-all duration-1000">
-      <div className="w-full max-w-lg relative">
-        {/* Barra de estado del juego */}
-        <GameStatusBar 
-          title="DataMuncher"
-          score={score}
-          lives={lives}
-          level={currentLevel + 1}
-          timeLeft={timeRemaining}
-        />
-        {/* Tablero de juego */}
-        <div className="aspect-square w-full my-4">
-          <GameBoard
-            player={player}
-            ghosts={ghosts}
-            dots={dots}
-            quizItems={quizItems}
-            currentLevel={LEVELS[currentLevel]}
-            direction={direction}
-            effect={effect}
-            currentQuestion={currentQuestion}
-            answerOptions={answerOptions}
-          />
-        </div>
-        {/* Controles táctiles */}
-        <TouchControls onMove={handleMove} />
+  <div className="w-full max-w-md md:max-w-lg relative flex flex-col gap-4">
+    {/* Barra de estado del juego */}
+    <GameStatusBar
+      title="DataMuncher"
+      score={score}
+      lives={lives}
+      level={currentLevel + 1}
+      timeLeft={timeRemaining}
+    />
 
-        {/* Modal de transición entre niveles */}
-        {levelTransition && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <LevelTransitionModal currentLevel={currentLevel} />
-          </div>
-        )}
-
-        {/* Modal de fin de juego */}
-        {gameOver && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <GameOverModal
-              score={score}
-              onRestart={resetGame}
-              isComplete={currentLevel === LEVELS.length - 1}
-            />
-          </div>
-        )}
-        
-      </div>
+    {/* Tablero de juego */}
+    <div className="w-full aspect-square my-4">
+      <GameBoard
+        player={player}
+        ghosts={ghosts}
+        dots={dots}
+        quizItems={quizItems}
+        currentLevel={LEVELS[currentLevel]}
+        direction={direction}
+        effect={effect}
+        currentQuestion={currentQuestion}
+        answerOptions={answerOptions}
+      />
     </div>
+
+    {/* Controles táctiles */}
+    <TouchControls onMove={handleMove} />
+
+    {/* Modal de transición entre niveles */}
+    {levelTransition && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <LevelTransitionModal currentLevel={currentLevel} />
+      </div>
+    )}
+
+    {/* Modal de fin de juego */}
+    {gameOver && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <GameOverModal
+          score={score}
+          onRestart={resetGame}
+          isComplete={currentLevel === LEVELS.length - 1}
+        />
+      </div>
+    )}
+  </div>
+</div>
+
   );
 };
 export default DataMuncher;

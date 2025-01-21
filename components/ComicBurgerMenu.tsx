@@ -13,7 +13,8 @@ const ComicBurgerMenu = () => {
     { name: 'Trivias', href: '/trivias' },
     { name: 'Pasapalabras', href: '/pasapalabras' },
     { name: 'Simuladorde Grooming', href: '/simulador' },
-    { name: 'Completa Palabras', href: '/completapalabras' }
+    { name: 'Completa Palabras', href: '/completapalabras' },
+    { name: 'DataMuncher', href: '/datamuncher' }
   ];
 
   useEffect(() => {

@@ -47,20 +47,16 @@ const GameCell = ({
     if (isGhost) return getEnemyEmoji(ghostIndex);
     if (answerOption) return answerOption.value ? '✅' : '❌';
     if (isQuiz) return '❓';
-    if (isDot) return <div className="w-1.5 h-1.5 bg-yellow-300 rounded-full animate-pulse shadow-lg" />;
+    if (isDot) return <div className="w-1 h-1 sm:w-2 sm:h-2 bg-yellow-300 rounded-full animate-pulse shadow-lg" />;
     return ' ';
   };
 
   return (
     <div
-      className={`aspect-square flex items-center justify-center transition-all duration-200
+      className={`aspect-square w-full flex items-center justify-center transition-all duration-200 text-sm sm:text-base
         ${isWall ? 'bg-gradient-to-br from-blue-700 to-blue-900 shadow-inner' : ''}
         ${isPlayer || isGhost ? 'animate-pulse' : ''}
         ${answerOption ? 'bg-white/80 hover:bg-white cursor-pointer font-bold' : ''}`}
-      style={{
-        minHeight: '24px',
-        fontSize: '16px'
-      }}
     >
       {getContent()}
     </div>
