@@ -5,7 +5,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import GameBoard from './GameBoard';
 import GameOverModal from './GameOverModal';
 import LevelTransitionModal from './LevelTransitionModal';
-import { IconProgress } from "@tabler/icons-react";
+import TouchControls from './TouchControls';
 import { Position, Question, Effect, AnswerOption } from '../types/types';
 import {
   GRID_SIZE,
@@ -34,14 +34,9 @@ const DataMuncher = () => {
   const [showQuestion, setShowQuestion] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(LEVELS[0].timeLimit);
   const [answerOptions, setAnswerOptions] = useState<AnswerOption[]>([]);
-  const [useGyroscope, setUseGyroscope] = useState(false);
-  const [gyroSupported, setGyroSupported] = useState(false);
+  
 
-  // Constantes para el giroscopio
-  const GYRO_THRESHOLD = 5;
-  const GYRO_COOLDOWN = 200;
-  let lastGyroMove = 0;
-
+  
   function getInitialDots() {
     return Array.from({ length: GRID_SIZE }, (_, i) => 
       Array.from({ length: GRID_SIZE }, (_, j) => 
@@ -76,67 +71,6 @@ const DataMuncher = () => {
     setCurrentQuestion(question);
   };
 
-  // Comprobar soporte de giroscopio
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
-      const requestPermission = async () => {
-        try {
-          if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-            const permission = await (DeviceOrientationEvent as any).requestPermission();
-            setGyroSupported(permission === 'granted');
-          } else {
-            setGyroSupported(true);
-          }
-        } catch (error) {
-          console.error('Error al solicitar permisos del giroscopio:', error);
-          setGyroSupported(false);
-        }
-      };
-
-      requestPermission();
-    } else {
-      setGyroSupported(false);
-    }
-  }, []);
-
-  // Control del giroscopio
-  useEffect(() => {
-    if (!useGyroscope || !gyroSupported) return;
-
-    const handleGyroscope = (event: DeviceOrientationEvent) => {
-      if (gameOver || showQuestion || levelTransition) return;
-      
-      const now = Date.now();
-      if (now - lastGyroMove < GYRO_COOLDOWN) return;
-
-      const { beta, gamma } = event;
-      if (beta === null || gamma === null) return;
-
-      let direction = '';
-      
-      if (Math.abs(beta) > Math.abs(gamma)) {
-        if (beta > GYRO_THRESHOLD) {
-          direction = 'ArrowDown';
-        } else if (beta < -GYRO_THRESHOLD) {
-          direction = 'ArrowUp';
-        }
-      } else {
-        if (gamma > GYRO_THRESHOLD) {
-          direction = 'ArrowRight';
-        } else if (gamma < -GYRO_THRESHOLD) {
-          direction = 'ArrowLeft';
-        }
-      }
-
-      if (direction) {
-        lastGyroMove = now;
-        handleMove(direction);
-      }
-    };
-
-    window.addEventListener('deviceorientation', handleGyroscope);
-    return () => window.removeEventListener('deviceorientation', handleGyroscope);
-  }, [useGyroscope, gyroSupported, gameOver, showQuestion, levelTransition]);
 
   // Manejo del temporizador
   useEffect(() => {
@@ -212,16 +146,16 @@ const DataMuncher = () => {
     }
   };
 
-  // Control de teclado
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      handleMove(e.key);
-    };
+// Efecto para el control del teclado
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        handleMove(e.key);
+      };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [player, gameOver, showQuestion, levelTransition]);
-
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [player, gameOver, showQuestion, levelTransition]);
+  
   const checkCollisions = (newPlayer: Position) => {
     if (ghosts.some(ghost => ghost.x === newPlayer.x && ghost.y === newPlayer.y)) {
       handleGhostCollision();
@@ -330,16 +264,6 @@ const DataMuncher = () => {
     }
   };
 
-  const resetLevel = () => {
-    setPlayer(INITIAL_PLAYER);
-    setGhosts(INITIAL_GHOSTS);
-    setDots(getInitialDots());
-    setQuizItems(INITIAL_QUIZ_POSITIONS);
-    setAnsweredQuestions(0);
-    setDirection('right');
-    setTimeRemaining(LEVELS[currentLevel].timeLimit);
-  };
-
   const resetGame = () => {
     setCurrentLevel(0);
     setPlayer(INITIAL_PLAYER);
@@ -351,6 +275,9 @@ const DataMuncher = () => {
     setQuizItems(INITIAL_QUIZ_POSITIONS);
     setAnsweredQuestions(0);
     setLives(INITIAL_LIVES);
+    setCurrentQuestion(null);  // Añadido: limpiar pregunta actual
+    setAnswerOptions([]); // Añadido: limpiar opciones de respuesta
+    setShowQuestion(false);  // Añadido: asegurar que no se muestre ninguna pregunta
     Swal.fire({
       icon: "success",
       title: "¡NUEVO JUEGO!",
@@ -360,25 +287,17 @@ const DataMuncher = () => {
     });
   };
 
-  const toggleGyroscope = async () => {
-    if (!gyroSupported) {
-      Swal.fire({
-        icon: "error",
-        title: "No disponible",
-        text: "Tu dispositivo no soporta control por giroscopio",
-        showConfirmButton: true
-      });
-      return;
-    }
-
-    setUseGyroscope(!useGyroscope);
-    Swal.fire({
-      icon: "success",
-      title: !useGyroscope ? "¡Giroscopio activado!" : "¡Giroscopio desactivado!",
-      text: !useGyroscope ? "Inclina tu dispositivo para moverte" : "Volviendo a controles táctiles",
-      showConfirmButton: false,
-      timer: 1500
-    });
+  const resetLevel = () => {
+    setPlayer(INITIAL_PLAYER);
+    setGhosts(INITIAL_GHOSTS);
+    setDots(getInitialDots());
+    setQuizItems(INITIAL_QUIZ_POSITIONS);
+    setAnsweredQuestions(0);
+    setDirection('right');
+    setTimeRemaining(LEVELS[currentLevel].timeLimit);
+    setCurrentQuestion(null);  // Añadido: limpiar pregunta actual
+    setAnswerOptions([]); // Añadido: limpiar opciones de respuesta
+    setShowQuestion(false);  // Añadido: asegurar que no se muestre ninguna pregunta
   };
 
   // Prevenir zoom en dispositivos móviles
@@ -405,20 +324,6 @@ const DataMuncher = () => {
           level={currentLevel + 1}
           timeLeft={timeRemaining}
         />
-        
-        {/* Botón de giroscopio */}
-        {gyroSupported && (
-          <button
-            onClick={toggleGyroscope}
-            className={`absolute top-4 right-4 p-3 rounded-full transition-all duration-300 ${
-              useGyroscope ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 hover:bg-gray-500'
-            } md:hidden z-10 shadow-lg`}
-            aria-label={useGyroscope ? 'Desactivar giroscopio' : 'Activar giroscopio'}
-          >
-            <IconProgress className="w-6 h-6 text-white" />
-          </button>
-        )}
-
         {/* Tablero de juego */}
         <div className="aspect-square w-full my-4">
           <GameBoard
@@ -433,6 +338,8 @@ const DataMuncher = () => {
             answerOptions={answerOptions}
           />
         </div>
+        {/* Controles táctiles */}
+        <TouchControls onMove={handleMove} />
 
         {/* Modal de transición entre niveles */}
         {levelTransition && (
@@ -451,36 +358,7 @@ const DataMuncher = () => {
             />
           </div>
         )}
-
-        {/* Botón de reinicio (visible solo cuando no hay modales activos) */}
-        {!gameOver && !levelTransition && (
-          <div className="w-full flex justify-center mt-4">
-            <button 
-              onClick={resetGame}
-              className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 
-                       text-black text-xl font-bold rounded-lg transform hover:scale-105 
-                       transition-all duration-300 shadow-lg hover:shadow-xl border-2 
-                       border-black w-full md:w-auto"
-              style={{ fontFamily: 'comic sans ms, cursive' }}
-            >
-              ¡REINICIAR JUEGO!
-            </button>
-          </div>
-        )}
-
-        {/* Instrucciones para dispositivos móviles */}
-        <div className="mt-4 text-center text-white text-sm md:hidden">
-          {useGyroscope ? (
-            <p>Inclina tu dispositivo para mover al personaje</p>
-          ) : (
-            <p>Usa los controles en pantalla para moverte</p>
-          )}
-        </div>
-
-        {/* Instrucciones para desktop */}
-        <div className="mt-4 text-center text-white text-sm hidden md:block">
-          <p>Usa las flechas del teclado para moverte</p>
-        </div>
+        
       </div>
     </div>
   );
