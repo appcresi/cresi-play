@@ -41,12 +41,24 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [selectedBlankId, setSelectedBlankId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouchTarget, setLastTouchTarget] = useState<Element | null>(null);
+  const LIVES_STORAGE_KEY = 'totalGameLives';
+  const SCORE_STORAGE_KEY = 'totalGameScore';
 
   // Constants
-  const EXTRA_LIFE_COST = 200;
   const CORRECT_ANSWER_POINTS = 100;
   const INCORRECT_ANSWER_PENALTY = 50;
-
+  useEffect(() => {
+    const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
+    if (storedScore) {
+      setScore(parseInt(storedScore, 10));
+    }
+  }, []); 
+  useEffect(() => {
+    const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
+    if (storedLives) {
+      setLives(parseInt(storedLives, 10));
+    }
+  }, []);
   // Initialize game
   useEffect(() => {
     setIsClient(true);
@@ -73,18 +85,28 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const handlePurchaseLife = () => {
-    if (score >= EXTRA_LIFE_COST) {
-      setScore(prevScore => prevScore - EXTRA_LIFE_COST);
-      setLives(prevLives => prevLives + 1);
-      setShowPurchaseModal(false);
-      if (isGameOver) {
-        setIsGameOver(false);
-        // Reiniciar el nivel actual en lugar de todo el juego
-        if (currentLessonData) {
-          initializeLevel(currentLevel, currentLessonData.lecciones);
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+        if (currentStoredLives < 3) {
+          setShowPurchaseModal(false);
+          if (isGameOver) {
+          setIsGameOver(false);
+          // Reiniciar el nivel actual en lugar de todo el juego
+          if (currentLessonData) {
+            initializeLevel(currentLevel, currentLessonData.lecciones);
+          }
         }
-      }
     }
+  };
+
+  const handleClosePurchaseModal = () => {
+    const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    setScore(currentStoredScore);
+    setLives(currentStoredLives);
+    if (currentStoredLives < 1) {
+      setIsGameOver(true);
+    }
+    setShowPurchaseModal(false);
   };
 
   const handleIncorrectAnswer = () => {
@@ -226,12 +248,9 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const handleDropToPool = () => {
     if (isGameOver) return;
     const wordToReturn = draggedWord || selectedWord;
-    const sourceBlankId = draggedBlankId || selectedBlankId;
-    
+    const sourceBlankId = draggedBlankId || selectedBlankId;  
     if (!wordToReturn || !sourceBlankId) return;
-
     setWords(prevWords => [...prevWords, wordToReturn]);
-
     setBlanks(prevBlanks => prevBlanks.map(blank => 
       blank.id === sourceBlankId 
         ? { ...blank, filledWord: undefined, filledWordId: undefined }
@@ -359,15 +378,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
         </>
       )}
 
-      <PurchaseModal 
-        isOpen={showPurchaseModal}
-        onClose={() => setShowPurchaseModal(false)}
-        onPurchase={handlePurchaseLife}
-        canAfford={score >= EXTRA_LIFE_COST}
-        cost={EXTRA_LIFE_COST}
-        itemName="vida extra"
-        description="¿Comprar una vida extra?"
-      />
+      {/* Modal de compra de vidas */}
+      <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={handleClosePurchaseModal}
+          onPurchase={handlePurchaseLife}
+        />
 
       <style jsx global>{`
         .touching {
