@@ -1,21 +1,18 @@
 import React from 'react';
 
 type GameOverModalProps = {
-  score: number;
   onRestart: () => void;
   isComplete: boolean;
 };
 
-const GameOverModal = ({ score, onRestart, isComplete }: GameOverModalProps) => {
+
+const GameOverModal = ({ onRestart, isComplete }: GameOverModalProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
       <div className="text-center">
         <h2 className="text-6xl font-bold text-yellow-300 mb-6 animate-bounce">
           {isComplete ? '¡VICTORIA TOTAL! 🎉' : '¡GAME OVER! 💀'}
         </h2>
-        <p className="text-3xl text-white mb-8">
-          Puntuación Final: {score}
-        </p>
         <button 
           onClick={onRestart}
           className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 

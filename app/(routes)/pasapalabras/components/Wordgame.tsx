@@ -34,13 +34,28 @@ const Home = () => {
   const [timerActive, setTimerActive] = useState(false);
   const maxWords = 20;
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const LIFE_COST = 200; // Define the LIFE_COST constant
+  const LIVES_STORAGE_KEY = 'totalGameLives';
+  const SCORE_STORAGE_KEY = 'totalGameScore';
+  const INITIAL_LIVES = 3;
+
+  useEffect(() => {
+    const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
+    if (storedScore) {
+      setScore(parseInt(storedScore, 10));
+    }
+  }, []);
+  useEffect(() => {
+    const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
+    if (storedLives) {
+      setLives(parseInt(storedLives, 10));
+    }
+  }, []);
 
   const handleLifeLoss = () => {
     const newLives = lives - 1;
     setLives(newLives);
     
-    if (newLives <= 0 && score >= LIFE_COST) {
+    if (newLives <= 0 && score >= 200) {
       setShowPurchaseModal(true);
     } else if (newLives <= 0) {
       handleGameEnd();
@@ -48,12 +63,20 @@ const Home = () => {
   };
 
   const handlePurchaseLife = () => {
-    if (score >= LIFE_COST) {
-      setScore(prev => prev - LIFE_COST);
-      setLives(prev => prev + 1);
-      setShowPurchaseModal(false);
-      toast.success('¡Vida extra comprada!');
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    if (currentStoredLives < 3) {
+          setShowPurchaseModal(false);   
     }
+  };
+  const handleClosePurchaseModal = () => {
+    const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    setScore(currentStoredScore);
+    setLives(currentStoredLives);
+    if (currentStoredLives < 1) {
+      handleGameEnd();
+    }
+    setShowPurchaseModal(false);
   };
 
   const handleSubmit = (value: string) => {
@@ -138,11 +161,11 @@ const Home = () => {
     setGuessedLetters(new Set());
     setPassedLetters(new Set());
     setIncorrectLetters(new Set());
-    setScore(0);
     setProgress(0);
     setIsIncorrect(false);
     setUsedWords([]);
     setShowFinalReport(false);
+    setLives(INITIAL_LIVES);
     getNextWord(); // Get the first word for the new game
     resetTimer(); // Reinicia el temporizador
   };
@@ -198,15 +221,10 @@ const Home = () => {
       />
       
       <PurchaseModal
-        isOpen={showPurchaseModal}
-        onClose={() => {
-          setShowPurchaseModal(false);
-          if (lives <= 0) handleGameEnd();
-        }}
-        onPurchase={handlePurchaseLife}
-        canAfford={score >= LIFE_COST}
-        cost={LIFE_COST}
-      />
+          isOpen={showPurchaseModal}
+          onClose={handleClosePurchaseModal}
+          onPurchase={handlePurchaseLife}
+        />
 
       {showFinalReport ? (
         <FinalReport 

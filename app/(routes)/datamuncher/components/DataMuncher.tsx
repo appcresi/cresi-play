@@ -6,6 +6,7 @@ import GameBoard from './GameBoard';
 import GameOverModal from './GameOverModal';
 import LevelTransitionModal from './LevelTransitionModal';
 import TouchControls from './TouchControls';
+import PurchaseModal from '@/components/PurchaseModal';
 import { Position, Question, Effect, AnswerOption } from '../types/types';
 import {
   GRID_SIZE,
@@ -15,6 +16,9 @@ import {
   INITIAL_QUIZ_POSITIONS,
   LEVELS
 } from '../types/constants';
+
+const LIVES_STORAGE_KEY = 'totalGameLives';
+const SCORE_STORAGE_KEY = 'totalGameScore';
 
 const DataMuncher = () => {
   // Estados del juego
@@ -28,15 +32,28 @@ const DataMuncher = () => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(0);
   const [levelTransition, setLevelTransition] = useState(false);
-  const [lives, setLives] = useState(INITIAL_LIVES);
+  const [lives, setLives] = useState(3);
   const [quizItems, setQuizItems] = useState(INITIAL_QUIZ_POSITIONS);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(LEVELS[0].timeLimit);
   const [answerOptions, setAnswerOptions] = useState<AnswerOption[]>([]);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
   
+  useEffect(() => {
+    const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
+    if (storedScore) {
+      setScore(parseInt(storedScore, 10));
+    }
+  }, []); 
+  useEffect(() => {
+    const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
+    if (storedLives) {
+      setLives(parseInt(storedLives, 10));
+    }
+  }, []);
 
-  
   function getInitialDots() {
     return Array.from({ length: GRID_SIZE }, (_, i) => 
       Array.from({ length: GRID_SIZE }, (_, j) => 
@@ -75,7 +92,6 @@ const DataMuncher = () => {
   // Manejo del temporizador
   useEffect(() => {
     if (gameOver || showQuestion || levelTransition) return;
-
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 0) {
@@ -88,6 +104,10 @@ const DataMuncher = () => {
 
     return () => clearInterval(timer);
   }, [gameOver, showQuestion, levelTransition]);
+
+  useEffect(() => {
+    localStorage.setItem(SCORE_STORAGE_KEY, score.toString());
+  }, [score]);
 
   // Movimiento de fantasmas
   useEffect(() => {
@@ -183,9 +203,12 @@ const DataMuncher = () => {
   };
 
   const handleGhostCollision = () => {
-    setLives(prev => prev - 1);
-    if (lives <= 1) {
-      setGameOver(true);
+    const newLives = lives - 1;
+    setLives(newLives);
+    localStorage.setItem(LIVES_STORAGE_KEY, newLives.toString());
+    if (newLives <= 0) {
+      // Cuando no hay más vidas, mostrar modal de compra
+      setShowPurchaseModal(true);
     } else {
       setPlayer(INITIAL_PLAYER);
       Swal.fire({
@@ -196,6 +219,48 @@ const DataMuncher = () => {
         timer: 1000
       });
     }
+  };
+
+  const handleTimeOut = () => {
+    const newLives = lives - 1;
+    setLives(newLives);
+    // Update localStorage lives
+    localStorage.setItem(LIVES_STORAGE_KEY, newLives.toString());
+    if (newLives <= 0) {
+      // También mostrar el modal de compra cuando se agota el tiempo
+      setShowPurchaseModal(true);
+    } else {
+      setTimeRemaining(LEVELS[currentLevel].timeLimit);
+      Swal.fire({
+        icon: "warning",
+        title: "¡Tiempo agotado!",
+        text: "¡Has perdido una vida!",
+        showConfirmButton: false,
+        timer: 1000
+      });
+    }
+  };
+
+  const handlePurchaseLife = () => {
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    
+    if (currentStoredLives < 3) {
+      setShowPurchaseModal(false);
+      setPlayer(INITIAL_PLAYER);
+      setTimeRemaining(LEVELS[currentLevel].timeLimit);
+
+    }
+  };
+  
+  const handleClosePurchaseModal = () => {
+    const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    setScore(currentStoredScore);
+    setLives(currentStoredLives);
+    if (currentStoredLives < 1) {
+      setShowGameOverModal(true);
+    }
+    setShowPurchaseModal(false);
   };
 
   const handleQuizAnswer = (answer: boolean) => {
@@ -229,21 +294,6 @@ const DataMuncher = () => {
     setCurrentQuestion(null);
   };
 
-  const handleTimeOut = () => {
-    setLives(prev => prev - 1);
-    if (lives <= 1) {
-      setGameOver(true);
-    } else {
-      setTimeRemaining(LEVELS[currentLevel].timeLimit);
-      Swal.fire({
-        icon: "warning",
-        title: "¡Tiempo agotado!",
-        text: "¡Has perdido una vida!",
-        showConfirmButton: false,
-        timer: 1000
-      });
-    }
-  };
 
   const advanceLevel = () => {
     if (currentLevel < LEVELS.length - 1) {
@@ -269,8 +319,8 @@ const DataMuncher = () => {
     setPlayer(INITIAL_PLAYER);
     setGhosts(INITIAL_GHOSTS);
     setDots(getInitialDots());
-    setScore(0);
     setGameOver(false);
+    setShowGameOverModal(false);
     setDirection('right');
     setQuizItems(INITIAL_QUIZ_POSITIONS);
     setAnsweredQuestions(0);
@@ -314,55 +364,55 @@ const DataMuncher = () => {
 
  
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-500 to-blue-700 p-4 transition-all duration-1000">
-  <div className="w-full max-w-md md:max-w-lg relative flex flex-col gap-4">
-    {/* Barra de estado del juego */}
-    <GameStatusBar
-      title="DataMuncher"
-      score={score}
-      lives={lives}
-      level={currentLevel + 1}
-      timeLeft={timeRemaining}
-    />
-
-    {/* Tablero de juego */}
-    <div className="w-full aspect-square my-4">
-      <GameBoard
-        player={player}
-        ghosts={ghosts}
-        dots={dots}
-        quizItems={quizItems}
-        currentLevel={LEVELS[currentLevel]}
-        direction={direction}
-        effect={effect}
-        currentQuestion={currentQuestion}
-        answerOptions={answerOptions}
-      />
-    </div>
-
-    {/* Controles táctiles */}
-    <TouchControls onMove={handleMove} />
-
-    {/* Modal de transición entre niveles */}
-    {levelTransition && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <LevelTransitionModal currentLevel={currentLevel} />
-      </div>
-    )}
-
-    {/* Modal de fin de juego */}
-    {gameOver && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <GameOverModal
+    <div className="flex flex-col items-center justify-center bg-gradient-to-b from-blue-500 to-blue-700 p-4 transition-all duration-1000">
+      <div className="w-full max-w-md md:max-w-lg relative flex flex-col gap-4">
+        <GameStatusBar
+          title="DataMuncher"
           score={score}
-          onRestart={resetGame}
-          isComplete={currentLevel === LEVELS.length - 1}
+          lives={lives}
+          level={currentLevel + 1}
+          timeLeft={timeRemaining}
         />
-      </div>
-    )}
-  </div>
-</div>
 
+        <div className="w-full aspect-square my-4">
+          <GameBoard
+            player={player}
+            ghosts={ghosts}
+            dots={dots}
+            quizItems={quizItems}
+            currentLevel={LEVELS[currentLevel]}
+            direction={direction}
+            effect={effect}
+            currentQuestion={currentQuestion}
+            answerOptions={answerOptions}
+          />
+        </div>
+
+        <TouchControls onMove={handleMove} />
+
+        {levelTransition && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <LevelTransitionModal currentLevel={currentLevel} />
+          </div>
+        )}
+
+        {/* Modal de compra de vidas */}
+        <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={handleClosePurchaseModal}
+          onPurchase={handlePurchaseLife}
+        />
+        {showGameOverModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <GameOverModal
+              onRestart={resetGame}
+              isComplete={currentLevel === LEVELS.length - 1}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
+
 export default DataMuncher;

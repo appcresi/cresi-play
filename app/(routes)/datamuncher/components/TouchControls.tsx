@@ -8,7 +8,7 @@ interface TouchControlsProps {
 const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
     const buttonBaseClass = "w-14 h-14 bg-white/80 rounded-full flex items-center justify-center active:bg-white/60 shadow-md transition-colors";
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 md:hidden">
+    <div className="flex  justify-center md:hidden">
       <div className="grid grid-cols-3 gap-3 bg-black/10 backdrop-blur-sm p-4 rounded-xl">
         {/* Botón Superior */}
         <div className="col-start-2">

@@ -10,16 +10,17 @@ export type Position = {
   };
   
   export type Level = {
-    id: number;
-    background: string;
-    boardBackground: string;
-    ghostSpeed: number;
-    quizRequired: number;
-    timeLimit: number;
-    questions: Question[];
-    walls: number[][];
-  };
-  
+  id: number;
+  background: string;
+  boardBackground: string;
+  ghostSpeed: number;
+  quizRequired: number;
+  timeLimit: number;
+  questions: Question[];
+  walls: number[][];
+  usedQuestions?: Question[]; // Add this line
+};
+
   export type Effect = {
     text: string;
     x: number;

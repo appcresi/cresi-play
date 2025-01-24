@@ -24,8 +24,10 @@ const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
 
 const CORRECT_ANSWER_POINTS = 100;
 const INCORRECT_ANSWER_PENALTY = 50;
-const EXTRA_LIFE_COST = 200;
+const LIVES_STORAGE_KEY = 'totalGameLives';
+const SCORE_STORAGE_KEY = 'totalGameScore';
 const INITIAL_LIVES = 3;
+
 
 interface TriviaGameProps {
   id: string;
@@ -42,8 +44,21 @@ export default function TriviaGame({
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [correctAnswer, setCorrectIndex] = useState<string | undefined>(undefined);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
-  const [score, setScore] = useState<number>(0);
-  const [lives, setLives] = useState<number>(INITIAL_LIVES);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  useEffect(() => {
+    const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
+    if (storedLives) {
+      setLives(parseInt(storedLives, 10));
+    }
+  }, []);
+  useEffect(() => {
+    const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
+    if (storedScore) {
+      setScore(parseInt(storedScore, 10));
+    }
+  }, []);
+
   const [timeLeft, setTimeLeft] = useState<number | undefined>(
     () => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS
   );
@@ -51,18 +66,14 @@ export default function TriviaGame({
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
   const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false);
-
   const settings = getSettings();
-
   const handleTimeLeft = useCallback(() => {
     setTimeLeft(settings?.time ?? DEFAULT_TIME_IN_SECONDS);
     setIsTimerPaused(false);
   }, [settings]);
-
   const handlePurchaseLife = () => {
-    if (score >= EXTRA_LIFE_COST) {
-      setScore(prevScore => prevScore - EXTRA_LIFE_COST);
-      setLives(prevLives => prevLives + 1);
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    if (currentStoredLives < 3) {
       setShowPurchaseModal(false);
       if (isGameOver) {
         setIsGameOver(false);
@@ -71,6 +82,7 @@ export default function TriviaGame({
     }
   };
 
+  
   const handleGameOver = () => {
     setIsGameOver(true);
     setTimeLeft(undefined);
@@ -207,7 +219,6 @@ export default function TriviaGame({
 
   const resetGame = () => {
     setCurrentQuestion(0);
-    setScore(0);
     setLives(INITIAL_LIVES);
     setIsGameOver(false);
     setIsFinished(false);
@@ -233,6 +244,17 @@ export default function TriviaGame({
       }
     }
   }, [timeLeft, isFinished, isGameOver, isTimerPaused, handleTimeOut]);
+
+  const handleClosePurchaseModal = () => {
+        const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
+    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
+    setScore(currentStoredScore);
+    setLives(currentStoredLives);
+    if (currentStoredLives < 1) {
+      setIsGameOver(true);
+    }
+    setShowPurchaseModal(false);
+  };
 
   const handleFullscreen = () => {
     const element = document.documentElement;
@@ -356,16 +378,13 @@ export default function TriviaGame({
         </div>
       )}
 
-      <PurchaseModal 
-        isOpen={showPurchaseModal}
-        onClose={() => setShowPurchaseModal(false)}
-        onPurchase={handlePurchaseLife}
-        canAfford={score >= EXTRA_LIFE_COST}
-        cost={EXTRA_LIFE_COST}
-        itemName="vida extra"
-        description="¿Comprar una vida extra?"
-      />
-      
+        {/* Modal de compra de vidas */}
+        <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={handleClosePurchaseModal}
+          onPurchase={handlePurchaseLife}
+        />
+
       <Toaster />
     </main>
   );

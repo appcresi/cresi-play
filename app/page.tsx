@@ -14,6 +14,7 @@ import ComicBurst from '@/components/ComicBurst';
 
 
 
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
   title: "CrESI | Jugar",

@@ -32,11 +32,11 @@ const GameBoard = ({
     <>
     {/* Pregunta actual */}
     {currentQuestion ? (
-        <div className="text-center bg-white/90 p-4 rounded-lg shadow-lg">
+        <div className="text-center bg-white/90 p-4 rounded-lg shadow-lg m-4">
           <p className="text-xl font-bold text-purple-600">{currentQuestion.question}</p>
         </div>
       ):(
-        <div className="text-center bg-white/90 p-4 rounded-lg shadow-lg">
+        <div className="text-center bg-white/90 p-4 rounded-lg shadow-lg m-4">
           <p className="text-xl font-bold text-purple-600">Busca las ❓, y luego la ✅ si es Verdadera la pregunta o hacia si es ❌ Falsa</p>
         </div>
       )}

@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox } from '@tabler/icons-react';
 
@@ -11,7 +12,8 @@ interface GameStatusProps {
   totalQuestions?: number;
 }
 
-const STORAGE_KEY = 'totalGameScore';
+const SCORE_STORAGE_KEY = 'totalGameScore';
+const LIVES_STORAGE_KEY = 'totalGameLives';
 
 const GameStatusBar = ({
   title = "Super Game",
@@ -23,33 +25,63 @@ const GameStatusBar = ({
   totalQuestions
 }: GameStatusProps) => {
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
-  const [prevScore, setPrevScore] = useState(score);
   const [totalScore, setTotalScore] = useState(0);
+  const [totalLives, setTotalLives] = useState(3);
 
-  // Load total score from localStorage on component mount
+  // Add storage event listener to detect changes across tabs/windows
   useEffect(() => {
-    const savedScore = localStorage.getItem(STORAGE_KEY);
-    if (savedScore) {
-      setTotalScore(parseInt(savedScore));
-    }
-  }, []);
-
-  // Update localStorage and animate when score changes
-  useEffect(() => {
-    if (score !== prevScore) {
-      const scoreDiff = score - prevScore;
-      if (scoreDiff > 0) {  // Only add positive score changes
-        const newTotalScore = totalScore + scoreDiff;
-        setTotalScore(newTotalScore);
-        localStorage.setItem(STORAGE_KEY, newTotalScore.toString());
+    const handleStorageChange = () => {
+      const savedScore = localStorage.getItem(SCORE_STORAGE_KEY);
+      const savedLives = localStorage.getItem(LIVES_STORAGE_KEY);
+      
+      if (savedScore) {
+        const parsedScore = parseInt(savedScore);
+        setTotalScore(parsedScore);
+        
+        if (parsedScore !== totalScore) {
+          setIsScoreAnimating(true);
+          const timer = setTimeout(() => setIsScoreAnimating(false), 500);
+          return () => clearTimeout(timer);
+        }
       }
       
+      if (savedLives) {
+        setTotalLives(parseInt(savedLives));
+      }
+    };
+
+    // Initial load
+    handleStorageChange();
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [totalScore]);
+
+  // Sync prop changes with localStorage
+  useEffect(() => {
+    if (score !== totalScore) {
+      const newTotalScore = score;
+      setTotalScore(newTotalScore);
+      localStorage.setItem(SCORE_STORAGE_KEY, newTotalScore.toString());
+      
       setIsScoreAnimating(true);
-      setPrevScore(score);
       const timer = setTimeout(() => setIsScoreAnimating(false), 500);
       return () => clearTimeout(timer);
     }
-  }, [score, prevScore, totalScore]);
+  }, [score]);
+
+  // Sync lives prop changes with localStorage
+  useEffect(() => {
+    if (lives !== totalLives) {
+      const newTotalLives = Math.max(0, Math.min(3, lives));
+      setTotalLives(newTotalLives);
+      localStorage.setItem(LIVES_STORAGE_KEY, newTotalLives.toString());
+    }
+  }, [lives]);
 
   return (
     <div className="fixed top-0 left-0 right-0 p-2">
@@ -143,12 +175,12 @@ const GameStatusBar = ({
                 {/* Small screens: Show lives as a number */}
                 <div className="sm:hidden text-center">
                   <div className="text-xs font-bold text-black lg:text-sm">Vidas</div>
-                  <div className="text-sm font-black text-black lg:text-lg">{lives}</div>
+                  <div className="text-sm font-black text-black lg:text-lg">{totalLives}</div>
                 </div>
                 {/* Medium+ screens: Show hearts */}
                 <div className="hidden sm:flex space-x-1">
                   {[...Array(3)].map((_, i) =>
-                    i < lives ? (
+                    i < totalLives ? (
                       <IconHeartFilled
                         key={i}
                         size={24}

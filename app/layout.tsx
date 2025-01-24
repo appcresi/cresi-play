@@ -4,6 +4,7 @@ import './globals.css'
 
 import Analytics from '@/components/Analytics'
 import Adsense from '@/components/Adsense'
+import CharacterSelectionModal from '@/components/CharacterSelectionModal';
 
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
@@ -20,6 +21,7 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
   return (
     <html lang='es' className={monaSans.className}>
       <body className='bg-[#FFE5E5]'>{children}</body>
+      <CharacterSelectionModal />
       <ComicBurgerMenu />
       <Analytics />
       <Adsense />
