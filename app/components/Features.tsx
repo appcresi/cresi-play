@@ -58,12 +58,11 @@ const features = [
   {
     title: "DataMuncher",
     description: "¡A comer! Recorré el laberinto y respondé preguntas para ganar puntos y evitar a las bacterias.",
-    icon: <IconPacman    size={32} />,
+    icon: <IconPacman size={32} />,
     route: "/datamuncher",
     splashText: "¡A jugar!",
     color: "#4ADE80"
-  }
-  ,
+  },
   {
     title: "Nuevas Trivias",
     description: "¡Novedad! Jugá a la nueva trivia incorporada actualmente sobre: ALIMENTACIÓN",
@@ -73,7 +72,6 @@ const features = [
     color: "#FFD93D"
   }
 ];
-
 
 const Features = () => {
   return (

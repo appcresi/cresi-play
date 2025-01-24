@@ -82,8 +82,7 @@ const CharacterSelectionModal = () => {
       <div className="bg-yellow-50 p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full mx-4 transform rotate-1">
         <h2 className="text-3xl font-bold mb-6 text-center transform -rotate-1 text-blue-600 uppercase"
             style={{ 
-              textShadow: '2px 2px 0px #000000',
-              fontFamily: 'comic sans ms, cursive'
+              textShadow: '2px 2px 0px #000000'
             }}>
           ¡Bienvenido a CrESI!
         </h2>
@@ -91,8 +90,7 @@ const CharacterSelectionModal = () => {
         {isReturningUser && !showSelectionForm ? (
           <div className="text-center">
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-purple-600 mb-4"
-                  style={{ fontFamily: 'comic sans ms, cursive' }}>
+              <h3 className="text-2xl font-bold text-purple-600 mb-4">
                 ¡Qué bueno que volviste, {username}!
               </h3>
               <div className="w-48 mx-auto mb-4">
@@ -100,9 +98,11 @@ const CharacterSelectionModal = () => {
                   src={selectedCharacter?.image}
                   alt={selectedCharacter?.name}
                   className="w-full rounded-lg border-4 border-black"
+                  loading="lazy"
+                  width={100}
+                  height={100}
                 />
-                <p className="text-lg font-bold mt-2"
-                   style={{ fontFamily: 'comic sans ms, cursive' }}>
+                <p className="text-lg font-bold mt-2">
                   {selectedCharacter?.name}
                 </p>
               </div>
@@ -115,7 +115,6 @@ const CharacterSelectionModal = () => {
                          transition-all transform hover:scale-105 hover:rotate-1
                          border-2 border-black font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
                          hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                style={{ fontFamily: 'comic sans ms, cursive' }}
               >
                 ¡COMENZAR AVENTURA!
               </button>
@@ -126,7 +125,6 @@ const CharacterSelectionModal = () => {
                          transition-all transform hover:scale-105 hover:rotate-1
                          border-2 border-black font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
                          hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-                style={{ fontFamily: 'comic sans ms, cursive' }}
               >
                 CAMBIAR PERSONAJE
               </button>
@@ -135,8 +133,7 @@ const CharacterSelectionModal = () => {
         ) : (
           <>
             <div className="mb-6 transform -rotate-1">
-              <label className="block text-lg font-bold mb-2 text-red-500"
-                     style={{ fontFamily: 'comic sans ms, cursive' }}>
+              <label className="block text-lg font-bold mb-2 text-red-500">
                 ¡Tu Nombre de Héroe!
               </label>
               <input
@@ -145,13 +142,11 @@ const CharacterSelectionModal = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-2 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transform rotate-1"
                 placeholder="Escribe aquí..."
-                style={{ fontFamily: 'comic sans ms, cursive' }}
               />
             </div>
 
             <div className="mb-6">
-              <label className="block text-lg font-bold mb-3 text-purple-600"
-                     style={{ fontFamily: 'comic sans ms, cursive' }}>
+              <label className="block text-lg font-bold mb-3 text-purple-600">
                 ¡Elige tu Personaje!
               </label>
               <div className="grid grid-cols-3 gap-4">
@@ -168,10 +163,12 @@ const CharacterSelectionModal = () => {
                     <img
                       src={character.image}
                       alt={character.name}
+                      loading="lazy"
                       className="w-full rounded-lg mb-2 border-2 border-black"
+                      width={100}
+                      height={100}
                     />
-                    <p className="text-center text-sm font-bold"
-                       style={{ fontFamily: 'comic sans ms, cursive' }}>
+                    <p className="text-center text-sm font-bold">
                       {character.name}
                     </p>
                   </div>
@@ -180,8 +177,7 @@ const CharacterSelectionModal = () => {
             </div>
 
             {error && (
-              <p className="text-red-500 text-sm mb-4 font-bold text-center transform -rotate-1"
-                 style={{ fontFamily: 'comic sans ms, cursive' }}>
+              <p className="text-red-500 text-sm mb-4 font-bold text-center transform -rotate-1">
                 ¡{error}!
               </p>
             )}
@@ -192,7 +188,6 @@ const CharacterSelectionModal = () => {
                        transition-all transform hover:scale-105 hover:rotate-1
                        border-2 border-black font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
                        hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-              style={{ fontFamily: 'comic sans ms, cursive' }}
             >
               ¡COMENZAR AVENTURA!
             </button>
