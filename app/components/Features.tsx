@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 import Link from 'next/link';
 import {
@@ -9,18 +10,7 @@ import {
   IconPacman
 } from "@tabler/icons-react";
 
-const ComicSplash = ({ text, className }: { text: string; className: string }) => (
-  <div className={`absolute transform ${className}`}>
-    <svg viewBox="0 0 100 100" className="w-20 h-20">
-      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
-            fill="#FF6B6B" stroke="black" strokeWidth="3" />
-      <text x="50" y="55" textAnchor="middle" 
-            className="text-white font-bold text-xs">
-        {text}
-      </text>
-    </svg>
-  </div>
-);
+
 
 const features = [
   {
@@ -28,7 +18,6 @@ const features = [
     description: "Jugá a nuestras trivias para aprender y poner a prueba tus conocimientos sobre distintas temáticas.",
     icon: <IconCards size={32} />,
     route: "/trivias",
-    splashText: "¡POW!",
     color: "#FF6B6B"
   },
   {
@@ -36,7 +25,6 @@ const features = [
     description: "Descubrí todas las palabra nuevas escondidas detrás de la definición.",
     icon: <IconAB2 size={32} />,
     route: "/pasapalabras",
-    splashText: "¡BAM!",
     color: "#4ADE80"
   },
   {
@@ -44,7 +32,6 @@ const features = [
     description: "Identificá y evitá situaciones de grooming en línea, practicando respuestas seguras.",
     icon: <IconShieldCheck size={32} />,
     route: "/simulador",
-    splashText: "¡ZAP!",
     color: "#FFD93D"
   },
   {
@@ -52,7 +39,6 @@ const features = [
     description: "Aprender más sobre sexualidad, completando el texto con la palabra correcta.",
     icon: <IconBrandPnpm size={32} />,
     route: "/completapalabras",
-    splashText: "¡BOOM!",
     color: "#FF6B6B"
   },
   {
@@ -60,7 +46,6 @@ const features = [
     description: "¡A comer! Recorré el laberinto y respondé preguntas para ganar puntos y evitar a las bacterias.",
     icon: <IconPacman size={32} />,
     route: "/datamuncher",
-    splashText: "¡A jugar!",
     color: "#4ADE80"
   },
   {
@@ -68,7 +53,6 @@ const features = [
     description: "¡Novedad! Jugá a la nueva trivia incorporada actualmente sobre: ALIMENTACIÓN",
     icon: <IconPresentation size={32} />,
     route: "https://jugar.cresi.com.ar/trivias/pregame/2305b679-1b36-444a-986f-1d4f6a797d51",
-    splashText: "¡WOW!",
     color: "#FFD93D"
   }
 ];
@@ -91,11 +75,6 @@ const Features = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 max-w-7xl mx-auto px-4">
           {features.map((feature, index) => (
             <div key={feature.title} className="relative group">
-              {/* Comic burst effect */}
-              <div className="absolute -top-4 -right-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                <ComicSplash text={feature.splashText} className="rotate-12" />
-              </div>
-
               {/* Feature card */}
               <div className="relative bg-white border-4 border-black rounded-lg p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] 
                           transform transition-all duration-300 hover:rotate-1 hover:scale-105"
@@ -119,7 +98,7 @@ const Features = () => {
                 <Link href={feature.route} className="block text-center">
                   <button className="w-full bg-black text-white font-black py-3 px-6 rounded-full 
                                    border-4 border-black transform transition-transform duration-300 
-                                   hover:scale-105 hover:-rotate-2">
+                                   hover:scale-105 hover:-rotate-2" aria-label="Descubrir">
                     ¡DESCUBRIR! →
                   </button>
                 </Link>

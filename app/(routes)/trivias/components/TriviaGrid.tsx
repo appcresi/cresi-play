@@ -47,12 +47,6 @@ export default function TriviaGrid({
                       }
                     )}
                   >
-                    {selected && (
-                      <ComicBurst
-                        text={levelBursts[numericLevel]}
-                        className="absolute -top-4 -right-4 animate-pulse"
-                      />
-                    )}
                     <p className='hidden sm:inline-flex'>NIVEL</p> {numericLevel}
                   </button>
                 )}

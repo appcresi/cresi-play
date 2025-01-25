@@ -1,18 +1,18 @@
 "use client"
 import { useState, useEffect } from 'react';
-import {IconMenu2    , IconX }  from '@tabler/icons-react';
-
+import {IconMenu2, IconX, IconUser }  from '@tabler/icons-react';
 
 const ComicBurgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Array de objetos con el nombre y enlace específico para cada elemento
+  // Updated menuItems to include User Profile
   const menuItems = [
     { name: 'Inicio', href: '/' },
+    { name: 'Perfil', href: '/user', icon: IconUser },
     { name: 'Trivias', href: '/trivias' },
     { name: 'Pasapalabras', href: '/pasapalabras' },
-    { name: 'Simuladorde Grooming', href: '/simulador' },
+    { name: 'Simulador de Grooming', href: '/simulador' },
     { name: 'Completa Palabras', href: '/completapalabras' },
     { name: 'DataMuncher', href: '/datamuncher' }
   ];
@@ -63,8 +63,9 @@ const ComicBurgerMenu = () => {
                 className="block p-3 text-xl font-bold text-black bg-yellow-300 rounded-lg border-2 border-black 
                 transform transition-transform hover:scale-105 hover:-rotate-2
                 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                hover:bg-yellow-400"
+                hover:bg-yellow-400 flex items-center justify-center gap-2"
               >
+                {item.icon && <item.icon size={24} />}
                 ¡{item.name}!
               </a>
             ))}
