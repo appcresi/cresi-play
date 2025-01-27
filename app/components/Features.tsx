@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {
   IconAB2,
   IconCards,
-  IconPresentation,
+  IconMoodPuzzled,
   IconShieldCheck,
   IconBrandPnpm,
   IconPacman
@@ -22,7 +22,7 @@ const features = [
   },
   {
     title: "Pasapalabras",
-    description: "Descubrí todas las palabra nuevas escondidas detrás de la definición.",
+    description: "Descubrí todas las palabra nuevas escondidas detrás de la definición. ¿La sabés o pasás?",
     icon: <IconAB2 size={32} />,
     route: "/pasapalabras",
     color: "#4ADE80"
@@ -36,7 +36,7 @@ const features = [
   },
   {
     title: "Completa Palabras",
-    description: "Aprender más sobre sexualidad, completando el texto con la palabra correcta.",
+    description: "Aprender más sobre sexualidad, completando el texto con la palabra correcta. ",
     icon: <IconBrandPnpm size={32} />,
     route: "/completapalabras",
     color: "#FF6B6B"
@@ -49,10 +49,10 @@ const features = [
     color: "#4ADE80"
   },
   {
-    title: "Nuevas Trivias",
-    description: "¡Novedad! Jugá a la nueva trivia incorporada actualmente sobre: ALIMENTACIÓN",
-    icon: <IconPresentation size={32} />,
-    route: "https://jugar.cresi.com.ar/trivias/pregame/2305b679-1b36-444a-986f-1d4f6a797d51",
+    title: "MoodTracker",
+    description: "Reconocé tus emociones y llevá un registro de tus estados de ánimo. ¿Cómo te sentís hoy?",
+    icon: <IconMoodPuzzled size={32} />,
+    route: "/moodtracker",
     color: "#FFD93D"
   }
 ];

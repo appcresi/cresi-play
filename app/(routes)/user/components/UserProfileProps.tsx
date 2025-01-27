@@ -1,18 +1,29 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
     IconHeart,
     IconTrophy,
-    IconHeartPlus
+    IconHeartPlus,
+    IconMoodHappy,
+    IconEdit,
+    IconTrash
 } from "@tabler/icons-react";
 import PurchaseModal from '@/components/PurchaseModal';
+import Swal from 'sweetalert2';
 
-// Interfaces remain the same as in the original component
 interface CrESICharacter {
   id: number;
   name: string;
   image: string;
+}
+
+interface MoodRecord {
+  date: string;
+  mood: number;
+  label: string;
+  intensity: number;
 }
 
 interface UserProfileProps {
@@ -25,22 +36,34 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
+  const router = useRouter();
   const [userData, setUserData] = useState({
     character: { id: 0, name: '', image: '' },
     username: '',
     totalGameLives: 0,
     totalGameScore: 0
   });
-
+  const [lastMood, setLastMood] = useState<MoodRecord | null>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
   useEffect(() => {
-    // Previous useEffect logic remains the same
+    loadUserData();
+  }, [initialData]);
+
+  const loadUserData = () => {
+    const moodHistory = localStorage.getItem('moodHistory');
+    if (moodHistory) {
+      const moodData = JSON.parse(moodHistory) as MoodRecord[];
+      if (moodData.length > 0) {
+        setLastMood(moodData[moodData.length - 1]);
+      }
+    }
+
     if (initialData) {
       setUserData({
         character: initialData.character || { id: 0, name: '', image: '' },
         username: initialData.username || '',
-        totalGameLives: initialData.totalGameLives || 0,
+        totalGameLives: initialData.totalGameLives || 3,
         totalGameScore: initialData.totalGameScore || 0
       });
       return;
@@ -54,13 +77,50 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
     setUserData({
       character: storedCharacter ? JSON.parse(storedCharacter) : { id: 0, name: '', image: '' },
       username: storedUsername || '',
-      totalGameLives: storedLives ? parseInt(storedLives, 10) : 0,
+      totalGameLives: storedLives ? parseInt(storedLives, 10) : 3,
       totalGameScore: storedScore ? parseInt(storedScore, 10) : 0
     });
-  }, [initialData]);
+  };
+
+  const handleDeleteHistory = async () => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esta acción! Se borrará todo tu historial.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, bórralo',
+      cancelButtonText: 'Cancelar',
+      background: '#fff',
+      customClass: {
+        popup: 'comic-popup'
+      }
+    });
+
+    if (result.isConfirmed) {
+      localStorage.removeItem('moodHistory');
+      localStorage.removeItem('totalGameScore');
+      localStorage.removeItem('totalGameLives');
+      setLastMood(null);
+      setUserData(prev => ({
+        ...prev,
+        totalGameLives: 3,
+        totalGameScore: 0
+      }));
+
+      await Swal.fire({
+        title: '¡Borrado!',
+        text: 'Tu historial ha sido eliminado.',
+        icon: 'success',
+        customClass: {
+          popup: 'comic-popup'
+        }
+      });
+    }
+  };
 
   const handlePurchaseLife = () => {
-    // Refresh user data after purchase
     const storedLives = localStorage.getItem('totalGameLives');
     const storedScore = localStorage.getItem('totalGameScore');
 
@@ -71,66 +131,90 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
     }));
   };
 
+  const handleUpdateMood = () => {
+    router.push('/moodtracker');
+  };
+
   return (
-    <div className="bg-[#F0F0F0] p-6 rounded-xl shadow-lg border-4 border-blue-600 comic-border relative">
-      <div className="flex items-center space-x-4 mb-4">
+    <div className="bg-white p-8 rounded-3xl comic-container">
+      <div className="flex items-center space-x-6 mb-8">
         {userData.character.image && (
-          <div className="w-24 h-24 relative comic-frame">
+          <div className="w-32 h-32 relative comic-image-frame">
             <Image 
               src={`/${userData.character.image}`} 
               alt={userData.character.name} 
               layout="fill" 
               objectFit="cover" 
-              className="rounded-lg"
+              className="rounded-xl"
             />
           </div>
         )}
         <div>
-          <h2 className="text-2xl font-bold comic-text">
+          <h2 className="text-3xl font-bold mb-2 text-gray-800">
             {userData.username || 'Player'}
           </h2>
-          <p className="text-md text-gray-600">
+          <p className="text-xl text-gray-600">
             {userData.character.name || 'No Character Selected'}
           </p>
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 comic-panel">
-        <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
-          <IconHeart className="mr-2 text-red-500" />
+      <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="comic-card bg-yellow-50">
+          <IconHeart className="text-red-500" size={32} />
           <div>
-            <p className="font-bold">Lives</p>
-            <p className="text-xl">{userData.totalGameLives}</p>
+            <p className="font-bold text-gray-700">Vidas</p>
+            <p className="text-2xl">{userData.totalGameLives}</p>
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow-md flex items-center">
-          <IconTrophy className="mr-2 text-yellow-500" />
+        <div className="comic-card bg-blue-50">
+          <IconTrophy className="text-yellow-500" size={32} />
           <div>
-            <p className="font-bold">Score</p>
-            <p className="text-xl">{userData.totalGameScore}</p>
+            <p className="font-bold text-gray-700">Puntos</p>
+            <p className="text-2xl">{userData.totalGameScore}</p>
           </div>
+        </div>
+
+        <div className="comic-card bg-green-50 relative group">
+          <IconMoodHappy className="text-blue-500" size={32} />
+          <div>
+            <p className="font-bold text-gray-700">¿Cómo te sientes?</p>
+            <p className="text-2xl">{lastMood?.label || 'No mood'}</p>
+          </div>
+          <button 
+            onClick={handleUpdateMood}
+            className="absolute right-3 top-3 p-2 rounded-full hover:bg-white/50 transition-colors"
+          >
+            <IconEdit size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Purchase Life Button */}
-      <div className="absolute top-2 right-2">
+      <div className="flex justify-between gap-4">
         <button 
           onClick={() => setIsPurchaseModalOpen(true)}
           disabled={userData.totalGameLives >= 3 || userData.totalGameScore < 200}
           className={`
-            flex items-center gap-2 px-3 py-2 rounded-lg 
+            comic-button bg-gradient-to-r from-green-400 to-green-500
             ${userData.totalGameLives >= 3 || userData.totalGameScore < 200 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-green-500 text-white hover:bg-green-600'}
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:from-green-500 hover:to-green-600'}
           `}
         >
-          <IconHeartPlus size={20} />
+          <IconHeartPlus size={24} />
           Comprar Vida
+        </button>
+
+        <button 
+          onClick={handleDeleteHistory}
+          className="comic-button bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
+        >
+          <IconTrash size={24} />
+          Borrar Historial
         </button>
       </div>
 
-      {/* Purchase Modal */}
       <PurchaseModal 
         isOpen={isPurchaseModalOpen}
         onClose={() => setIsPurchaseModalOpen(false)}
@@ -138,35 +222,78 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
       />
       
       <style jsx>{`
-        .comic-border {
-          border-style: solid;
-          border-width: 4px;
-          border-image: 
-            repeating-linear-gradient(
-              45deg,
-              #000, #000 10px,
-              transparent 10px, transparent 20px
-            ) 1;
+        .comic-container {
+          background-color: white;
+          box-shadow: 
+            0 0 0 4px #000,
+            10px 10px 0 0 #000;
+          position: relative;
+          overflow: hidden;
         }
-        
-        .comic-text {
-          font-family: 'Comic Sans MS', cursive;
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+
+        .comic-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: 
+            radial-gradient(circle at 20px 20px, #000 2px, transparent 2px) -10px -10px / 40px 40px repeat-all;
+          opacity: 0.03;
+          pointer-events: none;
         }
-        
-        .comic-frame {
-          border: 3px solid black;
-          box-shadow: 5px 5px 0 rgba(0,0,0,0.5);
+
+        .comic-image-frame {
+          border: 4px solid #000;
+          box-shadow: 5px 5px 0 #000;
+          border-radius: 16px;
+          overflow: hidden;
         }
-        
-        .comic-panel {
-          background: repeating-linear-gradient(
-            45deg,
-            #f0f0f0,
-            #f0f0f0 10px,
-            #e0e0e0 10px,
-            #e0e0e0 20px
-          );
+
+        .comic-card {
+          padding: 1.5rem;
+          border: 3px solid #000;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          box-shadow: 5px 5px 0 #000;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .comic-card:hover {
+          transform: translate(-2px, -2px);
+          box-shadow: 7px 7px 0 #000;
+        }
+
+        .comic-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border: 3px solid #000;
+          border-radius: 12px;
+          color: white;
+          font-weight: bold;
+          box-shadow: 4px 4px 0 #000;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .comic-button:hover:not(:disabled) {
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0 #000;
+        }
+
+        .comic-button:active:not(:disabled) {
+          transform: translate(0, 0);
+          box-shadow: 0 0 0 #000;
+        }
+
+        :global(.comic-popup) {
+          border: 3px solid #000 !important;
+          border-radius: 16px !important;
+          box-shadow: 8px 8px 0 #000 !important;
         }
       `}</style>
     </div>
