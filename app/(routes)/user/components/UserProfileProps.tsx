@@ -136,167 +136,159 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl comic-container">
-      <div className="flex items-center space-x-6 mb-8">
-        {userData.character.image && (
-          <div className="w-32 h-32 relative comic-image-frame">
-            <Image 
-              src={`/${userData.character.image}`} 
-              alt={userData.character.name} 
-              layout="fill" 
-              objectFit="cover" 
-              className="rounded-xl"
-            />
-          </div>
-        )}
-        <div>
-          <h2 className="text-3xl font-bold mb-2 text-gray-800">
-            {userData.username || 'Player'}
-          </h2>
-          <p className="text-xl text-gray-600">
-            {userData.character.name || 'No Character Selected'}
-          </p>
-        </div>
+    <div className="bg-white p-4 md:p-8 rounded-3xl comic-container">
+  <div className="flex flex-col md:flex-row items-center md:space-x-6 mb-8">
+    {userData.character.image && (
+      <div className="w-24 h-24 md:w-32 md:h-32 relative comic-image-frame">
+        <Image
+          src={`/${userData.character.image}`}
+          alt={userData.character.name}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-xl"
+        />
       </div>
-      
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="comic-card bg-yellow-50">
-          <IconHeart className="text-red-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">Vidas</p>
-            <p className="text-2xl">{userData.totalGameLives}</p>
-          </div>
-        </div>
-        
-        <div className="comic-card bg-blue-50">
-          <IconTrophy className="text-yellow-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">Puntos</p>
-            <p className="text-2xl">{userData.totalGameScore}</p>
-          </div>
-        </div>
-
-        <div className="comic-card bg-green-50 relative group">
-          <IconMoodHappy className="text-blue-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">¿Cómo te sientes?</p>
-            <p className="text-2xl">{lastMood?.label || 'No mood'}</p>
-          </div>
-          <button 
-            onClick={handleUpdateMood}
-            className="absolute right-3 top-3 p-2 rounded-full hover:bg-white/50 transition-colors"
-          >
-            <IconEdit size={20} />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex justify-between gap-4">
-        <button 
-          onClick={() => setIsPurchaseModalOpen(true)}
-          disabled={userData.totalGameLives >= 3 || userData.totalGameScore < 200}
-          className={`
-            comic-button bg-gradient-to-r from-green-400 to-green-500
-            ${userData.totalGameLives >= 3 || userData.totalGameScore < 200 
-              ? 'opacity-50 cursor-not-allowed' 
-              : 'hover:from-green-500 hover:to-green-600'}
-          `}
-        >
-          <IconHeartPlus size={24} />
-          Comprar Vida
-        </button>
-
-        <button 
-          onClick={handleDeleteHistory}
-          className="comic-button bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
-        >
-          <IconTrash size={24} />
-          Borrar Historial
-        </button>
-      </div>
-
-      <PurchaseModal 
-        isOpen={isPurchaseModalOpen}
-        onClose={() => setIsPurchaseModalOpen(false)}
-        onPurchase={handlePurchaseLife}
-      />
-      
-      <style jsx>{`
-        .comic-container {
-          background-color: white;
-          box-shadow: 
-            0 0 0 4px #000,
-            10px 10px 0 0 #000;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .comic-container::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: 
-            radial-gradient(circle at 20px 20px, #000 2px, transparent 2px) -10px -10px / 40px 40px repeat-all;
-          opacity: 0.03;
-          pointer-events: none;
-        }
-
-        .comic-image-frame {
-          border: 4px solid #000;
-          box-shadow: 5px 5px 0 #000;
-          border-radius: 16px;
-          overflow: hidden;
-        }
-
-        .comic-card {
-          padding: 1.5rem;
-          border: 3px solid #000;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          box-shadow: 5px 5px 0 #000;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .comic-card:hover {
-          transform: translate(-2px, -2px);
-          box-shadow: 7px 7px 0 #000;
-        }
-
-        .comic-button {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
-          border: 3px solid #000;
-          border-radius: 12px;
-          color: white;
-          font-weight: bold;
-          box-shadow: 4px 4px 0 #000;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .comic-button:hover:not(:disabled) {
-          transform: translate(-2px, -2px);
-          box-shadow: 6px 6px 0 #000;
-        }
-
-        .comic-button:active:not(:disabled) {
-          transform: translate(0, 0);
-          box-shadow: 0 0 0 #000;
-        }
-
-        :global(.comic-popup) {
-          border: 3px solid #000 !important;
-          border-radius: 16px !important;
-          box-shadow: 8px 8px 0 #000 !important;
-        }
-      `}</style>
+    )}
+    <div className="text-center md:text-left mt-4 md:mt-0">
+      <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-800">
+        {userData.username || 'Player'}
+      </h2>
+      <p className="text-lg md:text-xl text-gray-600">
+        {userData.character.name || 'No Character Selected'}
+      </p>
     </div>
+  </div>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+    <div className="comic-card bg-yellow-50">
+      <IconHeart className="text-red-500" size={32} />
+      <div>
+        <p className="font-bold text-gray-700">Vidas</p>
+        <p className="text-xl md:text-2xl">{userData.totalGameLives}</p>
+      </div>
+    </div>
+
+    <div className="comic-card bg-blue-50">
+      <IconTrophy className="text-yellow-500" size={32} />
+      <div>
+        <p className="font-bold text-gray-700">Puntos</p>
+        <p className="text-xl md:text-2xl">{userData.totalGameScore}</p>
+      </div>
+    </div>
+
+    <div className="comic-card bg-green-50 relative group">
+      <IconMoodHappy className="text-blue-500" size={32} />
+      <div>
+        <p className="font-bold text-gray-700">¿Cómo te sientes?</p>
+        <p className="text-xl md:text-2xl">{lastMood?.label || 'No mood'}</p>
+      </div>
+      <button
+        onClick={handleUpdateMood}
+        className="absolute right-2 md:right-3 top-2 md:top-3 p-2 rounded-full hover:bg-white/50 transition-colors"
+      >
+        <IconEdit size={20} />
+      </button>
+    </div>
+  </div>
+
+  <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <button
+      onClick={() => setIsPurchaseModalOpen(true)}
+      disabled={userData.totalGameLives >= 3 || userData.totalGameScore < 200}
+      className={`comic-button bg-gradient-to-r from-green-400 to-green-500 ${
+        userData.totalGameLives >= 3 || userData.totalGameScore < 200
+          ? 'opacity-50 cursor-not-allowed'
+          : 'hover:from-green-500 hover:to-green-600'
+      }`}
+    >
+      <IconHeartPlus size={24} />
+      Comprar Vida
+    </button>
+
+    <button
+      onClick={handleDeleteHistory}
+      className="comic-button bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
+    >
+      <IconTrash size={24} />
+      Borrar Historial
+    </button>
+  </div>
+
+  <PurchaseModal
+    isOpen={isPurchaseModalOpen}
+    onClose={() => setIsPurchaseModalOpen(false)}
+    onPurchase={handlePurchaseLife}
+  />
+
+  <style jsx>{`
+    .comic-container {
+      background-color: white;
+      box-shadow: 0 0 0 4px #000, 10px 10px 0 0 #000;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .comic-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20px 20px, #000 2px, transparent 2px)
+        -10px -10px / 40px 40px repeat;
+      opacity: 0.03;
+      pointer-events: none;
+    }
+
+    .comic-image-frame {
+      border: 4px solid #000;
+      box-shadow: 5px 5px 0 #000;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .comic-card {
+      padding: 1rem;
+      border: 3px solid #000;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 5px 5px 0 #000;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .comic-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0 #000;
+    }
+
+    .comic-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: 3px solid #000;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+      box-shadow: 4px 4px 0 #000;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .comic-button:hover:not(:disabled) {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #000;
+    }
+
+    .comic-button:active:not(:disabled) {
+      transform: translate(0, 0);
+      box-shadow: 0 0 0 #000;
+    }
+  `}</style>
+</div>
+
   );
 };
 

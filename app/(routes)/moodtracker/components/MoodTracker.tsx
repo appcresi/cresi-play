@@ -105,164 +105,138 @@ const MoodTracker = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-yellow-50 p-6 pt-24">
-      <GameStatusBar 
-        title="Mood Tracker"
-        score={gameScore}
-        lives={gameLives}
-        level={1}
-      />
-      
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1">
-        <h1 className="text-4xl font-bold mb-2 text-blue-600 tracking-wide text-center" 
-              style={{ textShadow: '2px 2px 0 #000' }}>
-            ¡Diario de Emociones!
-          </h1>
-          <p className="text-lg font-semibold text-gray-700 text-center mb-2">
-            ¿Cómo estás hoy? 
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {moods.map((mood) => (
-              <button
-                key={mood.label}
-                onClick={() => handleMoodSelect(mood)}
-                className={`relative p-4 rounded-lg flex flex-col items-center transition-all
-                  ${mood.bgColor} border-4 border-black
-                  ${selectedMood?.label === mood.label 
-                    ? 'transform scale-110 shadow-xl' 
-                    : 'hover:scale-105 hover:shadow-lg'}
-                  transform hover:-rotate-3 transition-transform duration-200`}
-              >
-                <mood.icon 
-                  className={`w-16 h-16 ${mood.color}`}
-                  strokeWidth={3}
-                />
-                <span className="mt-2 font-bold text-gray-800">{mood.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {selectedMood && (
-            <div className="mt-8 p-6 bg-yellow-50 rounded-lg shadow-lg border-4 border-black">
-            <h3 className="text-2xl font-bold mb-4 text-center" style={{ 
-              textTransform: 'uppercase'
-            }}>Del 1 al 10, ¿Cómo te sentís?</h3>
-            
-            <div className="flex items-center gap-4">
-              <input 
-                type="range" 
-                min="1" 
-                max="10" 
-                value={intensityRating} 
-                onChange={(e) => setIntensityRating(parseInt(e.target.value))} 
-                className="w-full h-6 bg-yellow-200 rounded-full appearance-none cursor-pointer border-2 border-black"
-              />
-              <span className="text-3xl font-bold" style={{ 
-                color: '#FF6B6B'
-              }}>{intensityRating}</span>
-            </div>
-            
-            <div className="flex justify-between text-xl mt-2">
-              <span className="text-4xl"><IconMoodAngry className="w-8 h-8 text-red-500" strokeWidth={3} /></span>
-              <span className="text-4xl"><IconMoodHappy className="w-8 h-8 text-green-500" strokeWidth={3} /></span>
-            </div>
-            
-            <button 
-              onClick={handleSaveMood} 
-              className="mt-4 w-full px-6 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors transform hover:scale-105 border-4 border-black"
-            >
-              ¡Guardar registro!
-            </button>
-          </div>
-          )}
-        </div>
-
-        {moodHistory.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform -rotate-1">
-            <h2 className="text-2xl font-bold mb-4 text-purple-600" 
-                style={{ textShadow: '1px 1px 0 #000' }}>
-              ¡Tu Aventura Emocional!
-            </h2>
-            <div className="h-64 w-full">
-              <ResponsiveContainer>
-                <LineChart data={chartData}>
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="#000000"
-                    fontSize={12}
-                    strokeWidth={2}
-                  />
-                  <YAxis 
-                    yAxisId="left"
-                    stroke="#000000"
-                    fontSize={12}
-                    strokeWidth={2}
-                    ticks={[0, 1, 2, 3, 4, 5,6, 7, 8, 9, 10]}
-                    tickFormatter={(value) => {
-                      const mood = moods.find(m => m.value === value);
-                      return mood ? mood.label : value;
-                    }}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    stroke="#FF0000"
-                    domain={[1, 10]}
-                    ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                    label={{ value: 'Intensidad', angle: 90, position: 'right' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: 'white',
-                      border: '3px solid black',
-                      borderRadius: '8px',
-                      padding: '8px'
-                    }}
-                    formatter={(value, name) => {
-                      if (name === 'valor') {
-                        const mood = moods.find(m => m.value === value);
-                        return [mood ? mood.label : value, 'Estado'];
-                      }
-                      if (name === 'intensidad') {
-                        return [value, 'Intensidad'];
-                      }
-                      return [value, name];
-                    }}
-                  />
-                  <Line 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="valor" 
-                    stroke="#6366f1"
-                    strokeWidth={4}
-                    dot={{ 
-                      fill: '#6366f1',
-                      strokeWidth: 2,
-                      r: 6,
-                      strokeDasharray: '' 
-                    }}
-                  />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="intensidad" 
-                    stroke="#FF0000"
-                    strokeWidth={4}
-                    dot={{ 
-                      fill: '#FF0000',
-                      strokeWidth: 2,
-                      r: 6,
-                      strokeDasharray: '' 
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
+    <div className="min-h-screen bg-yellow-50 p-4 sm:p-6 pt-24"> 
+  <GameStatusBar 
+    title="Mood Tracker"
+    score={gameScore}
+    lives={gameLives}
+    level={1}
+  />
+  
+  <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+    <div className="bg-white rounded-lg shadow-lg border-4 border-black p-4 sm:p-6 transform rotate-1">
+      <h1 className="text-2xl sm:text-4xl font-bold mb-2 text-blue-600 tracking-wide text-center" 
+          style={{ textShadow: '2px 2px 0 #000' }}>
+        ¡Diario de Emociones!
+      </h1>
+      <p className="text-base sm:text-lg font-semibold text-gray-700 text-center mb-4">
+        ¿Cómo estás hoy? 
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {moods.map((mood) => (
+          <button
+            key={mood.label}
+            onClick={() => handleMoodSelect(mood)}
+            className={`relative p-4 rounded-lg flex flex-col items-center transition-all
+              ${mood.bgColor} border-4 border-black
+              ${selectedMood?.label === mood.label 
+                ? 'transform scale-105 shadow-xl' 
+                : 'hover:scale-105 hover:shadow-lg'}
+              transform hover:-rotate-3 transition-transform duration-200`}
+          >
+            <mood.icon 
+              className={`w-12 h-12 sm:w-16 sm:h-16 ${mood.color}`}
+              strokeWidth={3}
+            />
+            <span className="mt-2 text-sm sm:text-base font-bold text-gray-800">{mood.label}</span>
+          </button>
+        ))}
       </div>
+
+      {selectedMood && (
+        <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-yellow-50 rounded-lg shadow-lg border-4 border-black">
+          <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center" style={{ 
+            textTransform: 'uppercase'
+          }}>Del 1 al 10, ¿Cómo te sentís?</h3>
+          
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <input 
+              type="range" 
+              min="1" 
+              max="10" 
+              value={intensityRating} 
+              onChange={(e) => setIntensityRating(parseInt(e.target.value))} 
+              className="w-full h-4 sm:h-6 bg-yellow-200 rounded-full appearance-none cursor-pointer border-2 border-black"
+            />
+            <span className="text-2xl sm:text-3xl font-bold" style={{ 
+              color: '#FF6B6B'
+            }}>{intensityRating}</span>
+          </div>
+          
+          <div className="flex justify-between text-lg sm:text-xl mt-2">
+            <span className="text-3xl sm:text-4xl"><IconMoodAngry className="w-6 sm:w-8 h-6 sm:h-8 text-red-500" strokeWidth={3} /></span>
+            <span className="text-3xl sm:text-4xl"><IconMoodHappy className="w-6 sm:w-8 h-6 sm:h-8 text-green-500" strokeWidth={3} /></span>
+          </div>
+          
+          <button 
+            onClick={handleSaveMood} 
+            className="mt-4 w-full px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors transform hover:scale-105 border-4 border-black"
+          >
+            ¡Guardar registro!
+          </button>
+        </div>
+      )}
     </div>
+
+    {moodHistory.length > 0 && (
+      <div className="bg-white rounded-lg shadow-lg border-4 border-black p-4 sm:p-6 transform -rotate-1">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-purple-600" 
+            style={{ textShadow: '1px 1px 0 #000' }}>
+          ¡Tu Aventura Emocional!
+        </h2>
+        <div className="h-48 sm:h-64 w-full">
+          <ResponsiveContainer>
+            <LineChart data={chartData}>
+              <XAxis 
+                dataKey="date" 
+                stroke="#000000"
+                fontSize={10}
+                strokeWidth={2}
+              />
+              <YAxis 
+                yAxisId="left"
+                stroke="#000000"
+                fontSize={10}
+                strokeWidth={2}
+                ticks={[0, 1, 2, 3, 4, 5,6, 7, 8, 9, 10]}
+              />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                stroke="#FF0000"
+                domain={[1, 10]}
+                ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  background: 'white',
+                  border: '3px solid black',
+                  borderRadius: '8px',
+                  padding: '8px'
+                }}
+              />
+              <Line 
+                yAxisId="left"
+                type="monotone" 
+                dataKey="valor" 
+                stroke="#6366f1"
+                strokeWidth={3}
+              />
+              <Line 
+                yAxisId="right"
+                type="monotone" 
+                dataKey="intensidad" 
+                stroke="#FF0000"
+                strokeWidth={3}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
   );
 };
 
