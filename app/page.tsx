@@ -39,33 +39,7 @@ const FeatureCard = React.memo(({ icon, title, content, color }: FeatureCardProp
 ));
 
 const ComicHome = () => {
-  const features = [
-    {
-      icon: <IconBrain size={32} />,
-      title: "¡CRASH! ¡Desafía tu mente!",
-      content: "Pon a prueba tus conocimientos con nuestras trivia",
-      color: "#FF6B6B"
-    },
-    {
-      icon: <IconCheck size={32} />,
-      title: "¡ZING! ¡Aprende de tus errores!",
-      content: "Estadísticas detalladas y explicaciones para cada pregunta",
-      color: "#4ADE80"
-    },
-    {
-      icon: <IconTrendingUp size={32} />,
-      title: "¡WOOSH! ¡Comparte tu éxito!",
-      content: "Obtén certificados y presume tus logros",
-      color: "#FFD93D"
-    },
-    {
-      icon: <IconBulb size={32} />,
-      title: "¡POP! ¡Involúcrate!",
-      content: "Recursos gratuitos y juegos didácticos para todos",
-      color: "#FF6B6B"
-    }
-  ];
-
+  
   return (
     <main 
       className="min-h-screen bg-[#FFE5E5] font-bold overflow-hidden"
@@ -81,80 +55,13 @@ const ComicHome = () => {
           <ComicBurst text="¡WOW!" className="absolute top-4 right-4 z-10" />
         </Suspense>
 
-        <div className="relative mx-auto px-8 max-w-7xl pt-16">
-          <div 
-            className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 rounded-lg transform -rotate-2 hover:rotate-0 transition-all duration-300"
-            role="banner"
-          >
-            <p 
-              className="text-[#FF6B6B] text-xl transform rotate-2 animate-pulse" 
-              aria-hidden="true"
-            >
-              ¡POW! 💥
-            </p>
-            <h1 
-              className="text-4xl sm:text-6xl mb-4 font-black text-[#4ADE80] transform rotate-2 hover:scale-105 transition-transform" 
-              style={{textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'}}
-            >
-              ¡Aprendé Jugando!
-            </h1>
-
-            <h2 
-              className="hidden md:block text-xl text-gray-700 transform rotate-2"
-              aria-label="Descripción de CrESI"
-            >
-              <span className="text-[#FF6B6B]">¡GENIAL!</span> Nunca aprender fue tan divertido como con CrESI. 
-              <span className="text-[#4ADE80]">¡VAMOS!</span> Sumérgete en una experiencia interactiva.
-              <span className="text-[#FFD93D]">¡JUGUEMOS!</span>
-            </h2>
+        <div className="relative mx-auto px-8 max-w-7xl pt-16 text-center">
+          <div className="flex flex-col items-center justify-center text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-4 rounded-lg transform -rotate-2 hover:rotate-0 transition-all duration-300 min-h-[100px]" role="banner">
+            <img src="cresi-logo.webp" alt="logo de cresi" className="mx-auto max-w-full h-auto" />
           </div>
         </div>
       </div>
       <Features />
-      {/* Features section */}
-      <div className="mx-auto px-4 max-w-5xl mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {features.map((feature, index) => (
-          <FeatureCard 
-            key={index}
-            icon={feature.icon}
-            title={feature.title}
-            content={feature.content}
-            color={feature.color}
-          />
-        ))}
-      </div>
-
-      {/* Call to Action */}
-      <div className="mx-auto px-4 max-w-5xl my-16">
-        <div 
-          className="relative bg-[#4ADE80] text-white border-4 border-black p-8 rounded-lg shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] text-center overflow-hidden"
-          role="region"
-          aria-label="Comenzar Aventura"
-        >
-          <Suspense fallback={<div></div>}>
-            <ComicBurst 
-              text="¡YAY!" 
-              className="-top-4 -right-4 animate-spin-slow" 
-            />
-          </Suspense>
-          <h2 
-            className="text-4xl font-black mb-4 animate-pulse" 
-            style={{
-              textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000'
-            }}
-          >
-            ¡BOOM! ¿Listo para la aventura?
-          </h2>
-          <Link 
-            href="/trivias" 
-            className="inline-block bg-[#FFD93D] text-black px-8 py-4 rounded-full font-black border-4 border-black transform hover:scale-110 hover:-rotate-3 transition-all duration-300"
-            aria-label="Comenzar Trivias"
-          >
-            ¡COMENZÁ AHORA! <IconArrowNarrowRight className="inline ml-2 animate-bounce" />
-          </Link>
-        </div>
-      </div>
-
       {/* Footer */}
       <footer 
         className="bg-[#FF6B6B] text-white p-4 text-center"
