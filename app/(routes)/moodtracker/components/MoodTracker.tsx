@@ -11,10 +11,42 @@ import {
     IconMoodTongueWink, 
     IconMoodConfuzed, 
     IconMoodHeart 
-  } from '@tabler/icons-react';
+} from '@tabler/icons-react';
 import { SmilePlus, Angry, Calendar, Trophy, Medal, Star, BookOpen } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
+
+// Mover las interfaces fuera del componente
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  unlocked: boolean;
+}
+
+interface Mood {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  value: number;
+  label: string;
+  color: string;
+  bgColor: string;
+}
+
+interface MoodEntry {
+  date: string;
+  mood: number;
+  label: string;
+  intensity: number;
+  note?: string;
+}
+
+interface Stats {
+  moodCounts: Record<string, number>;
+  avgIntensity: string;
+  totalEntries: number;
+  mostCommonMood: string;
+}
 
 const MoodTracker = () => {
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
@@ -26,30 +58,6 @@ const MoodTracker = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [streakCount, setStreakCount] = useState(0);
   const [showStats, setShowStats] = useState(false);
-
-  interface Achievement {
-    id: string;
-    title: string;
-    description: string;
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    unlocked: boolean;
-  }
-
-  interface Mood {
-    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-    value: number;
-    label: string;
-    color: string;
-    bgColor: string;
-  }
-
-  interface MoodEntry {
-    date: string;
-    mood: number;
-    label: string;
-    intensity: number;
-    note?: string;
-  }
 
   // Lista de logros
   const defaultAchievements: Achievement[] = [
@@ -83,31 +91,30 @@ const MoodTracker = () => {
     }
   ];
 
-  const moods = [
-      { icon: IconMoodAngry, value: 1, label: 'Enojado', color: 'text-red-400', bgColor: 'bg-red-100' },
-      { icon: IconMoodSad, value: 2, label: 'Triste', color: 'text-purple-400', bgColor: 'bg-purple-100' },
-      { icon: IconMoodAnnoyed, value: 3, label: 'Molesto', color: 'text-blue-400', bgColor: 'bg-blue-100' },
-      { icon: IconMoodCry, value: 4, label: 'Deprimido', color: 'text-gray-400', bgColor: 'bg-gray-100' },
-      { icon: IconMoodConfuzed, value: 5, label: 'Frustrado', color: 'text-orange-400', bgColor: 'bg-orange-100' },
-      { icon: IconMoodNeutral, value: 6, label: 'Neutral', color: 'text-pink-400', bgColor: 'bg-pink-100' },
-      { icon: IconMoodHeart, value: 7, label: 'Amoroso', color: 'text-rose-400', bgColor: 'bg-rose-100' },
-      { icon: IconMoodSmile, value: 8, label: 'Feliz', color: 'text-green-400', bgColor: 'bg-green-100' },
-      { icon: IconMoodTongueWink, value: 9, label: 'Entusiasmado', color: 'text-teal-400', bgColor: 'bg-teal-100' },
-      { icon: IconMoodHappy, value: 10, label: 'Muy Feliz', color: 'text-yellow-400', bgColor: 'bg-yellow-100' }
-    ];
+  const moods: Mood[] = [
+    { icon: IconMoodAngry, value: 1, label: 'Enojado', color: 'text-red-400', bgColor: 'bg-red-100' },
+    { icon: IconMoodSad, value: 2, label: 'Triste', color: 'text-purple-400', bgColor: 'bg-purple-100' },
+    { icon: IconMoodAnnoyed, value: 3, label: 'Molesto', color: 'text-blue-400', bgColor: 'bg-blue-100' },
+    { icon: IconMoodCry, value: 4, label: 'Deprimido', color: 'text-gray-400', bgColor: 'bg-gray-100' },
+    { icon: IconMoodConfuzed, value: 5, label: 'Frustrado', color: 'text-orange-400', bgColor: 'bg-orange-100' },
+    { icon: IconMoodNeutral, value: 6, label: 'Neutral', color: 'text-pink-400', bgColor: 'bg-pink-100' },
+    { icon: IconMoodHeart, value: 7, label: 'Amoroso', color: 'text-rose-400', bgColor: 'bg-rose-100' },
+    { icon: IconMoodSmile, value: 8, label: 'Feliz', color: 'text-green-400', bgColor: 'bg-green-100' },
+    { icon: IconMoodTongueWink, value: 9, label: 'Entusiasmado', color: 'text-teal-400', bgColor: 'bg-teal-100' },
+    { icon: IconMoodHappy, value: 10, label: 'Muy Feliz', color: 'text-yellow-400', bgColor: 'bg-yellow-100' }
+  ];
 
-    
-  const moodColors = {
-    'Enojado': '#f87171',      // red-400
-    'Triste': '#c084fc',       // purple-400
-    'Molesto': '#60a5fa',      // blue-400
-    'Deprimido': '#9ca3af',    // gray-400
-    'Frustrado': '#fb923c',    // orange-400
-    'Neutral': '#f472b6',      // pink-400
-    'Amoroso': '#fb7185',      // rose-400
-    'Feliz': '#4ade80',        // green-400
-    'Entusiasmado': '#2dd4bf', // teal-400
-    'Muy Feliz': '#facc15'     // yellow-400
+  const moodColors: Record<string, string> = {
+    'Enojado': '#f87171',
+    'Triste': '#c084fc',
+    'Molesto': '#60a5fa',
+    'Deprimido': '#9ca3af',
+    'Frustrado': '#fb923c',
+    'Neutral': '#f472b6',
+    'Amoroso': '#fb7185',
+    'Feliz': '#4ade80',
+    'Entusiasmado': '#2dd4bf',
+    'Muy Feliz': '#facc15'
   };
 
   useEffect(() => {
@@ -137,7 +144,6 @@ const MoodTracker = () => {
   const checkAchievements = (updatedHistory: MoodEntry[]) => {
     const newAchievements = [...achievements];
     
-    // Verificar racha de 3 días
     if (streakCount >= 3) {
       const streakAchievement = newAchievements.find(a => a.id === 'streak-3');
       if (streakAchievement && !streakAchievement.unlocked) {
@@ -146,7 +152,6 @@ const MoodTracker = () => {
       }
     }
 
-    // Verificar uso de todas las emociones
     const usedMoods = new Set(updatedHistory.map(entry => entry.mood));
     if (usedMoods.size === moods.length) {
       const moodAchievement = newAchievements.find(a => a.id === 'mood-master');
@@ -156,7 +161,6 @@ const MoodTracker = () => {
       }
     }
 
-    // Verificar notas detalladas
     const notesCount = updatedHistory.filter(entry => entry.note && entry.note.length > 20).length;
     if (notesCount >= 5) {
       const noteAchievement = newAchievements.find(a => a.id === 'note-taker');
@@ -166,7 +170,6 @@ const MoodTracker = () => {
       }
     }
 
-    // Verificar uso de toda la escala de intensidad
     const usedIntensities = new Set(updatedHistory.map(entry => entry.intensity));
     if (usedIntensities.size >= 10) {
       const intensityAchievement = newAchievements.find(a => a.id === 'intensity-explorer');
@@ -205,7 +208,7 @@ const MoodTracker = () => {
     setStreakCount(streak);
   };
 
-  const calculateStats = () => {
+  const calculateStats = (): Stats | null => {
     if (moodHistory.length === 0) return null;
 
     const moodCounts = moodHistory.reduce((acc, entry) => {
@@ -241,12 +244,10 @@ const MoodTracker = () => {
     checkStreak(updatedHistory);
     checkAchievements(updatedHistory);
 
-    // Reset form
     setSelectedMood(null);
     setIntensityRating(5);
     setMoodNote('');
 
-    // Actualizar puntuación y vidas
     if (gameLives < 3) {
       const newLives = gameLives + 1;
       setGameLives(newLives);
@@ -264,10 +265,11 @@ const MoodTracker = () => {
     intensidad: entry.intensity
   }));
 
-    const handleMoodSelect = (mood: Mood) => {
-        setSelectedMood(mood);
-    };
+  const handleMoodSelect = (mood: Mood) => {
+    setSelectedMood(mood);
+  };
 
+  const stats = calculateStats();
   return (
     <div className="min-h-screen bg-yellow-50 p-6 pt-24">
       <GameStatusBar 
