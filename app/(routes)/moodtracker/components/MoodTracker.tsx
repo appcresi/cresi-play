@@ -1,38 +1,10 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { 
-    IconMoodAngry, 
-    IconMoodSad, 
-    IconMoodAnnoyed, 
-    IconMoodNeutral, 
-    IconMoodSmile, 
-    IconMoodHappy, 
-    IconMoodCry, 
-    IconMoodTongueWink, 
-    IconMoodConfuzed, 
-    IconMoodHeart 
-} from '@tabler/icons-react';
-import { SmilePlus, Angry, Calendar, Trophy, Medal, Star, BookOpen } from 'lucide-react';
+import { Calendar, SmilePlus, Angry, Trophy, Medal, Star, BookOpen } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
 
-// Mover las interfaces fuera del componente
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  unlocked: boolean;
-}
-
-interface Mood {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  value: number;
-  label: string;
-  color: string;
-  bgColor: string;
-}
-
+// Interfaces
 interface MoodEntry {
   date: string;
   mood: number;
@@ -48,6 +20,54 @@ interface Stats {
   mostCommonMood: string;
 }
 
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  unlocked: boolean;
+}
+
+interface Mood {
+  value: number;
+  label: string;
+  color: string;
+  bgColor: string;
+}
+
+// MoodIcon Component
+const MoodIcon = ({ mood }: { mood: Mood }) => {
+  const iconProps = {
+    className: `w-16 h-16 ${mood.color}`,
+    strokeWidth: 3
+  };
+
+  switch (mood.value) {
+    case 1: return <div role="img" aria-label="Angry" className={`text-4xl ${mood.color}`}>😠</div>;
+    case 2: return <div role="img" aria-label="Sad" className={`text-4xl ${mood.color}`}>😢</div>;
+    case 3: return <div role="img" aria-label="Annoyed" className={`text-4xl ${mood.color}`}>😤</div>;
+    case 4: return <div role="img" aria-label="Depressed" className={`text-4xl ${mood.color}`}>😩</div>;
+    case 5: return <div role="img" aria-label="Frustrated" className={`text-4xl ${mood.color}`}>😫</div>;
+    case 6: return <div role="img" aria-label="Neutral" className={`text-4xl ${mood.color}`}>😐</div>;
+    case 7: return <div role="img" aria-label="Loving" className={`text-4xl ${mood.color}`}>😍</div>;
+    case 8: return <div role="img" aria-label="Happy" className={`text-4xl ${mood.color}`}>😊</div>;
+    case 9: return <div role="img" aria-label="Excited" className={`text-4xl ${mood.color}`}>😋</div>;
+    case 10: return <div role="img" aria-label="Very Happy" className={`text-4xl ${mood.color}`}>😄</div>;
+    default: return null;
+  }
+};
+
+// Achievement Icon Component
+const AchievementIcon = ({ iconName, className }: { iconName: string; className: string }) => {
+  switch (iconName) {
+    case 'Medal': return <Medal className={className} />;
+    case 'Trophy': return <Trophy className={className} />;
+    case 'BookOpen': return <BookOpen className={className} />;
+    case 'Star': return <Star className={className} />;
+    default: return null;
+  }
+};
+
 const MoodTracker = () => {
   const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
@@ -59,49 +79,17 @@ const MoodTracker = () => {
   const [streakCount, setStreakCount] = useState(0);
   const [showStats, setShowStats] = useState(false);
 
-  // Lista de logros
-  const defaultAchievements: Achievement[] = [
-    {
-      id: 'streak-3',
-      title: '¡3 días seguidos!',
-      description: 'Registraste tu estado de ánimo durante 3 días consecutivos',
-      icon: Medal,
-      unlocked: false
-    },
-    {
-      id: 'mood-master',
-      title: 'Maestro del Ánimo',
-      description: 'Usaste todas las emociones disponibles',
-      icon: Trophy,
-      unlocked: false
-    },
-    {
-      id: 'note-taker',
-      title: 'Reflexivo',
-      description: 'Escribiste 5 notas detalladas sobre tus emociones',
-      icon: BookOpen,
-      unlocked: false
-    },
-    {
-      id: 'intensity-explorer',
-      title: 'Explorador Emocional',
-      description: 'Usaste toda la escala de intensidad (1-10)',
-      icon: Star,
-      unlocked: false
-    }
-  ];
-
   const moods: Mood[] = [
-    { icon: IconMoodAngry, value: 1, label: 'Enojado', color: 'text-red-400', bgColor: 'bg-red-100' },
-    { icon: IconMoodSad, value: 2, label: 'Triste', color: 'text-purple-400', bgColor: 'bg-purple-100' },
-    { icon: IconMoodAnnoyed, value: 3, label: 'Molesto', color: 'text-blue-400', bgColor: 'bg-blue-100' },
-    { icon: IconMoodCry, value: 4, label: 'Deprimido', color: 'text-gray-400', bgColor: 'bg-gray-100' },
-    { icon: IconMoodConfuzed, value: 5, label: 'Frustrado', color: 'text-orange-400', bgColor: 'bg-orange-100' },
-    { icon: IconMoodNeutral, value: 6, label: 'Neutral', color: 'text-pink-400', bgColor: 'bg-pink-100' },
-    { icon: IconMoodHeart, value: 7, label: 'Amoroso', color: 'text-rose-400', bgColor: 'bg-rose-100' },
-    { icon: IconMoodSmile, value: 8, label: 'Feliz', color: 'text-green-400', bgColor: 'bg-green-100' },
-    { icon: IconMoodTongueWink, value: 9, label: 'Entusiasmado', color: 'text-teal-400', bgColor: 'bg-teal-100' },
-    { icon: IconMoodHappy, value: 10, label: 'Muy Feliz', color: 'text-yellow-400', bgColor: 'bg-yellow-100' }
+    { value: 1, label: 'Enojado', color: 'text-red-400', bgColor: 'bg-red-100' },
+    { value: 2, label: 'Triste', color: 'text-purple-400', bgColor: 'bg-purple-100' },
+    { value: 3, label: 'Molesto', color: 'text-blue-400', bgColor: 'bg-blue-100' },
+    { value: 4, label: 'Deprimido', color: 'text-gray-400', bgColor: 'bg-gray-100' },
+    { value: 5, label: 'Frustrado', color: 'text-orange-400', bgColor: 'bg-orange-100' },
+    { value: 6, label: 'Neutral', color: 'text-pink-400', bgColor: 'bg-pink-100' },
+    { value: 7, label: 'Amoroso', color: 'text-rose-400', bgColor: 'bg-rose-100' },
+    { value: 8, label: 'Feliz', color: 'text-green-400', bgColor: 'bg-green-100' },
+    { value: 9, label: 'Entusiasmado', color: 'text-teal-400', bgColor: 'bg-teal-100' },
+    { value: 10, label: 'Muy Feliz', color: 'text-yellow-400', bgColor: 'bg-yellow-100' }
   ];
 
   const moodColors: Record<string, string> = {
@@ -116,6 +104,37 @@ const MoodTracker = () => {
     'Entusiasmado': '#2dd4bf',
     'Muy Feliz': '#facc15'
   };
+
+  const defaultAchievements: Achievement[] = [
+    {
+      id: 'streak-3',
+      title: '¡3 días seguidos!',
+      description: 'Registraste tu estado de ánimo durante 3 días consecutivos',
+      iconName: 'Medal',
+      unlocked: false
+    },
+    {
+      id: 'mood-master',
+      title: 'Maestro del Ánimo',
+      description: 'Usaste todas las emociones disponibles',
+      iconName: 'Trophy',
+      unlocked: false
+    },
+    {
+      id: 'note-taker',
+      title: 'Reflexivo',
+      description: 'Escribiste 5 notas detalladas sobre tus emociones',
+      iconName: 'BookOpen',
+      unlocked: false
+    },
+    {
+      id: 'intensity-explorer',
+      title: 'Explorador Emocional',
+      description: 'Usaste toda la escala de intensidad (1-10)',
+      iconName: 'Star',
+      unlocked: false
+    }
+  ];
 
   useEffect(() => {
     const savedMoods = localStorage.getItem('moodHistory');
@@ -138,7 +157,9 @@ const MoodTracker = () => {
       setAchievements(defaultAchievements);
     }
 
-    checkStreak(JSON.parse(savedMoods || '[]'));
+    if (savedMoods) {
+      checkStreak(JSON.parse(savedMoods));
+    }
   }, []);
 
   const checkAchievements = (updatedHistory: MoodEntry[]) => {
@@ -270,6 +291,8 @@ const MoodTracker = () => {
   };
 
   const stats = calculateStats();
+
+  
   return (
     <div className="min-h-screen bg-yellow-50 p-6 pt-24">
       <GameStatusBar 
@@ -304,7 +327,7 @@ const MoodTracker = () => {
           {stats && (
             <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1">
               <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-xl font-bold mb-4">Distribución de Emociones</h3>
                   <PieChart width={300} height={300}>
@@ -361,7 +384,8 @@ const MoodTracker = () => {
                       : 'bg-gray-100 border-gray-300'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <achievement.icon 
+                    <AchievementIcon 
+                      iconName={achievement.iconName}
                       className={`w-8 h-8 ${
                         achievement.unlocked ? 'text-yellow-500' : 'text-gray-400'
                       }`}
@@ -393,10 +417,7 @@ const MoodTracker = () => {
                       : 'hover:scale-105 hover:shadow-lg'}
                     transform hover:-rotate-3 transition-transform duration-200`}
                 >
-                  <mood.icon 
-                    className={`w-16 h-16 ${mood.color}`}
-                    strokeWidth={3}
-                  />
+                  <MoodIcon mood={mood} />
                   <span className="mt-1 text-sm font-medium text-gray-800">{mood.label}</span>
                 </button>
               ))}
@@ -555,4 +576,4 @@ const MoodTracker = () => {
   );
 };
 
-export default MoodTracker;
+export default MoodTracker; 
