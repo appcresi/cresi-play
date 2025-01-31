@@ -3,6 +3,7 @@ import {
   IconExternalLink,
 } from '@tabler/icons-react';
 import Features from "./components/Features";
+import Image from "next/image";
 
 // Lazy load heavy components
 const CharacterSelectionModal = lazy(() => import('@/components/CharacterSelectionModal'));
@@ -28,7 +29,13 @@ const ComicHome = () => {
 
         <div className="relative mx-auto px-8 max-w-7xl pt-16 text-center">
           <div className="flex flex-col items-center justify-center text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-4 rounded-lg transform -rotate-2 hover:rotate-0 transition-all duration-300 min-h-[100px]" role="banner">
-            <img src="cresi-logo.webp" alt="logo de cresi" className="mx-auto max-w-full h-auto" />
+            <Image 
+                src="/cresi-logo.webp" 
+                alt="Logo de CrESI" 
+                width={200} 
+                height={100} 
+                className="mx-auto h-auto w-auto"
+              />
           </div>
         </div>
       </div>
