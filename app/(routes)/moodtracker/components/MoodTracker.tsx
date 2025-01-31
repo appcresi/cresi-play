@@ -325,12 +325,13 @@ const MoodTracker = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Estadísticas Detalladas */}
           {stats && (
-            <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1">
-              <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
-              <div className="grid grid-cols-1md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-bold mb-4">Distribución de Emociones</h3>
-                  <PieChart width={300} height={300}>
+            <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1 max-w-full">
+            <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex justify-center">
+                <div className="w-full max-w-xs">
+                  <h3 className="text-xl font-bold mb-4 text-center">Distribución de Emociones</h3>
+                  <PieChart width={250} height={250}>
                     <Pie
                       dataKey="value"
                       data={Object.entries(stats.moodCounts).map(([name, value]) => ({
@@ -343,32 +344,30 @@ const MoodTracker = () => {
                       fill="#8884d8"
                       label
                     >
-                      {Object.entries(stats.moodCounts).map((entry) => (
-                        <Cell 
-                          key={`cell-${entry[0]}`} 
-                          fill={moodColors[entry[0]]} 
-                        />
+                      {Object.entries(stats.moodCounts).map(([name]) => (
+                        <Cell key={`cell-${name}`} fill={moodColors[name]} />
                       ))}
                     </Pie>
                     <Tooltip />
                   </PieChart>
                 </div>
-                <div className="space-y-4">
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-lg font-bold">Entradas Totales</p>
-                    <p className="text-3xl font-bold text-blue-500">{stats.totalEntries}</p>
-                  </div>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-lg font-bold">Intensidad Promedio</p>
-                    <p className="text-3xl font-bold text-green-500">{stats.avgIntensity}</p>
-                  </div>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-lg font-bold">Emoción más común</p>
-                    <p className="text-3xl font-bold text-purple-500">{stats.mostCommonMood}</p>
-                  </div>
+              </div>
+              <div className="space-y-4">
+                <div className="bg-gray-100 p-4 rounded-lg text-center">
+                  <p className="text-lg font-bold">Entradas Totales</p>
+                  <p className="text-3xl font-bold text-blue-500">{stats.totalEntries}</p>
+                </div>
+                <div className="bg-gray-100 p-4 rounded-lg text-center">
+                  <p className="text-lg font-bold">Intensidad Promedio</p>
+                  <p className="text-3xl font-bold text-green-500">{stats.avgIntensity}</p>
+                </div>
+                <div className="bg-gray-100 p-4 rounded-lg text-center">
+                  <p className="text-lg font-bold">Emoción más común</p>
+                  <p className="text-3xl font-bold text-purple-500">{stats.mostCommonMood}</p>
                 </div>
               </div>
             </div>
+          </div>         
           )}
 
           {/* Logros */}

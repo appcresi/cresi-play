@@ -1,12 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import Link from 'next/link';
 import {
-  IconArrowNarrowRight,
-  IconBrain,
-  IconBulb,
-  IconCheck,
   IconExternalLink,
-  IconTrendingUp
 } from '@tabler/icons-react';
 import Features from "./components/Features";
 
@@ -14,29 +8,6 @@ import Features from "./components/Features";
 const CharacterSelectionModal = lazy(() => import('@/components/CharacterSelectionModal'));
 const ComicBurst = lazy(() => import('@/components/ComicBurst'));
 
-// Metadata remains the same as in the original file
-
-type FeatureCardProps = {
-  icon: React.ReactNode;
-  title: string;
-  content: string;
-  color: string;
-};
-
-const FeatureCard = React.memo(({ icon, title, content, color }: FeatureCardProps) => (
-  <div 
-    className="bg-white border-4 border-black p-6 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform hover:scale-105 hover:rotate-1 transition-all duration-300"
-    style={{ backgroundColor: `${color}15` }}
-  >
-    <div className="flex items-center gap-3 mb-4" style={{ color: color }}>
-      <div className="transform hover:rotate-12 transition-transform">
-        {icon}
-      </div>
-      <h3 className="text-xl font-black">{title}</h3>
-    </div>
-    <p className="text-gray-700">{content}</p>
-  </div>
-));
 
 const ComicHome = () => {
   
