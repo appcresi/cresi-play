@@ -1,5 +1,6 @@
 "use client"
 import { useState, useRef, useEffect } from 'react';
+import { Palette, Type, Move, Download, Image as ImageIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import GameStatusBar from '@/components/GameStatusBar';
 
 interface MemeTemplate {
@@ -15,7 +16,7 @@ interface TextConfig {
   position: { x: number; y: number };
 }
 
-const memeTemplates: MemeTemplate[] = [
+const memeTemplates = [
   { id: '1', url: '/meme1.webp', name: 'Piensa' },
   { id: '2', url: '/meme2.webp', name: 'Sorprendido' },
   { id: '3', url: '/meme3.webp', name: 'Estoica' },
@@ -28,37 +29,33 @@ const memeTemplates: MemeTemplate[] = [
 const colorOptions = ['white', 'yellow', 'red', 'blue', 'green', 'purple', 'orange'];
 const SCORE_PER_MEME = 300;
 const ITEMS_PER_PAGE = 6;
-const SCORE_STORAGE_KEY = 'totalGameScore';
 
 export default function MemeGenerator() {
-    const [selectedMeme, setSelectedMeme] = useState<MemeTemplate | null>(null);
-    const [customImage, setCustomImage] = useState<string | null>(null);
-    const [fileName, setFileName] = useState('mi-meme');
-    const [score, setScore] = useState(0);
-    useEffect(() => {
-        const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
-        if (storedScore) {
-          setScore(parseInt(storedScore, 10));
-        }
-      }, []); 
-    const [memesCreated, setMemesCreated] = useState(0);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [topText, setTopText] = useState<TextConfig>({
-      content: '',
-      size: 30,
-      color: 'white',
-      position: { x: 250, y: 40 }
-    });
-    const [bottomText, setBottomText] = useState<TextConfig>({
-      content: '',
-      size: 30,
-      color: 'white',
-      position: { x: 250, y: 380 }
-    });
-    const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-    const [activeText, setActiveText] = useState<'top' | 'bottom' | null>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedTool, setSelectedTool] = useState<'move' | 'text'>('text');
+  const [selectedMeme, setSelectedMeme] = useState<MemeTemplate | null>(null);
+  const [customImage, setCustomImage] = useState<string | null>(null);
+  const [fileName, setFileName] = useState('mi-meme');
+  const [score, setScore] = useState(0);
+  const [memesCreated, setMemesCreated] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [topText, setTopText] = useState<TextConfig>({
+    content: '',
+    size: 30,
+    color: 'white',
+    position: { x: 250, y: 40 }
+  });
+  const [bottomText, setBottomText] = useState<TextConfig>({
+    content: '',
+    size: 30,
+    color: 'white',
+    position: { x: 250, y: 380 }
+  });
+  
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [activeText, setActiveText] = useState<'top' | 'bottom' | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
     // Calcular el índice de los memes a mostrar
     const startIndex = currentPage * ITEMS_PER_PAGE;
     const selectedMemes = memeTemplates.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -231,196 +228,208 @@ export default function MemeGenerator() {
   }, [topText, bottomText, selectedMeme, activeText]);
 
   return (
-    <div className="min-h-screen bg-yellow-50 py-12 font-comic">
-      <div className="container mx-auto px-4">
-         <GameStatusBar
-            title="Meme Creator"
-            score={score}
-            lives={3}
-            level={Math.floor(memesCreated / 5) + 1}
-        />
-        
-        {/* Botón de carga de imagen */}
-        <div className="mb-8 text-center">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="bg-purple-500 text-white font-bold py-3 px-6 rounded-lg border-4 border-black
-                     shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-                     hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
-          >
-            📸 ¡SUBE TU PROPIA IMAGEN!
-          </button>
-        </div>
-
-        {/* Galería de templates */}
-        <div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6">
-        {selectedMemes.map((template) => (
-          <div 
-            key={template.id}
-            className={`
-              relative transform hover:-rotate-2 transition-all duration-300
-              ${selectedMeme?.id === template.id ? 'ring-8 ring-red-500 rotate-3' : ''}
-            `}
-            onClick={() => {
-              setSelectedMeme(template);
-              setCustomImage(null);
-            }}
-          >
-            <div className="bg-white p-2 shadow-[8px_8px_0_0_rgba(0,0,0,1)] border-4 border-black h-full flex flex-col">
-              <img 
-                src={template.url} 
-                alt={template.name}
-                className="w-full aspect-square object-cover border-2 border-black"
-              />
-              <p className="text-center font-bold mt-2 text-lg flex-grow flex items-end">{template.name}</p>
+    <div className="min-h-screen bg-yellow-50">
+      <GameStatusBar title="Meme Creator" score={score}  />      
+      <div className="container mx-auto p-2 sm:p-4 mt-20">
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] rounded-lg">
+          {/* Toolbar - Responsive */}
+          <div className="border-b-4 border-black p-2 flex flex-wrap gap-2 items-center bg-gray-100">
+            <div className="flex space-x-2 border-r-4 border-black pr-4">
+              <button
+                onClick={() => setSelectedTool('text')}
+                className={`p-2 rounded border-2 border-black ${selectedTool === 'text' ? 'bg-blue-200 shadow-[2px_2px_0_0_rgba(0,0,0,1)]' : 'hover:bg-gray-200'}`}
+                title="Text Tool"
+              >
+                <Type size={20} />
+              </button>
+              <button
+                onClick={() => setSelectedTool('move')}
+                className={`p-2 rounded border-2 border-black ${selectedTool === 'move' ? 'bg-blue-200 shadow-[2px_2px_0_0_rgba(0,0,0,1)]' : 'hover:bg-gray-200'}`}
+                title="Move Tool"
+              >
+                <Move size={20} />
+              </button>
+            </div>
+            
+            <div className="flex space-x-2 border-r-4 border-black pr-4">
+              <div className="flex items-center space-x-1">
+                <Palette size={20} />
+                <select
+                  value={activeText === 'top' ? topText.color : bottomText.color}
+                  onChange={(e) => {
+                    if (activeText === 'top') {
+                      setTopText(prev => ({ ...prev, color: e.target.value }));
+                    } else {
+                      setBottomText(prev => ({ ...prev, color: e.target.value }));
+                    }
+                  }}
+                  className="border-2 border-black rounded p-1"
+                >
+                  {colorOptions.map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center space-x-1 px-3 py-1 bg-blue-500 text-white rounded border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+              >
+                <ImageIcon size={16} />
+                <span className="hidden sm:inline">Abrir</span>
+              </button>
+              <button
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="flex items-center space-x-1 px-3 py-1 bg-green-500 text-white rounded border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+              >
+                <span className="hidden sm:inline">Templates</span>
+                {showTemplates ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+              </button>
+              <button
+                onClick={downloadMeme}
+                disabled={!selectedMeme}
+                className="flex items-center space-x-1 px-3 py-1 bg-purple-500 text-white rounded border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50"
+              >
+                <Download size={16} />
+                <span className="hidden sm:inline">Descargar</span>
+              </button>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Controles de paginación */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-4 mt-4">
-          <button 
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))} 
-            disabled={currentPage === 0}
-            className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
-          >
-            Anterior
-          </button>
-          <span className="text-lg font-bold">
-            {currentPage + 1}/{totalPages}
-          </span>
-          <button 
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))} 
-            disabled={currentPage === totalPages - 1}
-            className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
-    </div>
-
-
-         {/* Editor de meme */}
-         {selectedMeme && (
-          <div className="max-w-4xl mx-auto bg-white border-4 border-black shadow-[12px_12px_0_0_rgba(0,0,0,1)] p-6 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                {/* Control de nombre de archivo */}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-xl text-red-600">Nombre del archivo</h3>
+          {/* Main workspace - Responsive Layout */}
+          <div className="flex flex-col lg:flex-row min-h-[400px] lg:min-h-[600px]">
+            {/* Left sidebar - Properties */}
+            <div className="w-full lg:w-64 border-b-4 lg:border-b-0 lg:border-r-4 border-black p-4 space-y-4 bg-gray-50">
+              <div className="grid lg:grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-bold mb-1">Nombre de Archivo</label>
                   <input
                     type="text"
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}
-                    className="w-full px-4 py-2 border-2 border-black rounded focus:ring-2 focus:ring-red-500 outline-none"
-                    placeholder="Nombre para tu meme"
+                    className="w-full px-2 py-1 border-2 border-black rounded"
                   />
                 </div>
-
-                {/* Controles para texto superior */}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-xl text-red-600">Texto Superior</h3>
+                
+                <div>
+                  <label className="block text-sm font-bold mb-1">Texto Superior</label>
                   <input
                     type="text"
                     value={topText.content}
                     onChange={(e) => setTopText(prev => ({ ...prev, content: e.target.value }))}
-                    className="w-full px-4 py-2 border-2 border-black rounded focus:ring-2 focus:ring-red-500 outline-none"
-                    placeholder="¡POW!"
+                    className="w-full px-2 py-1 border-2 border-black rounded mb-2"
                   />
-                  <div className="flex space-x-4">
-                    <input
-                      type="range"
-                      min="20"
-                      max="60"
-                      value={topText.size}
-                      onChange={(e) => setTopText(prev => ({ ...prev, size: Number(e.target.value) }))}
-                      className="w-full"
-                    />
-                    <select
-                      value={topText.color}
-                      onChange={(e) => setTopText(prev => ({ ...prev, color: e.target.value }))}
-                      className="px-3 py-1 border-2 border-black rounded"
-                    >
-                      {colorOptions.map(color => (
-                        <option key={color} value={color}>{color}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <input
+                    type="range"
+                    min="20"
+                    max="60"
+                    value={topText.size}
+                    onChange={(e) => setTopText(prev => ({ ...prev, size: Number(e.target.value) }))}
+                    className="w-full"
+                  />
                 </div>
-
-                {/* Controles para texto inferior */}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-xl text-red-600">Texto Inferior</h3>
+                
+                <div className="lg:mt-4">
+                  <label className="block text-sm font-bold mb-1">Texto Inferior</label>
                   <input
                     type="text"
                     value={bottomText.content}
                     onChange={(e) => setBottomText(prev => ({ ...prev, content: e.target.value }))}
-                    className="w-full px-4 py-2 border-2 border-black rounded focus:ring-2 focus:ring-red-500 outline-none"
-                    placeholder="¡BAM!"
+                    className="w-full px-2 py-1 border-2 border-black rounded mb-2"
                   />
-                  <div className="flex space-x-4">
-                    <input
-                      type="range"
-                      min="20"
-                      max="60"
-                      value={bottomText.size}
-                      onChange={(e) => setBottomText(prev => ({ ...prev, size: Number(e.target.value) }))}
-                      className="w-full"
-                    />
-                    <select
-                      value={bottomText.color}
-                      onChange={(e) => setBottomText(prev => ({ ...prev, color: e.target.value }))}
-                      className="px-3 py-1 border-2 border-black rounded"
-                    >
-                      {colorOptions.map(color => (
-                        <option key={color} value={color}>{color}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={downloadMeme}
-                  className="w-full py-3 bg-red-500 text-white font-bold text-xl border-4 border-black rounded 
-                           shadow-[6px_6px_0_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-                           hover:translate-x-1 hover:translate-y-1 transition-all duration-200"
-                >
-                  ¡DESCARGAR MEME!
-                </button>
-              </div>
-
-              <div className="relative">
-                <p className="text-lg font-bold text-red-600 mb-2">
-                  ¡ARRASTRA EL TEXTO PARA MOVERLO! 👊💥
-                </p>
-                <div className="border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
-                  <canvas
-                    ref={canvasRef}
-                    width={500}
-                    height={400}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="w-full cursor-move"
+                  <input
+                    type="range"
+                    min="20"
+                    max="60"
+                    value={bottomText.size}
+                    onChange={(e) => setBottomText(prev => ({ ...prev, size: Number(e.target.value) }))}
+                    className="w-full"
                   />
                 </div>
               </div>
             </div>
+
+            {/* Main canvas area */}
+            <div className="flex-1 p-4 bg-gray-100">
+              <div className="relative bg-white border-4 border-black rounded shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+                <canvas
+                  ref={canvasRef}
+                  width={500}
+                  height={400}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="w-full cursor-move"
+                />
+              </div>
+            </div>
+
+            {/* Right sidebar - Templates (Responsive) */}
+            {showTemplates && (
+              <div className="w-full lg:w-64 border-t-4 lg:border-t-0 lg:border-l-4 border-black p-4 bg-gray-50">
+                <h3 className="font-bold mb-4">Templates</h3>
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-2 gap-2">
+                  {memeTemplates.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE).map((template) => (
+                    <div
+                      key={template.id}
+                      onClick={() => {
+                        setSelectedMeme(template);
+                        setCustomImage(null);
+                      }}
+                      className={`cursor-pointer border-2 border-black rounded p-1 ${
+                        selectedMeme?.id === template.id 
+                          ? 'bg-blue-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)]' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      <img
+                        src={template.url}
+                        alt={template.name}
+                        className="w-full aspect-square object-cover border border-black"
+                      />
+                      <p className="text-xs text-center mt-1 font-bold truncate">{template.name}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-4">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                      disabled={currentPage === 0}
+                      className="px-2 py-1 bg-blue-500 text-white rounded border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className="font-bold">
+                      {currentPage + 1} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                      disabled={currentPage === totalPages - 1}
+                      className="px-2 py-1 bg-blue-500 text-white rounded border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
+      
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        className="hidden"
+      />
     </div>
   );
 }

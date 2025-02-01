@@ -4,9 +4,9 @@ import Generatememe from './components/generatememe';
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: "CrESI | Pasapalabras",
+  title: "CrESI | Meme Creator",
   description:
-    'Adiviná la palabra oculta escondida detrás de la definición.',
+    'Creá todos los memes divertidos que quieras para concientizar.',
 };
 
 export default async function Completeword(): Promise<JSX.Element> {
