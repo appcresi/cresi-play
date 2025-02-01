@@ -10,7 +10,9 @@ import {
   IconShieldCheck,
   IconBrandPnpm,
   IconPacman,
-  IconMoodPuzzled
+  IconMoodPuzzled,
+  IconMoodTongueWink2
+
 } from "@tabler/icons-react";
 
 const ComicBurgerMenu = () => {
@@ -26,7 +28,8 @@ const ComicBurgerMenu = () => {
     { name: 'Simulador de Grooming', href: '/simulador', icon: IconShieldCheck },
     { name: 'Completa Palabras', href: '/completapalabras', icon: IconBrandPnpm },
     { name: 'DataMuncher', href: '/datamuncher', icon: IconPacman },
-    { name: 'MoodTracker', href: '/moodtracker', icon: IconMoodPuzzled}
+    { name: 'MoodTracker', href: '/moodtracker', icon: IconMoodPuzzled},
+    { name: 'Meme Creator', href: '/memegenerador', icon: IconMoodTongueWink2    }
   ];
 
   useEffect(() => {
