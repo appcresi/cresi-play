@@ -7,8 +7,9 @@ export type Position = {
     question: string;
     answer: boolean;
     points: number;
+    index?: number;
   };
-  
+    
   export type Level = {
   id: number;
   background: string;
@@ -30,4 +31,14 @@ export type Position = {
   export type AnswerOption = {
     position: Position;
     value: boolean;
+  };
+
+  export type GameStatusProps = {
+    title: string;
+    score: number;
+    lives: number;
+    level: number;
+    timeLeft: number;
+    questionsToLevelUp: number;
+    correctAnswers: number;
   };

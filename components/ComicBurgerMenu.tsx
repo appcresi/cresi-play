@@ -25,7 +25,7 @@ const ComicBurgerMenu = () => {
     { name: 'Perfil', href: '/user', icon: IconUser },
     { name: 'Trivias', href: '/trivias',icon: IconCards },
     { name: 'Pasapalabras', href: '/pasapalabras', icon: IconAB2},
-    { name: 'Simulador de Grooming', href: '/simulador', icon: IconShieldCheck },
+    { name: 'Simulador Grooming', href: '/simulador', icon: IconShieldCheck },
     { name: 'Completa Palabras', href: '/completapalabras', icon: IconBrandPnpm },
     { name: 'DataMuncher', href: '/datamuncher', icon: IconPacman },
     { name: 'MoodTracker', href: '/moodtracker', icon: IconMoodPuzzled},
@@ -85,18 +85,6 @@ const ComicBurgerMenu = () => {
               </a>
             ))}
           </nav>
-
-
-          <div className="absolute bottom-8 left-4 transform -rotate-12">
-            <div className="bg-red-500 text-white px-4 py-2 rounded-full border-2 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              ¡POW!
-            </div>
-          </div>
-          <div className="absolute bottom-20 right-4 transform rotate-12">
-            <div className="bg-blue-500 text-white px-4 py-2 rounded-full border-2 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              ¡BAM!
-            </div>
-          </div>
         </div>
       </div>
     </>
