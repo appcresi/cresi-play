@@ -42,7 +42,7 @@ export default function Header(): JSX.Element {
             className="relative top-[0.25rem]"
           />
         </Link>
-        <span className="hidden lg:flex lg:gap-6 lg:items-center">
+        <span className="flex items-center">
           <ApplicationsPopover />
         </span>
       </nav>
@@ -89,8 +89,8 @@ function ApplicationsPopover(): JSX.Element {
             ${open ? 'translate-x-1 translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : ''}
           `}>
             <IconApps className="w-5 h-5" />
-            <span className="hidden md:flex items-center gap-1">
-              Aplicaciones
+            <span className="flex items-center gap-1">
+              <span className="hidden md:inline">Aplicaciones</span>
               <IconChevronDown className={`
                 w-4 h-4
                 transition-transform duration-200

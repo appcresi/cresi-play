@@ -147,11 +147,6 @@ const Features = () => {
                           className="object-cover"
                         /> 
                       </div>
-                      
-                      {/* Indicator to show card is tappable - visible only on mobile */}
-                      <div className="absolute bottom-3 right-3 p-2 bg-black bg-opacity-70 rounded-full text-white md:hidden">
-                        <IconInfoCircle size={24} />
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -159,7 +154,7 @@ const Features = () => {
                 {/* Back of card - Content */}
                 <div className="flip-card-back">
                   <div
-                    className="h-full flex flex-col justify-between bg-white border-4 border-black rounded-lg p-4 md:p-1 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+                    className="h-full flex flex-col justify-between bg-white border-4 border-black rounded-lg  shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
                     style={{ backgroundColor: `${feature.color}10` }}
                   >
                     <div className="flex flex-col h-full">
@@ -185,7 +180,7 @@ const Features = () => {
                         <Link href={feature.route} className="w-full block">
                           <button
                             onClick={handleButtonClick}
-                            className="w-full bg-black text-white font-black py-2 px-4 rounded-full 
+                            className="w-8/10 bg-black text-white font-black py-2 px-4 rounded-full 
                                     border-4 border-black transition-transform duration-300 
                                     hover:scale-105 text-sm md:text-base"
                             aria-label="Descubrir"
