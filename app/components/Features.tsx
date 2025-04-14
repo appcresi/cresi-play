@@ -106,18 +106,16 @@ const Features = () => {
     }));
   };
 
+  // Función para manejar el clic en el botón "Descubrir" sin voltear la tarjeta
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Esto evita que el clic en el botón se propague al contenedor de la tarjeta
+  };
+
   return (
     <section className="w-full py-8 md:py-12 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[#FFE5E5] opacity-50" />
       <div className="relative">
-        {/* Title with comic style */}
-        <div className="text-center mb-8 md:mb-12 ">
-          <h2 className="inline-block text-3xl md:text-4xl font-black text-[#FF6B6B] transform -rotate-2 bg-white border-4 border-black p-3 md:p-4 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" 
-              style={{ textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
-            ¡SUPER JUEGOS!
-          </h2>
-        </div>
         {/* Features grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
           {features.map((feature, index) => (
@@ -132,7 +130,10 @@ const Features = () => {
                 </div>
               </div>
               
-              <div className={`flip-card-inner ${flippedCards[index] ? 'flipped' : ''}`}>
+              <div 
+                className={`flip-card-inner ${flippedCards[index] ? 'flipped' : ''}`}
+                onClick={() => toggleCard(index)}
+              >
                 {/* Front of card - Image */}
                 <div className="flip-card-front">
                   <div className="w-full h-full border-4 border-black rounded-lg overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative">
@@ -145,20 +146,12 @@ const Features = () => {
                           fill
                           className="object-cover"
                         /> 
-                        
                       </div>
                       
-                      {/* Info button for mobile */}
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleCard(index);
-                        }}
-                        className="absolute bottom-3 right-3 p-2 bg-black bg-opacity-70 rounded-full text-white hover:bg-opacity-90 transition-opacity"
-                        aria-label="Ver información"
-                      >
+                      {/* Indicator to show card is tappable - visible only on mobile */}
+                      <div className="absolute bottom-3 right-3 p-2 bg-black bg-opacity-70 rounded-full text-white md:hidden">
                         <IconInfoCircle size={24} />
-                      </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -166,52 +159,44 @@ const Features = () => {
                 {/* Back of card - Content */}
                 <div className="flip-card-back">
                   <div
-                    className="h-full flex flex-col justify-between bg-white border-4 border-black rounded-lg p-4 md:p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                    className="h-full flex flex-col justify-between bg-white border-4 border-black rounded-lg p-4 md:p-1 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
                     style={{ backgroundColor: `${feature.color}10` }}
                   >
-                    {/* Botón volver */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleCard(index);
-                      }}
-                      className="absolute top-3 left-3 p-1 md:p-2 bg-black bg-opacity-70 rounded-full text-white hover:bg-opacity-90 transition-opacity z-10"
-                      aria-label="Volver"
-                    >
-                      <IconArrowBack size={20} />
-                    </button>
-
-                    {/* Ícono centrado */}
-                    <div className="flex justify-center items-center mb-3 md:mb-4 mt-6">
-                      <div
-                        className="flex justify-center items-center p-2 md:p-3 rounded-full border-4 border-black"
-                        style={{ backgroundColor: feature.color }}
-                      >
-                        <div className="text-white">
-                          {feature.icon}
+                    <div className="flex flex-col h-full">
+                      {/* Ícono centrado */}
+                      <div className="flex justify-center items-center mb-2 md:mb-3 mt-6">
+                        <div
+                          className="flex justify-center items-center p-2 md:p-3 rounded-full border-4 border-black"
+                          style={{ backgroundColor: feature.color }}
+                        >
+                          <div className="text-white">
+                            {feature.icon}
+                          </div>
                         </div>
                       </div>
+
+                      {/* Descripción */}
+                      <p className="text-center mb-auto text-sm md:text-base px-1">
+                        {feature.description}
+                      </p>
+
+                      {/* Botón Descubrir */}
+                      <div className="mt-2 mb-2">
+                        <Link href={feature.route} className="w-full block">
+                          <button
+                            onClick={handleButtonClick}
+                            className="w-full bg-black text-white font-black py-2 px-4 rounded-full 
+                                    border-4 border-black transition-transform duration-300 
+                                    hover:scale-105 text-sm md:text-base"
+                            aria-label="Descubrir"
+                          >
+                            ¡DESCUBRIR! →
+                          </button>
+                        </Link>
+                      </div>
                     </div>
-
-                    {/* Descripción */}
-                    <p className="text-center mb-6 text-sm md:text-base">
-                      {feature.description}
-                    </p>
-
-                    {/* Botón Descubrir */}
-                    <Link href={feature.route} className="w-full">
-                      <button
-                        className="w-full bg-black text-white font-black py-2 md:py-3 px-4 md:px-6 rounded-full 
-                                  border-4 border-black transition-transform duration-300 
-                                  hover:scale-105"
-                        aria-label="Descubrir"
-                      >
-                        ¡DESCUBRIR! →
-                      </button>
-                    </Link>
                   </div>
                 </div>
-
               </div>
             </div>
           ))}
@@ -223,6 +208,7 @@ const Features = () => {
         .flip-card {
           background-color: transparent;
           perspective: 1000px;
+          cursor: pointer;
         }
 
         .flip-card-inner {
@@ -235,13 +221,13 @@ const Features = () => {
         }
 
         /* En desktop, activar en hover */
-        @media (hover: hover) {
+        @media (hover: hover) and (min-width: 768px) {
           .flip-card:hover .flip-card-inner {
             transform: rotateY(180deg);
           }
         }
 
-        /* En mobile, activar con la clase flipped */
+        /* En mobile y tablets, no activar en hover, solo con la clase flipped */
         .flip-card-inner.flipped {
           transform: rotateY(180deg);
         }

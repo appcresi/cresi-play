@@ -4,6 +4,7 @@ import './globals.css'
 
 import Analytics from '@/components/Analytics'
 import Adsense from '@/components/Adsense'
+import Header from '@/components/Header'
 
 
 const monaSans = localFont({
@@ -11,7 +12,6 @@ const monaSans = localFont({
   display: 'swap',
   variable: '--font-mona-sans'
 })
-import ComicBurgerMenu from '@/components/ComicBurgerMenu';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
@@ -63,11 +63,13 @@ export default function RootLayout ({ children }: { children: React.ReactNode })
   return (
     <html lang='es' className={monaSans.className}>
       <body className='bg-[#FFE5E5]'>
-        {children}
-        <ComicBurgerMenu />
+        <Header />
+        <main className="pt-16"> {/* Añadimos padding-top para dejar espacio para el header */}
+          {children}
+        </main>
+        <Analytics />
+        <Adsense />
       </body>
-      <Analytics />
-      <Adsense />
     </html>
   )
 }
