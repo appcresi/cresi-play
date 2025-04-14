@@ -117,7 +117,7 @@ const Features = () => {
       <div className="absolute inset-0 bg-[#FFE5E5] opacity-50" />
       <div className="relative">
         {/* Features grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
           {features.map((feature, index) => (
             <div key={feature.title} className="flip-card h-64 md:h-80 pb-2 pt-10 relative">
               {/* Title banner positioned above card */}
