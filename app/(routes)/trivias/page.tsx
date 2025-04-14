@@ -92,38 +92,6 @@ export default async function Trivias(): Promise<JSX.Element> {
   return (
     <main className="min-h-screen bg-[#FFE5E5] font-bold relative overflow-hidden">
       <div className="mx-auto px-4 max-w-5xl relative">
-        {/* Header section */}
-        <section className="relative pt-8 pb-1">
-          <ComicBurst text="¡POW!" className="top-0 right-0 animate-pulse z-10" />       
-          <div className="bg-white border-4 border-black p-8 rounded-lg shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] 
-                         transform -rotate-2 hover:rotate-0 transition-all duration-300">
-            <p className="text-[#FF6B6B] text-xl font-black mb-2">
-              Aprender más, para amar mejor
-            </p>
-            
-            <h1 className="text-6xl font-black text-[#4ADE80] mb-4 transform hover:scale-105 transition-transform"
-                style={{ textShadow: '3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
-              ¡TRIVIA!
-            </h1>
-            
-            <h2 className="hidden md:block text-xl text-gray-700 leading-relaxed">
-              <span className="text-[#FF6B6B]">¡GENIAL!</span> ¡Es hora de jugar! 
-              <span className="text-[#4ADE80]"> ¡VAMOS!</span> Encuentra tu trivia perfecta. 
-              <span className="text-[#FFD93D]"> ¿ESTÁS LISTO?</span> Ajusta el tiempo y ¡a divertirse!
-            </h2>
-
-            <a href="https://cresi.com.ar/buscar"
-               target="_blank"
-               rel="noreferrer"
-               className="hidden md:inline-block mt-6 px-6 py-3 bg-[#FFD93D] text-black rounded-full font-black 
-                        border-4 border-black transform hover:scale-105 hover:-rotate-3 
-                        transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              ¿De dónde salen las preguntas?
-              <IconExternalLink className="inline-block ml-2 animate-bounce" />
-            </a>
-          </div>
-        </section>
-
         {/* Search section with comic style */}
         <div className="my-8 transform -rotate-1">
           <div className="bg-white border-4 border-black rounded-lg p-6 

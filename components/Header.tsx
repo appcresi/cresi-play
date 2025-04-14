@@ -5,10 +5,7 @@ import {
   IconApps,
   IconArrowNarrowRight,
   IconCards,
-  IconChalkboard,
   IconChevronDown,
-  IconMenu2,
-  IconX,
   IconUser,
   IconAB2,
   IconHome,
@@ -16,12 +13,14 @@ import {
   IconBrandPnpm,
   IconPacman,
   IconMoodPuzzled,
-  IconMoodTongueWink2
+  IconMoodTongueWink2,
+  IconBooks
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import Button from "./Button";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import cresiLogo from "public/cresi-logo.webp";
 
@@ -31,17 +30,45 @@ interface NavigationLink {
 }
 
 export default function Header(): JSX.Element {
+  const pathname = usePathname();
+  const [currentSection, setCurrentSection] = useState<string>("CrESI");
+
+  useEffect(() => {
+    // Encuentra la aplicación correspondiente a la ruta actual
+    const currentApp = applications.find(app => 
+      pathname === app.href || pathname.startsWith(`${app.href}/`)
+    );
+    
+    // Si encuentra una aplicación, establece su nombre como la sección actual
+    if (currentApp) {
+      setCurrentSection(currentApp.name);
+    } else {
+      setCurrentSection("CrESI"); // Valor por defecto
+    }
+  }, [pathname]);
+
   return (
     <header className="py-2 px-8 w-full fixed top-0 z-50 bg-white border-b-4 border-black">
       <nav className="flex justify-between items-center max-w-7xl mx-auto">
-        <Link href="/" className="transform hover:scale-110 transition-transform">
-          <Image
-            src={cresiLogo}
-            alt="Logotipo de CrESI"
-            width={64}
-            className="relative top-[0.25rem]"
-          />
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="transform hover:scale-110 transition-transform">
+            <Image
+              src={cresiLogo}
+              alt="Logotipo de CrESI"
+              width={64}
+              className="relative top-[0.25rem]"
+            />
+          </Link>
+          
+          {/* Título de la sección actual */}
+          <h1 className="hidden md:block text-2xl font-black"
+                style={{
+                  textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000',
+                }}>
+                <span className="text-[#4ADE80]">{currentSection}</span>
+            </h1>
+        </div>
+        
         <span className="flex items-center">
           <ApplicationsPopover />
         </span>
@@ -64,7 +91,8 @@ const applications: Application[] = [
   { name: "Completa Palabras", href: "/completapalabras", icon: <IconBrandPnpm />, isExternal: false },
   { name: "DataMuncher", href: "/datamuncher", icon: <IconPacman />, isExternal: false },
   { name: "MoodTracker", href: "/moodtracker", icon: <IconMoodPuzzled />, isExternal: false },
-  { name: "Meme Creator", href: "/memegenerador", icon: <IconMoodTongueWink2 />, isExternal: false }
+  { name: "Meme Creator", href: "/memegenerador", icon: <IconMoodTongueWink2 />, isExternal: false },
+  { name: "Literatura", href: "/literatura", icon: <IconBooks />, isExternal: false }
 ];
 
 function ApplicationsPopover(): JSX.Element {
