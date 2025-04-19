@@ -87,6 +87,15 @@ const features = [
     textColor: "#005C22",
     image: "/literatura.svg"
   },
+  {
+    title: "BioPuzzle",
+    description: "Reflexioná sobre cómo te sentís, registrá tus emociones y aprendé a identificar y expresar tu estado de ánimo.",
+    icon: <IconMoodPuzzled size={32} />,
+    route: "/biopuzzle",
+    color: "#FFD93D",
+    textColor: "#8B5A00",
+    image: "/biopluzzle.svg"
+  }
 ];
 
 
@@ -123,7 +132,7 @@ const Features = () => {
               {/* Title banner positioned above card */}
               <div className="absolute -top-2 left-0 right-0 mx-auto w-8/10 z-10">
                 <div className="bg-white border-4 border-black py-2 px-4 rounded-lg shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
-                     style={{ backgroundColor: feature.color }}>
+                     style={{ backgroundColor: feature?.color ?? '#FFFFFF' }}>
                   <h3 className="text-xl md:text-2x3 font-black text-center" style={{ color: feature.textColor, textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>
                     {feature.title}
                   </h3>

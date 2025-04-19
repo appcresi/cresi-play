@@ -1,7 +1,6 @@
 // app/page.tsx
 import type { Metadata } from 'next';
 import DataMuncher from './components/DataMuncher';
-import ComicBurst from '@/components/ComicBurst';
 import React from 'react';
 
 export const metadata: Metadata = {

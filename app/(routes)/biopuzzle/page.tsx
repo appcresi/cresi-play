@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Lecciones from "./components/Lecciones";
+import Biopuzzle from "./components/Biopuzzle";
 
 export const metadata: Metadata = {
-  title: "CrESI | Completapalabras",
+  title: "CrESI | Biopuzzle",
   description:
-    "Aprendé sobre sexualidad completando las palabras de las lecciones.",
+    "Aprendé sobre las partes del cuerpo humano.",
 };
 
 export default function Completeword(): JSX.Element {
@@ -15,7 +15,7 @@ export default function Completeword(): JSX.Element {
         <div className="bg-white border-4 border-black rounded-lg p-6 
                        shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
           <div className="mt-8 sm:mt-12">
-          <Lecciones />
+          <Biopuzzle />
           </div>
         </div>
       </div>

@@ -13,10 +13,6 @@ const StoryReader: React.FC<StoryReaderProps> = ({ selectedTitle, onBack }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyPages, setStoryPages] = useState<string[]>([]);
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<'next' | 'prev'>('next');
-  const [currentContent, setCurrentContent] = useState<string>('');
-  const [nextContent, setNextContent] = useState<string>('');
 
   useEffect(() => {
     const story = stories.find(s => s.title === selectedTitle);
@@ -28,8 +24,6 @@ const StoryReader: React.FC<StoryReaderProps> = ({ selectedTitle, onBack }) => {
       setCurrentStory(story);
       setStoryPages(pages);
       setCurrentPage(lastPage);
-      setCurrentContent(pages[lastPage]);
-      setNextContent(pages[lastPage + 1] || '');
     }
   }, [selectedTitle]);
 
@@ -41,26 +35,12 @@ const StoryReader: React.FC<StoryReaderProps> = ({ selectedTitle, onBack }) => {
     );
   }
 
-  const handlePageChange = (newDirection: 'next' | 'prev') => {
-    if (isAnimating) return;
-
-    const newPage = newDirection === 'next' ? currentPage + 1 : currentPage - 1;
+  const handlePageChange = (direction: 'next' | 'prev') => {
+    const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
     
     if (newPage >= 0 && newPage < storyPages.length) {
-      setDirection(newDirection);
-      setIsAnimating(true);
-      
-      setCurrentContent(storyPages[currentPage]);
-      setNextContent(storyPages[newPage]);
-
-      setTimeout(() => {
-        setCurrentPage(newPage);
-        setIsAnimating(false);
-        setCurrentContent(storyPages[newPage]);
-        setNextContent(storyPages[newPage + 1] || '');
-        
-        localStorage.setItem(`${currentStory.title}_progress`, newPage.toString());
-      }, 500);
+      setCurrentPage(newPage);
+      localStorage.setItem(`${currentStory.title}_progress`, newPage.toString());
     }
   };
 
@@ -92,57 +72,25 @@ const StoryReader: React.FC<StoryReaderProps> = ({ selectedTitle, onBack }) => {
         <p className="text-right italic mb-2">por {currentStory.author}</p>
       </div>
 
-      <div className="relative bg-gray-100 p-6 rounded-lg mb-4 border-2 border-black overflow-hidden">
-        <div className={`
-          transition-transform duration-500 ease-in-out
-          ${isAnimating && direction === 'next' ? '-translate-x-full' : ''}
-          ${isAnimating && direction === 'prev' ? 'translate-x-full' : ''}
-        `}>
-          
-
-          <div className="relative bg-white p-6 rounded-lg border-2 border-black">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l-2 border-t-2 border-black rotate-45" />
-            <p className="text-xl leading-relaxed font-comic">
-              {currentContent}
-            </p>
-          </div>
+      <div className="bg-gray-100 p-6 rounded-lg mb-4 border-2 border-black">
+        <div className="relative bg-white p-6 rounded-lg border-2 border-black">
+          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l-2 border-t-2 border-black rotate-45" />
+          <p className="text-xl leading-relaxed font-comic">
+            {storyPages[currentPage]}
+          </p>
         </div>
-
-        <div className={`
-          absolute top-0 left-0 w-full h-full p-6
-          transition-transform duration-500 ease-in-out
-          ${!isAnimating ? 'translate-x-full' : 'translate-x-0'}
-          ${direction === 'prev' ? '-translate-x-full' : 'translate-x-0'}
-        `}>
-          <div className="relative bg-white p-6 rounded-lg border-2 border-black">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white border-l-2 border-t-2 border-black rotate-45" />
-            <p className="text-xl leading-relaxed font-comic">
-              {nextContent}
-            </p>
-          </div>
-        </div>
-
-        <div className={`
-          absolute inset-0 pointer-events-none
-          transition-opacity duration-500
-          ${isAnimating ? 'opacity-100' : 'opacity-0'}
-        `}
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 20%)'
-          }}
-        />
       </div>
 
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => handlePageChange('prev')}
-          disabled={currentPage === 0 || isAnimating}
+          disabled={currentPage === 0}
           className={`flex items-center px-4 py-2 rounded-lg border-4 border-black ${
-            currentPage === 0 || isAnimating
+            currentPage === 0
               ? 'bg-gray-300 cursor-not-allowed'
               : 'bg-blue-500 hover:bg-blue-600 text-white transform hover:-translate-y-1 transition-transform'
           }`}
-          style={currentPage !== 0 && !isAnimating ? {
+          style={currentPage !== 0 ? {
             boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)',
           } : {}}
         >
@@ -154,13 +102,13 @@ const StoryReader: React.FC<StoryReaderProps> = ({ selectedTitle, onBack }) => {
         </span>
         <button
           onClick={() => handlePageChange('next')}
-          disabled={currentPage === storyPages.length - 1 || isAnimating}
+          disabled={currentPage === storyPages.length - 1}
           className={`flex items-center px-4 py-2 rounded-lg border-4 border-black ${
-            currentPage === storyPages.length - 1 || isAnimating
+            currentPage === storyPages.length - 1
               ? 'bg-gray-300 cursor-not-allowed'
               : 'bg-blue-500 hover:bg-blue-600 text-white transform hover:-translate-y-1 transition-transform'
           }`}
-          style={currentPage !== storyPages.length - 1 && !isAnimating ? {
+          style={currentPage !== storyPages.length - 1 ? {
             boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)',
           } : {}}
         >

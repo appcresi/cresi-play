@@ -58,7 +58,7 @@ export default function Features(): JSX.Element {
   }, []);
 
   return (
-    <section className="lg:my-20 px-4">
+    <section className="lg:my-20">
       {!selectedFeature ? (
         <>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
