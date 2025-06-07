@@ -51,17 +51,9 @@ export default function Header(): JSX.Element {
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    let initialTimeout: NodeJS.Timeout;
     let isMouseNearTop = false;
-    let lastScrollY = 0;
-    let scrollDirection = 'up';
-
-    // Detectar si es un dispositivo táctil
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (isTouchDevice) return; // No usar mouse events en dispositivos táctiles
-      
       const mouseY = e.clientY;
       const threshold = 50; // Pixels desde el borde superior
       
@@ -87,96 +79,15 @@ export default function Header(): JSX.Element {
       }
     };
 
-    const handleScroll = () => {
-      if (!isTouchDevice) return; // Solo para dispositivos táctiles
-      
-      const currentScrollY = window.scrollY;
-      
-      // Determinar dirección del scroll
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scroll hacia abajo - ocultar header
-        scrollDirection = 'down';
-        if (!isPopoverOpen) {
-          setIsVisible(false);
-        }
-      } else if (currentScrollY < lastScrollY) {
-        // Scroll hacia arriba - mostrar header
-        scrollDirection = 'up';
-        setIsVisible(true);
-      } else if (currentScrollY <= 50) {
-        // Cerca del top - siempre mostrar
-        setIsVisible(true);
+    // Agregar listener para el movimiento del mouse
+    document.addEventListener('mousemove', handleMouseMove);
+
+    // Mostrar el header inicialmente y ocultarlo después de 3 segundos
+    const initialTimeout = setTimeout(() => {
+      if (!isMouseNearTop && !isPopoverOpen) {
+        setIsVisible(false);
       }
-      
-      lastScrollY = currentScrollY;
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (!isTouchDevice) return;
-      
-      const touch = e.touches[0];
-      const touchY = touch.clientY;
-      
-      // Si toca cerca del borde superior, mostrar header
-      if (touchY <= 100) {
-        setIsVisible(true);
-      }
-    };
-
-    const handleTouchEnd = () => {
-      if (!isTouchDevice) return;
-      
-      // En móviles, ocultar después de 3 segundos de inactividad
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      
-      timeoutId = setTimeout(() => {
-        if (!isPopoverOpen && window.scrollY > 100) {
-          setIsVisible(false);
-        }
-      }, 3000);
-    };
-
-    // Agregar listeners apropiados según el tipo de dispositivo
-    if (isTouchDevice) {
-      document.addEventListener('scroll', handleScroll, { passive: true });
-      document.addEventListener('touchstart', handleTouchStart, { passive: true });
-      document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    } else {
-      document.addEventListener('mousemove', handleMouseMove);
-    }
-
-    // Comportamiento inicial
-    if (isTouchDevice) {
-      // En móviles, mostrar inicialmente y ocultar después de 4 segundos
-      const initialTimeout = setTimeout(() => {
-        if (!isPopoverOpen && window.scrollY > 50) {
-          setIsVisible(false);
-        }
-      }, 4000);
-      
-      return () => {
-        document.removeEventListener('scroll', handleScroll);
-        document.removeEventListener('touchstart', handleTouchStart);
-        document.removeEventListener('touchend', handleTouchEnd);
-        if (timeoutId) clearTimeout(timeoutId);
-        clearTimeout(initialTimeout);
-      };
-    } else {
-      // En desktop, comportamiento original
-      const initialTimeout = setTimeout(() => {
-        if (!isMouseNearTop && !isPopoverOpen) {
-          setIsVisible(false);
-        }
-      }, 3000);
-      
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        if (timeoutId) clearTimeout(timeoutId);
-        clearTimeout(initialTimeout);
-      };
-    }
+    }, 3000);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
@@ -184,6 +95,24 @@ export default function Header(): JSX.Element {
       clearTimeout(initialTimeout);
     };
   }, [isPopoverOpen]);
+
+  // SOLUCIÓN: Agregar padding-top dinámico al body cuando el header es visible
+  useEffect(() => {
+    const headerHeight = 80; // Altura aproximada del header (ajusta según sea necesario)
+    
+    // Agregar padding-top al body cuando el header es visible
+    if (isVisible) {
+      document.body.style.paddingTop = `${headerHeight}px`;
+      document.body.style.transition = 'padding-top 0.3s ease-in-out';
+    } else {
+      document.body.style.paddingTop = '0px';
+    }
+
+    // Cleanup: restaurar el padding cuando el componente se desmonte
+    return () => {
+      document.body.style.paddingTop = '0px';
+    };
+  }, [isVisible]);
 
   return (
     <header className={`
