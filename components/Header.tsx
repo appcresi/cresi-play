@@ -32,6 +32,8 @@ interface NavigationLink {
 export default function Header(): JSX.Element {
   const pathname = usePathname();
   const [currentSection, setCurrentSection] = useState<string>("CrESI");
+  const [isVisible, setIsVisible] = useState<boolean>(true);
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Encuentra la aplicación correspondiente a la ruta actual
@@ -47,8 +49,149 @@ export default function Header(): JSX.Element {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let initialTimeout: NodeJS.Timeout;
+    let isMouseNearTop = false;
+    let lastScrollY = 0;
+    let scrollDirection = 'up';
+
+    // Detectar si es un dispositivo táctil
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isTouchDevice) return; // No usar mouse events en dispositivos táctiles
+      
+      const mouseY = e.clientY;
+      const threshold = 50; // Pixels desde el borde superior
+      
+      // Si el mouse está cerca del borde superior o el popover está abierto
+      if (mouseY <= threshold || isPopoverOpen) {
+        isMouseNearTop = true;
+        setIsVisible(true);
+        // Limpiar el timeout si existe
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      } else {
+        isMouseNearTop = false;
+        // Solo ocultar si el popover no está abierto
+        if (!isPopoverOpen) {
+          // Esperar un poco antes de ocultar para evitar parpadeos
+          timeoutId = setTimeout(() => {
+            if (!isMouseNearTop && !isPopoverOpen) {
+              setIsVisible(false);
+            }
+          }, 1000); // 1 segundo de delay
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (!isTouchDevice) return; // Solo para dispositivos táctiles
+      
+      const currentScrollY = window.scrollY;
+      
+      // Determinar dirección del scroll
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scroll hacia abajo - ocultar header
+        scrollDirection = 'down';
+        if (!isPopoverOpen) {
+          setIsVisible(false);
+        }
+      } else if (currentScrollY < lastScrollY) {
+        // Scroll hacia arriba - mostrar header
+        scrollDirection = 'up';
+        setIsVisible(true);
+      } else if (currentScrollY <= 50) {
+        // Cerca del top - siempre mostrar
+        setIsVisible(true);
+      }
+      
+      lastScrollY = currentScrollY;
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!isTouchDevice) return;
+      
+      const touch = e.touches[0];
+      const touchY = touch.clientY;
+      
+      // Si toca cerca del borde superior, mostrar header
+      if (touchY <= 100) {
+        setIsVisible(true);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!isTouchDevice) return;
+      
+      // En móviles, ocultar después de 3 segundos de inactividad
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      timeoutId = setTimeout(() => {
+        if (!isPopoverOpen && window.scrollY > 100) {
+          setIsVisible(false);
+        }
+      }, 3000);
+    };
+
+    // Agregar listeners apropiados según el tipo de dispositivo
+    if (isTouchDevice) {
+      document.addEventListener('scroll', handleScroll, { passive: true });
+      document.addEventListener('touchstart', handleTouchStart, { passive: true });
+      document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    } else {
+      document.addEventListener('mousemove', handleMouseMove);
+    }
+
+    // Comportamiento inicial
+    if (isTouchDevice) {
+      // En móviles, mostrar inicialmente y ocultar después de 4 segundos
+      const initialTimeout = setTimeout(() => {
+        if (!isPopoverOpen && window.scrollY > 50) {
+          setIsVisible(false);
+        }
+      }, 4000);
+      
+      return () => {
+        document.removeEventListener('scroll', handleScroll);
+        document.removeEventListener('touchstart', handleTouchStart);
+        document.removeEventListener('touchend', handleTouchEnd);
+        if (timeoutId) clearTimeout(timeoutId);
+        clearTimeout(initialTimeout);
+      };
+    } else {
+      // En desktop, comportamiento original
+      const initialTimeout = setTimeout(() => {
+        if (!isMouseNearTop && !isPopoverOpen) {
+          setIsVisible(false);
+        }
+      }, 3000);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        if (timeoutId) clearTimeout(timeoutId);
+        clearTimeout(initialTimeout);
+      };
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutId) clearTimeout(timeoutId);
+      clearTimeout(initialTimeout);
+    };
+  }, [isPopoverOpen]);
+
   return (
-    <header className="py-2 px-8 w-full fixed top-0 z-50 bg-white border-b-4 border-black">
+    <header className={`
+      py-2 px-8 w-full fixed top-0 z-50 
+      bg-white border-b-4 border-black
+      transform transition-transform duration-300 ease-in-out
+      ${isVisible ? 'translate-y-0' : '-translate-y-full'}
+    `}>
       <nav className="flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           <Link href="/" className="transform hover:scale-110 transition-transform">
@@ -70,7 +213,9 @@ export default function Header(): JSX.Element {
         </div>
         
         <span className="flex items-center">
-          <ApplicationsPopover />
+          <ApplicationsPopover 
+            onOpenChange={setIsPopoverOpen}
+          />
         </span>
       </nav>
     </header>
@@ -95,98 +240,109 @@ const applications: Application[] = [
   { name: "Literatura", href: "/literatura", icon: <IconBooks />, isExternal: false }
 ];
 
-function ApplicationsPopover(): JSX.Element {
+interface ApplicationsPopoverProps {
+  onOpenChange: (isOpen: boolean) => void;
+}
+
+function ApplicationsPopover({ onOpenChange }: ApplicationsPopoverProps): JSX.Element {
   return (
     <Popover className="relative">
-      {({ open, close }) => (
-        <>
-          <Popover.Button className={`
-            flex gap-2 items-center
-            px-4 py-2
-            font-bold text-white
-            bg-blue-500
-            border-4 border-black
-            rounded-lg
-            shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-            transform transition-all duration-200
-            hover:translate-x-1 hover:translate-y-1
-            hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-            focus:outline-none
-            focus:translate-x-1 focus:translate-y-1
-            focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-            ${open ? 'translate-x-1 translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : ''}
-          `}>
-            <IconApps className="w-5 h-5" />
-            <span className="flex items-center gap-1">
-              <span className="hidden md:inline">Aplicaciones</span>
-              <IconChevronDown className={`
-                w-4 h-4
-                transition-transform duration-200
-                ${open ? 'rotate-180' : ''}
-              `} />
-            </span>
-          </Popover.Button>
+      {({ open, close }) => {
+        // Notificar cambios en el estado del popover
+        useEffect(() => {
+          onOpenChange(open);
+        }, [open, onOpenChange]);
 
-          <Transition
-            as={Fragment}
-            enter="transition duration-200 ease-out"
-            enterFrom="transform scale-95 opacity-0"
-            enterTo="transform scale-100 opacity-100"
-            leave="transition duration-150 ease-out"
-            leaveFrom="transform scale-100 opacity-100"
-            leaveTo="transform scale-95 opacity-0"
-          >
-            <Popover.Panel className={`
-              absolute z-10 
-              right-0 top-12
-              min-w-[20em]
-              p-4
-              bg-white
+        return (
+          <>
+            <Popover.Button className={`
+              flex gap-2 items-center
+              px-4 py-2
+              font-bold text-white
+              bg-blue-500
               border-4 border-black
               rounded-lg
-              shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
-              before:content-['']
-              before:absolute before:w-4 before:h-4 
-              before:bg-white before:border-l-4 before:border-t-4
-              before:border-black before:rotate-45 before:-top-2 
-              before:right-8 before:z-0
+              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+              transform transition-all duration-200
+              hover:translate-x-1 hover:translate-y-1
+              hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+              focus:outline-none
+              focus:translate-x-1 focus:translate-y-1
+              focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+              ${open ? 'translate-x-1 translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : ''}
             `}>
-              <div className="flex flex-col gap-2">
-                {applications.map((application) => (
-                  <Popover.Button
-                    key={application.name}
-                    as={application.isExternal ? 'a' : Link}
-                    href={application.href}
-                    target={application.isExternal ? '_blank' : undefined}
-                    rel={application.isExternal ? 'noreferrer' : undefined}
-                    className={`
-                      p-3
-                      flex gap-2 items-center
-                      bg-gray-100
-                      border-2 border-black
-                      rounded-lg
-                      transform transition-all duration-200
-                      hover:bg-yellow-100
-                      hover:translate-x-1
-                      hover:-rotate-1
-                    `}
-                    onClick={() => close()}
-                  >
-                    <span className="text-blue-500">{application.icon}</span>
-                    <p className="font-medium">{application.name}</p>
-                    <IconArrowNarrowRight className="ml-auto min-w-[1em] w-[1em] text-red-500" />
-                  </Popover.Button>
-                ))}
-              </div>
+              <IconApps className="w-5 h-5" />
+              <span className="flex items-center gap-1">
+                <span className="hidden md:inline">Aplicaciones</span>
+                <IconChevronDown className={`
+                  w-4 h-4
+                  transition-transform duration-200
+                  ${open ? 'rotate-180' : ''}
+                `} />
+              </span>
+            </Popover.Button>
 
-              {/* Elemento decorativo */}
-              <div className="absolute -top-4 -right-4 bg-red-500 rounded-full p-2 border-4 border-black transform rotate-12">
-                <span className="text-white text-xs font-bold">¡CLICK!</span>
-              </div>
-            </Popover.Panel>
-          </Transition>
-        </>
-      )}
+            <Transition
+              as={Fragment}
+              enter="transition duration-200 ease-out"
+              enterFrom="transform scale-95 opacity-0"
+              enterTo="transform scale-100 opacity-100"
+              leave="transition duration-150 ease-out"
+              leaveFrom="transform scale-100 opacity-100"
+              leaveTo="transform scale-95 opacity-0"
+            >
+              <Popover.Panel className={`
+                absolute z-10 
+                right-0 top-12
+                min-w-[20em]
+                p-4
+                bg-white
+                border-4 border-black
+                rounded-lg
+                shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
+                before:content-['']
+                before:absolute before:w-4 before:h-4 
+                before:bg-white before:border-l-4 before:border-t-4
+                before:border-black before:rotate-45 before:-top-2 
+                before:right-8 before:z-0
+              `}>
+                <div className="flex flex-col gap-2">
+                  {applications.map((application) => (
+                    <Popover.Button
+                      key={application.name}
+                      as={application.isExternal ? 'a' : Link}
+                      href={application.href}
+                      target={application.isExternal ? '_blank' : undefined}
+                      rel={application.isExternal ? 'noreferrer' : undefined}
+                      className={`
+                        p-3
+                        flex gap-2 items-center
+                        bg-gray-100
+                        border-2 border-black
+                        rounded-lg
+                        transform transition-all duration-200
+                        hover:bg-yellow-100
+                        hover:translate-x-1
+                        hover:-rotate-1
+                      `}
+                      onClick={() => close()}
+                    >
+                      <span className="text-blue-500">{application.icon}</span>
+                      <p className="font-medium">{application.name}</p>
+                      <IconArrowNarrowRight className="ml-auto min-w-[1em] w-[1em] text-red-500" />
+                    </Popover.Button>
+                  ))}
+                </div>
+
+                {/* Elemento decorativo */}
+                <div className="absolute -top-4 -right-4 bg-red-500 rounded-full p-2 border-4 border-black transform rotate-12">
+                  <span className="text-white text-xs font-bold">¡CLICK!</span>
+                </div>
+              </Popover.Panel>
+            </Transition>
+          </>
+        );
+      }}
     </Popover>
   );
 }
