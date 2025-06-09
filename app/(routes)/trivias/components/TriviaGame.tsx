@@ -24,10 +24,11 @@ const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
 
 const CORRECT_ANSWER_POINTS = 100;
 const INCORRECT_ANSWER_PENALTY = 50;
+const INSTAGRAM_BONUS_POINTS = 500;
 const LIVES_STORAGE_KEY = 'totalGameLives';
 const SCORE_STORAGE_KEY = 'totalGameScore';
+const INSTAGRAM_CLICKED_KEY = 'instagramClicked';
 const INITIAL_LIVES = 3;
-
 
 interface TriviaGameProps {
   id: string;
@@ -46,16 +47,26 @@ export default function TriviaGame({
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
+  const [hasClickedInstagram, setHasClickedInstagram] = useState<boolean>(false);
+
   useEffect(() => {
     const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
     if (storedLives) {
       setLives(parseInt(storedLives, 10));
     }
   }, []);
+
   useEffect(() => {
     const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
     if (storedScore) {
       setScore(parseInt(storedScore, 10));
+    }
+  }, []);
+
+  useEffect(() => {
+    const instagramClicked = localStorage.getItem(INSTAGRAM_CLICKED_KEY);
+    if (instagramClicked === 'true') {
+      setHasClickedInstagram(true);
     }
   }, []);
 
@@ -67,10 +78,12 @@ export default function TriviaGame({
   const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
   const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false);
   const settings = getSettings();
+
   const handleTimeLeft = useCallback(() => {
     setTimeLeft(settings?.time ?? DEFAULT_TIME_IN_SECONDS);
     setIsTimerPaused(false);
   }, [settings]);
+
   const handlePurchaseLife = () => {
     const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
     if (currentStoredLives < 3) {
@@ -82,7 +95,28 @@ export default function TriviaGame({
     }
   };
 
-  
+  const handleInstagramClick = () => {
+    if (!hasClickedInstagram) {
+      // Dar puntos bonus
+      const newScore = score + INSTAGRAM_BONUS_POINTS;
+      setScore(newScore);
+      localStorage.setItem(SCORE_STORAGE_KEY, newScore.toString());
+      
+      // Marcar como clickeado
+      setHasClickedInstagram(true);
+      localStorage.setItem(INSTAGRAM_CLICKED_KEY, 'true');
+      
+      // Mostrar mensaje de éxito
+      toast.success(`¡+${INSTAGRAM_BONUS_POINTS} puntos por seguirnos!`, {
+        duration: 3000,
+        icon: '🎉'
+      });
+    }
+    
+    // Abrir Instagram en una nueva pestaña
+    window.open('https://www.instagram.com/appcresi', '_blank');
+  };
+
   const handleGameOver = () => {
     setIsGameOver(true);
     setTimeLeft(undefined);
@@ -189,6 +223,7 @@ export default function TriviaGame({
     },
     [currentQuestion, answeredQuestions, handleContinue, score, isGameOver, items]
   );
+
   const getCorrectAnswersCount = useCallback(() => {
     return answeredQuestions.filter(q => q.isCorrect).length;
   }, [answeredQuestions]);
@@ -246,7 +281,7 @@ export default function TriviaGame({
   }, [timeLeft, isFinished, isGameOver, isTimerPaused, handleTimeOut]);
 
   const handleClosePurchaseModal = () => {
-        const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
+    const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
     const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
     setScore(currentStoredScore);
     setLives(currentStoredLives);
@@ -351,6 +386,46 @@ export default function TriviaGame({
             ))}
           </section>
 
+          {/* Botón flotante de Instagram (inferior izquierdo) */}
+          <div className="fixed bottom-6 left-6">
+            <button
+              onClick={handleInstagramClick}
+              className={`${hasClickedInstagram 
+                ? 'bg-gray-400' 
+                : 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 animate-pulse'
+              } p-4 rounded-full border-4 border-black
+                       shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform hover:scale-110
+                       transition-all duration-300 relative group`}
+              title={hasClickedInstagram ? 'Ya recibiste los puntos' : '+500 puntos por seguirnos'}
+            >
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="white"
+                className="drop-shadow-sm"
+              >
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+              
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 
+                            bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 
+                            transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                {hasClickedInstagram ? 'Ya recibiste +500 pts' : '¡Síguenos y gana +500 pts!'}
+              </div>
+              
+              {/* Indicador de puntos bonus (solo si no ha clickeado) */}
+              {!hasClickedInstagram && (
+                <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold 
+                              px-2 py-1 rounded-full border-2 border-black animate-bounce">
+                  +500
+                </div>
+              )}
+            </button>
+          </div>
+
+          {/* Botones flotantes (inferior derecho) */}
           <div className="fixed bottom-6 right-6 flex gap-4">
             <button
               onClick={handleFullscreen}
@@ -378,12 +453,12 @@ export default function TriviaGame({
         </div>
       )}
 
-        {/* Modal de compra de vidas */}
-        <PurchaseModal
-          isOpen={showPurchaseModal}
-          onClose={handleClosePurchaseModal}
-          onPurchase={handlePurchaseLife}
-        />
+      {/* Modal de compra de vidas */}
+      <PurchaseModal
+        isOpen={showPurchaseModal}
+        onClose={handleClosePurchaseModal}
+        onPurchase={handlePurchaseLife}
+      />
 
       <Toaster />
     </main>
