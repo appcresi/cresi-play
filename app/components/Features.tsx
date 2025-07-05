@@ -95,6 +95,15 @@ const features = [
     color: "#FFD93D",
     textColor: "#8B5A00",
     image: "/biopluzzle.svg"
+  },
+  {
+    title: "Prevención",
+    description: "Todo sobre el preservativo, el único método que reduce la posibilidad de contraer un ITS.",
+    icon: <IconMoodPuzzled size={24} />,
+    route: "/condon",
+    color: "#FF6B6B",
+    textColor: "#FFFFFF",
+    image: "/condon.svg"
   }
 ];
 
