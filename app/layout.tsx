@@ -5,7 +5,15 @@ import './globals.css'
 import Analytics from '@/components/Analytics'
 import Adsense from '@/components/Adsense'
 import Header from '@/components/Header'
+import Head from 'next/head';
 
+// En tu layout principal:
+<Head>
+  {/* Preload de la imagen más crítica */}
+  <link rel="preload" href="/trivia.svg" as="image" />
+  <link rel="preload" href="/pasapalabras.svg" as="image" />
+  <link rel="preload" href="/simulador.svg" as="image" />
+</Head>
 
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
