@@ -22,7 +22,8 @@ const features = [
     route: "/trivias",
     color: "#FF6B6B",
     textColor: "#FFFFFF",
-    image: "/trivia.svg"
+    image: "/trivia.svg",
+    priority: true // Marcamos como prioritaria la primera imagen
   },
   {
     title: "Pasapalabras",
@@ -31,7 +32,8 @@ const features = [
     route: "/pasapalabras",
     color: "#4ADE80",
     textColor: "#005C22",
-    image: "/pasapalabras.svg"
+    image: "/pasapalabras.svg",
+    priority: true // Segunda imagen también prioritaria
   },
   {
     title: "Simulador Grooming",
@@ -40,7 +42,8 @@ const features = [
     route: "/simulador",
     color: "#FFD93D",
     textColor: "#8B5A00",
-    image: "/simulador.svg"
+    image: "/simulador.svg",
+    priority: true // Tercera imagen prioritaria
   },
   {
     title: "Completa Palabras",
@@ -186,6 +189,11 @@ const Features = () => {
                     alt={feature.title}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    // OPTIMIZACIONES APLICADAS:
+                    priority={feature.priority || index < 3} // Prioridad para las primeras 3 imágenes
+                    loading={index < 3 ? "eager" : "lazy"} // Carga inmediata solo para las primeras 3
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    quality={85} // Calidad optimizada
                   />
                   
                   {/* Ícono flotante */}
@@ -254,12 +262,13 @@ const Features = () => {
         </div>
       </div>
       
-      {/* CSS para animaciones personalizadas */}
+      {/* CSS para animaciones personalizadas - Optimizado para mejor rendimiento */}
       <style jsx>{`
         .card-animate {
           animation: fadeInUp 0.6s ease-out forwards;
           opacity: 0;
           transform: translateY(30px);
+          will-change: transform, opacity;
         }
 
         .card-animate:nth-child(1) { animation-delay: 0.1s; }
@@ -274,6 +283,7 @@ const Features = () => {
 
         .animate-bounce-slow {
           animation: bounce-slow 3s infinite;
+          will-change: transform;
         }
 
         @keyframes fadeInUp {
@@ -295,7 +305,7 @@ const Features = () => {
           }
         }
 
-        /* Efecto hover para el botón */
+        /* Efecto hover para el botón - Optimizado */
         button:hover {
           animation: pulse 0.5s ease-in-out;
         }
@@ -304,6 +314,15 @@ const Features = () => {
           0% { transform: scale(1); }
           50% { transform: scale(1.05); }
           100% { transform: scale(1); }
+        }
+
+        /* Optimización para animaciones suaves */
+        .group:hover .group-hover\\:scale-110 {
+          will-change: transform;
+        }
+        
+        .hover\\:scale-105:hover {
+          will-change: transform;
         }
       `}</style>
     </section>
