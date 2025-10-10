@@ -153,8 +153,8 @@ interface UserData {
   progress: {
     completedActivities: string[];
     activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string }; // Incluye tanto visitas como completaciones
-    lastVisits: { [key: string]: string }; // Específicamente para visitas
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
   };
   mood: {
     history: MoodRecord[];
@@ -226,7 +226,6 @@ class UserDataManager {
       const storedData = localStorage.getItem(this.STORAGE_KEY);
       if (storedData) {
         const parsedData = JSON.parse(storedData) as UserData;
-        // Actualizar lastLogin
         parsedData.profile.lastLogin = new Date().toISOString();
         this.saveUserData(parsedData);
         return parsedData;
@@ -265,7 +264,7 @@ class UserDataManager {
 
   // Registrar visita a actividad
   static visitActivity(activityTitle: string): UserData {
-    console.log('UserDataManager - Registrando visita:', activityTitle); // Debug
+    console.log('UserDataManager - Registrando visita:', activityTitle);
     const userData = this.loadUserData();
     
     if (!userData.progress.lastVisits) {
@@ -273,7 +272,7 @@ class UserDataManager {
     }
     
     userData.progress.lastVisits[activityTitle] = new Date().toISOString();
-    console.log('UserDataManager - Datos actualizados:', userData.progress.lastVisits); // Debug
+    console.log('UserDataManager - Datos actualizados:', userData.progress.lastVisits);
     this.saveUserData(userData);
     return userData;
   }
@@ -288,8 +287,6 @@ class UserDataManager {
     
     userData.progress.activityScores[activityTitle] = score;
     userData.progress.activityTimes[activityTitle] = new Date().toISOString();
-    
-    // Actualizar puntaje total
     userData.game.totalScore += score;
     
     this.saveUserData(userData);
@@ -302,7 +299,6 @@ class UserDataManager {
     userData.mood.history.push(moodRecord);
     userData.mood.lastEntry = moodRecord;
     
-    // Mantener solo los últimos 30 días
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -409,14 +405,14 @@ const EducationalProgressPanel = () => {
   };
 
   const getLastVisitDate = (activityTitle: string) => {
-    console.log('Obteniendo fecha para:', activityTitle, userData.progress.lastVisits?.[activityTitle]); // Debug
+    console.log('Obteniendo fecha para:', activityTitle, userData.progress.lastVisits?.[activityTitle]);
     const lastVisit = userData.progress.lastVisits?.[activityTitle];
     if (!lastVisit) return null;
     return new Date(lastVisit);
   };
 
   const formatLastVisit = (activityTitle: string) => {
-    console.log('Formateando fecha para:', activityTitle, userData.progress.lastVisits); // Debug
+    console.log('Formateando fecha para:', activityTitle, userData.progress.lastVisits);
     const lastVisit = getLastVisitDate(activityTitle);
     if (!lastVisit) return "Sin visitar";
 
@@ -438,26 +434,23 @@ const EducationalProgressPanel = () => {
   };
 
   const handleActivityClick = (activityTitle: string, e: React.MouseEvent) => {
-    e.preventDefault(); // Evitar la navegación inmediata del Link
-    console.log('Registrando visita para:', activityTitle); // Debug
+    e.preventDefault();
+    console.log('Registrando visita para:', activityTitle);
     UserDataManager.visitActivity(activityTitle);
     
-    // Recargar datos para reflejar cambios inmediatamente
     const updatedData = UserDataManager.loadUserData();
     setUserData(updatedData);
     
-    // Navegar manualmente después de registrar la visita
-    setTimeout(() => {
-      window.location.href = features.find(f => f.title === activityTitle)?.route || '/';
-    }, 100);
+    const route = features.find(f => f.title === activityTitle)?.route || '/';
+    window.location.href = route;
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+          {/* Sidebar - Oculto en móviles */}
+          <div className="hidden lg:block lg:col-span-1">
             {/* Stats Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
               <h3 className="text-sm font-medium text-gray-900 mb-4">Tu Progreso</h3>
@@ -579,88 +572,105 @@ const EducationalProgressPanel = () => {
               </div>
             </div>
 
-            {/* Activities Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {/* Activities Grid - 2 columnas en móvil, 2 en tablet, 3 en desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
               {filteredFeatures.length > 0 ? (
-                filteredFeatures.map((feature, index) => {
+                filteredFeatures.map((feature) => {
                   const isCompleted = getActivityProgress(feature.title);
                   const activityScore = getActivityScore(feature.title);
                   
                   return (
-                    <div 
+                    <article 
                       key={feature.title}
                       className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
                       onClick={(e) => handleActivityClick(feature.title, e)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Abrir actividad: ${feature.title}`}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleActivityClick(feature.title, e as any);
+                        }
+                      }}
                     >
-                        {/* Header */}
+                        {/* Header - Altura reducida en móvil */}
                         <div className="relative">
                           <div 
-                            className="h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
+                            className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                             style={{ backgroundColor: `${feature.color}15` }}
                           >
-                            {/* Imagen de fondo */}
-                            <div className="absolute inset-0 opacity-20">
-                              <Image
-                                src={feature.image}
-                                alt=""
-                                fill
-                                className="object-cover object-center"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                }}
-                              />
-                            </div>
+                            {/* Imagen de fondo optimizada */}
+                            {feature.image && (
+                              <div className="absolute inset-0 opacity-20">
+                                <Image
+                                  src={feature.image}
+                                  alt={`${feature.title} ilustración`}
+                                  fill
+                                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 50vw, 33vw"
+                                  className="object-cover object-center"
+                                  loading="lazy"
+                                  quality={75}
+                                  unoptimized={feature.image.endsWith('.svg')}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
                             
-                            {/* Ícono circular en primer plano */}
+                            {/* Ícono circular en primer plano - Más pequeño en móvil */}
                             <div 
-                              className="w-12 h-12 rounded-full flex items-center justify-center relative z-10"
+                              className="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center relative z-10"
                               style={{ backgroundColor: feature.color }}
                             >
-                              <div className="text-white">
+                              <div className="text-white scale-75 md:scale-100">
                                 {feature.icon}
                               </div>
                             </div>
                           </div>
                           
-                          {/* Status Badge */}
+                          {/* Status Badge - Más pequeño en móvil */}
                           {isCompleted && (
-                            <div className="absolute top-2 right-2">
-                              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                <IconCircle size={14} className="text-white" />
+                            <div className="absolute top-1 right-1 md:top-2 md:right-2">
+                              <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <IconCircle size={12} className="text-white md:hidden" />
+                                <IconCircle size={14} className="text-white hidden md:block" />
                               </div>
                             </div>
                           )}
 
-                          {/* Last Visit Date */}
-                          <div className="absolute bottom-2 left-3">
-                            <div className={`flex items-center space-x-1 text-xs backdrop-blur-sm rounded-full px-2 py-1 ${
+                          {/* Last Visit Date - Más pequeño en móvil */}
+                          <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
+                            <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
                               getLastVisitDate(feature.title) 
                                 ? 'text-gray-600 bg-white/80' 
                                 : 'text-orange-600 bg-orange-50/80'
                             }`}>
-                              <IconCalendar size={12} />
-                              <span>{formatLastVisit(feature.title)}</span>
+                              <IconCalendar size={10} className="md:hidden" />
+                              <IconCalendar size={12} className="hidden md:block" />
+                              <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
+                              <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-medium text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
+                        {/* Content - Padding reducido en móvil */}
+                        <div className="p-2 md:p-4">
+                          <div className="flex items-center justify-between mb-1 md:mb-2">
+                            <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
                               {feature.title}
                             </h3>
-                            <IconChevronRight size={16} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+                            <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors md:size-16 flex-shrink-0" />
                           </div>
                           
-                          <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                          <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
                             {feature.description}
                           </p>
                           
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-1">
                             <span 
-                              className="inline-block px-2 py-1 text-xs font-medium rounded-full"
+                              className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
                               style={{ 
                                 backgroundColor: `${feature.color}15`,
                                 color: feature.color 
@@ -670,20 +680,23 @@ const EducationalProgressPanel = () => {
                             </span>
                             
                             {isCompleted && (
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1 md:space-x-2">
                                 {activityScore > 0 && (
-                                  <span className="text-xs text-yellow-600 font-medium">
+                                  <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
                                     {activityScore} pts
                                   </span>
                                 )}
-                                <span className="text-xs text-green-600 font-medium">
+                                <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
                                   Completado
+                                </span>
+                                <span className="text-[10px] text-green-600 font-medium sm:hidden">
+                                  ✓
                                 </span>
                               </div>
                             )}
                           </div>
                         </div>
-                      </div>
+                      </article>
                   );
                 })
               ) : (
@@ -714,6 +727,13 @@ const EducationalProgressPanel = () => {
       </div>
 
       <style jsx>{`
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
         .line-clamp-2 {
           display: -webkit-box;
           -webkit-line-clamp: 2;
