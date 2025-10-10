@@ -25,25 +25,43 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
   handleDragOver,
   isDragging
 }) => (
-  <div className="relative bg-white border-4 border-black rounded-lg p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-    <div className="text-lg leading-relaxed">
-      {textParts.map((part, index) => (
-        <React.Fragment key={index}>
-          {part}
-          {index < blanks.length && (
-            <BlankSpace 
-              blank={blanks[index]} 
-              onDragStart={onDragStart}
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-              onDrop={onDrop}
-              handleDragOver={handleDragOver}
-              isDragging={isDragging}
-            />
-          )}
-        </React.Fragment>
-      ))}
+  <div className="relative">
+    {/* Encabezado de la sección */}
+    <div className="mb-4 flex items-center gap-2">
+      <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
+      <h3 className="text-lg font-medium text-gray-800">Completa el texto</h3>
+    </div>
+
+    {/* Contenedor del texto */}
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+      <div className="text-base leading-relaxed text-gray-800">
+        {textParts.map((part, index) => (
+          <React.Fragment key={index}>
+            <span className="select-text">{part}</span>
+            {index < blanks.length && (
+              <BlankSpace 
+                blank={blanks[index]} 
+                onDragStart={onDragStart}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+                onDrop={onDrop}
+                handleDragOver={handleDragOver}
+                isDragging={isDragging}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+
+    {/* Instrucción sutil */}
+    <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>Arrastra las palabras a los espacios en blanco</span>
     </div>
   </div>
 );

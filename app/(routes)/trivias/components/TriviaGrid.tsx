@@ -5,7 +5,6 @@ import { Tab } from '@headlessui/react';
 import { type TriviaIndexFields } from '@/types/trivia';
 import { TriviaCard } from './TriviaCard';
 import classNames from 'classnames';
-import ComicBurst from '@/components/ComicBurst';
 
 interface TriviaGridProps {
   indexesByLevel: Record<number, TriviaIndexFields[]>;
@@ -15,39 +14,54 @@ export default function TriviaGrid({
   indexesByLevel,
 }: TriviaGridProps): JSX.Element {
   const levelColors: Record<number, string> = {
-    1: '#4ADE80',
-    2: '#FFD93D',
-    3: '#FF6B6B',
+    1: 'blue',
+    2: 'indigo',
+    3: 'purple',
   };
 
-  const levelBursts: Record<number, string> = {
-    1: '¡NIVEL 1!',
-    2: '¡NIVEL 2!',
-    3: '¡NIVEL 3!',
+  const levelLabels: Record<number, string> = {
+    1: 'Básico',
+    2: 'Intermedio',
+    3: 'Avanzado',
   };
 
   return (
-    <section className="my-8 relative">
+    <section>
       <Tab.Group>
-        <Tab.List className="relative flex flex-wrap gap-4 justify-center items-center mb-8">
+        <Tab.List className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-4">
           {Object.keys(indexesByLevel).map((level) => {
             const numericLevel = Number(level);
+            const color = levelColors[numericLevel];
             return (
               <Tab as={Fragment} key={numericLevel}>
                 {({ selected }) => (
                   <button
                     type="button"
                     className={classNames(
-                      'relative px-6 py-3 rounded-full font-black text-lg border-4 border-black transform transition-all duration-300 hover:scale-105 hover:-rotate-3',
+                      'px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200',
                       {
-                        [`bg-black text-white shadow-[6px_6px_0px_0px_${levelColors[numericLevel]}]`]:
-                          selected,
-                        'bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100':
-                          !selected,
+                        [`bg-${color}-600 text-white shadow-sm`]: selected,
+                        'bg-gray-100 text-gray-700 hover:bg-gray-200': !selected,
                       }
                     )}
+                    style={
+                      selected
+                        ? {
+                            backgroundColor:
+                              color === 'blue'
+                                ? '#2563eb'
+                                : color === 'indigo'
+                                ? '#4f46e5'
+                                : '#9333ea',
+                          }
+                        : undefined
+                    }
                   >
-                    <p className='hidden sm:inline-flex'>NIVEL</p> {numericLevel}
+                    <span className="hidden sm:inline">Nivel {numericLevel}</span>
+                    <span className="sm:hidden">{numericLevel}</span>
+                    <span className="ml-2 text-xs opacity-90">
+                      ({indexesByLevel[numericLevel].length})
+                    </span>
                   </button>
                 )}
               </Tab>
@@ -61,25 +75,32 @@ export default function TriviaGrid({
             return (
               <Tab.Panel
                 key={numericLevel}
-                className="relative transform transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                style={{
-                  borderColor: levelColors[numericLevel],
-                }}
+                className="focus:outline-none"
               >
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Level description */}
+                <div className="mb-6 bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {levelLabels[numericLevel]}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {numericLevel === 1 && 'Perfectas para comenzar tu aprendizaje'}
+                    {numericLevel === 2 && 'Desafía tus conocimientos'}
+                    {numericLevel === 3 && 'Para expertos en el tema'}
+                  </p>
+                </div>
+
+                {/* Grid of cards */}
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {indexesByLevel[numericLevel].map((value, index) => (
                     <li
                       key={value.id}
-                      className="transform transition-all duration-300 hover:scale-102"
+                      className="opacity-0 animate-fadeInUp"
                       style={{
-                        animationDelay: `${index * 100}ms`,
-                        animation: 'fadeInUp 0.5s ease-out forwards',
+                        animationDelay: `${index * 50}ms`,
+                        animationFillMode: 'forwards',
                       }}
                     >
-                      <div className="relative bg-white border-4 border-black rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 transform hover:rotate-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent rounded-lg" />
-                        <TriviaCard {...value} />
-                      </div>
+                      <TriviaCard {...value} />
                     </li>
                   ))}
                 </ul>
@@ -93,12 +114,16 @@ export default function TriviaGrid({
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(15px);
           }
           to {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.4s ease-out;
         }
       `}</style>
     </section>

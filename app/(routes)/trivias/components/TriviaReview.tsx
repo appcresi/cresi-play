@@ -1,6 +1,6 @@
 import { type TriviaAnsweredQuestion } from '@/types/trivia'
 import { Disclosure, Transition } from '@headlessui/react'
-import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink } from '@tabler/icons-react'
+import { IconAlertCircle, IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink, IconTrophy, IconCircleCheck, IconCircleX, IconInfoCircle } from '@tabler/icons-react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { useState } from 'react'
 import { COMPLETION_PERCENTAGE } from '@/utils/constants'
@@ -69,73 +69,92 @@ export default function TriviaReview ({ correctAnswers, triviaName, triviaLength
   const isCompleted = isTriviaCompleted(correctAnswers, triviaLength)
 
   return (
-    <section className="p-8 lg:mx-auto lg:max-w-5xl">
-      <div className="flex flex-wrap justify-center items-center gap-8 lg:justify-between">
-        {/* Results Header */}
-        <div className="flex flex-col gap-6 lg:max-w-[50%]">
-          <div className="bg-yellow-200 p-6 rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
-            <h1 className="text-4xl font-bold mb-4">
-              {isCompleted ? '¡COMPLETASTE LA TRIVIA!' : '¡SEGUÍ INTENTANDO!'}
+    <section className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Results Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium mb-4 ${
+              isCompleted 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-orange-100 text-orange-700'
+            }`}>
+              <IconTrophy size={16} />
+              <span>{isCompleted ? 'Trivia Completada' : 'Sigue Practicando'}</span>
+            </div>
+
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              {isCompleted ? '¡Excelente Trabajo!' : '¡Buen Intento!'}
             </h1>
-            <p className="text-lg">
+            
+            <p className="text-gray-600 mb-6">
               {isCompleted 
-                ? '¡Felicitaciones! Esto es fruto de tus ganas por seguir aprendiendo.' 
-                : '¡No te rindas! El aprendizaje puede ser un proceso largo y tedioso, pero es igual de útil y gratificante.'}
+                ? 'Has demostrado un gran dominio del tema. ¡Felicitaciones por tu dedicación!' 
+                : 'El aprendizaje es un proceso continuo. Sigue practicando y mejorarás.'}
             </p>
+
+            {isCompleted && <CertificatePreparation trivia={triviaName} percentage={completionPercentage} />}
+
+            <Link 
+              href="/trivias" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              <IconArrowLeft size={20} />
+              Volver al menú
+            </Link>
           </div>
 
-          {isCompleted && <CertificatePreparation trivia={triviaName} percentage={completionPercentage} />}
+          {/* Score Card */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Tu Puntuación</h2>
+            
+            <div className="flex flex-col items-center">
+              <ResponsiveContainer width={240} height={240}>
+                <PieChart>
+                  <Pie
+                    dataKey="value"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    data={data}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
 
-          <Link 
-            href="/trivias" 
-            className="w-fit px-6 py-3 flex gap-2 items-center rounded-full font-bold bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-          >
-            <IconArrowLeft />
-            Volver al menú
-          </Link>
+              <div className="mt-6 text-center">
+                <p className="text-4xl font-bold text-gray-900 mb-2">
+                  {completionPercentage}%
+                </p>
+                <p className="text-gray-600">
+                  {correctAnswers} de {triviaLength} correctas
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Score Chart */}
-        <div className="flex flex-col items-center p-6 bg-white rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform rotate-1">
-          <ResponsiveContainer width={240} height={240}>
-            <PieChart>
-              <Pie
-                dataKey="value"
-                labelLine={false}
-                label={renderCustomizedLabel}
-                data={data}
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[entry.name]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* Answers Review Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Revisión de Respuestas
+          </h2>
 
-          <p className="mt-4 font-bold text-lg">
-            ¡Contestaste correctamente {correctAnswers} de {triviaLength}!
-          </p>
-        </div>
-      </div>
-
-      {/* Answers Review */}
-      <section className="mt-12">
-        <h2 className="text-3xl font-bold mb-8 bg-blue-200 p-4 w-fit rounded-lg border-2 border-black transform -rotate-1">
-          Tus respuestas
-        </h2>
-
-        <ul className="flex flex-col gap-6">
-          {answeredQuestions.map((question, index) => (
-            <li key={question.question}>
+          <div className="space-y-4">
+            {answeredQuestions.map((question, index) => (
               <QuestionReview 
+                key={question.question}
                 index={index}
                 question={question}
               />
-            </li>
-          ))}
-        </ul>
-      </section>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
@@ -147,81 +166,101 @@ interface QuestionReviewProps {
 
 function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element {
   return (
-    <div className="p-6 flex flex-col gap-4 rounded-xl bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
-      {/* Question */}
-      <div className="bg-yellow-200 -m-2 p-4 rounded-lg border-2 border-black transform -rotate-1">
-        <p className="text-xl font-bold comic-font">
-          {index + 1}) {question.question}
-        </p>
+    <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden hover:border-gray-300 transition-colors">
+      {/* Question Header */}
+      <div className="bg-white p-4 border-b border-gray-200">
+        <div className="flex items-start gap-3">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+            question.isCorrect 
+              ? 'bg-green-100 text-green-600' 
+              : 'bg-red-100 text-red-600'
+          }`}>
+            {question.isCorrect ? (
+              <IconCircleCheck size={20} />
+            ) : (
+              <IconCircleX size={20} />
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <p className="text-sm text-gray-500 mb-1">Pregunta {index + 1}</p>
+            <p className="text-base font-medium text-gray-900">
+              {question.question}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Answer Result */}
-      <div className={`p-4 rounded-lg border-2 border-black ${
-        question.isCorrect 
-          ? 'bg-green-200 transform rotate-1' 
-          : 'bg-red-200 transform -rotate-1'
-      }`}>
-        <p className="font-bold">
-          ¡{question.isCorrect ? '¡CORRECTO!' : '¡INCORRECTO!'} 
-        </p>
-        <p className="mt-2">
-          Respondiste: <span className="font-bold">{question.userAnswer}</span>
-        </p>
-      </div>
+      {/* Answer Content */}
+      <div className="p-4 space-y-3">
+        {/* User Answer */}
+        <div className={`p-3 rounded-lg border ${
+          question.isCorrect 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <p className="text-xs font-medium text-gray-600 mb-1">Tu respuesta</p>
+          <p className={`text-sm font-medium ${
+            question.isCorrect ? 'text-green-700' : 'text-red-700'
+          }`}>
+            {question.userAnswer}
+          </p>
+        </div>
 
-      {/* Correct Answer & Contact */}
-      <div className="flex flex-wrap gap-4 items-center">
+        {/* Correct Answer (if wrong) */}
         {!question.isCorrect && (
-          <div className="bg-blue-200 p-3 rounded-lg border-2 border-black transform rotate-1">
-            <p>
-              La respuesta correcta es <span className="font-bold">{question.answer}</span>
+          <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+            <p className="text-xs font-medium text-gray-600 mb-1">Respuesta correcta</p>
+            <p className="text-sm font-medium text-blue-700">
+              {question.answer}
             </p>
           </div>
         )}
 
-        <div className="flex gap-2 items-center bg-purple-200 p-3 rounded-lg border-2 border-black transform -rotate-1">
-          <p>¿Hubo una equivocación?</p>
+        {/* Contact Link */}
+        <div className="flex items-center justify-between pt-2">
           <a
             href={`https://cresi.com.ar/contacto/?question=${question.question}`}
             target="_blank"
             rel="noreferrer"
-            className="flex gap-1 items-center text-red-700 hover:underline"
+            className="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1 transition-colors"
           >
-            <p className="font-bold">¡Contactános!</p>
-            <IconExternalLink className="h-4 w-4" />
+            ¿Encontraste un error?
+            <IconExternalLink size={14} />
           </a>
         </div>
+
+        {/* More Info Disclosure */}
+        <Disclosure>
+          {({ open }) => (
+            <div className="pt-2">
+              <Disclosure.Button className="w-full p-3 flex items-center justify-between rounded-lg bg-purple-50 border border-purple-200 text-purple-700 hover:bg-purple-100 transition-colors">
+                <span className="flex gap-2 items-center text-sm font-medium">
+                  <IconInfoCircle size={16} />
+                  <p>Más información</p>
+                </span>
+                <IconChevronDown
+                  size={16}
+                  className={`${open ? 'rotate-180' : ''} transition-transform duration-200`}
+                />
+              </Disclosure.Button>
+
+              <Transition
+                enter="transition duration-200 ease-out"
+                enterFrom="transform -translate-y-2 opacity-0"
+                enterTo="transform translate-y-0 opacity-100"
+                leave="transition duration-150 ease-out"
+                leaveFrom="transform translate-y-0 opacity-100"
+                leaveTo="transform -translate-y-2 opacity-0"
+              >
+                <Disclosure.Panel className="p-4 mt-2 bg-white rounded-lg border border-gray-200 text-sm text-gray-700 leading-relaxed">
+                  {question.resume}
+                </Disclosure.Panel>
+              </Transition>
+            </div>
+          )}
+        </Disclosure>
       </div>
-
-      {/* More Info Section */}
-      <Disclosure>
-        {({ open }) => (
-          <>
-            <Disclosure.Button className="w-full p-4 flex items-center justify-between rounded-lg bg-orange-200 border-2 border-black font-bold hover:bg-orange-300 transition-colors">
-              <span className="flex gap-2 items-center">
-                <IconAlertCircle className="h-5 w-5" />
-                <p>¡Para saber más!</p>
-              </span>
-              <IconChevronDown
-                className={`${open ? 'rotate-180 transform' : ''} transition duration-100`}
-              />
-            </Disclosure.Button>
-
-            <Transition
-              enter="transition duration-200 ease-out"
-              enterFrom="transform translate-y-2 opacity-0"
-              enterTo="transform translate-y-0 opacity-100"
-              leave="transition duration-75 ease-out"
-              leaveFrom="transform translate-y-0 opacity-100"
-              leaveTo="transform translate-y-4 opacity-0"
-            >
-              <Disclosure.Panel className="p-4 bg-gray-100 rounded-lg border-2 border-black mt-2">
-                {question.resume}
-              </Disclosure.Panel>
-            </Transition>
-          </>
-        )}
-      </Disclosure>
     </div>
   )
 }
@@ -252,14 +291,17 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
   }
 
   return (
-    <div className="my-6 p-6 bg-purple-100 rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
-      <label className="flex flex-col gap-3 font-bold">
-        ¡Ingresá tu nombre para descargar tu certificado! 🎓
+    <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+      <label className="flex flex-col gap-3">
+        <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+          <IconTrophy size={18} className="text-purple-600" />
+          Obtén tu certificado de completación
+        </span>
 
         <input 
           onChange={handleName}
-          className="w-fit p-3 bg-white rounded-lg border-2 border-black font-normal transform rotate-1 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-          placeholder="Tu nombre aquí..."
+          className="px-4 py-2 bg-white rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          placeholder="Ingresa tu nombre completo"
         />
       </label>
 
@@ -267,10 +309,10 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
         <button
           type="button"
           onClick={handlePrepareCertificate}
-          className="mt-4 px-6 py-3 w-fit flex gap-2 items-center font-bold rounded-full bg-primary text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+          className="mt-3 px-5 py-2 flex items-center gap-2 font-medium text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
         >
-          Obtener certificado
-          <IconArrowRight />
+          Descargar certificado
+          <IconArrowRight size={18} />
         </button>
       )}
     </div>

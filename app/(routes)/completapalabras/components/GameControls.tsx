@@ -16,23 +16,31 @@ export const GameControls: React.FC<GameControlsProps> = ({
   isLastLevel,
   onNext
 }) => (
-  <div className="flex gap-6 justify-center">
+  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
     <button
       onClick={onReset}
-      className="px-6 py-3 bg-white border-4 border-black text-black font-black rounded-full
-                shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transform transition-all duration-300
-                hover:scale-105 hover:-rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+      className="w-full sm:w-auto px-6 py-2.5 bg-white text-gray-700 border border-gray-300 
+                rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-sm
+                flex items-center justify-center gap-2"
     >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
       Reiniciar juego
     </button>
 
     {!isComplete && (
       <button
         onClick={onCheck}
-        className="px-6 py-3 bg-black text-white font-black rounded-full
-                 shadow-[4px_4px_0px_0px_#FF6B6B] transform transition-all duration-300
-                 hover:scale-105 hover:rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#FF6B6B]"
+        className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white rounded-lg 
+                 hover:bg-blue-700 transition-colors font-medium shadow-sm
+                 flex items-center justify-center gap-2"
       >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         Comprobar respuestas
       </button>
     )}
@@ -40,17 +48,32 @@ export const GameControls: React.FC<GameControlsProps> = ({
     {isComplete && !isLastLevel && (
       <button
         onClick={onNext}
-        className="px-6 py-3 bg-green-500 text-white font-black rounded-full
-                 shadow-[4px_4px_0px_0px_#4CAF50] transform transition-all duration-300
-                 hover:scale-105 hover:rotate-3 active:translate-y-1 active:shadow-[2px_2px_0px_0px_#4CAF50]"
+        className="w-full sm:w-auto px-6 py-2.5 bg-green-600 text-white rounded-lg 
+                 hover:bg-green-700 transition-colors font-medium shadow-sm
+                 flex items-center justify-center gap-2"
       >
         Siguiente nivel
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
       </button>
     )}
 
     {isComplete && isLastLevel && (
-      <div className="relative bg-yellow-100 border-4 border-black rounded-full px-6 py-3 transform rotate-2">
-        <span className="font-black text-lg">¡Felicitaciones! Has completado todos los niveles</span>
+      <div className="w-full bg-green-50 border border-green-200 rounded-lg p-4 mt-2">
+        <div className="flex items-center justify-center gap-3">
+          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-medium text-green-800">¡Felicitaciones!</p>
+            <p className="text-sm text-green-700">Has completado todos los niveles</p>
+          </div>
+        </div>
       </div>
     )}
   </div>

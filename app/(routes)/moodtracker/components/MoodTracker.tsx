@@ -4,6 +4,41 @@ import { Calendar, SmilePlus, Angry, Trophy, Medal, Star, BookOpen } from 'lucid
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
 
+// Estructura unificada de datos del usuario
+interface UserData {
+  profile: {
+    character: {
+      id: number;
+      name: string;
+      image: string;
+    };
+    username: string;
+    createdAt: string;
+    lastLogin: string;
+  };
+  game: {
+    totalScore: number;
+    totalLives: number;
+    streak: number;
+  };
+  progress: {
+    completedActivities: string[];
+    activityScores: { [key: string]: number };
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
+  };
+  mood: {
+    history: MoodEntry[];
+    lastEntry: MoodEntry | null;
+  };
+  achievements: Achievement[];
+  settings: {
+    notifications: boolean;
+    theme: 'light' | 'dark';
+    language: 'es' | 'en';
+  };
+}
+
 // Interfaces
 interface MoodEntry {
   date: string;
@@ -22,10 +57,11 @@ interface Stats {
 
 interface Achievement {
   id: string;
-  title: string;
+  name: string;
   description: string;
   iconName: string;
   unlocked: boolean;
+  date?: string;
 }
 
 interface Mood {
@@ -35,13 +71,179 @@ interface Mood {
   bgColor: string;
 }
 
+// Clase para manejar los datos del usuario
+class UserDataManager {
+  private static readonly STORAGE_KEY = 'cresi_user_data';
+
+  // Datos por defecto
+  public static getDefaultUserData(): UserData {
+    return {
+      profile: {
+        character: { id: 0, name: '', image: '' },
+        username: 'Estudiante',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      },
+      game: {
+        totalScore: 0,
+        totalLives: 3,
+        streak: 0
+      },
+      progress: {
+        completedActivities: [],
+        activityScores: {},
+        activityTimes: {},
+        lastVisits: {}
+      },
+      mood: {
+        history: [],
+        lastEntry: null
+      },
+      achievements: [],
+      settings: {
+        notifications: true,
+        theme: 'light',
+        language: 'es'
+      }
+    };
+  }
+
+  // Cargar datos del usuario
+  static loadUserData(): UserData {
+    try {
+      const storedData = localStorage.getItem(this.STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData) as UserData;
+        // Actualizar lastLogin
+        parsedData.profile.lastLogin = new Date().toISOString();
+        this.saveUserData(parsedData);
+        return parsedData;
+      }
+      return this.getDefaultUserData();
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      return this.getDefaultUserData();
+    }
+  }
+
+  // Guardar datos del usuario
+  static saveUserData(userData: UserData): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  }
+
+  // Añadir registro de humor
+  static addMoodRecord(moodRecord: MoodEntry): UserData {
+    const userData = this.loadUserData();
+    userData.mood.history.push(moodRecord);
+    userData.mood.lastEntry = moodRecord;
+    
+    // Mantener solo los últimos 90 días para optimizar rendimiento
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    userData.mood.history = userData.mood.history.filter(
+      record => new Date(record.date) >= ninetyDaysAgo
+    );
+    
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Desbloquear logro
+  static unlockAchievement(achievement: Achievement): UserData {
+    const userData = this.loadUserData();
+    const existingIndex = userData.achievements.findIndex(a => a.id === achievement.id);
+    
+    if (existingIndex >= 0) {
+      if (!userData.achievements[existingIndex].unlocked) {
+        userData.achievements[existingIndex] = { 
+          ...achievement, 
+          unlocked: true, 
+          date: new Date().toISOString() 
+        };
+        // Dar puntos por logro desbloqueado
+        userData.game.totalScore += this.getAchievementPoints(achievement.id);
+      }
+    } else {
+      userData.achievements.push({ 
+        ...achievement, 
+        unlocked: true, 
+        date: new Date().toISOString() 
+      });
+      userData.game.totalScore += this.getAchievementPoints(achievement.id);
+    }
+    
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Actualizar racha y dar recompensas
+  static updateStreakAndRewards(moodEntry: MoodEntry): UserData {
+    const userData = this.loadUserData();
+    
+    // Calcular nueva racha
+    const streak = this.calculateStreak(userData.mood.history.concat(moodEntry));
+    userData.game.streak = streak;
+    
+    // Dar recompensas
+    if (userData.game.totalLives < 3) {
+      userData.game.totalLives += 1;
+    } else {
+      userData.game.totalScore += 200;
+    }
+    
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Calcular racha de días consecutivos
+  private static calculateStreak(history: MoodEntry[]): number {
+    if (history.length === 0) return 0;
+
+    let streak = 1;
+    const today = new Date().setHours(0, 0, 0, 0);
+    const yesterday = new Date(today - 86400000).setHours(0, 0, 0, 0);
+    
+    const lastEntry = new Date(history[history.length - 1].date).setHours(0, 0, 0, 0);
+    
+    if (lastEntry === today || lastEntry === yesterday) {
+      for (let i = history.length - 2; i >= 0; i--) {
+        const currentDate = new Date(history[i].date).setHours(0, 0, 0, 0);
+        const prevDate = new Date(history[i + 1].date).setHours(0, 0, 0, 0);
+        
+        if ((prevDate - currentDate) === 86400000) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    } else {
+      return 0;
+    }
+    
+    return streak;
+  }
+
+  // Obtener puntos por tipo de logro
+  private static getAchievementPoints(achievementId: string): number {
+    const pointsMap: { [key: string]: number } = {
+      'streak-3': 500,
+      'mood-master': 1000,
+      'note-taker': 750,
+      'intensity-explorer': 500,
+      'streak-7': 1000,
+      'streak-30': 2000
+    };
+    return pointsMap[achievementId] || 100;
+  }
+}
+
 // MoodIcon Component
 const MoodIcon = ({ mood }: { mood: Mood }) => {
-  const iconProps = {
-    className: `w-16 h-16 ${mood.color}`,
-    strokeWidth: 3
-  };
-
   switch (mood.value) {
     case 1: return <div role="img" aria-label="Angry" className={`text-4xl ${mood.color}`}>😠</div>;
     case 2: return <div role="img" aria-label="Sad" className={`text-4xl ${mood.color}`}>😢</div>;
@@ -69,14 +271,10 @@ const AchievementIcon = ({ iconName, className }: { iconName: string; className:
 };
 
 const MoodTracker = () => {
-  const [moodHistory, setMoodHistory] = useState<MoodEntry[]>([]);
+  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [intensityRating, setIntensityRating] = useState<number>(5);
-  const [gameScore, setGameScore] = useState(0);
-  const [gameLives, setGameLives] = useState(3);
   const [moodNote, setMoodNote] = useState('');
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [streakCount, setStreakCount] = useState(0);
   const [showStats, setShowStats] = useState(false);
 
   const moods: Mood[] = [
@@ -108,28 +306,35 @@ const MoodTracker = () => {
   const defaultAchievements: Achievement[] = [
     {
       id: 'streak-3',
-      title: '¡3 días seguidos!',
+      name: '3 días seguidos',
       description: 'Registraste tu estado de ánimo durante 3 días consecutivos',
       iconName: 'Medal',
       unlocked: false
     },
     {
+      id: 'streak-7',
+      name: 'Una semana completa',
+      description: 'Registraste tu estado de ánimo durante 7 días consecutivos',
+      iconName: 'Trophy',
+      unlocked: false
+    },
+    {
       id: 'mood-master',
-      title: 'Maestro del Ánimo',
+      name: 'Maestro del Ánimo',
       description: 'Usaste todas las emociones disponibles',
       iconName: 'Trophy',
       unlocked: false
     },
     {
       id: 'note-taker',
-      title: 'Reflexivo',
+      name: 'Reflexivo',
       description: 'Escribiste 5 notas detalladas sobre tus emociones',
       iconName: 'BookOpen',
       unlocked: false
     },
     {
       id: 'intensity-explorer',
-      title: 'Explorador Emocional',
+      name: 'Explorador Emocional',
       description: 'Usaste toda la escala de intensidad (1-10)',
       iconName: 'Star',
       unlocked: false
@@ -137,112 +342,93 @@ const MoodTracker = () => {
   ];
 
   useEffect(() => {
-    const savedMoods = localStorage.getItem('moodHistory');
-    const savedScore = localStorage.getItem('totalGameScore');
-    const savedLives = localStorage.getItem('totalGameLives');
-    const savedAchievements = localStorage.getItem('achievements');
-    
-    if (savedMoods) {
-      setMoodHistory(JSON.parse(savedMoods));
-    }
-    if (savedScore) {
-      setGameScore(parseInt(savedScore));
-    }
-    if (savedLives) {
-      setGameLives(parseInt(savedLives));
-    }
-    if (savedAchievements) {
-      setAchievements(JSON.parse(savedAchievements));
-    } else {
-      setAchievements(defaultAchievements);
-    }
-
-    if (savedMoods) {
-      checkStreak(JSON.parse(savedMoods));
-    }
+    loadUserData();
   }, []);
 
-  const checkAchievements = (updatedHistory: MoodEntry[]) => {
-    const newAchievements = [...achievements];
+  const loadUserData = () => {
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
     
-    if (streakCount >= 3) {
-      const streakAchievement = newAchievements.find(a => a.id === 'streak-3');
-      if (streakAchievement && !streakAchievement.unlocked) {
-        streakAchievement.unlocked = true;
-        setGameScore(prev => prev + 500);
-      }
+    // Inicializar achievements por defecto si no existen
+    if (data.achievements.length === 0) {
+      const updatedData = { ...data, achievements: defaultAchievements };
+      UserDataManager.saveUserData(updatedData);
+      setUserData(updatedData);
     }
-
-    const usedMoods = new Set(updatedHistory.map(entry => entry.mood));
-    if (usedMoods.size === moods.length) {
-      const moodAchievement = newAchievements.find(a => a.id === 'mood-master');
-      if (moodAchievement && !moodAchievement.unlocked) {
-        moodAchievement.unlocked = true;
-        setGameScore(prev => prev + 1000);
-      }
-    }
-
-    const notesCount = updatedHistory.filter(entry => entry.note && entry.note.length > 20).length;
-    if (notesCount >= 5) {
-      const noteAchievement = newAchievements.find(a => a.id === 'note-taker');
-      if (noteAchievement && !noteAchievement.unlocked) {
-        noteAchievement.unlocked = true;
-        setGameScore(prev => prev + 750);
-      }
-    }
-
-    const usedIntensities = new Set(updatedHistory.map(entry => entry.intensity));
-    if (usedIntensities.size >= 10) {
-      const intensityAchievement = newAchievements.find(a => a.id === 'intensity-explorer');
-      if (intensityAchievement && !intensityAchievement.unlocked) {
-        intensityAchievement.unlocked = true;
-        setGameScore(prev => prev + 500);
-      }
-    }
-
-    setAchievements(newAchievements);
-    localStorage.setItem('achievements', JSON.stringify(newAchievements));
   };
 
-  const checkStreak = (history: MoodEntry[]) => {
-    if (history.length === 0) return;
-
-    let streak = 1;
-    const today = new Date().setHours(0, 0, 0, 0);
-    const yesterday = new Date(today - 86400000).setHours(0, 0, 0, 0);
+  const checkAchievements = (updatedHistory: MoodEntry[]) => {
+    let achievementsToUnlock: Achievement[] = [];
     
-    const lastEntry = new Date(history[history.length - 1].date).setHours(0, 0, 0, 0);
-    
-    if (lastEntry === today || lastEntry === yesterday) {
-      for (let i = history.length - 2; i >= 0; i--) {
-        const currentDate = new Date(history[i].date).setHours(0, 0, 0, 0);
-        const prevDate = new Date(history[i + 1].date).setHours(0, 0, 0, 0);
-        
-        if ((prevDate - currentDate) === 86400000) {
-          streak++;
-        } else {
-          break;
-        }
+    // Logro de racha de 3 días
+    if (userData.game.streak >= 3) {
+      const streakAchievement = userData.achievements.find(a => a.id === 'streak-3');
+      if (streakAchievement && !streakAchievement.unlocked) {
+        achievementsToUnlock.push(streakAchievement);
       }
     }
-    
-    setStreakCount(streak);
+
+    // Logro de racha de 7 días
+    if (userData.game.streak >= 7) {
+      const streakAchievement = userData.achievements.find(a => a.id === 'streak-7');
+      if (streakAchievement && !streakAchievement.unlocked) {
+        achievementsToUnlock.push(streakAchievement);
+      }
+    }
+
+    // Logro de usar todas las emociones
+    const usedMoods = new Set(updatedHistory.map(entry => entry.mood));
+    if (usedMoods.size === moods.length) {
+      const moodAchievement = userData.achievements.find(a => a.id === 'mood-master');
+      if (moodAchievement && !moodAchievement.unlocked) {
+        achievementsToUnlock.push(moodAchievement);
+      }
+    }
+
+    // Logro de escribir notas detalladas
+    const notesCount = updatedHistory.filter(entry => entry.note && entry.note.length > 20).length;
+    if (notesCount >= 5) {
+      const noteAchievement = userData.achievements.find(a => a.id === 'note-taker');
+      if (noteAchievement && !noteAchievement.unlocked) {
+        achievementsToUnlock.push(noteAchievement);
+      }
+    }
+
+    // Logro de explorar todas las intensidades
+    const usedIntensities = new Set(updatedHistory.map(entry => entry.intensity));
+    if (usedIntensities.size >= 10) {
+      const intensityAchievement = userData.achievements.find(a => a.id === 'intensity-explorer');
+      if (intensityAchievement && !intensityAchievement.unlocked) {
+        achievementsToUnlock.push(intensityAchievement);
+      }
+    }
+
+    // Desbloquear logros
+    achievementsToUnlock.forEach(achievement => {
+      UserDataManager.unlockAchievement(achievement);
+    });
+
+    if (achievementsToUnlock.length > 0) {
+      // Recargar datos después de desbloquear logros
+      const updatedData = UserDataManager.loadUserData();
+      setUserData(updatedData);
+    }
   };
 
   const calculateStats = (): Stats | null => {
-    if (moodHistory.length === 0) return null;
+    if (userData.mood.history.length === 0) return null;
 
-    const moodCounts = moodHistory.reduce((acc, entry) => {
+    const moodCounts = userData.mood.history.reduce((acc, entry) => {
       acc[entry.label] = (acc[entry.label] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const avgIntensity = moodHistory.reduce((sum, entry) => sum + entry.intensity, 0) / moodHistory.length;
+    const avgIntensity = userData.mood.history.reduce((sum, entry) => sum + entry.intensity, 0) / userData.mood.history.length;
 
     return {
       moodCounts,
       avgIntensity: avgIntensity.toFixed(1),
-      totalEntries: moodHistory.length,
+      totalEntries: userData.mood.history.length,
       mostCommonMood: Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0][0]
     };
   };
@@ -258,29 +444,28 @@ const MoodTracker = () => {
       note: moodNote
     };
     
-    const updatedHistory = [...moodHistory, newMoodEntry];
-    setMoodHistory(updatedHistory);
-    localStorage.setItem('moodHistory', JSON.stringify(updatedHistory));
+    // Registrar entrada de humor
+    let updatedData = UserDataManager.addMoodRecord(newMoodEntry);
     
-    checkStreak(updatedHistory);
-    checkAchievements(updatedHistory);
-
+    // Actualizar racha y dar recompensas
+    updatedData = UserDataManager.updateStreakAndRewards(newMoodEntry);
+    
+    // Actualizar estado local
+    setUserData(updatedData);
+    
+    // Verificar logros
+    checkAchievements(updatedData.mood.history);
+    
+    // Limpiar formulario
     setSelectedMood(null);
     setIntensityRating(5);
     setMoodNote('');
 
-    if (gameLives < 3) {
-      const newLives = gameLives + 1;
-      setGameLives(newLives);
-      localStorage.setItem('totalGameLives', newLives.toString());
-    } else {
-      const newScore = gameScore + 200;
-      setGameScore(newScore);
-      localStorage.setItem('totalGameScore', newScore.toString());
-    }
+    // Marcar actividad como visitada
+    // UserDataManager.visitActivity?.('MoodTracker');
   };
 
-  const chartData = moodHistory.map(entry => ({
+  const chartData = userData.mood.history.map(entry => ({
     date: new Date(entry.date).toLocaleDateString(),
     valor: entry.mood,
     intensidad: entry.intensity
@@ -292,13 +477,12 @@ const MoodTracker = () => {
 
   const stats = calculateStats();
 
-  
   return (
     <div className="min-h-screen bg-yellow-50 p-6 pt-24">
       <GameStatusBar 
         title="Mood Tracker"
-        score={gameScore}
-        lives={gameLives}
+        score={userData.game.totalScore}
+        lives={userData.game.totalLives}
         level={1}
       />
       
@@ -308,7 +492,7 @@ const MoodTracker = () => {
           <Calendar className="w-8 h-8 text-orange-500" />
           <div>
             <p className="text-lg font-bold">Racha actual</p>
-            <p className="text-3xl font-bold text-orange-500">{streakCount} días</p>
+            <p className="text-3xl font-bold text-orange-500">{userData.game.streak} días</p>
           </div>
         </div>
         <button
@@ -326,55 +510,55 @@ const MoodTracker = () => {
           {/* Estadísticas Detalladas */}
           {stats && (
             <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1 max-w-full">
-            <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex justify-center">
-                <div className="w-full max-w-xs">
-                  <h3 className="text-xl font-bold mb-4 text-center">Distribución de Emociones</h3>
-                  <PieChart width={250} height={250}>
-                    <Pie
-                      dataKey="value"
-                      data={Object.entries(stats.moodCounts).map(([name, value]) => ({
-                        name,
-                        value
-                      }))}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      label
-                    >
-                      {Object.entries(stats.moodCounts).map(([name]) => (
-                        <Cell key={`cell-${name}`} fill={moodColors[name]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+              <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex justify-center">
+                  <div className="w-full max-w-xs">
+                    <h3 className="text-xl font-bold mb-4 text-center">Distribución de Emociones</h3>
+                    <PieChart width={250} height={250}>
+                      <Pie
+                        dataKey="value"
+                        data={Object.entries(stats.moodCounts).map(([name, value]) => ({
+                          name,
+                          value
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#8884d8"
+                        label
+                      >
+                        {Object.entries(stats.moodCounts).map(([name]) => (
+                          <Cell key={`cell-${name}`} fill={moodColors[name]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-gray-100 p-4 rounded-lg text-center">
+                    <p className="text-lg font-bold">Entradas Totales</p>
+                    <p className="text-3xl font-bold text-blue-500">{stats.totalEntries}</p>
+                  </div>
+                  <div className="bg-gray-100 p-4 rounded-lg text-center">
+                    <p className="text-lg font-bold">Intensidad Promedio</p>
+                    <p className="text-3xl font-bold text-green-500">{stats.avgIntensity}</p>
+                  </div>
+                  <div className="bg-gray-100 p-4 rounded-lg text-center">
+                    <p className="text-lg font-bold">Emoción más común</p>
+                    <p className="text-3xl font-bold text-purple-500">{stats.mostCommonMood}</p>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="bg-gray-100 p-4 rounded-lg text-center">
-                  <p className="text-lg font-bold">Entradas Totales</p>
-                  <p className="text-3xl font-bold text-blue-500">{stats.totalEntries}</p>
-                </div>
-                <div className="bg-gray-100 p-4 rounded-lg text-center">
-                  <p className="text-lg font-bold">Intensidad Promedio</p>
-                  <p className="text-3xl font-bold text-green-500">{stats.avgIntensity}</p>
-                </div>
-                <div className="bg-gray-100 p-4 rounded-lg text-center">
-                  <p className="text-lg font-bold">Emoción más común</p>
-                  <p className="text-3xl font-bold text-purple-500">{stats.mostCommonMood}</p>
-                </div>
-              </div>
-            </div>
-          </div>         
+            </div>         
           )}
 
           {/* Logros */}
           <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform -rotate-1">
             <h2 className="text-2xl font-bold mb-6">🏆 Logros Desbloqueados</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((achievement) => (
+              {userData.achievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   className={`p-4 rounded-lg border-2 transform hover:scale-105 transition-transform
@@ -390,8 +574,13 @@ const MoodTracker = () => {
                       }`}
                     />
                     <div>
-                      <h3 className="font-bold">{achievement.title}</h3>
+                      <h3 className="font-bold">{achievement.name}</h3>
                       <p className="text-sm text-gray-600">{achievement.description}</p>
+                      {achievement.unlocked && achievement.date && (
+                        <p className="text-xs text-gray-500">
+                          Desbloqueado: {new Date(achievement.date).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -486,7 +675,7 @@ const MoodTracker = () => {
           )}
 
           {/* Gráfico de Historia */}
-          {moodHistory.length > 0 && (
+          {userData.mood.history.length > 0 && (
             <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform -rotate-1">
               <h2 className="text-2xl font-bold mb-4 text-purple-600" 
                   style={{ textShadow: '1px 1px 0 #000' }}>
@@ -575,4 +764,4 @@ const MoodTracker = () => {
   );
 };
 
-export default MoodTracker; 
+export default MoodTracker;

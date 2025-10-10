@@ -14,6 +14,59 @@ interface WordDragGameProps {
   lessonTitle: string;
 }
 
+interface MoodEntry {
+  date: string;
+  mood: number;
+  label: string;
+  intensity: number;
+  note?: string;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  iconName: string;
+  unlocked: boolean;
+  date?: string;
+}
+
+interface UserData {
+  profile: {
+    character: {
+      id: number;
+      name: string;
+      image: string;
+    };
+    username: string;
+    createdAt: string;
+    lastLogin: string;
+  };
+  game: {
+    totalScore: number;
+    totalLives: number;
+    streak: number;
+  };
+  progress: {
+    completedActivities: string[];
+    activityScores: { [key: string]: number };
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
+  };
+  mood: {
+    history: MoodEntry[];
+    lastEntry: MoodEntry | null;
+  };
+  achievements: Achievement[];
+  settings: {
+    notifications: boolean;
+    theme: 'light' | 'dark';
+    language: 'es' | 'en';
+  };
+}
+
+const STORAGE_KEY = 'cresi_user_data';
+
 const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   // Game state
   const [currentLevel, setCurrentLevel] = useState(0);
@@ -41,24 +94,88 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [selectedBlankId, setSelectedBlankId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouchTarget, setLastTouchTarget] = useState<Element | null>(null);
-  const LIVES_STORAGE_KEY = 'totalGameLives';
-  const SCORE_STORAGE_KEY = 'totalGameScore';
+
+  // UserData state
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [sessionScore, setSessionScore] = useState(0);
 
   // Constants
   const CORRECT_ANSWER_POINTS = 100;
   const INCORRECT_ANSWER_PENALTY = 50;
+  const ACTIVITY_ID = `word_drag_${lessonTitle.toLowerCase().replace(/\s+/g, '_')}`;
+  
+  // Cargar datos del usuario al inicio
   useEffect(() => {
-    const storedScore = localStorage.getItem(SCORE_STORAGE_KEY);
-    if (storedScore) {
-      setScore(parseInt(storedScore, 10));
-    }
-  }, []); 
-  useEffect(() => {
-    const storedLives = localStorage.getItem(LIVES_STORAGE_KEY);
-    if (storedLives) {
-      setLives(parseInt(storedLives, 10));
-    }
+    loadUserData();
   }, []);
+
+  // Guardar datos cuando cambian sessionScore, lives o isGameOver
+  useEffect(() => {
+    if (userData) {
+      saveUserData();
+    }
+  }, [sessionScore, lives, isGameOver, isLevelComplete]);
+
+  const loadUserData = () => {
+    try {
+      const storedData = localStorage.getItem(STORAGE_KEY);
+      if (storedData) {
+        const data: UserData = JSON.parse(storedData);
+        setUserData(data);
+        
+        // Establecer el score total inicial
+        setScore(data.game.totalScore);
+        setLives(data.game.totalLives);
+        
+        // Actualizar última visita a esta actividad
+        data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
+  const saveUserData = () => {
+    if (!userData) return;
+
+    try {
+      const updatedData: UserData = {
+        ...userData,
+        game: {
+          ...userData.game,
+          totalScore: userData.game.totalScore + sessionScore,
+          totalLives: lives
+        },
+        progress: {
+          ...userData.progress,
+          activityScores: {
+            ...userData.progress.activityScores,
+            [ACTIVITY_ID]: Math.max(
+              userData.progress.activityScores[ACTIVITY_ID] || 0,
+              sessionScore
+            )
+          },
+          activityTimes: {
+            ...userData.progress.activityTimes,
+            [ACTIVITY_ID]: new Date().toISOString()
+          },
+          completedActivities: isLevelComplete && currentLessonData && currentLevel === currentLessonData.lecciones.length - 1
+            ? Array.from(new Set([...userData.progress.completedActivities, ACTIVITY_ID]))
+            : userData.progress.completedActivities
+        }
+      };
+
+      // Actualizar score total para el GameStatusBar
+      setScore(updatedData.game.totalScore);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+      setUserData(updatedData);
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  };
+  
   // Initialize game
   useEffect(() => {
     setIsClient(true);
@@ -85,27 +202,31 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const handlePurchaseLife = () => {
-    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
-        if (currentStoredLives < 3) {
-          setShowPurchaseModal(false);
-          if (isGameOver) {
-          setIsGameOver(false);
-          // Reiniciar el nivel actual en lugar de todo el juego
-          if (currentLessonData) {
-            initializeLevel(currentLevel, currentLessonData.lecciones);
-          }
-        }
+    // El PurchaseModal ya maneja la compra y actualiza UserData
+    // Solo necesitamos recargar los datos y continuar el juego
+    loadUserData();
+    setShowPurchaseModal(false);
+    if (isGameOver) {
+      setIsGameOver(false);
+      if (currentLessonData) {
+        initializeLevel(currentLevel, currentLessonData.lecciones);
+      }
     }
   };
 
   const handleClosePurchaseModal = () => {
-    const currentStoredScore = parseInt(localStorage.getItem(SCORE_STORAGE_KEY) || '0');
-    const currentStoredLives = parseInt(localStorage.getItem(LIVES_STORAGE_KEY) || '3');
-    setScore(currentStoredScore);
-    setLives(currentStoredLives);
-    if (currentStoredLives < 1) {
-      setIsGameOver(true);
+    // Recargar datos por si se hizo una compra
+    loadUserData();
+    
+    // Si después de intentar comprar sigue sin vidas, mantener game over
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    if (storedData) {
+      const data: UserData = JSON.parse(storedData);
+      if (data.game.totalLives < 1) {
+        setIsGameOver(true);
+      }
     }
+    
     setShowPurchaseModal(false);
   };
 
@@ -114,12 +235,14 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       const newLives = prevLives - 1;
       if (newLives <= 0) {
         setIsGameOver(true);
-        setShowPurchaseModal(true);
+        if (userData && userData.game.totalScore >= 200) {
+          setShowPurchaseModal(true);
+        }
         return 0;
       }
       return newLives;
     });
-    setScore(prevScore => Math.max(0, prevScore - INCORRECT_ANSWER_PENALTY));
+    setSessionScore(prevScore => Math.max(0, prevScore - INCORRECT_ANSWER_PENALTY));
   };
 
   const clearDragStates = () => {
@@ -271,7 +394,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     if (allBlanksFilledCorrectly) {
       setFeedbackMessage('¡Correcto! ¡Muy bien!');
       setIsLevelComplete(true);
-      setScore(prevScore => prevScore + CORRECT_ANSWER_POINTS);
+      setSessionScore(prevScore => prevScore + CORRECT_ANSWER_POINTS);
       
       if (currentLessonData && currentLevel < currentLessonData.lecciones.length - 1) {
         setTimeout(handleNextLevel, 2000);
@@ -298,7 +421,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
   const resetGame = () => {
     setCurrentLevel(0);
-    setScore(0);
+    setSessionScore(0);
     setLives(3);
     setIsGameOver(false);
     if (currentLessonData) {
@@ -307,83 +430,120 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   if (!isClient || !currentLessonData) {
-    return <div className="p-6 max-w-2xl mx-auto">Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-1 max-w-4xl mx-auto mt-24">
-      <GameStatusBar 
-        title={currentLessonData.title}
-        score={score}
-        lives={lives}
-        level={currentLevel + 1}
-      />
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-5xl mx-auto">
 
-      {isGameOver ? (
-        <div className="text-center my-8">
-          <h2 className="text-2xl font-bold mb-4">¡Game Over!</h2>
-          <p className="mb-4">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
-          <button 
-            onClick={() => setShowPurchaseModal(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mr-4"
-          >
-            Comprar Vida Extra
-          </button>
-          <button 
-            onClick={resetGame}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-          >
-            Reiniciar Juego
-          </button>
-        </div>
-      ) : (
-        <>
-          <Feedback 
-            message={feedbackMessage}
-            isComplete={isLevelComplete}
-            show={showFeedback}
-          />
+          <div className="p-6">
+            <GameStatusBar 
+              title={currentLessonData.title}
+              score={score}
+              lives={lives}
+              level={currentLevel + 1}
+            />
+          </div>
 
-          <TextDisplay 
-            textParts={textParts}
-            blanks={blanks}
-            onDragStart={handleDragStart}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDrop={handleDrop}
-            handleDragOver={handleDragOver}
-            isDragging={isDragging}
-          />
 
-          <WordPool 
-            words={words}
-            onDragStart={handleDragStart}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onDrop={handleDropToPool}
-            handleDragOver={handleDragOver}
-            isDragging={isDragging}
-          />
+        {isGameOver ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-medium text-gray-800 mb-3">¡Game Over!</h2>
+              <p className="text-gray-600 mb-8">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setShowPurchaseModal(true)}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                >
+                  Comprar Vida Extra
+                </button>
+                <button 
+                  onClick={resetGame}
+                  className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Reiniciar Juego
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Feedback */}
+            {showFeedback && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <Feedback 
+                  message={feedbackMessage}
+                  isComplete={isLevelComplete}
+                  show={showFeedback}
+                />
+              </div>
+            )}
 
-          <GameControls 
-            onReset={resetGame}
-            onCheck={checkAnswers}
-            isComplete={isLevelComplete}
-            isLastLevel={currentLevel === currentLessonData.lecciones.length - 1}
-            onNext={handleNextLevel}
-            onBuyLife={() => setShowPurchaseModal(true)}
-          />
-        </>
-      )}
+            {/* Text Display - Tarjeta principal */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <TextDisplay 
+                textParts={textParts}
+                blanks={blanks}
+                onDragStart={handleDragStart}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onDrop={handleDrop}
+                handleDragOver={handleDragOver}
+                isDragging={isDragging}
+              />
+            </div>
 
-      {/* Modal de compra de vidas */}
-      <PurchaseModal
+            {/* Word Pool */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">Palabras disponibles</h3>
+              <WordPool 
+                words={words}
+                onDragStart={handleDragStart}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onDrop={handleDropToPool}
+                handleDragOver={handleDragOver}
+                isDragging={isDragging}
+              />
+            </div>
+
+            {/* Game Controls */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <GameControls 
+                onReset={resetGame}
+                onCheck={checkAnswers}
+                isComplete={isLevelComplete}
+                isLastLevel={currentLevel === currentLessonData.lecciones.length - 1}
+                onNext={handleNextLevel}
+                onBuyLife={() => setShowPurchaseModal(true)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Modal de compra de vidas */}
+        <PurchaseModal
           isOpen={showPurchaseModal}
           onClose={handleClosePurchaseModal}
           onPurchase={handlePurchaseLife}
         />
+      </div>
 
       <style jsx global>{`
         .touching {
@@ -392,8 +552,8 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
           transition: all 0.2s ease;
         }
         .drag-over {
-          background-color: rgba(0, 0, 255, 0.1);
-          border-radius: 4px;
+          background-color: rgba(59, 130, 246, 0.1);
+          border-radius: 8px;
           transition: background-color 0.2s ease;
         }
         [data-blank-id], [data-word-pool] {

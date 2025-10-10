@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { IconSettings } from '@tabler/icons-react';
+import { IconSettings, IconClock, IconX } from '@tabler/icons-react';
 import type { GameSettings } from '../types/settings';
 import { getSettings, saveSettings } from '@/utils/trivia';
 
@@ -23,10 +23,11 @@ export default function TriviaSettings(): JSX.Element {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="p-4 flex items-center justify-center text-4xl text-white 
-                 transition-transform duration-300 hover:scale-110"
+        className="p-3 flex items-center justify-center text-gray-600 hover:text-blue-600
+                 transition-colors duration-200"
+        aria-label="Configuración"
       >
-        <IconSettings />
+        <IconSettings size={24} />
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>
@@ -44,7 +45,7 @@ export default function TriviaSettings(): JSX.Element {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -59,63 +60,74 @@ export default function TriviaSettings(): JSX.Element {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden 
-                                      bg-white border-4 border-black rounded-lg 
-                                      shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
-                                      p-6 transition-all">
-                  {/* Title with comic style */}
-                  <Dialog.Title 
-                    className="text-3xl font-black text-[#4ADE80] mb-6"
-                    style={{ textShadow: '2px 2px 0 #000' }}
-                  >
-                    ¡Configuración!
-                  </Dialog.Title>
-
-                  {/* Time selection */}
-                  <div className="mb-8">
-                    <label className="flex flex-col gap-4">
-                      <span className="text-xl font-bold text-[#FF6B6B]">
-                        Tiempo de juego
-                      </span>
-                      <select
-                        value={selectedTime}
-                        onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}
-                        className="w-full p-3 text-lg font-bold bg-white border-4 border-black rounded-lg
-                                 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-                                 focus:outline-none focus:ring-2 focus:ring-[#4ADE80]
-                                 transform transition-transform hover:scale-105"
+                                      bg-white rounded-lg shadow-xl
+                                      transition-all">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                    <div className="flex items-center justify-between">
+                      <Dialog.Title className="text-xl font-semibold text-white flex items-center gap-2">
+                        <IconSettings size={24} />
+                        Configuración
+                      </Dialog.Title>
+                      <button
+                        type="button"
+                        onClick={() => setIsOpen(false)}
+                        className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                        aria-label="Cerrar"
                       >
-                        {[15, 30, 45, 60, 90, 120].map((time) => (
-                          <option value={time} key={time}>
-                            {time} segundos
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                        <IconX size={20} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    {/* Time selection */}
+                    <div className="mb-6">
+                      <label className="flex flex-col gap-3">
+                        <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <IconClock size={18} className="text-blue-600" />
+                          Tiempo por pregunta
+                        </span>
+                        <select
+                          value={selectedTime}
+                          onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}
+                          className="w-full px-4 py-3 text-base bg-white border border-gray-300 rounded-lg
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                   transition-all cursor-pointer hover:border-gray-400"
+                        >
+                          {[15, 30, 45, 60, 90, 120].map((time) => (
+                            <option value={time} key={time}>
+                              {time} segundos
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <p className="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        💡 Este tiempo se aplicará a todas las preguntas de la trivia
+                      </p>
+                    </div>
+
+                    {/* Info box */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-700">
+                        ✓ Los cambios se guardan automáticamente
+                      </p>
+                    </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between mt-8">
-                    <p className="text-sm font-bold text-gray-600">
-                      ¡Los cambios se aplican automáticamente! 🚀
-                    </p>
-                    
+                  <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="bg-[#4ADE80] px-6 py-2 rounded-full font-black text-white
-                               border-4 border-black transform hover:scale-105 hover:-rotate-2 
-                               transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium
+                               hover:bg-blue-700 transition-colors focus:outline-none 
+                               focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                      ¡LISTO!
+                      Cerrar
                     </button>
-                  </div>
-
-                  {/* Decorative elements */}
-                  <div className="absolute -top-2 -right-2 w-16 h-16">
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                      <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" 
-                            fill="#FFD93D" stroke="black" strokeWidth="3" />
-                    </svg>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

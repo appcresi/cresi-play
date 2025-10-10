@@ -70,9 +70,9 @@ export const metadata: Metadata = {
 export default function RootLayout ({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang='es' className={monaSans.className}>
-      <body className='bg-[#FFE5E5]'>
+      <body className='bg-[#f3f4f6]'>
         <Header />
-        <main className="pt-16"> {/* Añadimos padding-top para dejar espacio para el header */}
+        <main> {/* Añadimos padding-top para dejar espacio para el header */}
           {children}
         </main>
         <Analytics />

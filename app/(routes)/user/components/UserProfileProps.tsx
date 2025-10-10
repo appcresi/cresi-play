@@ -8,16 +8,48 @@ import {
     IconHeartPlus,
     IconMoodHappy,
     IconEdit,
-    IconTrash
+    IconTrash,
+    IconTarget,
+    IconCalendar,
+    IconUser
 } from "@tabler/icons-react";
 import PurchaseModal from '@/components/PurchaseModal';
 import Swal from 'sweetalert2';
-import StreakTracker from '@/components/StreakTracker';
 
-interface CrESICharacter {
-  id: number;
-  name: string;
-  image: string;
+
+// Estructura unificada de datos del usuario
+interface UserData {
+  profile: {
+    character: {
+      id: number;
+      name: string;
+      image: string;
+    };
+    username: string;
+    createdAt: string;
+    lastLogin: string;
+  };
+  game: {
+    totalScore: number;
+    totalLives: number;
+    streak: number;
+  };
+  progress: {
+    completedActivities: string[];
+    activityScores: { [key: string]: number };
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
+  };
+  mood: {
+    history: MoodRecord[];
+    lastEntry: MoodRecord | null;
+  };
+  achievements: Achievement[];
+  settings: {
+    notifications: boolean;
+    theme: 'light' | 'dark';
+    language: 'es' | 'en';
+  };
 }
 
 interface MoodRecord {
@@ -27,9 +59,168 @@ interface MoodRecord {
   intensity: number;
 }
 
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  date?: string;
+}
+
+// Clase para manejar los datos del usuario
+class UserDataManager {
+  private static readonly STORAGE_KEY = 'cresi_user_data';
+
+  // Datos por defecto
+  public static getDefaultUserData(): UserData {
+    return {
+      profile: {
+        character: { id: 0, name: '', image: '' },
+        username: 'Estudiante',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      },
+      game: {
+        totalScore: 0,
+        totalLives: 3,
+        streak: 0
+      },
+      progress: {
+        completedActivities: [],
+        activityScores: {},
+        activityTimes: {},
+        lastVisits: {}
+      },
+      mood: {
+        history: [],
+        lastEntry: null
+      },
+      achievements: [],
+      settings: {
+        notifications: true,
+        theme: 'light',
+        language: 'es'
+      }
+    };
+  }
+
+  // Cargar datos del usuario
+  static loadUserData(): UserData {
+    try {
+      const storedData = localStorage.getItem(this.STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData) as UserData;
+        // Actualizar lastLogin
+        parsedData.profile.lastLogin = new Date().toISOString();
+        this.saveUserData(parsedData);
+        return parsedData;
+      }
+      return this.getDefaultUserData();
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      return this.getDefaultUserData();
+    }
+  }
+
+  // Guardar datos del usuario
+  static saveUserData(userData: UserData): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  }
+
+  // Actualizar datos de juego
+  static updateGameData(updates: Partial<UserData['game']>): UserData {
+    const userData = this.loadUserData();
+    userData.game = { ...userData.game, ...updates };
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Resetear todos los datos manteniendo perfil
+  static resetGameData(): UserData {
+    const userData = this.loadUserData();
+    userData.game = {
+      totalScore: 0,
+      totalLives: 3,
+      streak: 0
+    };
+    userData.progress = {
+      completedActivities: [],
+      activityScores: {},
+      activityTimes: {},
+      lastVisits: {}
+    };
+    userData.mood = {
+      history: [],
+      lastEntry: null
+    };
+    userData.achievements = [];
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Comprar vida
+  static purchaseLife(cost: number): { success: boolean; userData?: UserData; error?: string } {
+    const userData = this.loadUserData();
+    
+    if (userData.game.totalLives >= 3) {
+      return { success: false, error: 'Ya tienes el máximo de vidas' };
+    }
+    
+    if (userData.game.totalScore < cost) {
+      return { success: false, error: 'No tienes suficientes puntos' };
+    }
+    
+    userData.game.totalLives += 1;
+    userData.game.totalScore -= cost;
+    this.saveUserData(userData);
+    
+    return { success: true, userData };
+  }
+
+  // Obtener estadísticas resumidas
+  static getStats(): {
+    daysActive: number;
+    totalActivities: number;
+    averageScore: number;
+    lastActivity: string | null;
+  } {
+    const userData = this.loadUserData();
+    
+    const createdDate = new Date(userData.profile.createdAt);
+    const now = new Date();
+    const daysActive = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    const totalActivities = userData.progress.completedActivities.length;
+    const totalScore = userData.game.totalScore;
+    const averageScore = totalActivities > 0 ? Math.round(totalScore / totalActivities) : 0;
+    
+    // Buscar la actividad más reciente
+    const lastActivityTime = Math.max(
+      ...Object.values(userData.progress.activityTimes).map(time => new Date(time).getTime()),
+      0
+    );
+    
+    const lastActivity = lastActivityTime > 0 
+      ? Object.entries(userData.progress.activityTimes)
+          .find(([, time]) => new Date(time).getTime() === lastActivityTime)?.[0] || null
+      : null;
+    
+    return {
+      daysActive,
+      totalActivities,
+      averageScore,
+      lastActivity
+    };
+  }
+}
+
 interface UserProfileProps {
   initialData?: {
-    character?: CrESICharacter;
+    character?: any;
     username?: string;
     totalGameLives?: number;
     totalGameScore?: number;
@@ -38,55 +229,33 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   const router = useRouter();
-  const [userData, setUserData] = useState({
-    character: { id: 0, name: '', image: '' },
-    username: '',
-    totalGameLives: 0,
-    totalGameScore: 0
-  });
-  const [lastMood, setLastMood] = useState<MoodRecord | null>(null);
+  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [stats, setStats] = useState({
+    daysActive: 0,
+    totalActivities: 0,
+    averageScore: 0,
+    lastActivity: null as string | null
+  });
 
   useEffect(() => {
     loadUserData();
   }, [initialData]);
 
   const loadUserData = () => {
-    const moodHistory = localStorage.getItem('moodHistory');
-    if (moodHistory) {
-      const moodData = JSON.parse(moodHistory) as MoodRecord[];
-      if (moodData.length > 0) {
-        setLastMood(moodData[moodData.length - 1]);
-      }
-    }
-
-    if (initialData) {
-      setUserData({
-        character: initialData.character || { id: 0, name: '', image: '' },
-        username: initialData.username || '',
-        totalGameLives: initialData.totalGameLives || 3,
-        totalGameScore: initialData.totalGameScore || 0
-      });
-      return;
-    }
-
-    const storedCharacter = localStorage.getItem('cresiCharacter');
-    const storedUsername = localStorage.getItem('cresiUsername');
-    const storedLives = localStorage.getItem('totalGameLives');
-    const storedScore = localStorage.getItem('totalGameScore');
-
-    setUserData({
-      character: storedCharacter ? JSON.parse(storedCharacter) : { id: 0, name: '', image: '' },
-      username: storedUsername || '',
-      totalGameLives: storedLives ? parseInt(storedLives, 10) : 3,
-      totalGameScore: storedScore ? parseInt(storedScore, 10) : 0
-    });
+    // Cargar datos unificados
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    
+    // Cargar estadísticas
+    const userStats = UserDataManager.getStats();
+    setStats(userStats);
   };
 
   const handleDeleteHistory = async () => {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
-      text: "¡No podrás revertir esta acción! Se borrará todo tu historial.",
+      text: "¡No podrás revertir esta acción! Se borrará todo tu progreso de juegos y actividades, pero se mantendrá tu perfil.",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -100,21 +269,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
     });
 
     if (result.isConfirmed) {
-      localStorage.removeItem('moodHistory');
-      localStorage.removeItem('totalGameScore');
-      localStorage.removeItem('totalGameLives');
-      localStorage.removeItem('achievements'); 
-      localStorage.removeItem('cresiStreak');
-      setLastMood(null);
-      setUserData(prev => ({
-        ...prev,
-        totalGameLives: 3,
-        totalGameScore: 0
-      }));
+      const resetData = UserDataManager.resetGameData();
+      setUserData(resetData);
+      
+      // Actualizar stats
+      const userStats = UserDataManager.getStats();
+      setStats(userStats);
 
       await Swal.fire({
-        title: '¡Borrado!',
-        text: 'Tu historial ha sido eliminado.',
+        title: '¡Progreso reiniciado!',
+        text: 'Tu progreso de juegos ha sido eliminado. Tu perfil se mantiene intacto.',
         icon: 'success',
         customClass: {
           popup: 'comic-popup'
@@ -124,175 +288,307 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   };
 
   const handlePurchaseLife = () => {
-    const storedLives = localStorage.getItem('totalGameLives');
-    const storedScore = localStorage.getItem('totalGameScore');
-
-    setUserData(prevData => ({
-      ...prevData,
-      totalGameLives: storedLives ? parseInt(storedLives, 10) : prevData.totalGameLives,
-      totalGameScore: storedScore ? parseInt(storedScore, 10) : prevData.totalGameScore
-    }));
+    const result = UserDataManager.purchaseLife(200);
+    
+    if (result.success && result.userData) {
+      setUserData(result.userData);
+      Swal.fire({
+        title: '¡Vida comprada!',
+        text: 'Has comprado una vida por 200 puntos.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'comic-popup'
+        }
+      });
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: result.error || 'No se pudo comprar la vida',
+        icon: 'error',
+        customClass: {
+          popup: 'comic-popup'
+        }
+      });
+    }
+    setIsPurchaseModalOpen(false);
   };
 
   const handleUpdateMood = () => {
     router.push('/moodtracker');
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysUsingApp = () => {
+    const created = new Date(userData.profile.createdAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - created.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays === 0 ? 1 : diffDays;
+  };
+
   return (
-    <div className="bg-white p-4 md:p-8 rounded-3xl comic-container">
-      <StreakTracker />
-      <div className="flex flex-col md:flex-row items-center md:space-x-6 mb-8">
-        {userData.character.image && (
-          <div className="w-24 h-24 md:w-32 md:h-32 relative comic-image-frame">
-            <Image
-              src={`/${userData.character.image}`}
-              alt={userData.character.name}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-xl"
-            />
-          </div>
-        )}
-        <div className="text-center md:text-left mt-4 md:mt-0">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-800">
-            {userData.username || 'Player'}
-          </h2>
-          <p className="text-lg md:text-xl text-gray-600">
-            {userData.character.name || 'No Character Selected'}
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Banner */}
+      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 h-48 overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0">
+          <svg className="w-full h-full opacity-20" viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100" height="20" fill="url(#grid)" />
+          </svg>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <div className="comic-card bg-yellow-50">
-          <IconHeart className="text-red-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">Vidas</p>
-            <p className="text-xl md:text-2xl">{userData.totalGameLives}</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 -mt-24 relative z-10">
+        {/* Profile Card */}
+        <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+          <div className="p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              {/* Avatar */}
+              <div className="flex-shrink-0">
+                {userData.profile.character.image ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
+                    <Image
+                      src={`/${userData.profile.character.image}`}
+                      alt={userData.profile.character.name}
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gray-200 border-4 border-white shadow-lg flex items-center justify-center">
+                    <IconUser size={40} className="text-gray-400" />
+                  </div>
+                )}
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-grow">
+                <h1 className="text-3xl font-normal text-gray-900 mb-1">
+                  {userData.profile.username || 'Estudiante'}
+                </h1>
+                <p className="text-lg text-gray-600 mb-3">
+                  {userData.profile.character.name || 'Sin personaje seleccionado'}
+                </p>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <IconCalendar size={16} />
+                    Miembro desde {formatDate(userData.profile.createdAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <IconTarget size={16} />
+                    {getDaysUsingApp()} días activo
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={handleUpdateMood}
+                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-gray-300 hover:border-blue-300"
+                >
+                  Actualizar estado
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="comic-card bg-blue-50">
-          <IconTrophy className="text-yellow-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">Puntos</p>
-            <p className="text-xl md:text-2xl">{userData.totalGameScore}</p>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {/* Game Stats Card */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <IconTrophy size={20} className="text-amber-500" />
+              Estadísticas de juego
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+                    <IconHeart size={20} className="text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Vidas</p>
+                    <p className="text-xs text-gray-500">Disponibles</p>
+                  </div>
+                </div>
+                <span className="text-2xl font-semibold text-gray-900">{userData.game.totalLives}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center">
+                    <IconTrophy size={20} className="text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Puntos</p>
+                    <p className="text-xs text-gray-500">Total acumulado</p>
+                  </div>
+                </div>
+                <span className="text-2xl font-semibold text-gray-900">{userData.game.totalScore}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                    <IconTarget size={20} className="text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Racha</p>
+                    <p className="text-xs text-gray-500">Días consecutivos</p>
+                  </div>
+                </div>
+                <span className="text-2xl font-semibold text-gray-900">{userData.game.streak}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Card */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <IconEdit size={20} className="text-green-500" />
+              Progreso académico
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium text-gray-700">Actividades completadas</span>
+                  <span className="text-sm text-gray-500">{userData.progress.completedActivities.length}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((userData.progress.completedActivities.length / 10) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {Math.min(Math.round((userData.progress.completedActivities.length / 10) * 100), 100)}% del programa
+                </p>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Promedio por actividad</span>
+                  <span className="text-lg font-semibold text-gray-900">{stats.averageScore}</span>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Logros desbloqueados</span>
+                <span className="text-lg font-semibold text-gray-900">
+                  {userData.achievements.filter(a => a.unlocked).length}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mood & Activity Card */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+              <IconMoodHappy size={20} className="text-purple-500" />
+              Estado y actividad
+            </h3>
+            <div className="space-y-4">
+              <div className="p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <IconMoodHappy size={24} className="text-purple-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Estado actual</p>
+                    <p className="text-lg font-semibold text-purple-700">
+                      {userData.mood.lastEntry?.label || 'Sin registro'}
+                    </p>
+                  </div>
+                </div>
+                {userData.mood.lastEntry && (
+                  <p className="text-xs text-gray-600">
+                    Registrado {new Date(userData.mood.lastEntry.date).toLocaleDateString('es-ES')}
+                  </p>
+                )}
+              </div>
+              
+              {stats.lastActivity && (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-900 mb-1">Última actividad</p>
+                  <p className="text-sm text-gray-600">{stats.lastActivity}</p>
+                </div>
+              )}
+              
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  Registros de humor: {userData.mood.history.length}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="comic-card bg-green-50 relative group">
-          <IconMoodHappy className="text-blue-500" size={32} />
-          <div>
-            <p className="font-bold text-gray-700">¿Cómo te sientes?</p>
-            <p className="text-xl md:text-2xl">{lastMood?.label || 'Sin registro'}</p>
+        {/* Actions Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Acciones rápidas</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => setIsPurchaseModalOpen(true)}
+              disabled={userData.game.totalLives >= 3 || userData.game.totalScore < 200}
+              className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                userData.game.totalLives >= 3 || userData.game.totalScore < 200
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md'
+              }`}
+            >
+              <IconHeartPlus size={18} />
+              Comprar vida (200 puntos)
+            </button>
+
+            <button
+              onClick={handleDeleteHistory}
+              className="flex items-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-sm transition-all shadow-sm hover:shadow-md"
+            >
+              <IconTrash size={18} />
+              Reiniciar progreso
+            </button>
           </div>
-          <button
-            onClick={handleUpdateMood}
-            className="absolute right-2 md:right-3 top-2 md:top-3 p-2 rounded-full hover:bg-white/50 transition-colors"
-          >
-            <IconEdit size={20} />
-          </button>
+          
+          <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
+                  <span className="text-amber-700 text-sm font-bold">!</span>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-amber-800 mb-1">Información importante</h4>
+                <p className="text-sm text-amber-700">
+                  Al reiniciar el progreso se mantendrá tu perfil, pero se eliminarán todos los datos de juegos, actividades, estados de ánimo y logros.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <button
-          onClick={() => setIsPurchaseModalOpen(true)}
-          disabled={userData.totalGameLives >= 3 || userData.totalGameScore < 200}
-          className={`comic-button bg-gradient-to-r from-green-400 to-green-500 ${
-            userData.totalGameLives >= 3 || userData.totalGameScore < 200
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:from-green-500 hover:to-green-600'
-          }`}
-        >
-          <IconHeartPlus size={24} />
-          Comprar Vida
-        </button>
-
-        <button
-          onClick={handleDeleteHistory}
-          className="comic-button bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
-        >
-          <IconTrash size={24} />
-          Borrar Historial
-        </button>
-  </div>
-
-  <PurchaseModal
-    isOpen={isPurchaseModalOpen}
-    onClose={() => setIsPurchaseModalOpen(false)}
-    onPurchase={handlePurchaseLife}
-  />
-
-  <style jsx>{`
-    .comic-container {
-      background-color: white;
-      box-shadow: 0 0 0 4px #000, 10px 10px 0 0 #000;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .comic-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at 20px 20px, #000 2px, transparent 2px)
-        -10px -10px / 40px 40px repeat;
-      opacity: 0.03;
-      pointer-events: none;
-    }
-
-    .comic-image-frame {
-      border: 4px solid #000;
-      box-shadow: 5px 5px 0 #000;
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .comic-card {
-      padding: 1rem;
-      border: 3px solid #000;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      box-shadow: 5px 5px 0 #000;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .comic-card:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 7px 7px 0 #000;
-    }
-
-    .comic-button {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border: 3px solid #000;
-      border-radius: 12px;
-      color: white;
-      font-weight: bold;
-      box-shadow: 4px 4px 0 #000;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .comic-button:hover:not(:disabled) {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 #000;
-    }
-
-    .comic-button:active:not(:disabled) {
-      transform: translate(0, 0);
-      box-shadow: 0 0 0 #000;
-    }
-  `}</style>
-</div>
-
+      <PurchaseModal
+        isOpen={isPurchaseModalOpen}
+        onClose={() => setIsPurchaseModalOpen(false)}
+        onPurchase={handlePurchaseLife}
+      />
+    </div>
   );
 };
 

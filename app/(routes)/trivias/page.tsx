@@ -1,5 +1,4 @@
 import React from 'react';
-import { IconExternalLink } from '@tabler/icons-react';
 import type { CustomResponse } from '@/types/response';
 import type { Trivia, TriviaIndexFields } from '@/types/trivia';
 import { API_URL } from '@/utils/helpers';
@@ -7,8 +6,6 @@ import TriviaSettings from './components/TriviaSettings';
 import TriviaGrid from './components/TriviaGrid';
 import TriviaSearch from './components/TriviaSearch';
 import type { Metadata } from "next";
-import ComicBurst from '@/components/ComicBurst';
-
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
@@ -55,8 +52,6 @@ export const metadata: Metadata = {
   }
 };
 
-
-
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {
   const { id, name, level } = trivia;
   return { id, name, level };
@@ -90,29 +85,23 @@ export default async function Trivias(): Promise<JSX.Element> {
   const indexesByLevel = organizeIndexesByLevel(indexes);
 
   return (
-    <main className="min-h-screen bg-[#FFE5E5] font-bold relative overflow-hidden">
-      <div className="mx-auto px-4 max-w-5xl relative">
-        {/* Search section with comic style */}
-        <div className="my-8 transform -rotate-1">
-          <div className="bg-white border-4 border-black rounded-lg p-6 
-                         shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+    <main className="min-h-screen bg-gray-50">
+      <div className="mx-auto px-4 max-w-6xl py-8">
+        {/* Search section */}
+        <div className="mb-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
             <TriviaSearch indexes={indexes} />
           </div>
         </div>
 
         {/* Grid section */}
-        <div className="relative">
-          <ComicBurst text="¡WOW!" className="-top-4 -right-4 z-10" />
-          <div className="bg-white/80 backdrop-blur border-4 border-black rounded-lg p-6 
-                         shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <TriviaGrid indexesByLevel={indexesByLevel} />
-          </div>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-20">
+          <TriviaGrid indexesByLevel={indexesByLevel} />
         </div>
 
-        {/* Settings button */}
-        <div className="fixed bottom-6 right-6 transform hover:scale-110 transition-transform">
-          <div className="bg-[#4ADE80] rounded-full border-4 border-black 
-                         shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        {/* Settings button - flotante */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl">
             <TriviaSettings />
           </div>
         </div>

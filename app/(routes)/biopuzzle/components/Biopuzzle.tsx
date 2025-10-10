@@ -1,11 +1,147 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Move, ArrowLeft, ArrowRight, Check, RefreshCw } from 'lucide-react';
+import { Move, ArrowLeft, ArrowRight, Check, RefreshCw, Trophy, Heart, Target } from 'lucide-react';
 import { bodySystems, type BodyPart, type BodySystem } from '../data/bodySystems';
+import GameStatusBar from '@/components/GameStatusBar';
+
+// Estructura unificada de datos del usuario
+interface UserData {
+  profile: {
+    character: {
+      id: number;
+      name: string;
+      image: string;
+    };
+    username: string;
+    createdAt: string;
+    lastLogin: string;
+  };
+  game: {
+    totalScore: number;
+    totalLives: number;
+    streak: number;
+  };
+  progress: {
+    completedActivities: string[];
+    activityScores: { [key: string]: number };
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
+  };
+  mood: {
+    history: any[];
+    lastEntry: any | null;
+  };
+  achievements: any[];
+  settings: {
+    notifications: boolean;
+    theme: 'light' | 'dark';
+    language: 'es' | 'en';
+  };
+}
 
 interface DraggedItem {
   id: string;
+}
+
+// Clase para manejar los datos del usuario
+class UserDataManager {
+  private static readonly STORAGE_KEY = 'cresi_user_data';
+
+  // Datos por defecto
+  public static getDefaultUserData(): UserData {
+    return {
+      profile: {
+        character: { id: 0, name: '', image: '' },
+        username: 'Estudiante',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      },
+      game: {
+        totalScore: 0,
+        totalLives: 3,
+        streak: 0
+      },
+      progress: {
+        completedActivities: [],
+        activityScores: {},
+        activityTimes: {},
+        lastVisits: {}
+      },
+      mood: {
+        history: [],
+        lastEntry: null
+      },
+      achievements: [],
+      settings: {
+        notifications: true,
+        theme: 'light',
+        language: 'es'
+      }
+    };
+  }
+
+  // Cargar datos del usuario
+  static loadUserData(): UserData {
+    try {
+      const storedData = localStorage.getItem(this.STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData) as UserData;
+        return parsedData;
+      }
+      return this.getDefaultUserData();
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      return this.getDefaultUserData();
+    }
+  }
+
+  // Guardar datos del usuario
+  static saveUserData(userData: UserData): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  }
+
+  // Actualizar puntuación del juego
+  static updateGameScore(newScore: number): UserData {
+    const userData = this.loadUserData();
+    userData.game.totalScore = newScore;
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Completar sistema anatómico
+  static completeSystem(systemName: string, score: number): UserData {
+    const userData = this.loadUserData();
+    const activityKey = `BioPuzzle-${systemName}`;
+    
+    if (!userData.progress.completedActivities.includes(activityKey)) {
+      userData.progress.completedActivities.push(activityKey);
+    }
+    
+    userData.progress.activityScores[activityKey] = score;
+    userData.progress.activityTimes[activityKey] = new Date().toISOString();
+    userData.game.totalScore += score * 50; // 50 puntos por cada parte correcta
+    
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  // Registrar visita
+  static visitActivity(activityTitle: string): UserData {
+    const userData = this.loadUserData();
+    
+    if (!userData.progress.lastVisits) {
+      userData.progress.lastVisits = {};
+    }
+    
+    userData.progress.lastVisits[activityTitle] = new Date().toISOString();
+    this.saveUserData(userData);
+    return userData;
+  }
 }
 
 export default function AnatomiaApp() {
@@ -16,6 +152,9 @@ export default function AnatomiaApp() {
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [sessionScore, setSessionScore] = useState(0);
+
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (node) {
       const resizeObserver = new ResizeObserver(entries => {
@@ -32,6 +171,13 @@ export default function AnatomiaApp() {
   }, []);
 
   const currentSystem = useCallback(() => bodySystems[currentSystemIndex], [currentSystemIndex]);
+
+  useEffect(() => {
+    // Cargar datos del usuario y registrar visita
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    UserDataManager.visitActivity('BioPuzzle');
+  }, []);
 
   useEffect(() => {
     const system = currentSystem();
@@ -72,7 +218,6 @@ export default function AnatomiaApp() {
     if (!draggedItem) return;
 
     const droppedItemId = draggedItem.id;
-
     const targetPart = bodyParts.find(part => part.id === targetId);
 
     if (targetPart && droppedItemId === targetId) {
@@ -84,7 +229,13 @@ export default function AnatomiaApp() {
         )
       );
 
-      setScore(prevScore => prevScore + 1);
+      const newScore = score + 1;
+      setScore(newScore);
+      setSessionScore(prev => prev + 50); // 50 puntos por parte correcta
+      
+      // Actualizar puntuación global
+      const updatedData = UserDataManager.updateGameScore(userData.game.totalScore + 50);
+      setUserData(updatedData);
     }
 
     setDraggedItem(null);
@@ -92,14 +243,22 @@ export default function AnatomiaApp() {
   };
 
   const handleRemoveItem = (id: string) => {
-    setBodyParts(prevParts =>
-      prevParts.map(part =>
-        part.id === id
-          ? { ...part, currentPosition: undefined, placed: false }
-          : part
-      )
-    );
-    setScore(prevScore => prevScore - 1);
+    const part = bodyParts.find(p => p.id === id);
+    if (part?.placed) {
+      setBodyParts(prevParts =>
+        prevParts.map(part =>
+          part.id === id
+            ? { ...part, currentPosition: undefined, placed: false }
+            : part
+        )
+      );
+      setScore(prevScore => prevScore - 1);
+      setSessionScore(prev => prev - 50);
+      
+      // Actualizar puntuación global
+      const updatedData = UserDataManager.updateGameScore(Math.max(0, userData.game.totalScore - 50));
+      setUserData(updatedData);
+    }
   };
 
   const resetCurrentGame = () => {
@@ -111,191 +270,253 @@ export default function AnatomiaApp() {
   useEffect(() => {
     if (bodyParts.length > 0 && score === bodyParts.length) {
       setLevelCompleted(true);
+      // Completar sistema
+      UserDataManager.completeSystem(currentSystem().name, score);
     } else {
       setLevelCompleted(false);
     }
-  }, [score, bodyParts.length]);
+  }, [score, bodyParts.length, currentSystem]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-yellow-50">
-      <main className="w-full max-w-6xl mx-auto p-4 flex-grow">
-        <div className="flex flex-col lg:flex-row gap-6 mb-6">
-          {/* Zona de la imagen con recuadros */}
-          <div className="bg-white rounded-lg shadow-lg p-4 lg:w-3/5 flex flex-col border-4 border-black transform -rotate-1">
-            <div
-              className="relative w-full h-80 md:h-[480px] border-4 border-black rounded-lg overflow-hidden flex-grow"
-              style={{ background: '#f0f9ff' }}
-              ref={containerRef}
-            >
-              {/* Imagen del sistema actual - TAMAÑO REDUCIDO */}
-              <img
-                src={currentSystem().imageUrl}
-                alt={currentSystem().name}
-                className="absolute top-0 left-0 w-full h-full object-contain"
-              />
+    <div className="min-h-screen bg-gray-50">
+      <GameStatusBar
+        title="BioPuzzle"
+        score={userData.game.totalScore}
+        lives={userData.game.totalLives}
+        level={currentSystemIndex + 1}
+        activityName="BioPuzzle"
+      />
 
-              {/* Recuadros guía - AHORA SON ZONAS DE DESTINO */}
-              {bodyParts.map(part => (
-                <div
-                  key={`target-${part.id}`}
-                  className={`absolute rounded-md ${
-                    part.placed
-                      ? 'border-4 border-green-500 pointer-events-none'
-                      : activeDropTargetId === part.id
-                        ? 'border-4 border-blue-500 bg-blue-100 bg-opacity-50'
-                        : 'border-4 border-red-400 border-dashed hover:bg-red-100 hover:bg-opacity-30'
-                  }`}
-                  style={{
-                    left: `${(part.correctPosition.x / 800) * 100}%`,
-                    top: `${(part.correctPosition.y / 800) * 100}%`,
-                    /* Ajuste dinámico basado en el tamaño del contenedor */
-                    width: `${(80 / 800) * 100 * (containerSize.width / 800)}%`,
-                    height: `${(35 / 800) * 100 * (containerSize.height / 480)}%`,
-                    transform: 'translate(-50%, -50%)',
-                    minWidth: '60px',
-                    minHeight: '28px',
-                    /* Asegurar que el tamaño no sea cero si el contenedor es muy pequeño */
-                    maxWidth: '15vw',
-                    maxHeight: '7vw',
-                  }}
-                  onDragOver={handleDragOver}
-                  onDragEnter={() => !part.placed && handleDragEnter(part.id)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => !part.placed && handleDrop(e, part.id)}
-                />
-              ))}
+      <div className="pt-20 px-4 pb-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+              <span className="text-3xl">🧬</span>
+            </div>
+            <h1 className="text-3xl font-medium text-gray-900 mb-2">Anatomía Humana</h1>
+            <p className="text-gray-600">Arrastra las partes del cuerpo a su ubicación correcta</p>
+          </div>
 
-              {/* Elementos posicionados */}
-              {bodyParts.map(part => (
-                part.currentPosition && (
-                  <div
-                    key={part.id}
-                    className={`absolute px-2 py-1 rounded-md text-xs md:text-sm font-bold border-2 border-black ${
-                      part.placed
-                        ? 'bg-green-300 text-black transform rotate-2 cursor-pointer hover:brightness-90'
-                        : 'bg-red-300 text-black transform -rotate-2 cursor-pointer hover:brightness-90'
-                    }`}
-                    style={{
-                      left: `${(part.currentPosition.x / 800) * 100}%`,
-                      top: `${(part.currentPosition.y / 800) * 100}%`,
-                      transform: 'translate(-50%, -50%)',
-                      boxShadow: '2px 2px 0 rgba(0,0,0,0.8)',
-                      zIndex: 10,
-                    }}
-                    onClick={() => handleRemoveItem(part.id)}
-                    title="Haz clic para quitar y reposicionar"
-                  >
-                    {part.name}
-                  </div>
-                )
-              ))}
+          {/* System Navigation */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={goToPreviousSystem}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={20} />
+                <span className="hidden sm:inline">Anterior</span>
+              </button>
+
+              <div className="text-center">
+                <h2 className="text-xl font-medium text-gray-900">{currentSystem().name}</h2>
+                <p className="text-sm text-gray-500">Sistema {currentSystemIndex + 1} de {bodySystems.length}</p>
+              </div>
+
+              <button
+                onClick={goToNextSystem}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <span className="hidden sm:inline">Siguiente</span>
+                <ArrowRight size={20} />
+              </button>
             </div>
           </div>
 
-          {/* Panel lateral */}
-          <div className="bg-white rounded-lg shadow-lg p-5 lg:w-2/5 border-4 border-black transform rotate-1">
-            <h2 className="text-3xl font-extrabold text-red-600 text-center uppercase">
-              {currentSystem().name}
-            </h2>
-            {/* Progreso */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-lg md:text-xl font-bold bg-yellow-300 px-2 py-1 rounded-lg border-2 border-black shadow-md transform -rotate-3">
-                  {score} / {bodyParts.length}
-                </span>
-              </div>
-              <div className="w-full bg-gray-300 rounded-full h-4 md:h-6 border-2 border-black">
+          {/* Main Game Area */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Game Board */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div
-                  className="bg-red-500 h-3 md:h-5 rounded-full"
-                  style={{
-                    width: `${(score / bodyParts.length) * 100}%`,
-                    backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.2), rgba(255,255,255,0.2) 10px, transparent 10px, transparent 20px)',
-                  }}
-                />
-              </div>
-            </div>
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-1 md:gap-2">
-                {bodyParts.map(part => (
-                  !part.placed && (
-                    <div
-                      key={part.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, part.id)}
-                      className="bg-blue-200 px-2 py-1 rounded cursor-move flex items-center gap-1 hover:bg-blue-300 transition-transform hover:scale-105 border-2 border-black shadow-md text-xs md:text-sm"
-                    >
-                      <Move size={16} className="text-blue-800" />
-                      <span className="text-blue-900 font-bold">{part.name}</span>
-                    </div>
-                  )
-                ))}
+                  className="relative w-full h-96 lg:h-[500px] bg-blue-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden"
+                  ref={containerRef}
+                >
+                  {/* Imagen del sistema */}
+                  <img
+                    src={currentSystem().imageUrl}
+                    alt={currentSystem().name}
+                    className="absolute inset-0 w-full h-full object-contain opacity-80"
+                  />
 
-                {bodyParts.every(part => part.placed) && (
-                  <p className="text-green-600 font-bold flex items-center gap-1 text-sm md:text-lg">
-                    <Check size={24} />
-                    ¡GENIAL! ¡Todas ubicadas!
-                  </p>
-                )}
+                  {/* Zonas de destino */}
+                  {bodyParts.map(part => (
+                    <div
+                      key={`target-${part.id}`}
+                      className={`absolute rounded-lg transition-all duration-200 ${
+                        part.placed
+                          ? 'border-2 border-green-400 bg-green-50 pointer-events-none'
+                          : activeDropTargetId === part.id
+                            ? 'border-2 border-blue-400 bg-blue-50'
+                            : 'border-2 border-gray-300 border-dashed hover:border-blue-300 hover:bg-blue-25'
+                      }`}
+                      style={{
+                        left: `${(part.correctPosition.x / 800) * 100}%`,
+                        top: `${(part.correctPosition.y / 800) * 100}%`,
+                        width: `${Math.max(60, (80 / 800) * containerSize.width)}px`,
+                        height: `${Math.max(30, (35 / 800) * containerSize.height)}px`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                      onDragOver={handleDragOver}
+                      onDragEnter={() => !part.placed && handleDragEnter(part.id)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => !part.placed && handleDrop(e, part.id)}
+                    />
+                  ))}
+
+                  {/* Elementos colocados */}
+                  {bodyParts.map(part => (
+                    part.currentPosition && (
+                      <div
+                        key={part.id}
+                        className={`absolute px-3 py-1 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 ${
+                          part.placed
+                            ? 'bg-green-500 text-white border border-green-600'
+                            : 'bg-red-500 text-white border border-red-600'
+                        }`}
+                        style={{
+                          left: `${(part.currentPosition.x / 800) * 100}%`,
+                          top: `${(part.currentPosition.y / 800) * 100}%`,
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 10,
+                        }}
+                        onClick={() => handleRemoveItem(part.id)}
+                        title="Clic para quitar"
+                      >
+                        {part.name}
+                      </div>
+                    )
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={resetCurrentGame}
-                className="flex-1 flex items-center justify-center gap-1 bg-orange-400 hover:bg-orange-500 text-black py-2 px-2 rounded-lg transition-transform hover:scale-105 border-2 md:border-3 border-black font-bold shadow-md text-xs md:text-sm"
-              >
-                <RefreshCw size={18} />
-              </button>
-              <button
-                onClick={goToPreviousSystem}
-                className="flex-1 flex items-center justify-center gap-1 bg-blue-400 hover:bg-blue-500 text-black py-2 px-2 rounded-lg transition-transform hover:scale-105 border-2 md:border-3 border-black font-bold shadow-md text-xs md:text-sm"
-              >
-                <ArrowLeft size={18} />
-              </button>
-              <button
-                onClick={goToNextSystem}
-                className="flex-1 flex items-center justify-center gap-1 bg-green-400 hover:bg-green-500 text-black py-2 px-2 rounded-lg transition-transform hover:scale-105 border-2 md:border-3 border-black font-bold shadow-md text-xs md:text-sm"
-              >
-                <ArrowRight size={18} />
-              </button>
+
+            {/* Side Panel */}
+            <div className="space-y-6">
+              {/* Progress Card */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Progreso</h3>
+                
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">Completado</span>
+                  <span className="text-sm font-medium text-gray-900">{score} / {bodyParts.length}</span>
+                </div>
+                
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                  <div
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${(score / bodyParts.length) * 100}%` }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="text-lg font-semibold text-green-600">{score}</div>
+                    <div className="text-xs text-green-700">Correctas</div>
+                  </div>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="text-lg font-semibold text-blue-600">{sessionScore}</div>
+                    <div className="text-xs text-blue-700">Puntos</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body Parts Card */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Partes disponibles</h3>
+                
+                <div className="space-y-2">
+                  {bodyParts.map(part => (
+                    !part.placed && (
+                      <div
+                        key={part.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, part.id)}
+                        className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg 
+                                 cursor-move hover:bg-blue-100 transition-colors group"
+                      >
+                        <Move size={16} className="text-blue-600 group-hover:scale-110 transition-transform" />
+                        <span className="text-blue-900 font-medium">{part.name}</span>
+                      </div>
+                    )
+                  ))}
+
+                  {bodyParts.every(part => part.placed) && (
+                    <div className="flex items-center justify-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <Check size={20} className="text-green-600" />
+                      <span className="text-green-700 font-medium">¡Todas las partes ubicadas!</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions Card */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Acciones</h3>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={resetCurrentGame}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 
+                             text-white rounded-lg font-medium transition-colors"
+                  >
+                    <RefreshCw size={18} />
+                    Reiniciar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Completion Modal */}
       {levelCompleted && (
-        <div className="fixed inset-0 bg-blue-900 bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div
-            className="bg-yellow-200 p-6 md:p-8 rounded-xl max-w-md w-full border-4 md:border-6 border-black transform rotate-2"
-            style={{
-              boxShadow: '6px 6px 0 rgba(0,0,0,0.8)',
-              backgroundImage: 'radial-gradient(circle, yellow 10%, #fef08a 70%)',
-            }}
-          >
-            <div className="flex justify-center mb-2 md:mb-4">
-              <div className="bg-red-500 p-4 md:p-6 rounded-full border-2 md:border-4 border-black">
-                <Check size={50} className="text-white" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check size={32} className="text-green-600" />
               </div>
-            </div>
-            <h3 className="text-xl md:text-3xl font-extrabold text-red-600 mb-2 md:mb-4 text-center uppercase">
-              ¡NIVEL COMPLETADO!
-            </h3>
-            <p className="mb-4 md:mb-6 text-center text-black font-bold text-sm md:text-lg">
-              ¡Has identificado correctamente todas las partes del {currentSystem().name}!
-            </p>
-            <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-              <button
-                onClick={goToNextSystem}
-                className="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-transform hover:scale-105 flex items-center justify-center gap-1 font-bold border-2 md:border-3 border-black shadow-md text-xs md:text-sm"
-              >
-                <span className="hidden md:inline">¡SIGUIENTE!</span>
-                <span className="inline md:hidden">Siguiente</span>
-                <ArrowRight size={18} />
-              </button>
-              <button
-                onClick={resetCurrentGame}
-                className="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-transform hover:scale-105 font-bold border-2 md:border-3 border-black shadow-md text-xs md:text-sm"
-              >
-                REPETIR
-              </button>
+              
+              <h3 className="text-2xl font-medium text-gray-900 mb-2">
+                ¡Sistema completado!
+              </h3>
+              
+              <p className="text-gray-600 mb-6">
+                Has identificado correctamente todas las partes del {currentSystem().name}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-lg font-semibold text-green-600">{score}</div>
+                  <div className="text-xs text-green-700">Partes correctas</div>
+                </div>
+                <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-lg font-semibold text-blue-600">{sessionScore}</div>
+                  <div className="text-xs text-blue-700">Puntos ganados</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={goToNextSystem}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 
+                           text-white rounded-lg font-medium transition-colors"
+                >
+                  Siguiente sistema
+                  <ArrowRight size={18} />
+                </button>
+                
+                <button
+                  onClick={resetCurrentGame}
+                  className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg 
+                           font-medium transition-colors"
+                >
+                  Repetir
+                </button>
+              </div>
             </div>
           </div>
         </div>

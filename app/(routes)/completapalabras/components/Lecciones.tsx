@@ -15,28 +15,38 @@ interface Feature {
   title: string;
   description: string;
   icon: JSX.Element;
+  color: string;
+  bgColor: string;
 }
 
 const features: Feature[] = [
   {
     title: "Pubertad",
     description: "En esta lección aprenderás sobre los principales cambios que ocurren al inicio de la pubertad.",
-    icon: <IconAccessible size={32} />,
+    icon: <IconAccessible size={28} />,
+    color: "#1967D2",
+    bgColor: "#E8F0FE"
   },
   {
     title: "Sexualidad",
     description: "¿La sexualidad es solo lo biológico? Aprendé más sobre la diferencia entre sexo, género, orientación sexual.",
-    icon: <IconGenderBigender size={32} />,
+    icon: <IconGenderBigender size={28} />,
+    color: "#0D652D",
+    bgColor: "#E6F4EA"
   },
   {
     title: "Planificación Familiar",
     description: "¿Querés formar una familia? ¿Sabés cómo cuidarte y con qué? Aprendé más sobre métodos anticonceptivos.",
-    icon: <IconBabyCarriage size={32} />,
+    icon: <IconBabyCarriage size={28} />,
+    color: "#D93025",
+    bgColor: "#FCE8E6"
   },
   {
     title: "Métodos anticonceptivos",
     description: "Profundizá tus conocimientos sobre los métodos anticonceptivos y cómo se utilizan.",
-    icon: <IconPill size={32} />,
+    icon: <IconPill size={28} />,
+    color: "#E37400",
+    bgColor: "#FEF7E0"
   },
 ];
 
@@ -58,60 +68,72 @@ export default function Features(): JSX.Element {
   }, []);
 
   return (
-    <section className="lg:my-20">
+    <section className="py-8 px-4 max-w-7xl mx-auto">
       {!selectedFeature ? (
         <>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+          <div className="mb-8">
+            <h2 className="text-3xl font-medium text-gray-800 mb-2">Lecciones</h2>
+            <p className="text-gray-600">Seleccioná una lección para comenzar</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => {
               const correctPercentage = correctPercentages[feature.title];
               const TrophyIcon = correctPercentage && correctPercentage > 65 ? IconTrophyFilled : IconTrophyOff;
 
               return (
-                <li
+                <div
                   key={feature.title}
-                  className="relative group transform transition-transform hover:scale-105"
+                  className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col"
+                  onClick={() => handleDiscover(feature.title)}
                 >
-                  {/* Comic-style panel with "boom" effect border */}
-                  <div className="absolute inset-0 bg-white rounded-lg transform rotate-2 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" />
-                  
-                  {/* Content container */}
-                  <div className="relative p-8 bg-primary-light rounded-lg border-4 border-black transform -rotate-1 hover:rotate-0 transition-transform">
-                    {/* Header with icon and title */}
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-white rounded-full border-2 border-black">
+                  {/* Header colorido */}
+                  <div 
+                    className="h-24 relative"
+                    style={{ backgroundColor: feature.bgColor }}
+                  >
+                    <div 
+                      className="absolute bottom-4 left-4 w-14 h-14 rounded-full flex items-center justify-center shadow-md bg-white"
+                    >
+                      <div style={{ color: feature.color }}>
                         {feature.icon}
                       </div>
-                      <h3 className="text-2xl font-bold font-comic">{feature.title}</h3>
                     </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="text-xl font-medium text-gray-800 mb-2">
+                      {feature.title}
+                    </h3>
                     
-                    {/* Description in speech bubble style */}
-                    <div className="relative bg-white p-4 rounded-lg border-2 border-black mb-6">
-                      <div className="absolute w-4 h-4 bg-white border-l-2 border-b-2 border-black transform rotate-45 -top-2 left-8" />
-                      <p className="text-lg">{feature.description}</p>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-4 flex-1">
+                      {feature.description}
+                    </p>
 
                     {/* Trophy and percentage */}
                     {correctPercentage !== null && (
-                      <div className="flex items-center gap-2 mb-4">
-                        <TrophyIcon size={24} className="text-yellow-500" />
-                        <span className="text-sm font-bold">{correctPercentage}%</span>
+                      <div className="flex items-center gap-2 py-2 border-t border-gray-100">
+                        <TrophyIcon 
+                          size={20} 
+                          className={correctPercentage > 65 ? "text-yellow-500" : "text-gray-300"}
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          {correctPercentage}% completado
+                        </span>
                       </div>
                     )}
-
-                    {/* Action button */}
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleDiscover(feature.title)}
-                        className="px-6 py-3 bg-black text-white font-black rounded-full border-2 border-black transform transition-all duration-300 hover:scale-105 hover:-rotate-3 shadow-[4px_4px_0px_0px_#FF6B6B]"
-                      >
-                        ¡DESCUBRIR!
-                      </button>
-                    </div>
                   </div>
-                </li>
+
+                  {/* Footer hover effect */}
+                  <div 
+                    className="h-1 transition-all duration-200 hover:h-2"
+                    style={{ backgroundColor: feature.color }}
+                  />
+                </div>
               );
             })}
-          </ul>
+          </div>
         </>
       ) : (
         <WordDragGame lessonTitle={selectedFeature} />

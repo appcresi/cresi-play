@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import UserProfileProps from "./components/UserProfileProps";
-import React from 'react';
+import React from "react";
 
 export const metadata: Metadata = {
   title: "CrESI | Perfil de Usuario",
@@ -9,17 +9,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Completeword(): Promise<JSX.Element> {
-  
   return (
-    <main className="min-h-screen bg-[#FFE5E5] font-bold relative overflow-hidden">
-      <div className="mx-auto px-4 max-w-5xl relative">
-        <div className="my-8 transform -rotate-1">
-          <div className="bg-white border-4 border-black rounded-lg p-6 
-                         shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <div className="mt-8 sm:mt-12">
-            <UserProfileProps />
-            </div>
-          </div>
+    <main className="min-h-screen bg-gray-100 font-sans">
+      {/* Contenido principal */}
+      <div className="max-w-5xl mx-auto px-4 mt-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <UserProfileProps />
         </div>
       </div>
     </main>
