@@ -1,6 +1,5 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import {
   IconAB2,
@@ -615,11 +614,11 @@ const EducationalProgressPanel = () => {
                           
                           {/* Ícono */}
                           <div 
-                            className="w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center relative z-10"
+                            className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                             style={{ backgroundColor: feature.color }}
                             aria-hidden="true"
                           >
-                            <div className="text-white scale-75 md:scale-100">
+                            <div className="text-white scale-55 md:scale-75">
                               {feature.icon}
                             </div>
                           </div>

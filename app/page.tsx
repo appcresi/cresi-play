@@ -3,11 +3,9 @@ import {
   IconExternalLink,
 } from '@tabler/icons-react';
 import Features from "./components/Features";
-import Image from "next/image";
 
 // Lazy load heavy components
 const CharacterSelectionModal = lazy(() => import('@/components/CharacterSelectionModal'));
-const ComicBurst = lazy(() => import('@/components/ComicBurst'));
 
 
 const ComicHome = () => {
