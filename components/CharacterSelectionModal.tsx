@@ -27,7 +27,6 @@ const characters: Character[] = [
   }
 ];
 
-// Importar la estructura de datos unificada
 interface UserData {
   profile: {
     character: {
@@ -62,11 +61,9 @@ interface UserData {
   };
 }
 
-// Clase para manejar los datos del usuario (copia simplificada)
 class UserDataManager {
   private static readonly STORAGE_KEY = 'cresi_user_data';
 
-  // Datos por defecto
   private static getDefaultUserData(): UserData {
     return {
       profile: {
@@ -99,13 +96,11 @@ class UserDataManager {
     };
   }
 
-  // Cargar datos del usuario
   static loadUserData(): UserData {
     try {
       const storedData = localStorage.getItem(this.STORAGE_KEY);
       if (storedData) {
         const parsedData = JSON.parse(storedData) as UserData;
-        // Actualizar lastLogin
         parsedData.profile.lastLogin = new Date().toISOString();
         this.saveUserData(parsedData);
         return parsedData;
@@ -117,7 +112,6 @@ class UserDataManager {
     }
   }
 
-  // Guardar datos del usuario
   static saveUserData(userData: UserData): void {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
@@ -126,7 +120,6 @@ class UserDataManager {
     }
   }
 
-  // Actualizar perfil del usuario
   static updateProfile(updates: Partial<UserData['profile']>): UserData {
     const userData = this.loadUserData();
     userData.profile = { ...userData.profile, ...updates };
@@ -134,14 +127,12 @@ class UserDataManager {
     return userData;
   }
 
-  // Verificar si es primera vez
   static isFirstTime(): boolean {
     const userData = this.loadUserData();
     return !userData.profile.username || userData.profile.username === 'Estudiante' || 
            !userData.profile.character.id || userData.profile.character.id === 0;
   }
 
-  // Inicializar usuario completo
   static initializeUser(username: string, character: Character): UserData {
     const userData = this.getDefaultUserData();
     userData.profile.username = username;
@@ -155,28 +146,25 @@ class UserDataManager {
 
 const CharacterSelectionModal = () => {
   const [mounted, setMounted] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [error, setError] = useState('');
-  const [isReturningUser, setIsReturningUser] = useState(false);
-  const [showSelectionForm, setShowSelectionForm] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
     setMounted(true);
     
-    // Cargar datos unificados
     const data = UserDataManager.loadUserData();
     setUserData(data);
     
-    // Verificar si es primera vez o usuario existente
-    if (!UserDataManager.isFirstTime()) {
+    // Solo mostrar el modal si es primera vez
+    const isFirstTime = UserDataManager.isFirstTime();
+    setIsOpen(isFirstTime);
+    
+    if (!isFirstTime) {
       setUsername(data.profile.username);
       setSelectedCharacter(data.profile.character);
-      setIsReturningUser(true);
-    } else {
-      setShowSelectionForm(true);
     }
   }, []);
 
@@ -190,62 +178,9 @@ const CharacterSelectionModal = () => {
       return;
     }
 
-    // Inicializar usuario con datos unificados
     const newUserData = UserDataManager.initializeUser(username, selectedCharacter);
     setUserData(newUserData);
     setIsOpen(false);
-  };
-
-  const handleReset = () => {
-    setShowSelectionForm(true);
-    setIsReturningUser(false);
-  };
-
-  const handleStartGame = () => {
-    // Actualizar último login
-    if (userData) {
-      UserDataManager.updateProfile({
-        lastLogin: new Date().toISOString()
-      });
-    }
-    setIsOpen(false);
-  };
-
-  const handleUpdateProfile = () => {
-    if (!username.trim()) {
-      setError('Por favor, ingresa tu nombre');
-      return;
-    }
-    if (!selectedCharacter) {
-      setError('Por favor, selecciona un personaje');
-      return;
-    }
-
-    // Actualizar perfil manteniendo el resto de datos
-    const updatedData = UserDataManager.updateProfile({
-      username: username,
-      character: selectedCharacter
-    });
-    setUserData(updatedData);
-    setShowSelectionForm(false);
-    setIsReturningUser(true);
-  };
-
-  const getWelcomeMessage = () => {
-    if (!userData) return '';
-    
-    const now = new Date();
-    const lastLogin = new Date(userData.profile.lastLogin);
-    const diffDays = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return `¡Bienvenido de vuelta, ${userData.profile.username}!`;
-    } else if (diffDays === 1) {
-      return `¡Hola ${userData.profile.username}! Te extrañamos ayer.`;
-    } else if (diffDays > 1) {
-      return `¡Hola ${userData.profile.username}! Han pasado ${diffDays} días.`;
-    }
-    return `¡Bienvenido, ${userData.profile.username}!`;
   };
 
   if (!mounted) return null;
@@ -262,198 +197,103 @@ const CharacterSelectionModal = () => {
             </div>
           </div>
           <h2 className="text-xl font-medium text-gray-800 text-center mb-1">
-            {isReturningUser && !showSelectionForm ? 'Tu perfil' : 'Configurar perfil'}
+            Configurar perfil
           </h2>
           <p className="text-gray-600 text-center text-sm">
-            {isReturningUser && !showSelectionForm 
-              ? 'Bienvenido a tu espacio de aprendizaje'
-              : 'Personaliza tu experiencia en CrESI'
-            }
+            Personaliza tu experiencia en CrESI
           </p>
         </div>
 
         <div className="p-6">
-          {isReturningUser && !showSelectionForm ? (
-            <div className="text-center">
-              {/* Returning User Content */}
-              <div className="mb-6">
-                <div className="w-20 h-20 rounded-full bg-blue-50 mx-auto mb-4 flex items-center justify-center border-2 border-blue-100">
-                  <img
-                    src={userData?.profile.character.image || selectedCharacter?.image}
-                    alt={userData?.profile.character.name || selectedCharacter?.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                    loading="lazy"
-                    width={64}
-                    height={64}
-                  />
-                </div>
-                <h3 className="text-lg font-medium text-gray-800 mb-1">
-                  {getWelcomeMessage()}
-                </h3>
-                <p className="text-gray-500 text-sm mb-2">
-                  Personaje: {userData?.profile.character.name || selectedCharacter?.name}
-                </p>
-                
-                {/* Stats Summary */}
-                {userData && (
-                  <div className="bg-gray-50 rounded-lg p-3 mb-6">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-lg font-semibold text-blue-600">
-                          {userData.game.totalScore}
-                        </div>
-                        <div className="text-xs text-gray-500">Puntos</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-green-600">
-                          {userData.progress.completedActivities.length}
-                        </div>
-                        <div className="text-xs text-gray-500">Completadas</div>
-                      </div>
-                      <div>
-                        <div className="text-lg font-semibold text-orange-600">
-                          {userData.game.streak}
-                        </div>
-                        <div className="text-xs text-gray-500">Días seguidos</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-3">
+          {/* Name Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tu nombre
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setError('');
+              }}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none 
+                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
+                       bg-white text-gray-800 placeholder-gray-400 text-sm"
+              placeholder="Escribe tu nombre aquí"
+            />
+          </div>
+
+          {/* Character Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Elige tu avatar
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {characters.map((character) => (
                 <button
-                  onClick={handleStartGame}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 
-                           transition-colors font-medium text-sm flex items-center justify-center gap-2"
-                >
-                  Continuar
-                </button>
-                
-                <button
-                  onClick={handleReset}
-                  className="w-full text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 
-                           transition-colors font-medium text-sm flex items-center justify-center gap-2"
-                >
-                  <IconSettings className="w-4 h-4" />
-                  Cambiar configuración
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Name Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tu nombre
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setError('');
-                  }}
-                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none 
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
-                           bg-white text-gray-800 placeholder-gray-400 text-sm"
-                  placeholder="Escribe tu nombre aquí"
-                />
-              </div>
-
-              {/* Character Selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Elige tu avatar
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {characters.map((character) => (
-                    <button
-                      key={character.id}
-                      onClick={() => {
-                        setSelectedCharacter(character);
-                        setError('');
-                      }}
-                      className={`p-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500
-                        ${selectedCharacter?.id === character.id
-                          ? 'bg-blue-50 ring-2 ring-blue-500'
-                          : 'bg-gray-50 hover:bg-gray-100'
-                        }`}
-                    >
-                      <div className="w-full aspect-square rounded-lg bg-white mb-2 flex items-center justify-center overflow-hidden shadow-sm border border-gray-200">
-                        <img
-                          src={character.image}
-                          alt={character.name}
-                          loading="lazy"
-                          className="w-full h-full object-cover"
-                          width={64}
-                          height={64}
-                        />
-                      </div>
-                      <p className="text-center text-xs font-medium text-gray-700 leading-tight">
-                        {character.name}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 text-sm flex items-center gap-2">
-                    <span className="w-4 h-4 rounded-full bg-red-200 flex items-center justify-center text-red-700 text-xs font-bold">
-                      !
-                    </span>
-                    {error}
-                  </p>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <button
-                onClick={isReturningUser ? handleUpdateProfile : handleSubmit}
-                disabled={!username.trim() || !selectedCharacter}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 
-                         transition-colors font-medium text-sm disabled:bg-gray-300 disabled:cursor-not-allowed
-                         flex items-center justify-center gap-2"
-              >
-                
-                {isReturningUser ? 'Guardar cambios' : 'Comenzar'}
-              </button>
-
-              {/* Cancel Button for returning users */}
-              {isReturningUser && (
-                <button
+                  key={character.id}
                   onClick={() => {
-                    setShowSelectionForm(false);
-                    setIsReturningUser(true);
+                    setSelectedCharacter(character);
                     setError('');
                   }}
-                  className="w-full mt-3 text-gray-500 py-2 px-4 rounded-lg hover:bg-gray-50 
-                           transition-colors font-medium text-sm"
+                  className={`p-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500
+                    ${selectedCharacter?.id === character.id
+                      ? 'bg-blue-50 ring-2 ring-blue-500'
+                      : 'bg-gray-50 hover:bg-gray-100'
+                    }`}
                 >
-                  Cancelar
+                  <div className="w-full aspect-square rounded-lg bg-white mb-2 flex items-center justify-center overflow-hidden shadow-sm border border-gray-200">
+                    <img
+                      src={character.image}
+                      alt={character.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                      width={64}
+                      height={64}
+                    />
+                  </div>
+                  <p className="text-center text-xs font-medium text-gray-700 leading-tight">
+                    {character.name}
+                  </p>
                 </button>
-              )}
-            </>
+              ))}
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-red-200 flex items-center justify-center text-red-700 text-xs font-bold">
+                  !
+                </span>
+                {error}
+              </p>
+            </div>
           )}
+
+          {/* Submit Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={!username.trim() || !selectedCharacter}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 
+                     transition-colors font-medium text-sm disabled:bg-gray-300 disabled:cursor-not-allowed
+                     flex items-center justify-center gap-2"
+          >
+            Comenzar
+          </button>
         </div>
 
         {/* Footer */}
-        {showSelectionForm && (
-          <div className="px-6 pb-6">
-            <div className="pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500 text-center leading-relaxed">
-                {isReturningUser 
-                  ? 'Los cambios se aplicarán inmediatamente a tu perfil.'
-                  : 'Tu configuración se guardará automáticamente.'
-                }<br />
-                Puedes cambiarla cuando quieras.
-              </p>
-            </div>
+        <div className="px-6 pb-6">
+          <div className="pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500 text-center leading-relaxed">
+              Tu configuración se guardará automáticamente.<br />
+              Puedes cambiarla cuando quieras desde tu perfil.
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,6 @@
 import { Popover, Transition } from "@headlessui/react";
 import {
   IconApps,
-  IconMenu2,
   IconCards,
   IconUser,
   IconAB2,
@@ -204,11 +203,6 @@ export default function Header(): JSX.Element {
       <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
         {/* Lado izquierdo - Logo y título */}
         <div className="flex items-center gap-4">
-          {/* Botón de menú (estilo Classroom) */}
-          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors md:hidden">
-            <IconMenu2 className="w-5 h-5 text-gray-600" />
-          </button>
-          
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex items-center gap-3">
               <Image
@@ -256,8 +250,8 @@ export default function Header(): JSX.Element {
                   leaveFrom="transform scale-100 opacity-100"
                   leaveTo="transform scale-95 opacity-0"
                 >
-                  <Popover.Panel className="absolute z-10 right-0 top-12 w-80 bg-white rounded-lg shadow-lg border border-gray-200">
-                    <div className="p-4">
+                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+                    <div className="p-4 max-h-[calc(100vh-100px)] overflow-y-auto">
                       <h3 className="text-sm font-medium text-gray-800 mb-3">Notificaciones</h3>
                       
                       {suggestedActivities.length === 0 ? (
@@ -394,7 +388,7 @@ function ApplicationsPopover({ onOpenChange, userData }: ApplicationsPopoverProp
               leaveFrom="transform scale-100 opacity-100"
               leaveTo="transform scale-95 opacity-0"
             >
-              <Popover.Panel className="absolute z-10 right-0 top-12 w-80 max-h-96 overflow-y-auto bg-white rounded-lg shadow-lg border border-gray-200">
+              <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-200">
                 <div className="p-4">
                   {/* Header con info del usuario */}
                   {userData && (

@@ -110,12 +110,6 @@ export default function TriviaGame({
     }
   }, []);
 
-  useEffect(() => {
-    if (userData) {
-      saveUserData();
-    }
-  }, [sessionScore, lives, isFinished]);
-
   const loadUserData = () => {
     try {
       const storedData = localStorage.getItem(STORAGE_KEY);
@@ -142,7 +136,7 @@ export default function TriviaGame({
         ...userData,
         game: {
           ...userData.game,
-          totalScore: userData.game.totalScore + sessionScore,
+          totalScore: score,
           totalLives: lives
         },
         progress: {
@@ -164,14 +158,18 @@ export default function TriviaGame({
         }
       };
 
-      setScore(updatedData.game.totalScore);
-
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
       setUserData(updatedData);
     } catch (error) {
       console.error('Error saving user data:', error);
     }
   };
+
+  useEffect(() => {
+    if (userData) {
+      saveUserData();
+    }
+  }, [score, lives, isFinished]);
 
   const [timeLeft, setTimeLeft] = useState<number | undefined>(
     () => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS
@@ -198,7 +196,9 @@ export default function TriviaGame({
 
   const handleInstagramClick = () => {
     if (!hasClickedInstagram) {
+      const newScore = score + INSTAGRAM_BONUS_POINTS;
       const newSessionScore = sessionScore + INSTAGRAM_BONUS_POINTS;
+      setScore(newScore);
       setSessionScore(newSessionScore);
       
       setHasClickedInstagram(true);
@@ -275,10 +275,17 @@ export default function TriviaGame({
       const isCorrect = answer === items[currentQuestion].question.answer;
       
       if (isCorrect) {
-        setSessionScore(sessionScore + CORRECT_ANSWER_POINTS);
+        const newScore = score + CORRECT_ANSWER_POINTS;
+        const newSessionScore = sessionScore + CORRECT_ANSWER_POINTS;
+        setScore(newScore);
+        setSessionScore(newSessionScore);
         toast.success('¡Respuesta correcta!', { duration: 1000, icon: '✅' });
       } else {
-        setSessionScore(prevScore => Math.max(0, prevScore - INCORRECT_ANSWER_PENALTY));
+        const penaltyToApply = Math.min(score, INCORRECT_ANSWER_PENALTY);
+        const newScore = score - penaltyToApply;
+        const newSessionScore = Math.max(0, sessionScore - INCORRECT_ANSWER_PENALTY);
+        setScore(newScore);
+        setSessionScore(newSessionScore);
         setLives(prevLives => {
           const newLives = prevLives - 1;
           if (newLives <= 0) {
@@ -307,7 +314,7 @@ export default function TriviaGame({
         },
       ]);
     },
-    [currentQuestion, answeredQuestions, handleContinue, sessionScore, isGameOver, items]
+    [currentQuestion, answeredQuestions, handleContinue, sessionScore, score, isGameOver, items]
   );
 
   const getCorrectAnswersCount = useCallback(() => {
