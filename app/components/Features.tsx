@@ -129,7 +129,18 @@ const features = [
     image: "/condon.svg",
     category: "Lectura",
     dueDate: ""
-  }
+  },
+  {
+    title: "Lecciones",
+    description: "Poné a prueba tus conocimientos jugando trivias sobre salud, derechos, diversidad y mucho más.",
+    icon: <IconCards size={20} />,
+    route: "/lecciones",
+    color: "#1976D2",
+    image: "/trivia.svg",
+    priority: true,
+    category: "Lectura",
+    dueDate: ""
+  },
 ];
 
 interface UserData {
