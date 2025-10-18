@@ -103,7 +103,8 @@ const features: Feature[] = [
 
 const STORAGE_KEY = 'cresi_user_data';
 const ACTIVITY_ID = 'lessons';
-const POINTS_PER_LESSON = 50;
+const POINTS_PER_CORRECT_ANSWER = 100;
+const POINTS_PER_LEVEL_COMPLETION = 100;
 
 export default function Lecciones(): JSX.Element {
 	const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
@@ -113,6 +114,9 @@ export default function Lecciones(): JSX.Element {
 	const [userData, setUserData] = useState<UserData | null>(null);
 	const [score, setScore] = useState(0);
 	const [lives, setLives] = useState(3);
+	const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+	const [totalAnswersCount, setTotalAnswersCount] = useState(0);
+	const [currentLessonLevel, setCurrentLessonLevel] = useState(1);
 
 	useEffect(() => {
 		loadUserData();
@@ -173,23 +177,71 @@ export default function Lecciones(): JSX.Element {
 		setSelectedFeature(title);
 	};
 
-	const handleLessonComplete = (title: string, percentage: number) => {
+	const handleAnswerCorrect = () => {
 		if (!userData) return;
-
-		const isCompleted = percentage > 65;
-		const lessonKey = `lesson_${title}`;
-		const previousPercentage = correctPercentages[title] || 0;
-		const wasAlreadyCompleted = previousPercentage && previousPercentage > 65;
-
-		// Solo dar puntos si es la primera vez que se completa
-		const pointsEarned = isCompleted && !wasAlreadyCompleted ? POINTS_PER_LESSON : 0;
 
 		const updatedData: UserData = {
 			...userData,
 			game: {
 				...userData.game,
-				totalScore: userData.game.totalScore + pointsEarned
-			},
+				totalScore: userData.game.totalScore + POINTS_PER_CORRECT_ANSWER
+			}
+		};
+
+		saveUserData(updatedData);
+	};
+
+	const handleLevelComplete = () => {
+		if (!userData) return;
+
+		const updatedData: UserData = {
+			...userData,
+			game: {
+				...userData.game,
+				totalScore: userData.game.totalScore + POINTS_PER_LEVEL_COMPLETION
+			}
+		};
+
+		saveUserData(updatedData);
+	};
+
+	const handleNoteCreated = () => {
+		if (!userData) return;
+
+		const POINTS_PER_NOTE = 50;
+		const updatedData: UserData = {
+			...userData,
+			game: {
+				...userData.game,
+				totalScore: userData.game.totalScore + POINTS_PER_NOTE
+			}
+		};
+
+		saveUserData(updatedData);
+	};
+
+	const handleCorrectAnswersUpdate = (correct: number, total: number) => {
+		setCorrectAnswersCount(correct);
+		setTotalAnswersCount(total);
+	};
+
+	const handleLessonLevelUpdate = (level: number) => {
+		setCurrentLessonLevel(level);
+	};
+
+	const handleLessonComplete = (
+		title: string,
+		percentage: number,
+		correctAnswersCount: number,
+		levelsCompleted: number
+	) => {
+		if (!userData) return;
+
+		const isCompleted = percentage > 65;
+		const lessonKey = `lesson_${title}`;
+
+		const updatedData: UserData = {
+			...userData,
 			progress: {
 				...userData.progress,
 				lessonProgress: {
@@ -201,7 +253,7 @@ export default function Lecciones(): JSX.Element {
 				},
 				activityScores: {
 					...userData.progress.activityScores,
-					[lessonKey]: (userData.progress.activityScores[lessonKey] || 0) + pointsEarned
+					[lessonKey]: (userData.progress.activityScores[lessonKey] || 0) + (correctAnswersCount * POINTS_PER_CORRECT_ANSWER) + (levelsCompleted * POINTS_PER_LEVEL_COMPLETION)
 				},
 				activityTimes: {
 					...userData.progress.activityTimes,
@@ -262,7 +314,11 @@ export default function Lecciones(): JSX.Element {
 				title="Lecciones"
 				score={score}
 				lives={lives}
-				level={selectedFeature ? 1 : 1}
+				level={selectedFeature ? currentLessonLevel : 1}
+				{...(selectedFeature && {
+					currentQuestion: correctAnswersCount,
+					totalQuestions: totalAnswersCount || 1
+				})}
 			/>
 
 			<div className="py-8 px-4 pt-24">
@@ -378,6 +434,10 @@ export default function Lecciones(): JSX.Element {
 							title={selectedFeature}
 							onBack={handleBack}
 							onLessonComplete={handleLessonComplete}
+							onAnswerCorrect={handleAnswerCorrect}
+							onLevelComplete={handleLevelComplete}
+							onCorrectAnswersUpdate={handleCorrectAnswersUpdate}
+							onLessonLevelUpdate={handleLessonLevelUpdate}
 						/>
 					</div>
 				)}

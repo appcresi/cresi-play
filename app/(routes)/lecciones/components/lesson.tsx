@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import FloatingAudioButton from "./FloatingAudioButton";
 import ResultsComponent from "./ResultsComponent";
 import { Question } from "./types"; 
-import { IconCheck, IconX, IconArrowRight } from "@tabler/icons-react";
+import { IconCheck, IconX, IconArrowRight, IconNotes, IconTrash, IconEdit, IconPlus, IconDownload } from "@tabler/icons-react";
 
 type Leccion = {
   text: string;
@@ -18,6 +18,14 @@ type Lesson = {
   lecciones: Leccion[]; 
 };
 
+interface Note {
+  id: string;
+  text: string;
+  lessonTitle: string;
+  level: number;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 const lessons: Lesson[] = [
       {
@@ -204,21 +212,29 @@ const lessons: Lesson[] = [
 type LessonPageProps = {
   title: string;
   onBack: () => void;
-  onLessonComplete?: (title: string, percentage: number) => void;
+  onLessonComplete?: (title: string, percentage: number, correctAnswersCount: number, levelsCompleted: number) => void;
+  onAnswerCorrect?: () => void;
+  onLevelComplete?: () => void;
+  onCorrectAnswersUpdate?: (count: number, total: number) => void;
+  onLessonLevelUpdate?: (level: number) => void;
+  onNoteCreated?: () => void;
 };
 
-export default function LessonPage({ title, onBack, onLessonComplete }: LessonPageProps) {
+export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCorrect, onLevelComplete, onCorrectAnswersUpdate, onLessonLevelUpdate }: LessonPageProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [questionsFinished, setQuestionsFinished] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
   const [displayedWords, setDisplayedWords] = useState<string[]>([]);
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [showImagePopup, setShowImagePopup] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   const currentLesson = lessons.find((lesson) => lesson.title === title);
 
@@ -247,6 +263,12 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
     return () => clearInterval(interval);
   }, [currentLessonIndex]);
 
+  useEffect(() => {
+    if (onLessonLevelUpdate) {
+      onLessonLevelUpdate(currentLessonIndex + 1);
+    }
+  }, [currentLessonIndex, onLessonLevelUpdate]);
+
   const handleAnswer = (answer: boolean) => {
     const currentQuestionWithAnswer: Question = {
       ...currentQuestion,
@@ -258,11 +280,15 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
       Swal.fire({
         icon: "success",
         title: "¡Genial!",
-        text: "¡Respuesta correcta!",
+        text: "¡Respuesta correcta! +100 puntos",
         showConfirmButton: false,
         timer: 500
       });
       setCorrectAnswers((prev) => prev + 1);
+      
+      if (onAnswerCorrect) {
+        onAnswerCorrect();
+      }
     } else {
       Swal.fire({
         icon: "error",
@@ -273,6 +299,11 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
       });
     }
 
+    const newTotalAnswered = allQuestions.length + 1;
+    if (onCorrectAnswersUpdate) {
+      onCorrectAnswersUpdate(answer === currentQuestion.correctAnswer ? correctAnswers + 1 : correctAnswers, newTotalAnswered);
+    }
+
     if (currentQuestionIndex < currentLeccion.questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
@@ -280,23 +311,84 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
     }
   };
 
+  const handleAddNote = () => {
+    if (!noteText.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Nota vacía",
+        text: "Por favor escribe algo antes de guardar",
+        showConfirmButton: false,
+        timer: 1500
+      });
+      return;
+    }
+
+    if (editingNoteId) {
+      setNotes(notes.map(note =>
+        note.id === editingNoteId
+          ? { ...note, text: noteText, updatedAt: new Date().toISOString() }
+          : note
+      ));
+      setEditingNoteId(null);
+    } else {
+      const newNote: Note = {
+        id: `note_${Date.now()}`,
+        text: noteText,
+        lessonTitle: title,
+        level: currentLessonIndex + 1,
+        createdAt: new Date().toISOString()
+      };
+      setNotes([...notes, newNote]);
+    }
+
+    setNoteText("");
+    setShowNoteModal(false);
+  };
+
+  const handleEditNote = (note: Note) => {
+    setNoteText(note.text);
+    setEditingNoteId(note.id);
+    setShowNoteModal(true);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    setNotes(notes.filter(note => note.id !== noteId));
+  };
+
   const goToNextLesson = () => {
     if (currentLessonIndex < currentLesson.lecciones.length - 1) {
-      setCurrentLessonIndex((prev) => prev + 1);
+      Swal.fire({
+        icon: "success",
+        title: "¡Nivel completado!",
+        text: "¡+100 puntos por completar este nivel!",
+        showConfirmButton: false,
+        timer: 800
+      });
+
+      if (onLevelComplete) {
+        onLevelComplete();
+      }
+
+      const nextLessonIndex = currentLessonIndex + 1;
+      setCurrentLessonIndex(nextLessonIndex);
+      
+      if (onLessonLevelUpdate) {
+        onLessonLevelUpdate(nextLessonIndex + 1);
+      }
+
       setCurrentQuestionIndex(0);
       setQuestionsFinished(false);
       setShowQuestions(false);
       setDisplayedWords([]);
     } else {
-      // Calcular el porcentaje final
-      const totalQuestions = allQuestions.length + (questionsFinished ? currentLeccion.questions.length : currentQuestionIndex + 1);
+      const totalQuestions = allQuestions.length;
       const finalPercentage = totalQuestions > 0 
         ? Math.round((correctAnswers / totalQuestions) * 100)
         : 0;
+      const levelsCompleted = currentLesson.lecciones.length;
 
-      // Llamar al callback con el porcentaje
       if (onLessonComplete) {
-        onLessonComplete(title, finalPercentage);
+        onLessonComplete(title, finalPercentage, correctAnswers, levelsCompleted);
       }
 
       setShowResults(true);
@@ -338,6 +430,41 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
     <div className="max-w-5xl mx-auto">
       {showImagePopup && (
         <ImagePopup imageUrl={selectedImage} onClose={closeImagePopup} />
+      )}
+
+      {/* Note Modal */}
+      {showNoteModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              {editingNoteId ? "Editar nota" : "Nueva nota"}
+            </h3>
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Escribe un punto importante que quieras recordar..."
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowNoteModal(false);
+                  setNoteText("");
+                  setEditingNoteId(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAddNote}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              >
+                {editingNoteId ? "Actualizar" : "Guardar"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Progress indicators */}
@@ -414,23 +541,6 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
             />
           </div>
           
-          {/* Score card */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-900 mb-1">
-                  Respuestas correctas
-                </p>
-                <p className="text-3xl font-bold text-blue-600">
-                  {correctAnswers}
-                </p>
-              </div>
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                <IconCheck className="w-8 h-8 text-white" />
-              </div>
-            </div>
-          </div>
-
           {/* Next button */}
           {questionsFinished && (
             <button
@@ -439,12 +549,79 @@ export default function LessonPage({ title, onBack, onLessonComplete }: LessonPa
             >
               <span>
                 {currentLessonIndex < currentLesson.lecciones.length - 1 
-                  ? "Siguiente lección" 
+                  ? "Siguiente nivel (+100 puntos)" 
                   : "Ver resultados"}
               </span>
               <IconArrowRight size={20} />
             </button>
           )}
+          {/* Notes section */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <IconNotes size={20} className="text-amber-600" />
+                  <h3 className="font-semibold text-gray-900">Mis notas ({notes.length})</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setNoteText("");
+                  setEditingNoteId(null);
+                  setShowNoteModal(true);
+                }}
+                className="w-full px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 border border-amber-200"
+              >
+                <IconPlus size={18} />
+                <span>Nueva nota</span>
+              </button>
+            </div>
+
+            {/* Notes list */}
+            <div className="p-4 max-h-64 overflow-y-auto">
+              {notes.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No tienes notas aún. ¡Agrega una!
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {notes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">{note.text}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            Nivel {note.level}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditNote(note)}
+                            className="p-1 hover:bg-amber-200 rounded transition-colors"
+                            title="Editar"
+                          >
+                            <IconEdit size={16} className="text-amber-600" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteNote(note.id)}
+                            className="p-1 hover:bg-red-200 rounded transition-colors"
+                            title="Eliminar"
+                          >
+                            <IconTrash size={16} className="text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          
         </div>
       </div>
 
