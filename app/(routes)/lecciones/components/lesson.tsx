@@ -18,6 +18,7 @@ type Lesson = {
   lecciones: Leccion[]; 
 };
 
+
 const lessons: Lesson[] = [
       {
         title: "Pubertad",
@@ -203,9 +204,10 @@ const lessons: Lesson[] = [
 type LessonPageProps = {
   title: string;
   onBack: () => void;
+  onLessonComplete?: (title: string, percentage: number) => void;
 };
 
-export default function LessonPage({ title, onBack }: LessonPageProps) {
+export default function LessonPage({ title, onBack, onLessonComplete }: LessonPageProps) {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -286,6 +288,17 @@ export default function LessonPage({ title, onBack }: LessonPageProps) {
       setShowQuestions(false);
       setDisplayedWords([]);
     } else {
+      // Calcular el porcentaje final
+      const totalQuestions = allQuestions.length + (questionsFinished ? currentLeccion.questions.length : currentQuestionIndex + 1);
+      const finalPercentage = totalQuestions > 0 
+        ? Math.round((correctAnswers / totalQuestions) * 100)
+        : 0;
+
+      // Llamar al callback con el porcentaje
+      if (onLessonComplete) {
+        onLessonComplete(title, finalPercentage);
+      }
+
       setShowResults(true);
     }
   };

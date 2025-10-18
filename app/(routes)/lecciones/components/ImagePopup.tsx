@@ -25,3 +25,5 @@ const ImagePopup = ({ imageUrl, onClose }: ImagePopupProps) => {
     </div>
   );
 };
+
+export default ImagePopup;
