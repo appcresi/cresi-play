@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
 
 // Estructura unificada de datos del usuario
@@ -157,6 +158,7 @@ const GameStatusBar = ({
   showProfile = true,
   activityName
 }: GameStatusProps) => {
+  const router = useRouter();
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
 
@@ -196,6 +198,10 @@ const GameStatusBar = ({
     }
   }, [lives]);
 
+  const handleProfileClick = () => {
+    router.push('/');
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-3">
@@ -203,8 +209,12 @@ const GameStatusBar = ({
           {/* Left Section - Profile & Title */}
           <div className="flex items-center space-x-4">
             {showProfile && userData.profile.character.image && (
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+              <button
+                onClick={handleProfileClick}
+                className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
+                title="Volver al inicio"
+              >
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 hover:border-blue-400 transition-colors">
                   <img
                     src={`/${userData.profile.character.image}`}
                     alt={userData.profile.character.name}
@@ -215,7 +225,7 @@ const GameStatusBar = ({
                   <p className="text-sm font-medium text-gray-900">{userData.profile.username}</p>
                   <p className="text-xs text-gray-500">{userData.profile.character.name}</p>
                 </div>
-              </div>
+              </button>
             )}
             
             <div className="border-l border-gray-200 pl-4">
