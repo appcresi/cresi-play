@@ -69,7 +69,7 @@ interface UserData {
 }
 
 const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'datamuncher';
+const ACTIVITY_ID = 'Datamuncher';
 
 const DataMuncher = () => {
   // Estados del juego

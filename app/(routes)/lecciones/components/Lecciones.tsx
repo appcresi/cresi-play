@@ -102,7 +102,7 @@ const features: Feature[] = [
 ];
 
 const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'lessons';
+const ACTIVITY_ID = 'Lecciones';
 const POINTS_PER_CORRECT_ANSWER = 100;
 const POINTS_PER_LEVEL_COMPLETION = 100;
 

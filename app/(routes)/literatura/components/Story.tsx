@@ -69,7 +69,7 @@ interface UserData {
 }
 
 const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'story_reader';
+const ACTIVITY_ID = 'Historias';
 const POINTS_PER_PAGE = 5;
 
 // StoryCard Component

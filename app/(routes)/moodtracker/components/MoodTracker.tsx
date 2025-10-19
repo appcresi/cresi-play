@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Calendar, SmilePlus, Angry, Trophy, Medal, Star, BookOpen } from 'lucide-react';
+import { Calendar, SmilePlus, Angry, Trophy, Medal, Star, BookOpen, BarChart3, ArrowLeft } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
 
@@ -460,9 +460,6 @@ const MoodTracker = () => {
     setSelectedMood(null);
     setIntensityRating(5);
     setMoodNote('');
-
-    // Marcar actividad como visitada
-    // UserDataManager.visitActivity?.('MoodTracker');
   };
 
   const chartData = userData.mood.history.map(entry => ({
@@ -478,288 +475,257 @@ const MoodTracker = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-yellow-50 p-6 pt-24">
-      <GameStatusBar 
-        title="Mood Tracker"
-        score={userData.game.totalScore}
-        lives={userData.game.totalLives}
-        level={1}
-      />
-      
-      {/* Racha y Estadísticas Rápidas */}
-      <div className="max-w-4xl mx-auto mb-8 flex justify-between items-center">
-        <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-lg border-4 border-black transform -rotate-2">
-          <Calendar className="w-8 h-8 text-orange-500" />
-          <div>
-            <p className="text-lg font-bold">Racha actual</p>
-            <p className="text-3xl font-bold text-orange-500">{userData.game.streak} días</p>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded">
+                <SmilePlus className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-800">Mood Tracker</h1>
+            </div>
+            <GameStatusBar 
+              title="Mood Tracker"
+              score={userData.game.totalScore}
+              lives={userData.game.totalLives}
+              level={1}
+            />
           </div>
         </div>
-        <button
-          onClick={() => setShowStats(!showStats)}
-          className="bg-blue-500 text-white px-6 py-3 rounded-lg font-bold 
-                     border-4 border-black transform rotate-2 hover:rotate-0 
-                     transition-transform duration-200"
-        >
-          {showStats ? '← Volver' : 'Ver Estadísticas 📊'}
-        </button>
-      </div>
+      </header>
 
-      {showStats ? (
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Estadísticas Detalladas */}
-          {stats && (
-            <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1 max-w-full">
-              <h2 className="text-2xl font-bold mb-6">📊 Tus Estadísticas</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex justify-center">
-                  <div className="w-full max-w-xs">
-                    <h3 className="text-xl font-bold mb-4 text-center">Distribución de Emociones</h3>
-                    <PieChart width={250} height={250}>
-                      <Pie
-                        dataKey="value"
-                        data={Object.entries(stats.moodCounts).map(([name, value]) => ({
-                          name,
-                          value
-                        }))}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        label
-                      >
-                        {Object.entries(stats.moodCounts).map(([name]) => (
-                          <Cell key={`cell-${name}`} fill={moodColors[name]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {showStats ? (
+          <>
+            {/* Back Button */}
+            <button
+              onClick={() => setShowStats(false)}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium mb-6"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Volver a registrar
+            </button>
+
+            {/* Estadísticas */}
+            {stats && (
+              <>
+                {/* Quick Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-blue-500">
+                    <p className="text-gray-600 text-sm font-medium">Entradas Totales</p>
+                    <p className="text-3xl font-bold text-blue-600 mt-2">{stats.totalEntries}</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-green-500">
+                    <p className="text-gray-600 text-sm font-medium">Racha Actual</p>
+                    <p className="text-3xl font-bold text-green-600 mt-2">{userData.game.streak} días</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-purple-500">
+                    <p className="text-gray-600 text-sm font-medium">Intensidad Promedio</p>
+                    <p className="text-3xl font-bold text-purple-600 mt-2">{stats.avgIntensity}</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-orange-500">
+                    <p className="text-gray-600 text-sm font-medium">Emoción Más Común</p>
+                    <p className="text-lg font-bold text-orange-600 mt-2">{stats.mostCommonMood}</p>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="bg-gray-100 p-4 rounded-lg text-center">
-                    <p className="text-lg font-bold">Entradas Totales</p>
-                    <p className="text-3xl font-bold text-blue-500">{stats.totalEntries}</p>
-                  </div>
-                  <div className="bg-gray-100 p-4 rounded-lg text-center">
-                    <p className="text-lg font-bold">Intensidad Promedio</p>
-                    <p className="text-3xl font-bold text-green-500">{stats.avgIntensity}</p>
-                  </div>
-                  <div className="bg-gray-100 p-4 rounded-lg text-center">
-                    <p className="text-lg font-bold">Emoción más común</p>
-                    <p className="text-3xl font-bold text-purple-500">{stats.mostCommonMood}</p>
-                  </div>
-                </div>
-              </div>
-            </div>         
-          )}
 
-          {/* Logros */}
-          <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform -rotate-1">
-            <h2 className="text-2xl font-bold mb-6">🏆 Logros Desbloqueados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {userData.achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className={`p-4 rounded-lg border-2 transform hover:scale-105 transition-transform
-                    ${achievement.unlocked 
-                      ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-500' 
-                      : 'bg-gray-100 border-gray-300'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <AchievementIcon 
-                      iconName={achievement.iconName}
-                      className={`w-8 h-8 ${
-                        achievement.unlocked ? 'text-yellow-500' : 'text-gray-400'
-                      }`}
-                    />
-                    <div>
-                      <h3 className="font-bold">{achievement.name}</h3>
-                      <p className="text-sm text-gray-600">{achievement.description}</p>
-                      {achievement.unlocked && achievement.date && (
-                        <p className="text-xs text-gray-500">
-                          Desbloqueado: {new Date(achievement.date).toLocaleDateString()}
-                        </p>
-                      )}
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Distribución de Emociones</h3>
+                    <div className="flex justify-center">
+                      <PieChart width={250} height={250}>
+                        <Pie
+                          dataKey="value"
+                          data={Object.entries(stats.moodCounts).map(([name, value]) => ({
+                            name,
+                            value
+                          }))}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          label
+                        >
+                          {Object.entries(stats.moodCounts).map(([name]) => (
+                            <Cell key={`cell-${name}`} fill={moodColors[name]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Tu Aventura Emocional</h3>
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer>
+                        <LineChart data={chartData}>
+                          <XAxis dataKey="date" stroke="#999" fontSize={12} />
+                          <YAxis yAxisId="left" stroke="#999" domain={[0, 10]} />
+                          <YAxis yAxisId="right" orientation="right" stroke="#999" />
+                          <Tooltip contentStyle={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
+                          <Line yAxisId="left" type="monotone" dataKey="valor" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                          <Line yAxisId="right" type="monotone" dataKey="intensidad" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Grid de Emociones */}
-          <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform rotate-1">
-            <p className="text-xl font-bold mb-3 text-center">¿Cómo te sentís hoy?</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {moods.map((mood) => (
-                <button
-                  key={mood.label}
-                  onClick={() => handleMoodSelect(mood)}
-                  className={`relative p-4 rounded-lg flex flex-col items-center transition-all
-                    ${mood.bgColor} border-4 border-black
-                    ${selectedMood?.label === mood.label 
-                      ? 'transform scale-110 shadow-xl' 
-                      : 'hover:scale-105 hover:shadow-lg'}
-                    transform hover:-rotate-3 transition-transform duration-200`}
-                >
-                  <MoodIcon mood={mood} />
-                  <span className="mt-1 text-sm font-medium text-gray-800">{mood.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Selector de Intensidad y Notas */}
-          {selectedMood && (
-            <div className="mt-8 p-6 bg-white rounded-lg shadow-lg border-4 border-black transform rotate-1">
-              <h3 className="text-xl font-bold mb-3 text-center">
-                Del 1 al 10, ¿Cómo te sentís? 
-              </h3>
-              
-              <div className="relative">
-                <div className="flex items-center gap-4 mb-2">
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={intensityRating}
-                    onChange={(e) => setIntensityRating(parseInt(e.target.value))}
-                    className="w-full h-6 appearance-none cursor-pointer bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full"
-                  />
-                  <span className="text-3xl font-bold px-4 py-2 bg-yellow-400 rounded-full border-4 border-black transform -rotate-3 shadow-lg">
-                    {intensityRating}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between text-lg mt-4">
-                  <div className="flex items-center gap-2 transform -rotate-6">
-                    <Angry className="w-8 h-8 text-red-500" strokeWidth={3} />
-                    <span className="font-bold text-red-500">¡Muy mal!</span>
-                  </div>
-                  <div className="flex items-center gap-2 transform rotate-6">
-                    <SmilePlus className="w-8 h-8 text-green-500" strokeWidth={3} />
-                    <span className="font-bold text-green-500">¡Muy bien!</span>
+                {/* Achievements */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Logros Desbloqueados</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {userData.achievements.map((achievement) => (
+                      <div
+                        key={achievement.id}
+                        className={`p-4 rounded-lg border-l-4 ${
+                          achievement.unlocked 
+                            ? 'bg-yellow-50 border-yellow-500' 
+                            : 'bg-gray-50 border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <AchievementIcon 
+                            iconName={achievement.iconName}
+                            className={`w-6 h-6 flex-shrink-0 ${
+                              achievement.unlocked ? 'text-yellow-500' : 'text-gray-400'
+                            }`}
+                          />
+                          <div>
+                            <h4 className="font-bold text-gray-900">{achievement.name}</h4>
+                            <p className="text-sm text-gray-600">{achievement.description}</p>
+                            {achievement.unlocked && achievement.date && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Desbloqueado: {new Date(achievement.date).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Quick Stats Bar */}
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-3 text-gray-700">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                <span className="font-medium">Racha actual: <span className="font-bold text-blue-600">{userData.game.streak} días</span></span>
               </div>
-
-              {/* Campo de Notas */}
-              <div className="mt-6">
-                <h3 className="text-xl font-bold mb-3">¿Quieres agregar una nota? 📝</h3>
-                <textarea
-                  value={moodNote}
-                  onChange={(e) => setMoodNote(e.target.value)}
-                  placeholder="¿Qué te hizo sentir así? ¡Cuéntanos tu historia!"
-                  className="w-full p-4 border-2 border-gray-300 rounded-lg h-32 
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </div>
-
               <button
-                onClick={handleSaveMood}
-                className="mt-6 w-full px-8 py-3 bg-yellow-400 text-black rounded-xl 
-                         font-bold border-4 border-black transform hover:-rotate-2 
-                         hover:scale-105 transition-transform duration-200 shadow-lg
-                         hover:shadow-xl active:translate-y-1"
-                style={{ 
-                  fontFamily: 'comic sans ms, cursive',
-                  textShadow: '1px 1px 0 #fff'
-                }}
+                onClick={() => setShowStats(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                ¡GUARDAR EMOCIÓN! 💪
+                <BarChart3 className="w-5 h-5" />
+                Ver Estadísticas
               </button>
             </div>
-          )}
 
-          {/* Gráfico de Historia */}
-          {userData.mood.history.length > 0 && (
-            <div className="bg-white rounded-lg shadow-lg border-4 border-black p-6 transform -rotate-1">
-              <h2 className="text-2xl font-bold mb-4 text-purple-600" 
-                  style={{ textShadow: '1px 1px 0 #000' }}>
-                ¡Tu Aventura Emocional!
-              </h2>
-              <div className="h-64 w-full">
-                <ResponsiveContainer>
-                  <LineChart data={chartData}>
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#000000"
-                      fontSize={12}
-                      strokeWidth={2}
-                    />
-                    <YAxis 
-                      yAxisId="left"
-                      stroke="#000000"
-                      fontSize={12}
-                      strokeWidth={2}
-                      ticks={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                      tickFormatter={(value) => {
-                        const mood = moods.find(m => m.value === value);
-                        return mood ? mood.label : value;
-                      }}
-                    />
-                    <YAxis 
-                      yAxisId="right"
-                      orientation="right"
-                      stroke="#FF0000"
-                      domain={[1, 10]}
-                      ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                      label={{ value: 'Intensidad', angle: 90, position: 'right' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        background: 'white',
-                        border: '3px solid black',
-                        borderRadius: '8px',
-                        padding: '8px'
-                      }}
-                      formatter={(value, name) => {
-                        if (name === 'valor') {
-                          const mood = moods.find(m => m.value === value);
-                          return [mood ? mood.label : value, 'Estado'];
-                        }
-                        if (name === 'intensidad') {
-                          return [value, 'Intensidad'];
-                        }
-                        return [value, name];
-                      }}
-                    />
-                    <Line 
-                      yAxisId="left"
-                      type="monotone" 
-                      dataKey="valor" 
-                      stroke="#6366f1"
-                      strokeWidth={4}
-                      dot={{ 
-                        fill: '#6366f1',
-                        strokeWidth: 2,
-                        r: 6,
-                        strokeDasharray: '' 
-                      }}
-                    />
-                    <Line 
-                      yAxisId="right"
-                      type="monotone" 
-                      dataKey="intensidad" 
-                      stroke="#FF0000"
-                      strokeWidth={4}
-                      dot={{ 
-                        fill: '#FF0000',
-                        strokeWidth: 2,
-                        r: 6,
-                        strokeDasharray: '' 
-                      }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+            {/* Mood Selection */}
+            <div className="bg-white rounded-lg shadow p-6 mb-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">¿Cómo te sentís hoy?</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 gap-3">
+                {moods.map((mood) => (
+                  <button
+                    key={mood.label}
+                    onClick={() => handleMoodSelect(mood)}
+                    className={`p-4 rounded-lg flex flex-col items-center justify-center transition-all ${
+                      selectedMood?.label === mood.label 
+                        ? `${mood.bgColor} ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-105` 
+                        : `${mood.bgColor} hover:shadow-md`
+                    }`}
+                  >
+                    <MoodIcon mood={mood} />
+                    <span className="mt-2 text-xs font-medium text-gray-800 text-center">{mood.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Intensity and Notes */}
+            {selectedMood && (
+              <div className="bg-white rounded-lg shadow p-6 mb-8">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  ¿Cuál es la intensidad de tu emoción?
+                </h3>
+                
+                <div className="mb-6">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      value={intensityRating}
+                      onChange={(e) => setIntensityRating(parseInt(e.target.value))}
+                      className="flex-1 h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <span className="text-2xl font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded min-w-fit">
+                      {intensityRating}/10
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600 mt-2">
+                    <span>Muy bajo</span>
+                    <span>Muy alto</span>
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                <div className="mb-6">
+                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                    Agregar una nota (opcional)
+                  </label>
+                  <textarea
+                    value={moodNote}
+                    onChange={(e) => setMoodNote(e.target.value)}
+                    placeholder="¿Qué te hizo sentir así?"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveMood}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors"
+                >
+                  Guardar Emoción
+                </button>
+              </div>
+            )}
+
+            {/* Historial */}
+            {userData.mood.history.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Historial Reciente</h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {userData.mood.history.slice().reverse().map((entry, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                      <div className="flex items-center gap-3">
+                        <MoodIcon mood={moods.find(m => m.value === entry.mood) || moods[0]} />
+                        <div>
+                          <p className="font-medium text-gray-900">{entry.label}</p>
+                          <p className="text-sm text-gray-600">{new Date(entry.date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-700">Intensidad: {entry.intensity}/10</p>
+                        {entry.note && <p className="text-xs text-gray-500 max-w-xs truncate">{entry.note}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
     </div>
   );
 };

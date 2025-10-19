@@ -141,6 +141,17 @@ const features = [
     category: "Lectura",
     dueDate: ""
   },
+  {
+    title: "Salud Mental Test",
+    description: "Evaluá tu estado emocional y recibí orientación sobre bienestar mental con nuestro test interactivo.",
+    icon: <IconHeart size={20} />,
+    route: "/saludmental",
+    color: "#388E3C",
+    image: "/saludmental.svg",
+    priority: true,
+    category: "Ejercicios",
+    dueDate: ""
+  },
 ];
 
 interface UserData {

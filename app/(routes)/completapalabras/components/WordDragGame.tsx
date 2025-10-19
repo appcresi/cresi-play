@@ -102,7 +102,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   // Constants
   const CORRECT_ANSWER_POINTS = 100;
   const INCORRECT_ANSWER_PENALTY = 50;
-  const ACTIVITY_ID = `word_drag_${lessonTitle.toLowerCase().replace(/\s+/g, '_')}`;
+  const ACTIVITY_ID = `ArrastrarPalabras${lessonTitle.toLowerCase().replace(/\s+/g, '_')}`;
   
   // Cargar datos del usuario al inicio
   useEffect(() => {

@@ -61,7 +61,7 @@ interface Answer {
 }
 
 const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'chat_simulator';
+const ACTIVITY_ID = 'ChatSimulator';
 
 const ChatSimulator = () => {
   const [messages, setMessages] = useState<{ content: string; sender: string }[]>([]);
