@@ -1,10 +1,8 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import {
-  IconAB2,
   IconCards,
-  IconMoodPuzzled,
+  IconAB2,
   IconShieldCheck,
   IconBrandPnpm,
   IconPacman,
@@ -16,18 +14,22 @@ import {
   IconMoodHappy,
   IconEdit,
   IconTarget,
-  IconStar,
-  IconProgress,
   IconCircle,
   IconCalendar,
-  IconUser,
   IconBook,
   IconChevronRight,
-  IconPlus
+  IconPlus,
+  IconEye,
+  IconEyeOff,
+  IconGripVertical,
+  IconSettings,
+  IconRotate,
+  IconMoodPuzzled
 } from "@tabler/icons-react";
 
-const features = [
+const DEFAULT_FEATURES = [
   {
+    id: "trivias",
     title: "Trivias",
     description: "Poné a prueba tus conocimientos jugando trivias sobre salud, derechos, diversidad y mucho más.",
     icon: <IconCards size={20} />,
@@ -39,6 +41,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "pasapalabras",
     title: "Pasapalabras",
     description: "Jugá con las letras del abecedario y descubrí palabras claves a partir de sus definiciones.",
     icon: <IconAB2 size={20} />,
@@ -50,6 +53,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "simulador",
     title: "Simulador Grooming",
     description: "Practicá cómo reaccionar ante mensajes sospechosos y aprendé a cuidarte en las redes sociales.",
     icon: <IconShieldCheck size={20} />,
@@ -61,6 +65,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "completa",
     title: "Completa Palabras",
     description: "Completá frases con las palabras correctas y descubrí conceptos sobre sexualidad, cuidado y derechos.",
     icon: <IconBrandPnpm size={20} />,
@@ -71,6 +76,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "datamuncher",
     title: "DataMuncher",
     description: "Recorré el laberinto, respondé preguntas y esquivá bacterias para sumar puntos así ganar el juego.",
     icon: <IconPacman size={20} />,
@@ -81,6 +87,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "moodtracker",
     title: "MoodTracker",
     description: "Reflexioná sobre cómo te sentís, registrá tus emociones y aprendé a expresar tu estado de ánimo.",
     icon: <IconMoodPuzzled size={20} />,
@@ -91,6 +98,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "meme",
     title: "Meme Generator",
     description: "Creá memes originales con mensajes reflexivos y compartilos con tus amistades.",
     icon: <IconMoodTongueWink2 size={20} />,
@@ -101,6 +109,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "literatura",
     title: "Literatura",
     description: "Leé cuentos breves y relatos que invitan a reflexionar sobre vínculos, derechos y emociones.",
     icon: <IconBook size={20} />,
@@ -111,6 +120,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "biopuzzle",
     title: "BioPuzzle",
     description: "Completá el rompecabezas de la biología humana y aprendé sobre el cuerpo humano de forma divertida.",
     icon: <IconMoodPuzzled size={24} />,
@@ -121,6 +131,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "condon",
     title: "Prevención",
     description: "Todo sobre el preservativo, el único método que reduce la posibilidad de contraer un ITS.",
     icon: <IconMoodPuzzled size={24} />,
@@ -131,6 +142,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "lecciones",
     title: "Lecciones",
     description: "Poné a prueba tus conocimientos jugando trivias sobre salud, derechos, diversidad y mucho más.",
     icon: <IconCards size={20} />,
@@ -142,6 +154,7 @@ const features = [
     dueDate: ""
   },
   {
+    id: "saludmental",
     title: "Salud Mental Test",
     description: "Evaluá tu estado emocional y recibí orientación sobre bienestar mental con nuestro test interactivo.",
     icon: <IconHeart size={20} />,
@@ -153,40 +166,6 @@ const features = [
     dueDate: ""
   },
 ];
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodRecord[];
-    lastEntry: MoodRecord | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
 
 interface MoodRecord {
   date: string;
@@ -203,6 +182,26 @@ interface Achievement {
   date?: string;
 }
 
+interface UserData {
+  profile: {
+    character: { id: number; name: string; image: string };
+    username: string;
+    createdAt: string;
+    lastLogin: string;
+  };
+  game: { totalScore: number; totalLives: number; streak: number };
+  progress: {
+    completedActivities: string[];
+    activityScores: { [key: string]: number };
+    activityTimes: { [key: string]: string };
+    lastVisits: { [key: string]: string };
+  };
+  mood: { history: MoodRecord[]; lastEntry: MoodRecord | null };
+  achievements: Achievement[];
+  settings: { notifications: boolean; theme: 'light' | 'dark'; language: 'es' | 'en' };
+  dashboard: { visibleActivities: string[]; activityOrder: string[] };
+}
+
 class UserDataManager {
   private static readonly STORAGE_KEY = 'cresi_user_data';
 
@@ -214,26 +213,19 @@ class UserDataManager {
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
       },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
+      game: { totalScore: 0, totalLives: 3, streak: 0 },
       progress: {
         completedActivities: [],
         activityScores: {},
         activityTimes: {},
         lastVisits: {}
       },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
+      mood: { history: [], lastEntry: null },
       achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
+      settings: { notifications: true, theme: 'light', language: 'es' },
+      dashboard: {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
       }
     };
   }
@@ -241,7 +233,6 @@ class UserDataManager {
   static loadUserData(): UserData {
     try {
       if (typeof window === 'undefined') return this.getDefaultUserData();
-      
       const storedData = localStorage.getItem(this.STORAGE_KEY);
       if (storedData) {
         const parsedData = JSON.parse(storedData) as UserData;
@@ -265,27 +256,11 @@ class UserDataManager {
     }
   }
 
-  static updateProfile(updates: Partial<UserData['profile']>): UserData {
-    const userData = this.loadUserData();
-    userData.profile = { ...userData.profile, ...updates };
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static updateGameData(updates: Partial<UserData['game']>): UserData {
-    const userData = this.loadUserData();
-    userData.game = { ...userData.game, ...updates };
-    this.saveUserData(userData);
-    return userData;
-  }
-
   static visitActivity(activityTitle: string): UserData {
     const userData = this.loadUserData();
-    
     if (!userData.progress.lastVisits) {
       userData.progress.lastVisits = {};
     }
-    
     userData.progress.lastVisits[activityTitle] = new Date().toISOString();
     this.saveUserData(userData);
     return userData;
@@ -293,76 +268,50 @@ class UserDataManager {
 
   static completeActivity(activityTitle: string, score: number = 0): UserData {
     const userData = this.loadUserData();
-    
     if (!userData.progress.completedActivities.includes(activityTitle)) {
       userData.progress.completedActivities.push(activityTitle);
     }
-    
     userData.progress.activityScores[activityTitle] = score;
     userData.progress.activityTimes[activityTitle] = new Date().toISOString();
     userData.game.totalScore += score;
-    
     this.saveUserData(userData);
     return userData;
   }
 
-  static addMoodRecord(moodRecord: MoodRecord): UserData {
+  static updateDashboardVisibility(visibleActivities: string[]): UserData {
     const userData = this.loadUserData();
-    userData.mood.history.push(moodRecord);
-    userData.mood.lastEntry = moodRecord;
-    
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    userData.mood.history = userData.mood.history.filter(
-      record => new Date(record.date) >= thirtyDaysAgo
-    );
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static unlockAchievement(achievement: Achievement): UserData {
-    const userData = this.loadUserData();
-    const existingIndex = userData.achievements.findIndex(a => a.id === achievement.id);
-    
-    if (existingIndex >= 0) {
-      userData.achievements[existingIndex] = { ...achievement, unlocked: true, date: new Date().toISOString() };
-    } else {
-      userData.achievements.push({ ...achievement, unlocked: true, date: new Date().toISOString() });
+    if (!userData.dashboard) {
+      userData.dashboard = {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
+      };
     }
-    
+    userData.dashboard.visibleActivities = visibleActivities;
     this.saveUserData(userData);
     return userData;
   }
 
-  static updateSettings(updates: Partial<UserData['settings']>): UserData {
+  static updateActivityOrder(activityOrder: string[]): UserData {
     const userData = this.loadUserData();
-    userData.settings = { ...userData.settings, ...updates };
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static resetAllData(): UserData {
-    const defaultData = this.getDefaultUserData();
-    this.saveUserData(defaultData);
-    return defaultData;
-  }
-
-  static exportData(): string {
-    const userData = this.loadUserData();
-    return JSON.stringify(userData, null, 2);
-  }
-
-  static importData(dataString: string): boolean {
-    try {
-      const userData = JSON.parse(dataString) as UserData;
-      this.saveUserData(userData);
-      return true;
-    } catch (error) {
-      console.error('Error importing data:', error);
-      return false;
+    if (!userData.dashboard) {
+      userData.dashboard = {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
+      };
     }
+    userData.dashboard.activityOrder = activityOrder;
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  static resetDashboard(): UserData {
+    const userData = this.loadUserData();
+    userData.dashboard = {
+      visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+      activityOrder: DEFAULT_FEATURES.map(f => f.id)
+    };
+    this.saveUserData(userData);
+    return userData;
   }
 }
 
@@ -371,6 +320,10 @@ const EducationalProgressPanel = () => {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
   const [mounted, setMounted] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [hiddenActivities, setHiddenActivities] = useState<string[]>([]);
+  const [orderedActivities, setOrderedActivities] = useState<string[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -379,15 +332,42 @@ const EducationalProgressPanel = () => {
 
   const loadUserData = () => {
     const data = UserDataManager.loadUserData();
+    
+    if (!data.dashboard) {
+      data.dashboard = {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
+      };
+    }
+    
     setUserData(data);
+    setHiddenActivities(
+      DEFAULT_FEATURES.map(f => f.id).filter(
+        id => !data.dashboard.visibleActivities.includes(id)
+      )
+    );
+    setOrderedActivities(data.dashboard.activityOrder);
   };
 
   const categories = useMemo(() => 
-    ['Todos', ...Array.from(new Set(features.map(f => f.category)))],
+    ['Todos', ...Array.from(new Set(DEFAULT_FEATURES.map(f => f.category)))],
     []
   );
 
-  const filteredFeatures = useMemo(() => {
+  const getVisibleFeatures = () => {
+    const dashboard = userData.dashboard || {
+      visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+      activityOrder: DEFAULT_FEATURES.map(f => f.id)
+    };
+
+    const features = DEFAULT_FEATURES
+      .filter(f => dashboard.visibleActivities.includes(f.id))
+      .sort((a, b) => {
+        const aIndex = dashboard.activityOrder.indexOf(a.id);
+        const bIndex = dashboard.activityOrder.indexOf(b.id);
+        return aIndex - bIndex;
+      });
+
     let filtered = features;
     
     if (selectedCategory !== 'Todos') {
@@ -403,10 +383,108 @@ const EducationalProgressPanel = () => {
     }
     
     return filtered;
-  }, [searchTerm, selectedCategory]);
+  };
+
+  const getFilteredHiddenFeatures = () => {
+    let hidden = getHiddenFeatures();
+    
+    if (selectedCategory !== 'Todos') {
+      hidden = hidden.filter(feature => feature.category === selectedCategory);
+    }
+    
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      hidden = hidden.filter(feature =>
+        feature.title.toLowerCase().includes(term) ||
+        feature.description.toLowerCase().includes(term)
+      );
+    }
+    
+    return hidden;
+  };
+
+  const getHiddenFeatures = () => {
+    return DEFAULT_FEATURES.filter(f => hiddenActivities.includes(f.id));
+  };
+
+  const toggleActivityVisibility = (activityId: string) => {
+    const newHidden = hiddenActivities.includes(activityId)
+      ? hiddenActivities.filter(id => id !== activityId)
+      : [...hiddenActivities, activityId];
+
+    const newVisible = DEFAULT_FEATURES.map(f => f.id).filter(
+      id => !newHidden.includes(id)
+    );
+
+    setHiddenActivities(newHidden);
+    const updatedData = UserDataManager.updateDashboardVisibility(newVisible);
+    
+    if (!updatedData.dashboard) {
+      updatedData.dashboard = {
+        visibleActivities: newVisible,
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
+      };
+    }
+    
+    setUserData(updatedData);
+  };
+
+  const handleDragStart = (e: React.DragEvent, activityId: string) => {
+    setDraggedItem(activityId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem === targetId) return;
+
+    const newOrder = [...orderedActivities];
+    const draggedIndex = newOrder.indexOf(draggedItem);
+    const targetIndex = newOrder.indexOf(targetId);
+
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedItem);
+
+    setOrderedActivities(newOrder);
+    const updatedData = UserDataManager.updateActivityOrder(newOrder);
+    
+    if (!updatedData.dashboard) {
+      updatedData.dashboard = {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: newOrder
+      };
+    }
+    
+    setUserData(updatedData);
+    setDraggedItem(null);
+  };
+
+  const resetDashboard = () => {
+    if (confirm('¿Estás seguro de que querés resetear el panel a su estado original?')) {
+      const updatedData = UserDataManager.resetDashboard();
+      setUserData(updatedData);
+      setHiddenActivities([]);
+      setOrderedActivities(DEFAULT_FEATURES.map(f => f.id));
+      setEditMode(false);
+    }
+  };
 
   const clearSearch = () => {
     setSearchTerm('');
+  };
+
+  const handleActivityClick = (activityTitle: string, route: string, e: React.MouseEvent) => {
+    if (editMode) return;
+    e.preventDefault();
+    UserDataManager.visitActivity(activityTitle);
+    const updatedData = UserDataManager.loadUserData();
+    setUserData(updatedData);
+    window.location.href = route;
   };
 
   const getActivityProgress = (activityTitle: string) => {
@@ -444,15 +522,9 @@ const EducationalProgressPanel = () => {
     }
   };
 
-  const handleActivityClick = (activityTitle: string, route: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    UserDataManager.visitActivity(activityTitle);
-    
-    const updatedData = UserDataManager.loadUserData();
-    setUserData(updatedData);
-    
-    window.location.href = route;
-  };
+  const visibleFeatures = getVisibleFeatures();
+  const hiddenFeatures = getHiddenFeatures();
+  const filteredHiddenFeatures = getFilteredHiddenFeatures();
 
   if (!mounted) {
     return null;
@@ -461,6 +533,9 @@ const EducationalProgressPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header con botones de control */}
+
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="hidden lg:block lg:col-span-1">
@@ -473,9 +548,7 @@ const EducationalProgressPanel = () => {
                     <IconCircle size={16} className="text-green-600" />
                     <span className="text-sm text-gray-700">Completadas</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {userData.progress.completedActivities.length}/{features.length}
-                  </span>
+                  <span className="text-sm font-medium text-gray-900">{userData.progress.completedActivities.length}/{DEFAULT_FEATURES.length}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -507,11 +580,11 @@ const EducationalProgressPanel = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(userData.progress.completedActivities.length / features.length) * 100}%` }}
+                    style={{ width: `${(userData.progress.completedActivities.length / DEFAULT_FEATURES.length) * 100}%` }}
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  {Math.round((userData.progress.completedActivities.length / features.length) * 100)}% completado
+                  {Math.round((userData.progress.completedActivities.length / DEFAULT_FEATURES.length) * 100)}% completado
                 </p>
               </div>
             </div>
@@ -524,7 +597,6 @@ const EducationalProgressPanel = () => {
                   <button
                     onClick={() => window.location.href = '/moodtracker'}
                     className="text-blue-600 hover:text-blue-700"
-                    aria-label="Editar estado de ánimo"
                   >
                     <IconEdit size={16} />
                   </button>
@@ -539,134 +611,265 @@ const EducationalProgressPanel = () => {
               </div>
             )}
 
-            {/* Categories */}
-            <nav className="bg-white rounded-lg shadow-sm border border-gray-200 p-4" aria-label="Categorías">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Categorías</h3>
-              <div className="space-y-1">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                      selectedCategory === category
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </nav>
+            {/* Reset Button */}
+            {editMode && (
+              <button
+                onClick={resetDashboard}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors"
+              >
+                <IconRotate size={16} />
+                <span>Resetear Panel</span>
+              </button>
+            )}
           </aside>
 
           {/* Main Content */}
           <main className="lg:col-span-3">
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative max-w-md">
-                <label htmlFor="search-activities" className="sr-only">Buscar actividades</label>
+            {/* Search and Filter Bar */}
+            <div className="mb-6 flex flex-col sm:flex-row items-center gap-3">
+              {/* Buscador */}
+              <div className="relative flex-1 max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <IconSearch size={16} className="text-gray-400" />
                 </div>
                 <input
-                  id="search-activities"
                   type="text"
                   placeholder="Buscar actividades..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
                 {searchTerm && (
                   <button
                     onClick={clearSearch}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                    aria-label="Limpiar búsqueda"
                   >
                     <IconX size={16} />
                   </button>
                 )}
               </div>
+
+              {/* Categorías */}
+              <div className="relative w-full sm:w-44">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer bg-white"
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                  <IconChevronRight size={16} className="text-gray-400 rotate-90" />
+                </div>
+              </div>
+
+              {/* Botón Personalizar */}
+              <button
+                onClick={() => setEditMode(!editMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                  editMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <IconSettings size={18} />
+                <span>{editMode ? 'Guardado' : 'Personalizar'}</span>
+              </button>
             </div>
+
+
+            {/* Mode Indicator */}
+            {editMode && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center space-x-2">
+                <IconGripVertical size={16} />
+                <span>Modo edición: Arrastra las tarjetas para reordenarlas o haz clic en la X para ocultarlas</span>
+              </div>
+            )}
 
             {/* Activities Grid */}
             <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-              {filteredFeatures.length > 0 ? (
-                filteredFeatures.map((feature) => {
-                  const isCompleted = getActivityProgress(feature.title);
-                  const activityScore = getActivityScore(feature.title);
-                  const isPriority = feature.priority;
-                  
-                  return (
-                    <article 
-                      key={feature.title}
-                      className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                      onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Abrir actividad: ${feature.title}`}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          handleActivityClick(feature.title, feature.route, e as any);
-                        }
-                      }}
-                    >
-                      {/* Header */}
-                      <div className="relative">
+              {visibleFeatures.length > 0 || (editMode && filteredHiddenFeatures.length > 0) ? (
+                <>
+                  {/* Visible Features */}
+                  {visibleFeatures.map((feature) => {
+                    const isCompleted = getActivityProgress(feature.title);
+                    const activityScore = getActivityScore(feature.title);
+
+                    return (
+                      <article 
+                        key={feature.id}
+                        draggable={editMode}
+                        onDragStart={(e) => handleDragStart(e, feature.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, feature.id)}
+                        onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
+                        role="button"
+                        tabIndex={0}
+                        className={`relative bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 group ${
+                          editMode ? 'cursor-grab active:cursor-grabbing hover:shadow-lg' : 'hover:shadow-md cursor-pointer'
+                        } ${draggedItem === feature.id ? 'opacity-50 scale-95' : ''}`}
+                      >
+                        {/* Drag Handle */}
+                        {editMode && (
+                          <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                            <div className="bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700">
+                              <IconGripVertical size={16} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Hide Button */}
+                        {editMode && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleActivityVisibility(feature.id);
+                            }}
+                            className="absolute -right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                            title="Ocultar actividad"
+                          >
+                            <div className="bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700">
+                              <IconX size={16} />
+                            </div>
+                          </button>
+                        )}
+
+                        {/* Header */}
                         <div 
                           className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                           style={{ backgroundColor: `${feature.color}15` }}
                         >
-                          {/* Imagen de fondo OPTIMIZADA */}
+                          {/* Background Image if exists */}
                           {feature.image && (
-                            <div className="absolute inset-0 opacity-20">
-                              <Image
-                                src={feature.image}
-                                alt=""
-                                fill
-                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                className="object-cover"
-                                priority={isPriority}
-                                loading={isPriority ? "eager" : "lazy"}
-                                quality={60}
-                                placeholder="empty"
-                              />
+                            <div 
+                              className="absolute inset-0 opacity-20"
+                              style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                            />
+                          )}
+
+                          {/* Status Badge */}
+                          {isCompleted && (
+                            <div className="absolute top-1 right-1 md:top-2 md:right-2" aria-label="Actividad completada">
+                              <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <IconCircle size={12} className="text-white md:hidden" />
+                                <IconCircle size={14} className="text-white hidden md:block" />
+                              </div>
                             </div>
                           )}
-                          
-                          {/* Ícono */}
+
+                          {/* Last Visit Date */}
+                          <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
+                            <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
+                              getLastVisitDate(feature.title) 
+                                ? 'text-gray-600 bg-white/80' 
+                                : 'text-orange-600 bg-orange-50/80'
+                            }`}>
+                              <IconCalendar size={10} className="md:hidden" aria-hidden="true" />
+                              <IconCalendar size={12} className="hidden md:block" aria-hidden="true" />
+                              <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
+                              <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
+                            </div>
+                          </div>
+
+                          {/* Icon */}
                           <div 
                             className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                             style={{ backgroundColor: feature.color }}
-                            aria-hidden="true"
                           >
                             <div className="text-white scale-55 md:scale-75">
                               {feature.icon}
                             </div>
                           </div>
                         </div>
-                        
-                        {/* Status Badge */}
-                        {isCompleted && (
-                          <div className="absolute top-1 right-1 md:top-2 md:right-2" aria-label="Actividad completada">
-                            <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
-                              <IconCircle size={12} className="text-white md:hidden" />
-                              <IconCircle size={14} className="text-white hidden md:block" />
-                            </div>
+
+                        {/* Content */}
+                        <div className="p-2 md:p-4">
+                          <div className="flex items-center justify-between mb-1 md:mb-2">
+                            <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
+                              {feature.title}
+                            </h3>
+                            {!editMode && <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />}
                           </div>
+                          
+                          <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
+                            {feature.description}
+                          </p>
+                          
+                          <div className="flex items-center justify-between gap-1">
+                            <span 
+                              className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
+                              style={{ 
+                                backgroundColor: `${feature.color}15`,
+                                color: feature.color 
+                              }}
+                            >
+                              {feature.category}
+                            </span>
+                            
+                            {isCompleted && (
+                              <div className="flex items-center space-x-1 md:space-x-2">
+                                {activityScore > 0 && (
+                                  <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
+                                    {activityScore} pts
+                                  </span>
+                                )}
+                                <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
+                                  Completado
+                                </span>
+                                <span className="text-[10px] text-green-600 font-medium sm:hidden">
+                                  ✓
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {/* Hidden Features (only in edit mode) */}
+                  {editMode && hiddenFeatures.map((feature) => (
+                    <article 
+                      key={feature.id}
+                      onClick={(e) => {
+                        if (editMode) {
+                          e.preventDefault();
+                          toggleActivityVisibility(feature.id);
+                        }
+                      }}
+                      className="relative bg-white rounded-lg shadow-sm border border-gray-300 transition-all duration-200 group cursor-pointer opacity-40 hover:opacity-60"
+                    >
+                      {/* Show Button (Plus) */}
+                      <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/5 group-hover:bg-black/10 transition-colors z-20">
+                        <div className="bg-green-600 text-white p-3 rounded-full shadow-lg group-hover:bg-green-700">
+                          <IconPlus size={24} />
+                        </div>
+                      </div>
+
+                      {/* Header */}
+                      <div 
+                        className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
+                        style={{ backgroundColor: `${feature.color}15` }}
+                      >
+                        {/* Background Image if exists */}
+                        {feature.image && (
+                          <div 
+                            className="absolute inset-0 opacity-20"
+                            style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                          />
                         )}
 
-                        {/* Last Visit Date */}
-                        <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
-                          <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
-                            getLastVisitDate(feature.title) 
-                              ? 'text-gray-600 bg-white/80' 
-                              : 'text-orange-600 bg-orange-50/80'
-                          }`}>
-                            <IconCalendar size={10} className="md:hidden" aria-hidden="true" />
-                            <IconCalendar size={12} className="hidden md:block" aria-hidden="true" />
-                            <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
-                            <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
+                        {/* Icon */}
+                        <div 
+                          className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
+                          style={{ backgroundColor: feature.color }}
+                        >
+                          <div className="text-white scale-55 md:scale-75">
+                            {feature.icon}
                           </div>
                         </div>
                       </div>
@@ -674,55 +877,32 @@ const EducationalProgressPanel = () => {
                       {/* Content */}
                       <div className="p-2 md:p-4">
                         <div className="flex items-center justify-between mb-1 md:mb-2">
-                          <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
+                          <h3 className="font-medium text-gray-900 text-xs md:text-sm line-clamp-1">
                             {feature.title}
                           </h3>
-                          <IconChevronRight 
-                            size={14} 
-                            className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" 
-                            aria-hidden="true"
-                          />
                         </div>
                         
                         <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
                           {feature.description}
                         </p>
                         
-                        <div className="flex items-center justify-between gap-1">
-                          <span 
-                            className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
-                            style={{ 
-                              backgroundColor: `${feature.color}15`,
-                              color: feature.color 
-                            }}
-                          >
-                            {feature.category}
-                          </span>
-                          
-                          {isCompleted && (
-                            <div className="flex items-center space-x-1 md:space-x-2">
-                              {activityScore > 0 && (
-                                <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
-                                  {activityScore} pts
-                                </span>
-                              )}
-                              <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
-                                Completado
-                              </span>
-                              <span className="text-[10px] text-green-600 font-medium sm:hidden">
-                                ✓
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        <span 
+                          className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full"
+                          style={{ 
+                            backgroundColor: `${feature.color}15`,
+                            color: feature.color 
+                          }}
+                        >
+                          {feature.category}
+                        </span>
                       </div>
                     </article>
-                  );
-                })
+                  ))}
+                </>
               ) : (
                 <div className="col-span-full flex flex-col items-center justify-center py-12">
                   <div className="text-center">
-                    <IconSearch size={48} className="text-gray-300 mx-auto mb-4" aria-hidden="true" />
+                    <IconSearch size={48} className="text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No se encontraron actividades
                     </h3>
