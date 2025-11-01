@@ -224,7 +224,7 @@ const EducationalProgressPanel = () => {
     loadUserData();
   }, [user]);
 
-  const loadUserData = async () => {
+ const loadUserData = async () => {
     console.log('📥 Cargando datos del usuario...');
     const localData = UserDataManager.loadUserData();
     
@@ -244,6 +244,16 @@ const EducationalProgressPanel = () => {
             ...firestoreData,
             dashboard: firestoreData.dashboard || localData.dashboard
           };
+
+          // ✅ VALIDACIÓN: Verificar si el dashboard está vacío
+          if (!mergedData.dashboard || mergedData.dashboard.visibleActivities.length === 0) {
+            console.log('⚠️ Dashboard vacío detectado, inicializando con todas las actividades');
+            mergedData.dashboard = {
+              visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+              activityOrder: DEFAULT_FEATURES.map(f => f.id)
+            };
+          }
+
           setUserData(mergedData);
           UserDataManager.saveUserData(mergedData); // Guardar en localStorage también
           
@@ -258,6 +268,16 @@ const EducationalProgressPanel = () => {
           }
         } else {
           console.log('⚠️ No hay datos en Firestore, usando localStorage');
+          
+          // ✅ VALIDACIÓN: Verificar si localStorage también está vacío
+          if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
+            console.log('⚠️ Dashboard vacío en localStorage, inicializando con todas las actividades');
+            localData.dashboard = {
+              visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+              activityOrder: DEFAULT_FEATURES.map(f => f.id)
+            };
+          }
+
           setUserData(localData);
           setHiddenActivities(
             DEFAULT_FEATURES.map(f => f.id).filter(
@@ -268,6 +288,16 @@ const EducationalProgressPanel = () => {
         }
       } catch (error) {
         console.error('❌ Error cargando de Firestore:', error);
+        
+        // ✅ VALIDACIÓN: En caso de error, también validar localStorage
+        if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
+          console.log('⚠️ Dashboard vacío después de error, inicializando con todas las actividades');
+          localData.dashboard = {
+            visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+            activityOrder: DEFAULT_FEATURES.map(f => f.id)
+          };
+        }
+
         setUserData(localData);
         setHiddenActivities(
           DEFAULT_FEATURES.map(f => f.id).filter(
@@ -279,6 +309,16 @@ const EducationalProgressPanel = () => {
     } else {
       // Usuario anónimo - solo usar localStorage
       console.log('👤 Usuario anónimo - usando solo localStorage');
+      
+      // ✅ VALIDACIÓN: Verificar si el dashboard está vacío para usuarios anónimos también
+      if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
+        console.log('⚠️ Dashboard vacío para usuario anónimo, inicializando con todas las actividades');
+        localData.dashboard = {
+          visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+          activityOrder: DEFAULT_FEATURES.map(f => f.id)
+        };
+      }
+
       setUserData(localData);
       setHiddenActivities(
         DEFAULT_FEATURES.map(f => f.id).filter(

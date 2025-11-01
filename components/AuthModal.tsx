@@ -19,6 +19,11 @@ const characters: Character[] = [
   { id: 3, name: "Valiente", image: "personaje3.webp" }
 ];
 
+const DEFAULT_FEATURES_IDS = [
+  "trivias", "pasapalabras", "simulador", "completa", "datamuncher",
+  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental"
+];
+
 type AuthMode = 'profile-setup' | 'login' | 'register';
 
 interface UserDataType {
@@ -62,7 +67,7 @@ interface UserDataType {
 const googleProvider = new GoogleAuthProvider();
 
 const AuthModal = () => {
-  const { user } = useAuth(); // Usar el contexto de autenticación
+  const { user } = useAuth();
   const [mode, setMode] = useState<AuthMode>('profile-setup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,7 +76,6 @@ const AuthModal = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // No mostrar el modal si el usuario ya está autenticado
   if (user) {
     return null;
   }
@@ -95,8 +99,8 @@ const AuthModal = () => {
       achievements: [],
       settings: { notifications: true, theme: 'light', language: 'es' },
       dashboard: {
-        visibleActivities: [],
-        activityOrder: []
+        visibleActivities: DEFAULT_FEATURES_IDS,
+        activityOrder: DEFAULT_FEATURES_IDS
       }
     };
     localStorage.setItem('cresi_user_data', JSON.stringify(userData));
@@ -156,7 +160,6 @@ const AuthModal = () => {
       
       console.log('✅ Usuario Google autenticado:', result.user.uid);
       
-      // Esperar a que Firebase esté listo
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('🔄 Cargando datos existentes de Firestore...');
@@ -165,7 +168,6 @@ const AuthModal = () => {
       if (existingData && existingData.profile && existingData.profile.username) {
         console.log('✅ Datos encontrados en Firestore');
         
-        // Verificar si el usuario cambió nombre o avatar
         const usernameChanged = existingData.profile.username !== username;
         const avatarChanged = existingData.profile.character.id !== selectedCharacter.id;
         
@@ -174,10 +176,18 @@ const AuthModal = () => {
           console.log('   Nombre cambió:', usernameChanged);
           console.log('   Avatar cambió:', avatarChanged);
           
-          // Actualizar los datos con los nuevos valores
           existingData.profile.username = username;
           existingData.profile.character = selectedCharacter;
           existingData.profile.lastLogin = new Date().toISOString();
+        }
+
+        // Asegurar que el dashboard esté inicializado correctamente
+        if (!existingData.dashboard || existingData.dashboard.visibleActivities.length === 0) {
+          console.log('⚠️ Dashboard vacío, inicializando con todas las actividades');
+          existingData.dashboard = {
+            visibleActivities: DEFAULT_FEATURES_IDS,
+            activityOrder: DEFAULT_FEATURES_IDS
+          };
         }
         
         localStorage.setItem('cresi_user_data', JSON.stringify(existingData));
@@ -190,7 +200,6 @@ const AuthModal = () => {
           createdAt: existingData.profile.createdAt
         }));
         
-        // Sincronizar los cambios a Firestore si hubo cambios
         if (usernameChanged || avatarChanged) {
           console.log('📤 Sincronizando cambios a Firestore...');
           await UserDataSync.syncCompleteData(existingData);
@@ -293,7 +302,6 @@ const AuthModal = () => {
       
       console.log('✅ Usuario autenticado:', result.user.uid);
       
-      // Esperar a que Firebase esté listo
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('🔄 Cargando datos existentes de Firestore...');
@@ -302,7 +310,6 @@ const AuthModal = () => {
       if (existingData && existingData.profile && existingData.profile.username) {
         console.log('✅ Datos encontrados en Firestore');
         
-        // Verificar si el usuario cambió nombre o avatar
         const usernameChanged = existingData.profile.username !== username;
         const avatarChanged = existingData.profile.character.id !== selectedCharacter.id;
         
@@ -311,10 +318,18 @@ const AuthModal = () => {
           console.log('   Nombre cambió:', usernameChanged);
           console.log('   Avatar cambió:', avatarChanged);
           
-          // Actualizar los datos con los nuevos valores
           existingData.profile.username = username;
           existingData.profile.character = selectedCharacter;
           existingData.profile.lastLogin = new Date().toISOString();
+        }
+
+        // Asegurar que el dashboard esté inicializado correctamente
+        if (!existingData.dashboard || existingData.dashboard.visibleActivities.length === 0) {
+          console.log('⚠️ Dashboard vacío, inicializando con todas las actividades');
+          existingData.dashboard = {
+            visibleActivities: DEFAULT_FEATURES_IDS,
+            activityOrder: DEFAULT_FEATURES_IDS
+          };
         }
         
         localStorage.setItem('cresi_user_data', JSON.stringify(existingData));
@@ -327,7 +342,6 @@ const AuthModal = () => {
           createdAt: existingData.profile.createdAt
         }));
         
-        // Sincronizar los cambios a Firestore si hubo cambios
         if (usernameChanged || avatarChanged) {
           console.log('📤 Sincronizando cambios a Firestore...');
           await UserDataSync.syncCompleteData(existingData);
