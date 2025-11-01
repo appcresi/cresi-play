@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
+import UserDataSync from '@/lib/userDataSync';
+import { auth } from '@/lib/firebase';
 
 // Estructura unificada de datos del usuario
 interface UserData {
@@ -161,6 +163,23 @@ const GameStatusBar = ({
   const router = useRouter();
   const [isScoreAnimating, setIsScoreAnimating] = useState(false);
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  // Verificar estado de autenticación - más rápido
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setIsAuthenticated(true);
+        setIsAnonymous(currentUser.isAnonymous);
+        console.log('✅ Auth verificado:', currentUser.isAnonymous ? 'Anónimo' : 'Autenticado');
+      } else {
+        setIsAuthenticated(false);
+        setIsAnonymous(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     loadUserData();
@@ -178,25 +197,41 @@ const GameStatusBar = ({
     setUserData(data);
   };
 
-  // Sincronizar cambios de puntuación con el sistema unificado
+  // Sincronizar cambios de puntuación - CON DEBOUNCE
   useEffect(() => {
     if (score !== userData.game.totalScore) {
       const updatedData = UserDataManager.updateGameScore(score, activityName);
       setUserData(updatedData);
       
+      // Sincronizar SOLO si NO es anónimo - sin esperar
+      if (isAuthenticated && !isAnonymous) {
+        // No esperar a que termine, ejecutar en background
+        UserDataSync.syncCompleteData(updatedData).catch(err => 
+          console.error('Error sincronizando en background:', err)
+        );
+      }
+      
       setIsScoreAnimating(true);
       const timer = setTimeout(() => setIsScoreAnimating(false), 600);
       return () => clearTimeout(timer);
     }
-  }, [score, activityName]);
+  }, [score, activityName, isAuthenticated, isAnonymous, userData.game.totalScore]);
 
-  // Sincronizar cambios de vidas
+  // Sincronizar cambios de vidas - CON DEBOUNCE
   useEffect(() => {
     if (lives !== userData.game.totalLives) {
       const updatedData = UserDataManager.updateLives(lives);
       setUserData(updatedData);
+      
+      // Sincronizar SOLO si NO es anónimo - sin esperar
+      if (isAuthenticated && !isAnonymous) {
+        // No esperar a que termine, ejecutar en background
+        UserDataSync.syncCompleteData(updatedData).catch(err => 
+          console.error('Error sincronizando en background:', err)
+        );
+      }
     }
-  }, [lives]);
+  }, [lives, isAuthenticated, isAnonymous, userData.game.totalLives]);
 
   const handleProfileClick = () => {
     router.push('/');
@@ -325,6 +360,16 @@ const GameStatusBar = ({
                 <span className="text-xs text-gray-500">Nivel: </span>
                 <span className="font-medium text-gray-900">{level}</span>
               </div>
+            </div>
+
+            {/* Auth Status Indicator */}
+            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className={`w-2 h-2 rounded-full ${
+                isAnonymous ? 'bg-gray-400' : 'bg-green-500'
+              }`}></div>
+              <span className="text-xs text-gray-600">
+                {isAnonymous ? 'Invitado' : 'Registrado'}
+              </span>
             </div>
           </div>
         </div>

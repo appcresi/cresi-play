@@ -26,6 +26,9 @@ import {
   IconRotate,
   IconMoodPuzzled
 } from "@tabler/icons-react";
+import UserDataManager from '@/lib/userDataManager';
+import UserDataSync from '@/lib/userDataSync';
+import { useAuth } from '@/context/AuthContext';
 
 const DEFAULT_FEATURES = [
   {
@@ -167,6 +170,7 @@ const DEFAULT_FEATURES = [
   },
 ];
 
+
 interface MoodRecord {
   date: string;
   mood: number;
@@ -202,120 +206,9 @@ interface UserData {
   dashboard: { visibleActivities: string[]; activityOrder: string[] };
 }
 
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: { totalScore: 0, totalLives: 3, streak: 0 },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: { history: [], lastEntry: null },
-      achievements: [],
-      settings: { notifications: true, theme: 'light', language: 'es' },
-      dashboard: {
-        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-        activityOrder: DEFAULT_FEATURES.map(f => f.id)
-      }
-    };
-  }
-
-  static loadUserData(): UserData {
-    try {
-      if (typeof window === 'undefined') return this.getDefaultUserData();
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        parsedData.profile.lastLogin = new Date().toISOString();
-        this.saveUserData(parsedData);
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  static saveUserData(userData: UserData): void {
-    try {
-      if (typeof window === 'undefined') return;
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-
-  static visitActivity(activityTitle: string): UserData {
-    const userData = this.loadUserData();
-    if (!userData.progress.lastVisits) {
-      userData.progress.lastVisits = {};
-    }
-    userData.progress.lastVisits[activityTitle] = new Date().toISOString();
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static completeActivity(activityTitle: string, score: number = 0): UserData {
-    const userData = this.loadUserData();
-    if (!userData.progress.completedActivities.includes(activityTitle)) {
-      userData.progress.completedActivities.push(activityTitle);
-    }
-    userData.progress.activityScores[activityTitle] = score;
-    userData.progress.activityTimes[activityTitle] = new Date().toISOString();
-    userData.game.totalScore += score;
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static updateDashboardVisibility(visibleActivities: string[]): UserData {
-    const userData = this.loadUserData();
-    if (!userData.dashboard) {
-      userData.dashboard = {
-        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-        activityOrder: DEFAULT_FEATURES.map(f => f.id)
-      };
-    }
-    userData.dashboard.visibleActivities = visibleActivities;
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static updateActivityOrder(activityOrder: string[]): UserData {
-    const userData = this.loadUserData();
-    if (!userData.dashboard) {
-      userData.dashboard = {
-        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-        activityOrder: DEFAULT_FEATURES.map(f => f.id)
-      };
-    }
-    userData.dashboard.activityOrder = activityOrder;
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  static resetDashboard(): UserData {
-    const userData = this.loadUserData();
-    userData.dashboard = {
-      visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-      activityOrder: DEFAULT_FEATURES.map(f => f.id)
-    };
-    this.saveUserData(userData);
-    return userData;
-  }
-}
 
 const EducationalProgressPanel = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
@@ -324,29 +217,78 @@ const EducationalProgressPanel = () => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [hiddenActivities, setHiddenActivities] = useState<string[]>([]);
   const [orderedActivities, setOrderedActivities] = useState<string[]>([]);
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
 
   useEffect(() => {
     setMounted(true);
     loadUserData();
-  }, []);
+  }, [user]);
 
-  const loadUserData = () => {
-    const data = UserDataManager.loadUserData();
+  const loadUserData = async () => {
+    console.log('📥 Cargando datos del usuario...');
+    const localData = UserDataManager.loadUserData();
     
-    if (!data.dashboard) {
-      data.dashboard = {
-        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-        activityOrder: DEFAULT_FEATURES.map(f => f.id)
-      };
+    // Si el usuario está registrado (no anónimo), intentar cargar desde Firestore
+    if (user && !user.isAnonymous) {
+      console.log('🔄 Usuario registrado - cargando configuración desde Firestore...');
+      
+      try {
+        // Cargar datos completos desde Firestore
+        const firestoreData = await UserDataSync.loadFromFirestore();
+        
+        if (firestoreData) {
+          console.log('✅ Datos cargados desde Firestore');
+          // Fusionar datos de Firestore con localStorage (Firestore tiene prioridad)
+          const mergedData = {
+            ...localData,
+            ...firestoreData,
+            dashboard: firestoreData.dashboard || localData.dashboard
+          };
+          setUserData(mergedData);
+          UserDataManager.saveUserData(mergedData); // Guardar en localStorage también
+          
+          // Actualizar estados del dashboard
+          if (mergedData.dashboard) {
+            setHiddenActivities(
+              DEFAULT_FEATURES.map(f => f.id).filter(
+                id => !mergedData.dashboard.visibleActivities.includes(id)
+              )
+            );
+            setOrderedActivities(mergedData.dashboard.activityOrder);
+          }
+        } else {
+          console.log('⚠️ No hay datos en Firestore, usando localStorage');
+          setUserData(localData);
+          setHiddenActivities(
+            DEFAULT_FEATURES.map(f => f.id).filter(
+              id => !localData.dashboard.visibleActivities.includes(id)
+            )
+          );
+          setOrderedActivities(localData.dashboard.activityOrder);
+        }
+      } catch (error) {
+        console.error('❌ Error cargando de Firestore:', error);
+        setUserData(localData);
+        setHiddenActivities(
+          DEFAULT_FEATURES.map(f => f.id).filter(
+            id => !localData.dashboard.visibleActivities.includes(id)
+          )
+        );
+        setOrderedActivities(localData.dashboard.activityOrder);
+      }
+    } else {
+      // Usuario anónimo - solo usar localStorage
+      console.log('👤 Usuario anónimo - usando solo localStorage');
+      setUserData(localData);
+      setHiddenActivities(
+        DEFAULT_FEATURES.map(f => f.id).filter(
+          id => !localData.dashboard.visibleActivities.includes(id)
+        )
+      );
+      setOrderedActivities(localData.dashboard.activityOrder);
     }
     
-    setUserData(data);
-    setHiddenActivities(
-      DEFAULT_FEATURES.map(f => f.id).filter(
-        id => !data.dashboard.visibleActivities.includes(id)
-      )
-    );
-    setOrderedActivities(data.dashboard.activityOrder);
+    setLoadingDashboard(false);
   };
 
   const categories = useMemo(() => 
@@ -526,8 +468,15 @@ const EducationalProgressPanel = () => {
   const hiddenFeatures = getHiddenFeatures();
   const filteredHiddenFeatures = getFilteredHiddenFeatures();
 
-  if (!mounted) {
-    return null;
+  if (!mounted || loadingDashboard) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando tu panel...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -679,7 +628,6 @@ const EducationalProgressPanel = () => {
               </button>
             </div>
 
-
             {/* Mode Indicator */}
             {editMode && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center space-x-2">
@@ -741,7 +689,6 @@ const EducationalProgressPanel = () => {
                           className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                           style={{ backgroundColor: `${feature.color}15` }}
                         >
-                          {/* Background Image if exists */}
                           {feature.image && (
                             <div 
                               className="absolute inset-0 opacity-20"
@@ -749,9 +696,8 @@ const EducationalProgressPanel = () => {
                             />
                           )}
 
-                          {/* Status Badge */}
                           {isCompleted && (
-                            <div className="absolute top-1 right-1 md:top-2 md:right-2" aria-label="Actividad completada">
+                            <div className="absolute top-1 right-1 md:top-2 md:right-2">
                               <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
                                 <IconCircle size={12} className="text-white md:hidden" />
                                 <IconCircle size={14} className="text-white hidden md:block" />
@@ -759,21 +705,19 @@ const EducationalProgressPanel = () => {
                             </div>
                           )}
 
-                          {/* Last Visit Date */}
                           <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
                             <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
                               getLastVisitDate(feature.title) 
                                 ? 'text-gray-600 bg-white/80' 
                                 : 'text-orange-600 bg-orange-50/80'
                             }`}>
-                              <IconCalendar size={10} className="md:hidden" aria-hidden="true" />
-                              <IconCalendar size={12} className="hidden md:block" aria-hidden="true" />
+                              <IconCalendar size={10} className="md:hidden" />
+                              <IconCalendar size={12} className="hidden md:block" />
                               <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
                               <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
                             </div>
                           </div>
 
-                          {/* Icon */}
                           <div 
                             className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                             style={{ backgroundColor: feature.color }}
@@ -853,7 +797,6 @@ const EducationalProgressPanel = () => {
                         className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                         style={{ backgroundColor: `${feature.color}15` }}
                       >
-                        {/* Background Image if exists */}
                         {feature.image && (
                           <div 
                             className="absolute inset-0 opacity-20"
@@ -861,7 +804,6 @@ const EducationalProgressPanel = () => {
                           />
                         )}
 
-                        {/* Icon */}
                         <div 
                           className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                           style={{ backgroundColor: feature.color }}

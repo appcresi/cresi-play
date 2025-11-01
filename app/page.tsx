@@ -5,7 +5,7 @@ import {
 import Features from "./components/Features";
 
 // Lazy load heavy components
-const CharacterSelectionModal = lazy(() => import('@/components/CharacterSelectionModal'));
+const CharacterSelectionModal = lazy(() => import('@/components/AuthModal'));
 
 
 const ComicHome = () => {

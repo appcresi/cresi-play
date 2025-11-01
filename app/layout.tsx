@@ -1,19 +1,12 @@
-import { type Metadata } from 'next'
+import React from 'react'
+import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 
 import Analytics from '@/components/Analytics'
 import Adsense from '@/components/Adsense'
 import Header from '@/components/Header'
-import Head from 'next/head';
-
-// En tu layout principal:
-<Head>
-  {/* Preload de la imagen más crítica */}
-  <link rel="preload" href="/trivia.svg" as="image" />
-  <link rel="preload" href="/pasapalabras.svg" as="image" />
-  <link rel="preload" href="/simulador.svg" as="image" />
-</Head>
+import { AuthProvider } from '@/context/AuthContext'
 
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
@@ -67,14 +60,22 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout ({ children }: { children: React.ReactNode }): JSX.Element {
+export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang='es' className={monaSans.className}>
+      <head>
+        {/* Preload de imágenes críticas */}
+        <link rel="preload" href="/trivia.svg" as="image" />
+        <link rel="preload" href="/pasapalabras.svg" as="image" />
+        <link rel="preload" href="/simulador.svg" as="image" />
+      </head>
       <body className='bg-[#f3f4f6]'>
-        <Header />
-        <main> {/* Añadimos padding-top para dejar espacio para el header */}
-          {children}
-        </main>
+        <AuthProvider>
+          <Header />
+          <main>
+            {children}
+          </main>
+        </AuthProvider>
         <Analytics />
         <Adsense />
       </body>

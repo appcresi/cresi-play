@@ -14,12 +14,15 @@ import {
   IconMoodTongueWink2,
   IconBooks,
   IconBell,
-  IconSettings
+  IconSettings,
+  IconLogout
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 import cresiLogo from "public/cresi-logo.webp";
 
@@ -91,14 +94,39 @@ const STORAGE_KEY = 'cresi_user_data';
 
 export default function Header(): JSX.Element {
   const pathname = usePathname();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [currentSection, setCurrentSection] = useState<string>("CrESI");
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [suggestedActivities, setSuggestedActivities] = useState<SuggestedActivity[]>([]);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Cargar userData
+  // Solo renderizar contenido después de montar en cliente
   useEffect(() => {
+    setMounted(true);
+    loadUserData();
+    
+    // Escuchar cambios en localStorage
+    const handleStorageChange = () => {
+      loadUserData();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // También escuchar cambios locales usando un interval
+    const interval = setInterval(() => {
+      loadUserData();
+    }, 500);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const loadUserData = () => {
     try {
       const storedData = localStorage.getItem(STORAGE_KEY);
       if (storedData) {
@@ -109,7 +137,7 @@ export default function Header(): JSX.Element {
     } catch (error) {
       console.error('Error loading user data:', error);
     }
-  }, []);
+  };
 
   const calculateSuggestedActivities = (data: UserData) => {
     const now = new Date();
@@ -118,14 +146,12 @@ export default function Header(): JSX.Element {
     const activitySuggestions: SuggestedActivity[] = [];
 
     applications.forEach(app => {
-      // Ignorar "Inicio" y "Perfil"
       if (app.href === '/' || app.href === '/user') return;
 
-      const activityId = app.href.substring(1); // Remove leading '/'
+      const activityId = app.href.substring(1);
       const lastVisit = data.progress.lastVisits[activityId];
 
       if (!lastVisit) {
-        // Nunca visitada
         activitySuggestions.push({
           name: app.name,
           href: app.href,
@@ -135,7 +161,6 @@ export default function Header(): JSX.Element {
       } else {
         const lastVisitDate = new Date(lastVisit);
         if (lastVisitDate < thirtyDaysAgo) {
-          // No visitada en más de 30 días
           activitySuggestions.push({
             name: app.name,
             href: app.href,
@@ -147,7 +172,6 @@ export default function Header(): JSX.Element {
       }
     });
 
-    // Ordenar: primero las nunca visitadas, luego las más antiguas
     activitySuggestions.sort((a, b) => {
       if (a.reason === 'never_visited' && b.reason !== 'never_visited') return -1;
       if (a.reason !== 'never_visited' && b.reason === 'never_visited') return 1;
@@ -161,28 +185,24 @@ export default function Header(): JSX.Element {
       return 0;
     });
 
-    // Tomar solo las primeras 2
     setSuggestedActivities(activitySuggestions.slice(0, 2));
   };
 
   useEffect(() => {
-    // Encuentra la aplicación correspondiente a la ruta actual
     const currentApp = applications.find(app => 
       pathname === app.href || pathname.startsWith(`${app.href}/`)
     );
     
-    // Si encuentra una aplicación, establece su nombre como la sección actual
     if (currentApp) {
       setCurrentSection(currentApp.name);
     } else {
-      setCurrentSection("CrESI"); // Valor por defecto
+      setCurrentSection("CrESI");
     }
   }, [pathname]);
 
   useEffect(() => {
     const headerHeight = 64;
     document.body.style.paddingTop = `${headerHeight}px`;
-
     return () => {
       document.body.style.paddingTop = '0px';
     };
@@ -198,44 +218,100 @@ export default function Header(): JSX.Element {
     return 'Hace mucho tiempo';
   };
 
-  return (
-    <header className="h-16 px-6 w-full fixed top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
-        {/* Lado izquierdo - Logo y título */}
-        <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex items-center gap-3">
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      
+      // Cerrar sesión de Firebase
+      await signOut(auth);
+      
+      // Limpiar localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('cresi_profile');
+      
+      // Limpiar estado local
+      setUserData(null);
+      
+      // Redirigir a inicio
+      router.push('/');
+      
+      // Recargar página completamente después de un pequeño delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      setIsLoggingOut(false);
+    }
+  };
+
+  if (!mounted) {
+    return (
+      <header className="h-16 px-6 w-full fixed top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-3">
               <Image
                 src={cresiLogo}
                 alt="Logotipo de CrESI"
                 width={40}
                 height={40}
-                className="rounded-lg group-hover:scale-105 transition-transform"
+                className="rounded-lg"
               />
-              
               <div className="hidden sm:block">
-                <h1 className="text-xl font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
-                  {currentSection}
-                </h1>
-                {userData && (
-                  <p className="text-xs text-gray-500">
-                    Hola, {userData.profile.username}
-                  </p>
-                )}
+                <h1 className="text-xl font-medium text-gray-800">CrESI</h1>
               </div>
+            </Link>
+          </div>
+        </nav>
+      </header>
+    );
+  }
+
+  const categorizedApps = applications.reduce((acc, app) => {
+    const category = app.category || 'Otros';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(app);
+    return acc;
+  }, {} as Record<string, typeof applications>);
+
+  return (
+    <header className="h-16 px-6 w-full fixed top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
+        {/* Lado izquierdo */}
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-3 group">
+            <Image
+              src={cresiLogo}
+              alt="Logotipo de CrESI"
+              width={40}
+              height={40}
+              className="rounded-lg group-hover:scale-105 transition-transform"
+            />
+            
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
+                {currentSection}
+              </h1>
+              {userData && (
+                <p className="text-xs text-gray-500">
+                  Hola, {userData.profile.username}
+                </p>
+              )}
             </div>
           </Link>
         </div>
         
-        {/* Lado derecho - Controles */}
+        {/* Lado derecho */}
         <div className="flex items-center gap-2">
-          {/* Botón de notificaciones */}
+          {/* Notificaciones */}
           <Popover className="relative">
             {({ open }) => (
               <>
                 <Popover.Button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
                   <IconBell className="w-5 h-5 text-gray-600" />
-                  {/* Indicador de notificación */}
                   {suggestedActivities.length > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
@@ -264,9 +340,8 @@ export default function Header(): JSX.Element {
                       ) : (
                         <div className="space-y-3">
                           {suggestedActivities.map((activity, index) => (
-                            <Popover.Button
+                            <Link
                               key={index}
-                              as={Link}
                               href={activity.href}
                               className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
                             >
@@ -284,7 +359,7 @@ export default function Header(): JSX.Element {
                                   }
                                 </p>
                               </div>
-                            </Popover.Button>
+                            </Link>
                           ))}
                         </div>
                       )}
@@ -295,7 +370,7 @@ export default function Header(): JSX.Element {
             )}
           </Popover>
 
-          {/* Botón de configuración */}
+          {/* Configuración */}
           <Link 
             href="/user"
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -303,26 +378,172 @@ export default function Header(): JSX.Element {
             <IconSettings className="w-5 h-5 text-gray-600" />
           </Link>
 
-          {/* Popover de aplicaciones */}
-          <ApplicationsPopover 
-            onOpenChange={setIsPopoverOpen}
-            userData={userData}
-          />
+          {/* Aplicaciones */}
+          <Popover className="relative">
+            {({ open, close }) => (
+              <>
+                <Popover.Button className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${open ? 'bg-gray-100' : ''}`}>
+                  <IconApps className="w-5 h-5 text-gray-600" />
+                </Popover.Button>
 
-          {/* Avatar del usuario */}
-          <Link href="/user">
-            {userData?.profile.character.image ? (
-              <img
-                src={userData.profile.character.image}
-                alt={userData.profile.username}
-                className="w-8 h-8 rounded-full hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer"
-              />
-            ) : (
-              <button className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-sm hover:bg-blue-600 transition-colors">
-                {userData?.profile.username.charAt(0).toUpperCase() || 'U'}
-              </button>
+                <Transition
+                  as={Fragment}
+                  enter="transition duration-200 ease-out"
+                  enterFrom="transform scale-95 opacity-0"
+                  enterTo="transform scale-100 opacity-100"
+                  leave="transition duration-150 ease-out"
+                  leaveFrom="transform scale-100 opacity-100"
+                  leaveTo="transform scale-95 opacity-0"
+                >
+                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-200">
+                    <div className="p-4">
+                      {userData && (
+                        <div className="mb-4 pb-4 border-b border-gray-100">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={userData.profile.character.image}
+                              alt={userData.profile.username}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">
+                                {userData.profile.username}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {userData.game.totalScore} puntos • {userData.game.totalLives} vidas
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <h3 className="text-sm font-medium text-gray-500 mb-3">Aplicaciones CrESI</h3>
+                      
+                      {Object.entries(categorizedApps).map(([category, apps]) => (
+                        <div key={category} className="mb-4 last:mb-0">
+                          <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
+                            {category}
+                          </h4>
+                          
+                          <div className="grid grid-cols-3 gap-2">
+                            {apps.map((application) => {
+                              const activityId = application.href.substring(1);
+                              const isCompleted = userData?.progress.completedActivities.includes(activityId);
+                              
+                              return (
+                                <Link
+                                  key={application.name}
+                                  href={application.href}
+                                  className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group relative"
+                                  onClick={() => close()}
+                                >
+                                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
+                                    <span className="text-blue-600">{application.icon}</span>
+                                  </div>
+                                  {isCompleted && (
+                                    <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                      </svg>
+                                    </div>
+                                  )}
+                                  <span className="text-xs text-center text-gray-700 leading-tight">
+                                    {application.name}
+                                  </span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="border-t border-gray-100 p-3">
+                      <Link
+                        href="/user"
+                        className="w-full text-left text-sm text-blue-600 hover:text-blue-700 font-medium block"
+                        onClick={() => close()}
+                      >
+                        Ver perfil completo
+                      </Link>
+                    </div>
+                  </Popover.Panel>
+                </Transition>
+              </>
             )}
-          </Link>
+          </Popover>
+
+          {/* Avatar con Popover de Logout */}
+          {userData && (
+            <Popover className="relative">
+              {({ open, close }) => (
+                <>
+                  <Popover.Button className="p-0 rounded-full hover:ring-2 hover:ring-blue-500 transition-all">
+                    <img
+                      src={userData.profile.character.image}
+                      alt={userData.profile.username}
+                      className="w-8 h-8 rounded-full cursor-pointer"
+                    />
+                  </Popover.Button>
+
+                  <Transition
+                    as={Fragment}
+                    enter="transition duration-200 ease-out"
+                    enterFrom="transform scale-95 opacity-0"
+                    enterTo="transform scale-100 opacity-100"
+                    leave="transition duration-150 ease-out"
+                    leaveFrom="transform scale-100 opacity-100"
+                    leaveTo="transform scale-95 opacity-0"
+                  >
+                    <Popover.Panel className="absolute z-[100] right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
+                      <div className="p-4">
+                        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+                          <img
+                            src={userData.profile.character.image}
+                            alt={userData.profile.username}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">
+                              {userData.profile.username}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {userData.game.totalScore} puntos
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 mb-4">
+                          <Link
+                            href="/user"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                            onClick={() => close()}
+                          >
+                            <IconUser className="w-4 h-4 text-gray-600" />
+                            <span>Ver perfil</span>
+                          </Link>
+                        </div>
+
+                        <div className="border-t border-gray-100 pt-4 mt-4">
+                          <button
+                            onClick={() => {
+                              close();
+                              handleLogout();
+                            }}
+                            disabled={isLoggingOut}
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <IconLogout className="w-4 h-4" />
+                            <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </Popover.Panel>
+                  </Transition>
+                </>
+              )}
+            </Popover>
+          )}
         </div>
       </nav>
     </header>
@@ -347,130 +568,3 @@ const applications: Application[] = [
   { name: "Meme Creator", href: "/memegenerador", icon: <IconMoodTongueWink2 />, isExternal: false, category: "Creatividad" },
   { name: "Literatura", href: "/literatura", icon: <IconBooks />, isExternal: false, category: "Educación" }
 ];
-
-interface ApplicationsPopoverProps {
-  onOpenChange: (isOpen: boolean) => void;
-  userData: UserData | null;
-}
-
-function ApplicationsPopover({ onOpenChange, userData }: ApplicationsPopoverProps): JSX.Element {
-  const categorizedApps = applications.reduce((acc, app) => {
-    const category = app.category || 'Otros';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(app);
-    return acc;
-  }, {} as Record<string, Application[]>);
-
-  return (
-    <Popover className="relative">
-      {({ open, close }) => {
-        useEffect(() => {
-          onOpenChange(open);
-        }, [open, onOpenChange]);
-
-        return (
-          <>
-            <Popover.Button className={`
-              p-2 rounded-full hover:bg-gray-100 transition-colors
-              ${open ? 'bg-gray-100' : ''}
-            `}>
-              <IconApps className="w-5 h-5 text-gray-600" />
-            </Popover.Button>
-
-            <Transition
-              as={Fragment}
-              enter="transition duration-200 ease-out"
-              enterFrom="transform scale-95 opacity-0"
-              enterTo="transform scale-100 opacity-100"
-              leave="transition duration-150 ease-out"
-              leaveFrom="transform scale-100 opacity-100"
-              leaveTo="transform scale-95 opacity-0"
-            >
-              <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-200">
-                <div className="p-4">
-                  {/* Header con info del usuario */}
-                  {userData && (
-                    <div className="mb-4 pb-4 border-b border-gray-100">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={userData.profile.character.image}
-                          alt={userData.profile.username}
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">
-                            {userData.profile.username}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {userData.game.totalScore} puntos • {userData.game.totalLives} vidas
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">Aplicaciones CrESI</h3>
-                  
-                  {Object.entries(categorizedApps).map(([category, apps]) => (
-                    <div key={category} className="mb-4 last:mb-0">
-                      <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">
-                        {category}
-                      </h4>
-                      
-                      <div className="grid grid-cols-3 gap-2">
-                        {apps.map((application) => {
-                          // Verificar si la actividad está completada
-                          const activityId = application.href.substring(1); // Remove leading '/'
-                          const isCompleted = userData?.progress.completedActivities.includes(activityId);
-                          
-                          return (
-                            <Popover.Button
-                              key={application.name}
-                              as={application.isExternal ? 'a' : Link}
-                              href={application.href}
-                              target={application.isExternal ? '_blank' : undefined}
-                              rel={application.isExternal ? 'noreferrer' : undefined}
-                              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group relative"
-                              onClick={() => close()}
-                            >
-                              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
-                                <span className="text-blue-600">{application.icon}</span>
-                              </div>
-                              {isCompleted && (
-                                <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                                  </svg>
-                                </div>
-                              )}
-                              <span className="text-xs text-center text-gray-700 leading-tight">
-                                {application.name}
-                              </span>
-                            </Popover.Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Footer del popover */}
-                <div className="border-t border-gray-100 p-3">
-                  <Link
-                    href="/user"
-                    className="w-full text-left text-sm text-blue-600 hover:text-blue-700 font-medium block"
-                    onClick={() => close()}
-                  >
-                    Ver perfil completo
-                  </Link>
-                </div>
-              </Popover.Panel>
-            </Transition>
-          </>
-        );
-      }}
-    </Popover>
-  );
-}
