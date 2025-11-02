@@ -21,7 +21,7 @@ const characters: Character[] = [
 
 const DEFAULT_FEATURES_IDS = [
   "trivias", "pasapalabras", "simulador", "completa", "datamuncher",
-  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental"
+  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental", "vocacion"
 ];
 
 type AuthMode = 'profile-setup' | 'login' | 'register';

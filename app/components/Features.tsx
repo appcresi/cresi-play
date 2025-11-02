@@ -168,6 +168,18 @@ const DEFAULT_FEATURES = [
     category: "Ejercicios",
     dueDate: ""
   },
+  {
+    id: "vocacion",
+    title: "Test Vocacional",
+    description: "Descubrí carreras y profesiones que se alinean con tus intereses y habilidades mediante nuestro test vocacional.",
+    icon: <IconHeart size={20} />,
+    route: "/vocacion",
+    color: "#388E3C",
+    image: "/vocacion.svg",
+    priority: true,
+    category: "Ejercicios",
+    dueDate: ""
+  },
 ];
 
 
