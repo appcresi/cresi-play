@@ -10,7 +10,7 @@ export default function VocacionClient() {
 	if (testStarted) {
 		return (
 			<section className="w-full min-h-screen bg-gray-50 py-8">
-				<div className="max-w-7xl mx-auto px-2">
+				<div className="max-w-7xl mx-auto px-4">
 					{/* Botón para volver */}
 					<button
 						onClick={() => setTestStarted(false)}
@@ -108,15 +108,14 @@ export default function VocacionClient() {
 				</div>
 			</div>
 
-			{/* CTA Button */}
-			<div className="flex justify-center mb-8">
-				<button
-					onClick={() => setTestStarted(true)}
-					className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95"
-				>
-					Hacer el Test
-				</button>
-			</div>
+			{/* Botón flotante sticky - Opción 3 */}
+			<button
+				onClick={() => setTestStarted(true)}
+				className="fixed bottom-8 right-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-4 px-8 rounded-full shadow-2xl transition transform hover:scale-110 active:scale-95 z-50 flex items-center gap-2"
+			>
+				<IconBriefcase className="w-5 h-5" />
+				Hacer el Test
+			</button>
 
 			{/* Support info */}
 			<div className="mt-8 bg-cyan-50 border border-cyan-100 rounded-lg p-6">

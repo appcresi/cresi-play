@@ -363,8 +363,6 @@ export default function VocationalTest() {
           title="Test Vocacional"
           score={score}
           lives={lives}
-          currentQuestion={Math.floor((Object.keys(answers).length / QUESTIONS.length) * 100)}
-          totalQuestions={QUESTIONS.length}
           level={Math.floor((Object.keys(answers).length / QUESTIONS.length) * 100)}
         />
 
@@ -652,9 +650,11 @@ export default function VocationalTest() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <GameStatusBar
-        title="Test de Orientación Vocacional"
+        title="Test Vocacional"
         score={score}
         lives={lives}
+        currentQuestion={currentQuestion + 1}
+          totalQuestions={QUESTIONS.length}
         level={currentQuestion + 1}
       />
 
