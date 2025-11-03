@@ -114,6 +114,49 @@ const POINTS_PER_QUESTION = 50;
 const COMPLETION_BONUS = 200;
 const POINTS_PER_PROFESSION = 100;
 
+// Función para crear datos de usuario por defecto
+const createDefaultUserData = (): UserData => {
+  return {
+    profile: {
+      character: {
+        id: 1,
+        name: 'Jugador',
+        image: '/default-character.png',
+      },
+      username: 'Usuario',
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+    },
+    game: {
+      totalScore: 0,
+      totalLives: 3,
+      streak: 0,
+    },
+    progress: {
+      completedActivities: [],
+      activityScores: {},
+      activityTimes: {},
+      lastVisits: {},
+      storyProgress: {},
+      vocationalTest: {
+        answers: {},
+        results: undefined,
+        professionAnswers: {},
+      },
+    },
+    mood: {
+      history: [],
+      lastEntry: null,
+    },
+    achievements: [],
+    settings: {
+      notifications: true,
+      theme: 'light',
+      language: 'es',
+    },
+  };
+};
+
 export default function VocationalTest() {
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -125,8 +168,6 @@ export default function VocationalTest() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
 
-  const oneQuestion = 100 / QUESTIONS.length;
-
   useEffect(() => {
     loadUserData();
   }, []);
@@ -134,35 +175,43 @@ export default function VocationalTest() {
   const loadUserData = () => {
     try {
       const storedData = window.localStorage.getItem(STORAGE_KEY);
+      let data: UserData;
+
       if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        setScore(data.game.totalScore);
-        setLives(data.game.totalLives);
-
-        // Recuperar progreso anterior si existe
-        if (data.progress.vocationalTest) {
-          setAnswers(data.progress.vocationalTest.answers || {});
-          if (data.progress.vocationalTest.results) {
-            setResults(data.progress.vocationalTest.results);
-            setShowResults(true);
-          }
-          if (data.progress.vocationalTest.professionAnswers) {
-            setProfessionAnswers(data.progress.vocationalTest.professionAnswers);
-          }
-        }
-
-        // Actualizar última visita
-        data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
-
-        if (!data.progress.activityScores) {
-          data.progress.activityScores = {};
-        }
-
+        data = JSON.parse(storedData);
+      } else {
+        data = createDefaultUserData();
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       }
+
+      setUserData(data);
+      setScore(data.game.totalScore);
+      setLives(data.game.totalLives);
+
+      if (data.progress.vocationalTest) {
+        setAnswers(data.progress.vocationalTest.answers || {});
+        if (data.progress.vocationalTest.results) {
+          setResults(data.progress.vocationalTest.results);
+          setShowResults(true);
+        }
+        if (data.progress.vocationalTest.professionAnswers) {
+          setProfessionAnswers(data.progress.vocationalTest.professionAnswers);
+        }
+      }
+
+      data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
+
+      if (!data.progress.activityScores) {
+        data.progress.activityScores = {};
+      }
+
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (error) {
       console.error('Error loading user data:', error);
+      const defaultData = createDefaultUserData();
+      setUserData(defaultData);
+      setScore(defaultData.game.totalScore);
+      setLives(defaultData.game.totalLives);
     }
   };
 
@@ -177,27 +226,31 @@ export default function VocationalTest() {
   };
 
   const saveTestProgress = (newAnswers: Record<number, boolean>, newResults?: Record<string, AreaResult>, newProfessionAnswers?: ProfessionAnswers) => {
-    if (!userData) return;
+    let currentUserData = userData;
+
+    if (!currentUserData) {
+      currentUserData = createDefaultUserData();
+    }
 
     const updatedData: UserData = {
-      ...userData,
+      ...currentUserData,
       game: {
-        ...userData.game,
-        totalScore: userData.game.totalScore + POINTS_PER_QUESTION
+        ...currentUserData.game,
+        totalScore: currentUserData.game.totalScore + POINTS_PER_QUESTION
       },
       progress: {
-        ...userData.progress,
+        ...currentUserData.progress,
         vocationalTest: {
           answers: newAnswers,
-          results: newResults || userData.progress.vocationalTest?.results,
-          professionAnswers: newProfessionAnswers || userData.progress.vocationalTest?.professionAnswers,
+          results: newResults || currentUserData.progress.vocationalTest?.results,
+          professionAnswers: newProfessionAnswers || currentUserData.progress.vocationalTest?.professionAnswers,
         },
         activityScores: {
-          ...userData.progress.activityScores,
-          [ACTIVITY_ID]: (userData.progress.activityScores[ACTIVITY_ID] || 0) + POINTS_PER_QUESTION
+          ...currentUserData.progress.activityScores,
+          [ACTIVITY_ID]: (currentUserData.progress.activityScores[ACTIVITY_ID] || 0) + POINTS_PER_QUESTION
         },
         activityTimes: {
-          ...userData.progress.activityTimes,
+          ...currentUserData.progress.activityTimes,
           [ACTIVITY_ID]: new Date().toISOString()
         }
       }
@@ -214,11 +267,9 @@ export default function VocationalTest() {
     setAnswers(newAnswers);
     saveTestProgress(newAnswers);
 
-    // Auto-advance to next question
     if (currentQuestion < QUESTIONS.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Si es la última pregunta, mostrar resultados automáticamente
       setTimeout(() => {
         handleCalculateResults();
       }, 500);
@@ -226,7 +277,11 @@ export default function VocationalTest() {
   };
 
   const handleCalculateResults = () => {
-    if (!userData) return;
+    let currentUserData = userData;
+
+    if (!currentUserData) {
+      currentUserData = createDefaultUserData();
+    }
 
     const counts: Record<string, number> = {
       'I': 0,
@@ -259,24 +314,23 @@ export default function VocationalTest() {
 
     setResults(formattedResults);
 
-    // Guardar resultados y agregar bonus de finalización
     const updatedData: UserData = {
-      ...userData,
+      ...currentUserData,
       game: {
-        ...userData.game,
-        totalScore: userData.game.totalScore + COMPLETION_BONUS
+        ...currentUserData.game,
+        totalScore: currentUserData.game.totalScore + COMPLETION_BONUS
       },
       progress: {
-        ...userData.progress,
-        completedActivities: [...userData.progress.completedActivities, ACTIVITY_ID],
+        ...currentUserData.progress,
+        completedActivities: [...currentUserData.progress.completedActivities, ACTIVITY_ID],
         vocationalTest: {
           answers,
           results: formattedResults,
           professionAnswers,
         },
         activityScores: {
-          ...userData.progress.activityScores,
-          [ACTIVITY_ID]: (userData.progress.activityScores[ACTIVITY_ID] || 0) + COMPLETION_BONUS
+          ...currentUserData.progress.activityScores,
+          [ACTIVITY_ID]: (currentUserData.progress.activityScores[ACTIVITY_ID] || 0) + COMPLETION_BONUS
         }
       }
     };
@@ -309,32 +363,36 @@ export default function VocationalTest() {
   };
 
   const handleProfessionAnswerClick = () => {
-    if (!userData || !selectedProfession) return;
+    let currentUserData = userData;
 
-    // Agregar puntos por completar test de profesión
+    if (!currentUserData) {
+      currentUserData = createDefaultUserData();
+    }
+
+    if (!selectedProfession) return;
+
     const updatedData: UserData = {
-      ...userData,
+      ...currentUserData,
       game: {
-        ...userData.game,
-        totalScore: userData.game.totalScore + POINTS_PER_PROFESSION
+        ...currentUserData.game,
+        totalScore: currentUserData.game.totalScore + POINTS_PER_PROFESSION
       },
       progress: {
-        ...userData.progress,
+        ...currentUserData.progress,
         vocationalTest: {
-          ...userData.progress.vocationalTest,
-          answers: userData.progress.vocationalTest?.answers ?? {},
+          ...currentUserData.progress.vocationalTest,
+          answers: currentUserData.progress.vocationalTest?.answers ?? {},
           professionAnswers,
         },
         activityScores: {
-          ...userData.progress.activityScores,
-          [ACTIVITY_ID]: (userData.progress.activityScores[ACTIVITY_ID] || 0) + POINTS_PER_PROFESSION
+          ...currentUserData.progress.activityScores,
+          [ACTIVITY_ID]: (currentUserData.progress.activityScores[ACTIVITY_ID] || 0) + POINTS_PER_PROFESSION
         }
       }
     };
 
     saveUserData(updatedData);
 
-    // Mostrar alert de puntos ganados
     Swal.fire({
       icon: 'info',
       title: 'Puntos ganados',
@@ -351,8 +409,6 @@ export default function VocationalTest() {
     setSelectedProfession(null);
   };
 
-  const progress = ((Object.keys(answers).length) / QUESTIONS.length) * 100;
-
   if (showResults) {
     const sortedResults = Object.entries(results)
       .sort((a, b) => b[1].total - a[1].total);
@@ -366,7 +422,6 @@ export default function VocationalTest() {
           level={Math.floor((Object.keys(answers).length / QUESTIONS.length) * 100)}
         />
 
-        {/* Header */}
         <div className="sticky top-10 bg-white border-b border-gray-200 shadow-sm z-10">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
@@ -402,7 +457,6 @@ export default function VocationalTest() {
           </div>
         </div>
 
-        {/* Results Grid */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
             {sortedResults.map(([areaKey, area]) => {
@@ -438,7 +492,6 @@ export default function VocationalTest() {
             })}
           </div>
 
-          {/* Professions by Top Areas */}
           <div className="space-y-8">
             {sortedResults.slice(0, 2).map(([areaKey, area]) => {
               const areaInfo = AREAS[areaKey as keyof typeof AREAS];
@@ -492,7 +545,6 @@ export default function VocationalTest() {
             })}
           </div>
 
-          {/* Recommendations */}
           <div className="mt-10 bg-white rounded-lg shadow-md p-8">
             <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
@@ -514,11 +566,9 @@ export default function VocationalTest() {
           </div>
         </div>
 
-        {/* Modal de Profesión */}
         {selectedProfession && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-              {/* Header Modal */}
               <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">Test de Actividades</p>
@@ -533,11 +583,9 @@ export default function VocationalTest() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              {/* Contenido Modal */}
               <div className="flex items-center justify-center px-8 py-12">
                 {selectedProfession.currentActivityIndex < 10 ? (
                   <div className="w-full max-w-md text-center">
-                    {/* Activity Card */}
                     {PROFESSIONS[selectedProfession.areaKey]?.find(p => p.name === selectedProfession.name)?.activities[selectedProfession.currentActivityIndex] && (
                       <div>
                         <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium mb-6">
@@ -547,7 +595,6 @@ export default function VocationalTest() {
                           {PROFESSIONS[selectedProfession.areaKey]?.find(p => p.name === selectedProfession.name)?.activities[selectedProfession.currentActivityIndex].description}
                         </h3>
 
-                        {/* Answer Buttons */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
                           <button
                             onClick={() => {
@@ -597,7 +644,6 @@ export default function VocationalTest() {
                     )}
                   </div>
                 ) : (
-                  /* Resultado Final */
                   <div className="w-full max-w-md">
                     <div className="bg-blue-50 rounded-lg p-8 border-2 border-blue-200">
                       <h3 className="text-xl font-bold text-gray-800 mb-6">¡Test completado!</h3>
@@ -654,14 +700,12 @@ export default function VocationalTest() {
         score={score}
         lives={lives}
         currentQuestion={currentQuestion + 1}
-          totalQuestions={QUESTIONS.length}
+        totalQuestions={QUESTIONS.length}
         level={currentQuestion + 1}
       />
 
-      {/* Main Content */}
       <div className="flex items-center justify-center px-2 py-8">
         <div className="max-w-2xl w-full bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Question Card */}
           <div className="p-8">
             <div className="mb-8">
               <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
@@ -672,7 +716,6 @@ export default function VocationalTest() {
               </h2>
             </div>
 
-            {/* Answer Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 onClick={() => handleAnswer(true)}
@@ -708,7 +751,6 @@ export default function VocationalTest() {
             </div>
           </div>
 
-          {/* Footer Info */}
           <div className="bg-gray-50 px-8 py-3 text-center text-xs text-gray-500 border-t border-gray-200">
             <p>+{POINTS_PER_QUESTION} puntos por cada pregunta • +{COMPLETION_BONUS} bonus al finalizar • +{POINTS_PER_PROFESSION} por test de profesión</p>
           </div>
