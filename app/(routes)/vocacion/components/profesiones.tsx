@@ -1,5 +1,3 @@
-// components/VocationalTest.tsx
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -216,8 +214,14 @@ export default function VocationalTest() {
     setAnswers(newAnswers);
     saveTestProgress(newAnswers);
 
+    // Auto-advance to next question
     if (currentQuestion < QUESTIONS.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
+    } else {
+      // Si es la última pregunta, mostrar resultados automáticamente
+      setTimeout(() => {
+        handleCalculateResults();
+      }, 500);
     }
   };
 
@@ -365,7 +369,7 @@ export default function VocationalTest() {
         />
 
         {/* Header */}
-        <div className="sticky top-16 bg-white border-b border-gray-200 shadow-sm z-10">
+        <div className="sticky top-10 bg-white border-b border-gray-200 shadow-sm z-10">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">Resultados de tu Test Vocacional</h1>
@@ -446,9 +450,9 @@ export default function VocationalTest() {
                   <div className={`bg-gradient-to-r ${areaInfo.color} p-6 text-white`}>
                     <h3 className="text-2xl font-bold flex items-center gap-3">
                       <Briefcase className="w-7 h-7" />
-                      Profesiones - Área {areaKey}
+                      {area.name}
                     </h3>
-                    <p className="text-sm opacity-90 mt-2">{area.name}</p>
+                    <p className="text-sm opacity-90 mt-2">Elige la profesión que creas que te gusta y contestá 10 preguntas.</p>
                   </div>
                   <div className="p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -531,25 +535,8 @@ export default function VocationalTest() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
-
-              {/* Progress Bar */}
-              <div className="bg-gray-100 px-6 py-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Actividad {selectedProfession.currentActivityIndex + 1} de 10
-                  </span>
-                  <span className="text-sm text-gray-500">{Math.round(((selectedProfession.currentActivityIndex) / 10) * 100)}%</span>
-                </div>
-                <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 transition-all duration-300"
-                    style={{ width: `${((selectedProfession.currentActivityIndex) / 10) * 100}%` }}
-                  />
-                </div>
-              </div>
-
               {/* Contenido Modal */}
-              <div className="flex-1 flex items-center justify-center px-8 py-12">
+              <div className="flex items-center justify-center px-8 py-12">
                 {selectedProfession.currentActivityIndex < 10 ? (
                   <div className="w-full max-w-md text-center">
                     {/* Activity Card */}
@@ -671,14 +658,14 @@ export default function VocationalTest() {
         level={currentQuestion + 1}
       />
 
-    {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      {/* Main Content */}
+      <div className="flex items-center justify-center px-2 py-8">
         <div className="max-w-2xl w-full bg-white rounded-lg shadow-md overflow-hidden">
           {/* Question Card */}
           <div className="p-8">
             <div className="mb-8">
               <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
-                Pregunta {currentQuestion + 1} / {QUESTIONS.length}
+                {currentQuestion + 1} / {QUESTIONS.length}
               </div>
               <h2 className="text-2xl font-semibold text-gray-800 leading-relaxed">
                 {question?.text}
@@ -719,35 +706,6 @@ export default function VocationalTest() {
                 </div>
               </button>
             </div>
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="bg-gray-50 px-8 py-4 flex items-center justify-between border-t border-gray-200">
-            <button
-              onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
-              disabled={currentQuestion === 0}
-              className="px-4 py-2 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 rounded-lg transition"
-            >
-              Anterior
-            </button>
-
-            {currentQuestion === QUESTIONS.length - 1 ? (
-              <button
-                onClick={handleCalculateResults}
-                disabled={Object.keys(answers).length < QUESTIONS.length}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Ver Resultados
-              </button>
-            ) : (
-              <button
-                onClick={() => setCurrentQuestion(currentQuestion + 1)}
-                disabled={answers[question?.id] === undefined}
-                className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
-            )}
           </div>
 
           {/* Footer Info */}

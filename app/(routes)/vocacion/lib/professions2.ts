@@ -2,16 +2,19 @@
 
 export const PROFESSIONS: Record<string, string[]> = {
   'I': [
-    
-    
-    
+    'Diseño gráfico',
+    'Diseño y decoración de interiores',
+    'Diseño de jardines',
+    'Diseño de modas',
     'Diseño de joyas',
     'Artes plásticas (pintura, escultura, danza, teatro, artesanía, cerámica)',
     'Dibujo publicitario',
     'Restauración y museología',
     'Modelaje',
+    'Fotografía',
     'Gestión gráfica y publicitaria',
     'Locución y publicidad',
+    'Actuación',
     'Camarógrafo/a',
     'Arte industrial',
     'Producción audiovisual y multimedia',
@@ -19,7 +22,7 @@ export const PROFESSIONS: Record<string, string[]> = {
     'Diseño del paisaje',
     'Cine y video',
     'Comunicación escénica para televisión',
-  
+    'Música',
   ],
   'II': [
     'Psicología',
