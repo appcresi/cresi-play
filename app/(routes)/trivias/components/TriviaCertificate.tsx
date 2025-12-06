@@ -53,15 +53,17 @@ export default function TriviaCertificate (): JSX.Element {
   const handleDownloadPDF = () => {
     if (targetRef.current && html2pdf) {
       const element = targetRef.current
-      const opt = {
-        margin: 5,
-        filename: filename,
-        image: { type: 'png' as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
-      }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      html2pdf().set(opt).from(element).save()
+      html2pdf()
+        .set({
+          margin: 5,
+          filename: filename,
+          image: { type: 'png', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { orientation: 'landscape' as const, unit: 'mm', format: 'a4' }
+        })
+        .from(element)
+        .save()
     }
   }
 
@@ -133,7 +135,7 @@ export default function TriviaCertificate (): JSX.Element {
                 marginBottom: '8px',
                 textAlign: 'center'
               }}>
-                Certificado de Finalización
+                Certificado de Completación
               </h1>
               
               <div style={{
