@@ -13,6 +13,10 @@ interface Params {
   id: string;
 }
 
+interface Props {
+  params: Promise<Params>;
+}
+
 export const metadata: Metadata = {
   title: 'Presentación trivias | CrESI',
   description: 'Poné a prueba tus conocimientos con nuestras trivias y aprendé mientras jugás.',
@@ -42,8 +46,16 @@ async function getWorkshops(id: string): Promise<Trivia> {
   }
 }
 
-export default async function Page({ params }: { params: Params }) {
-  const data = await getWorkshops(params.id);
+export default async function Page({ params }: Props) {
+  // Await los params de Next.js 15+
+  const { id } = await params;
+  
+  // Validar que el id existe
+  if (!id) {
+    throw new Error('Trivia ID is required');
+  }
+
+  const data = await getWorkshops(id);
 
   return (
     <main className="min-h-screen bg-gray-50">

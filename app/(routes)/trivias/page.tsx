@@ -1,56 +1,25 @@
-import React from 'react';
-import type { CustomResponse } from '@/types/response';
-import type { Trivia, TriviaIndexFields } from '@/types/trivia';
-import { API_URL } from '@/utils/helpers';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import type { Metadata } from "next";
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import TriviaSettings from './components/TriviaSettings';
 import TriviaGrid from './components/TriviaGrid';
 import TriviaSearch from './components/TriviaSearch';
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://jugar.cresi.com.ar"),
-  title: "CrESI | Trivia",
-  description:
-    "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
-  keywords: [
-    "CrESI",
-    "trivia",
-    "juegos educativos",
-    "trivia didácticas",
-    "educación sexual integral",
-    "trivia ESI",
-    "preguntas y respuestas",
-    "juegos para jóvenes",
-    "aprender jugando",
-  ],
-  openGraph: {
-    title: "CrESI | Trivia",
-    description:
-      "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
-    url: "https://jugar.cresi.com.ar/trivias",
-    siteName: "CrESI",
-    images: [
-      {
-        url: "illustration-1.jpg",
-        width: 1200,
-        height: 630,
-        alt: "CrESI Trivia - Responde más de 700 preguntas distribuidas en temáticas y niveles.",
-      },
-    ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "CrESI | Trivia",
-    description:
-      "Jugá a responder a más de 700 preguntas, distribuidas en diferentes temáticas y niveles de dificultad. Aprendé mientras te divertís con CrESI.",
-    images: ["illustration-1.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  }
-};
+interface Trivia {
+  id: string;
+  name: string;
+  level: number;
+  [key: string]: any;
+}
+
+interface TriviaIndexFields {
+  id: string;
+  name: string;
+  level: number;
+}
 
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {
   const { id, name, level } = trivia;
@@ -70,18 +39,69 @@ function organizeIndexesByLevel(
 }
 
 async function getTriviaIndexes(): Promise<TriviaIndexFields[]> {
-  const response = await fetch(`${API_URL}/trivias?author=CRESI`, {
-    next: { revalidate: 3600 },
-  });
-  const body = (await response.json()) as CustomResponse<Trivia[]>;
-  if (!body.data || body.hasError) {
-    throw new Error(body.error ?? body.message);
+  try {
+    const triviaCollection = collection(db, 'trivia');
+    const q = query(triviaCollection, where('author', '==', 'CRESI'));
+    const querySnapshot = await getDocs(q);
+    
+    const trivias: Trivia[] = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Trivia[];
+
+    return trivias.map(getOnlyIndexFields);
+  } catch (error) {
+    console.error('Error fetching trivias from Firebase:', error);
+    throw new Error('Error al obtener las trivias');
   }
-  return body.data.map(getOnlyIndexFields);
 }
 
-export default async function Trivias(): Promise<JSX.Element> {
-  const indexes = await getTriviaIndexes();
+export default function Trivias(): JSX.Element {
+  const [indexes, setIndexes] = useState<TriviaIndexFields[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadTrivias = async () => {
+      try {
+        setLoading(true);
+        const data = await getTriviaIndexes();
+        setIndexes(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTrivias();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 max-w-6xl py-8">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <p className="text-gray-600">Cargando trivias...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 max-w-6xl py-8">
+          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   const indexesByLevel = organizeIndexesByLevel(indexes);
 
   return (

@@ -19,8 +19,9 @@ async function getTriviaById (id: string): Promise<Trivia> {
   return body.data
 }
 
-export async function generateMetadata ({ params }: { params: { id: string } }): Promise<Metadata> {
-  const trivia = await getTriviaById(params.id)
+export async function generateMetadata ({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const trivia = await getTriviaById(id)
 
   if (typeof trivia === 'undefined') {
     return {
@@ -41,8 +42,9 @@ interface TriviaGameProps {
   items: Array<{ question: TriviaQuestion, options: string[] }>
 }
 
-export default async function TriviaPage ({ params }: { params: { id: string } }): Promise<JSX.Element> {
-  const trivia = await getTriviaById(params.id)
+export default async function TriviaPage ({ params }: { params: Promise<{ id: string }> }): Promise<JSX.Element> {
+  const { id } = await params
+  const trivia = await getTriviaById(id)
 
   if (typeof trivia === 'undefined') {
     return <p>No se encontró la trivia.</p>

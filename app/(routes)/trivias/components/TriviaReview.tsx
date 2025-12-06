@@ -295,7 +295,7 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
       <label className="flex flex-col gap-3">
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
           <IconTrophy size={18} className="text-purple-600" />
-          Obtén tu certificado de completación
+          Obtén tu certificado de finalización
         </span>
 
         <input 

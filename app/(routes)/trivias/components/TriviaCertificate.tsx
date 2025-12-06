@@ -3,9 +3,12 @@
 import { format } from 'date-fns'
 import esLocale from 'date-fns/locale/es'
 import { useSearchParams } from 'next/navigation'
-import { Margin, usePDF } from 'react-to-pdf'
-import { IconDownload, IconTrophy, IconCalendar, IconAward } from '@tabler/icons-react'
+import { useRef } from 'react'
+import { IconDownload, IconAward } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
+
+// @ts-ignore
+import html2pdf from 'html2pdf.js'
 
 interface CertificateData {
   name: string
@@ -17,6 +20,7 @@ export default function TriviaCertificate (): JSX.Element {
   const [data, setData] = useState<CertificateData>()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+  const targetRef = useRef<HTMLDivElement>(null)
 
   if (token === null) {
     return (
@@ -46,11 +50,20 @@ export default function TriviaCertificate (): JSX.Element {
 
   const filename = typeof data !== 'undefined' ? data.name.replace(' ', '').toLowerCase().concat('-', data.trivia, '-cresi.pdf') : 'certificado-cresi.pdf'
 
-  const { toPDF, targetRef } = usePDF({
-    filename,
-    method: 'save',
-    page: { margin: Margin.SMALL, orientation: 'landscape' }
-  })
+  const handleDownloadPDF = () => {
+    if (targetRef.current && html2pdf) {
+      const element = targetRef.current
+      const opt = {
+        margin: 5,
+        filename: filename,
+        image: { type: 'png' as const, quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'landscape', unit: 'mm', format: 'a4' }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      html2pdf().set(opt).from(element).save()
+    }
+  }
 
   const date = format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: esLocale })
 
@@ -72,7 +85,7 @@ export default function TriviaCertificate (): JSX.Element {
             
             <button
               type='button'
-              onClick={() => { toPDF() }}
+              onClick={handleDownloadPDF}
               className='inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg 
                        font-medium hover:bg-blue-700 transition-colors shadow-sm'
             >
@@ -120,7 +133,7 @@ export default function TriviaCertificate (): JSX.Element {
                 marginBottom: '8px',
                 textAlign: 'center'
               }}>
-                Certificado de Completación
+                Certificado de Finalización
               </h1>
               
               <div style={{

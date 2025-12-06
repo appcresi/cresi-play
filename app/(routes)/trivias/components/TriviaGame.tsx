@@ -345,6 +345,13 @@ export default function TriviaGame({
     toast.success('Se guardó tu progreso.');
   }, [id, calculateCorrectAnswersPercentage]);
 
+  // ✅ CORRECCIÓN: Llamar handleFinish en useEffect, no durante render
+  useEffect(() => {
+    if (isFinished) {
+      handleFinish();
+    }
+  }, [isFinished, handleFinish]);
+
   const resetGame = () => {
     setCurrentQuestion(0);
     setLives(3);
@@ -403,7 +410,6 @@ export default function TriviaGame({
   };
 
   if (isFinished) {
-    handleFinish();
     return (
       <>
         <Toaster />
