@@ -1,61 +1,104 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
-import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare, IconSettings } from '@tabler/icons-react';
+import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
-import { API_URL } from '@/utils/helpers';
-import { type CustomResponse } from '@/types/response';
-import { type Trivia } from '@/types/trivia';
-import type { Metadata } from 'next';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-// Types
-interface Params {
+interface Trivia {
   id: string;
+  name: string;
+  author: string;
+  level: number;
+  questions: any[];
+  created_at: string;
+  description?: string;
 }
 
-interface Props {
-  params: Promise<Params>;
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export const metadata: Metadata = {
-  title: 'Presentación trivias | CrESI',
-  description: 'Poné a prueba tus conocimientos con nuestras trivias y aprendé mientras jugás.',
-};
+export default function Page({ params }: PageProps) {
+  const [id, setId] = useState<string>('');
+  const [data, setData] = useState<Trivia | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-// Workshop fetching function
-async function getWorkshops(id: string): Promise<Trivia> {
-  try {
-    const response = await fetch(`${API_URL}/trivias/${id}`, {
-      cache: 'no-store',
-    });
+  useEffect(() => {
+    const resolveParams = async () => {
+      const { id: triviaId } = await params;
+      setId(triviaId);
+    };
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-    }
+    resolveParams();
+  }, [params]);
 
-    const body = (await response.json()) as CustomResponse<Trivia>;
+  useEffect(() => {
+    if (!id) return;
 
-    if (body.hasError || !body.data) {
-      throw new Error(`API Error: ${body.message || 'No se encontraron datos.'}`);
-    }
+    const fetchTrivia = async () => {
+      try {
+        setLoading(true);
+        const triviaRef = doc(db, 'trivia', id);
+        const triviaSnap = await getDoc(triviaRef);
 
-    return body.data;
-  } catch (error) {
-    console.error('Error fetching trivia:', error);
-    throw new Error('Failed to fetch trivia. Please try again later.');
+        if (!triviaSnap.exists()) {
+          throw new Error('Trivia no encontrada');
+        }
+
+        const triviaData = triviaSnap.data() as Trivia;
+        setData({
+          id: triviaSnap.id,
+          ...triviaData,
+        });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al obtener la trivia';
+        setError(errorMessage);
+        console.error('Error fetching trivia:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrivia();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-gray-600">Cargando trivia...</p>
+          </div>
+        </div>
+      </main>
+    );
   }
-}
 
-export default async function Page({ params }: Props) {
-  // Await los params de Next.js 15+
-  const { id } = await params;
-  
-  // Validar que el id existe
-  if (!id) {
-    throw new Error('Trivia ID is required');
+  if (error || !data) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <Link
+            href="/trivias"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+          >
+            <IconArrowNarrowLeft size={20} />
+            <span className="text-sm font-medium">Volver a trivias</span>
+          </Link>
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <p className="text-red-600">
+              {error || 'No se pudo cargar la trivia'}
+            </p>
+          </div>
+        </div>
+      </main>
+    );
   }
-
-  const data = await getWorkshops(id);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -97,7 +140,9 @@ export default async function Page({ params }: Props) {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Autor</p>
-                    <p className="text-sm font-medium text-gray-900">{data.author}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {data.author === 'CRESI' ? 'CrESI' : 'Usuario personalizado'}
+                    </p>
                   </div>
                 </div>
 
@@ -117,7 +162,7 @@ export default async function Page({ params }: Props) {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Cantidad de preguntas</p>
-                    <p className="text-sm font-medium text-gray-900">{data.questions.length} preguntas</p>
+                    <p className="text-sm font-medium text-gray-900">{data.questions?.length || 0} preguntas</p>
                   </div>
                 </div>
 

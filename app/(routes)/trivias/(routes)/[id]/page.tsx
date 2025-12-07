@@ -1,70 +1,128 @@
-import { type Metadata } from 'next'
-import { type CustomResponse } from '@/types/response'
-import { type Trivia, type TriviaQuestion } from '@/types/trivia'
-import { API_URL, sortArrayRandomly } from '@/utils/helpers'
-import TriviaGame from '../../components/TriviaGame'
+'use client';
 
-async function getTriviaById (id: string): Promise<Trivia> {
-  const response = await fetch(API_URL.concat(`/trivias/${id}`), { cache: 'no-store' })
-  const body = await response.json() as CustomResponse<Trivia>
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import TriviaGame from '../../components/TriviaGame';
 
-  if (body.hasError && typeof body.error !== 'undefined') {
-    throw new Error(body.error)
-  }
-
-  if (typeof body.data === 'undefined') {
-    throw new Error('No data found')
-  }
-
-  return body.data
+interface Question {
+  question: string;
+  answer: string;
+  options: {
+    first: string;
+    second: string;
+    third: string;
+  };
+  resume: string;
 }
 
-export async function generateMetadata ({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params
-  const trivia = await getTriviaById(id)
-
-  if (typeof trivia === 'undefined') {
-    return {
-      title: 'No se encontró la trivia | CrESI',
-      description: 'No se encontró la trivia que estás buscando. ¡Probá con otra!'
-    }
-  }
-
-  return {
-    title: `Aprendé sobre ${trivia.name} jugando a nuestra trivia | CrESI`,
-    description: `A través de esta trivia vas a poder aprender sobre ${trivia.name} de una manera divertida y entretenida. ¡Jugá ahora!`
-  }
+interface Trivia {
+  id: string;
+  name: string;
+  questions: Question[];
 }
 
 interface TriviaGameProps {
-  id: string
-  name: string
-  items: Array<{ question: TriviaQuestion, options: string[] }>
+  id: string;
+  name: string;
+  items: Array<{ question: Question; options: string[] }>;
 }
 
-export default async function TriviaPage ({ params }: { params: Promise<{ id: string }> }): Promise<JSX.Element> {
-  const { id } = await params
-  const trivia = await getTriviaById(id)
-
-  if (typeof trivia === 'undefined') {
-    return <p>No se encontró la trivia.</p>
+function sortArrayRandomly<T>(array: T[]): T[] {
+  const sorted = [...array];
+  for (let i = sorted.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
   }
+  return sorted;
+}
 
-  // This will sort the trivia's questions and their options BEFORE sending them to the client
-  const gameData: TriviaGameProps = {
-    id: trivia.id,
-    name: trivia.name,
-    items: Array.from(
-      trivia.questions.map(question => {
-        return {
-          question,
-          options: sortArrayRandomly<string>(Object.values(question.options).concat(question.answer))
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function TriviaPage({ params }: PageProps) {
+  const [id, setId] = useState<string>('');
+  const [gameData, setGameData] = useState<TriviaGameProps | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const resolveParams = async () => {
+      const { id: triviaId } = await params;
+      setId(triviaId);
+    };
+
+    resolveParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchTrivia = async () => {
+      try {
+        setLoading(true);
+        const triviaRef = doc(db, 'trivia', id);
+        const triviaSnap = await getDoc(triviaRef);
+
+        if (!triviaSnap.exists()) {
+          throw new Error('Trivia no encontrada');
         }
-      })
-    )
+
+        const trivia = {
+          id: triviaSnap.id,
+          ...triviaSnap.data(),
+        } as Trivia;
+
+        // Sort the trivia's questions and their options
+        const gameDataFormatted: TriviaGameProps = {
+          id: trivia.id,
+          name: trivia.name,
+          items: Array.from(
+            trivia.questions.map((question) => {
+              return {
+                question,
+                options: sortArrayRandomly<string>(
+                  Object.values(question.options).concat(question.answer)
+                ),
+              };
+            })
+          ),
+        };
+
+        setGameData(gameDataFormatted);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Error al obtener la trivia';
+        setError(errorMessage);
+        console.error('Error fetching trivia:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrivia();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-600">Cargando trivia...</p>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <TriviaGame {...gameData} />
-  )
+  if (error || !gameData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-red-600">{error || 'No se pudo cargar la trivia'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <TriviaGame {...gameData} />;
 }
