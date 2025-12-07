@@ -52,8 +52,8 @@ export default function Page({ params }: PageProps) {
 
         const triviaData = triviaSnap.data() as Trivia;
         setData({
-          id: triviaSnap.id,
           ...triviaData,
+          id: triviaSnap.id,
         });
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error al obtener la trivia';
