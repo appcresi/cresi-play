@@ -1,0 +1,32 @@
+{
+	"questions": [
+		"Cuando no están juntos, ¿tu pareja te controla preguntándote con quién estás, dónde y qué estás haciendo mensajeándote por celular?",
+		"¿Revisa los mensajes de tu celular o te pidió la contraseña de tu correo electrónico, Facebook o Instagram como “prueba de confianza”?",
+		"¿Te acusa de infidelidad o de que actúas en forma sospechosa?",
+		"¿Sentís que están permanentemente en tensión y que, hagas lo que hagas, se irrita o te culpabiliza de sus cambios de humor?",
+		"¿Le molesta que hagas actividades de manera independiente, como estudiar, trabajar, visitar amigos/as, ir al gimnasio o elegir quedarte solo/a en tu casa?",
+		"¿Has perdido contacto con amistades, familiares, compañeras/os de tu escuela o trabajo para evitar que tu pareja se moleste?",
+		"¿Te dice cómo tenés que vestirte o cómo debe ser tu apariencia?",
+		"¿Tu pareja se maneja con violencia con otras personas o se pelea a los golpes?",
+		"¿Menosprecia en público o en privado tus opiniones?",
+		"¿Te dice que todo lo que hacés está mal o que no servís para nada?",
+		"¿Te amenaza con lastimarse/te si no obedecés o si querés terminar la relación?",
+		"Después de un episodio en donde hubo violencia, ¿tu pareja se muestra cariñosa o atenta y promete que nunca más lo hará y todo cambiará?",
+		"¿Indaga o cuestiona tus noviazgos anteriores?",
+		"¿Sentís presión de tu pareja a realizar determinadas prácticas sexuales por temor a que te deje?",
+		"¿Sentís que tu pareja constantemente te está controlando?",
+		"¿Te critica y humilla en público o en privado, opina negativamente sobre tu apariencia, tu forma de ser o el modo en que te vestís?",
+		"¿Tu pareja tiene cambios bruscos de humor o se comporta distinto contigo en público, como si fuera otra persona?",
+		"¿Te ha golpeado con sus manos, te ha tironeado o te ha lanzado cosas cuando se enoja o cuando discuten?",
+		"¿Te ha amenazado alguna vez con un objeto o armas, o con matarse, a vos o a algún miembro de la familia si no le obedeces?",
+		"¿Te ha forzado a tener relaciones, amenazándote que si no tiene relaciones contigo, entonces lo hará con otra persona?",
+		"¿Has buscado o has recibido ayuda por lesiones que tu pareja te ha causado? (primeros auxilios, atención médica o legal)"
+	],
+	"results": [
+		"RELACIÓN NO ABUSIVA, tal vez existan algunos problemas que de manera común se presentan en la mayoría de las parejas, pero se resuelven sin violencia.",
+		"DIALOGÁ CON TU PAREJA, revisa las reglas de tu relación. Hay muy pocos signos de violencia.",
+		"ESTÁ VIVIENDO VIOLENCIA Tu relación tiene señales de abuso de poder. Es muy probable que te encuentres en una relación con algunos signos de violencia. Es necesario que hables con tu pareja sobre aquellas conductas que te molestan. También podés buscar ayuda. Ante el primer indicio, no dudes en comunicarte con el 144 las 24 horas los 365 días del año.",
+		"¡CUIDADO! Estás viviendo una relación violenta. Es muy probable que te encuentres en una relación de noviazgo violento. Los actos de violencia se dan en cualquier contexto y son cada vez más frecuentes e intensos. Muy probablemente después de cada agresión, te pide perdón y te promete que no volverá a pasar. Esta etapa es difícil porque podes sentir miedo y vergüenza pero lo más peligroso es continuar con esa relación.  Buscá ayuda. Informate y Actuá. Ante el primer indicio, no dudes en comunicarte con el 144 las 24 horas los 365 días del año."
+	],
+	"about": "Este test está dirigido principalmente a adolescentes y permite evaluar qué tipo de relación tienen, a partir de distintas preguntas. Al finalizar el mismo podrás determinar si tenés relación de pareja sana o si, por el contrario, presenta signos de maltrato. Además del maltrato psicológico y físico, los noviazgos violentos elevan en las adolescentes el riesgo de embarazo no deseado, de suicidio y de uso de sustancias ilegales. Por su parte, muchas personas que conviven con parejas violentas afirmaron que este tipo de situaciones tuvieron su origen durante el noviazgo."
+}

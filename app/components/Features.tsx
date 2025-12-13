@@ -172,11 +172,23 @@ const DEFAULT_FEATURES = [
     id: "vocacion",
     title: "Test Vocacional",
     description: "Descubrí carreras y profesiones que se alinean con tus intereses y habilidades mediante nuestro test vocacional.",
-    icon: <IconHeart size={20} />,
+    icon: <IconBrandPnpm size={20} />,
     route: "/vocacion",
     color: "#388E3C",
     image: "/vocacion.svg",
     priority: true,
+    category: "Ejercicios",
+    dueDate: ""
+  },
+  
+  {
+    id: "amor",
+    title: "Amor Sin Violencia",
+    description: "Aprendé a detectar señales de violencias en tus relaciones de pareja o amistades.",
+    icon: <IconHeart size={20} />,
+    route: "/amor",
+    color: "#7B1FA2",
+    image: "/completa.svg",
     category: "Ejercicios",
     dueDate: ""
   },
