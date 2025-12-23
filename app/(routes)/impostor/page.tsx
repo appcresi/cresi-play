@@ -1,9 +1,10 @@
+// app/page.tsx
 import type { Metadata } from 'next';
-import Wordgame from './components/Wordgame';
+import Impostor from './components/Impostor';
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: "CrESI | Pasapalabras",
+  title: "CrESI | Impostor ESI",
   description:
     'Adiviná la palabra oculta escondida detrás de la definición.',
 };
@@ -15,7 +16,7 @@ export default async function Completeword(): Promise<JSX.Element> {
                   {/* Contenido principal */}
           <div className="max-w-5xl mx-auto px-4 mt-8">
             <div className="bg-white rounded-lg shadow-md p-6">
-                <Wordgame />
+                <Impostor />
             </div>
           </div>
     </main>

@@ -117,7 +117,7 @@ const DEFAULT_FEATURES = [
     description: "Leé cuentos breves y relatos que invitan a reflexionar sobre vínculos, derechos y emociones.",
     icon: <IconBook size={20} />,
     route: "/literatura",
-    color: "#5D4037",
+    color: "#F57C00",
     image: "/literatura.svg",
     category: "Lectura",
     dueDate: ""
@@ -128,7 +128,7 @@ const DEFAULT_FEATURES = [
     description: "Completá el rompecabezas de la biología humana y aprendé sobre el cuerpo humano de forma divertida.",
     icon: <IconMoodPuzzled size={24} />,
     route: "/biopuzzle",
-    color: "#FFD93D",
+    color: "#7B1FA2",
     image: "/biopluzzle.svg",
     category: "Lectura",
     dueDate: ""
@@ -139,7 +139,7 @@ const DEFAULT_FEATURES = [
     description: "Todo sobre el preservativo, el único método que reduce la posibilidad de contraer un ITS.",
     icon: <IconMoodPuzzled size={24} />,
     route: "/condon",
-    color: "#FF6B6B",
+    color: "#D32F2F",
     image: "/condon.svg",
     category: "Lectura",
     dueDate: ""
@@ -187,11 +187,22 @@ const DEFAULT_FEATURES = [
     description: "Aprendé a detectar señales de violencias en tus relaciones de pareja o amistades.",
     icon: <IconHeart size={20} />,
     route: "/amor",
-    color: "#7B1FA2",
+    color: "#F57C00",
     image: "/completa.svg",
     category: "Ejercicios",
     dueDate: ""
   },
+  {
+    id: "impostor",
+    title: "Impostor",
+    description: "Descubrí quién es el impostor mientras aprendés sobre el sexualidad, cuerpo humano y la biología.",
+    icon: <IconMoodPuzzled size={24} />,
+    route: "/impostor",
+    color: "#7B1FA2",
+    image: "/biopluzzle.svg",
+    category: "Juegos Educativos",
+    dueDate: ""
+  }
 ];
 
 

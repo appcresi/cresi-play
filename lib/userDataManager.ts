@@ -38,7 +38,7 @@ interface UserData {
 
 const DEFAULT_FEATURES = [
   "trivias", "pasapalabras", "simulador", "completa", "datamuncher",
-  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental", "vocacion"
+  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental", "vocacion", "amor", "impostor"
 ];
 
 class UserDataManager {
