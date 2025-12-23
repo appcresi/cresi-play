@@ -2,51 +2,7 @@
 import { useState, useEffect } from 'react';
 import GameStatusBar from '@/components/GameStatusBar';
 import { ChevronUp, RotateCcw, Plus, Minus } from 'lucide-react';
-
-const esiTermsByCategory = {
-  salud: [
-    { word: 'Cuerpo', category: 'Cuerpo' },
-    { word: 'Pubertad', category: 'Cuerpo' },
-    { word: 'Menstruación', category: 'Cuerpo' },
-    { word: 'Pene', category: 'Cuerpo' },
-    { word: 'Piel', category: 'Cuerpo' },
-    { word: 'Vagina', category: 'Cuerpo' },
-    { word: 'Mamas', category: 'Cuerpo' },
-    { word: 'Ovarios', category: 'Cuerpo' },
-    { word: 'Testículos', category: 'Cuerpo' },
-  ],
-  diversidad: [
-    { word: 'Género', category: 'Diversidad' },
-    { word: 'Orientación', category: 'Diversidad' },
-    { word: 'Identidad', category: 'Diversidad' },
-    { word: 'Diversidad', category: 'Diversidad' },
-    { word: 'Inclusión', category: 'Diversidad' },
-    { word: 'Heterosexual', category: 'Diversidad' },
-    { word: 'Bisexual', category: 'Diversidad' },
-    { word: 'Homosexual', category: 'Diversidad' },
-  ],
-  derechos: [
-    { word: 'Igualdad', category: 'Derechos' },
-    { word: 'Consentimiento', category: 'Derechos' },
-    { word: 'Grooming', category: 'Derechos' },
-    { word: 'Sexting', category: 'Derechos' },
-    { word: 'Sharenting', category: 'Derechos' },
-    { word: 'Ciberbullying', category: 'Derechos' },
-    { word: 'Bullying', category: 'Derechos' },
-    { word: 'Intimidad', category: 'Derechos' },
-    { word: 'Empatía', category: 'Derechos' },
-
-  ],
-  prevencion: [
-    { word: 'ITS (Infecciones de Transmisión Sexual)', category: 'Prevención' },
-    { word: 'VIH', category: 'Prevención' },
-    { word: 'Hepatitis', category: 'Prevención' },
-    { word: 'Herpes', category: 'Prevención' },
-    { word: 'Gonorrea', category: 'Prevención' },
-    { word: 'Clamidia', category: 'Prevención' },
-    { word: 'Sífilis', category: 'Prevención' },
-  ],
-};
+import esiTermsByCategory from '../data/esiTermsByCategory.json';
 
 interface Achievement {
   id: string;
@@ -114,12 +70,10 @@ export default function ESIImpostor() {
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', text: '', type: '' });
 
-  // Cargar datos del usuario
   useEffect(() => {
     loadUserData();
   }, []);
 
-  // Guardar datos cuando cambian
   useEffect(() => {
     if (userData) {
       saveUserData();
@@ -210,6 +164,7 @@ export default function ESIImpostor() {
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!revealed) {
+      e.preventDefault();
       const diff = Math.min(0, e.touches[0].clientY - startY);
       setTranslateY(diff);
     }
@@ -351,7 +306,6 @@ export default function ESIImpostor() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* GameStatusBar */}
       <GameStatusBar
         title="CrESI: El Impostor"
         score={score}
@@ -359,11 +313,9 @@ export default function ESIImpostor() {
         level={roundNumber}
       />
 
-      {/* Content */}
       <div className="flex-1 p-4 md:p-8 pt-24">
         <div className="max-w-4xl mx-auto">
 
-          {/* Setup Screen */}
           {gameState === 'setup' && (
             <div className="space-y-8">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -400,9 +352,7 @@ export default function ESIImpostor() {
                     return (
                       <button
                         key={cat}
-                        onClick={() => {
-                          toggleCategory(cat);
-                        }}
+                        onClick={() => toggleCategory(cat)}
                         className={`p-3 rounded-lg font-semibold transition transform ${isSelected ? 'ring-4 ring-offset-2 ring-blue-500' : 'hover:scale-105'} bg-gradient-to-br ${info.color} text-white shadow-md hover:shadow-lg`}
                       >
                         <div className="text-2xl mb-2">{info.icon}</div>
@@ -447,7 +397,6 @@ export default function ESIImpostor() {
             </div>
           )}
 
-          {/* Distribution Screen */}
           {gameState === 'distribution' && currentTerm && (
             <div className="space-y-6">
               <div
@@ -459,7 +408,7 @@ export default function ESIImpostor() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 style={{ transform: `translateY(${translateY}px)` }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none touch-none overflow-hidden"
               >
                 {!revealed ? (
                   <div className="text-center space-y-6">
@@ -480,8 +429,11 @@ export default function ESIImpostor() {
                     ) : (
                       <>
                         <p className="text-6xl font-bold text-blue-600">{currentTerm.word}</p>
-                        <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold">
+                        <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold mb-4">
                           {currentTerm.category}
+                        </div>
+                        <div className="bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
+                          <p className="text-gray-700 text-sm italic">{currentTerm.definition}</p>
                         </div>
                       </>
                     )}
@@ -514,7 +466,6 @@ export default function ESIImpostor() {
             </div>
           )}
 
-          {/* Playing Screen */}
           {gameState === 'playing' && currentTerm && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
@@ -550,7 +501,6 @@ export default function ESIImpostor() {
             </div>
           )}
 
-          {/* Reveal Screen */}
           {gameState === 'reveal' && currentTerm && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
@@ -558,8 +508,11 @@ export default function ESIImpostor() {
                   <h2 className="text-3xl font-bold text-gray-800 mb-6">Resultado</h2>
                   <p className="text-gray-600 mb-3">La palabra era:</p>
                   <p className="text-6xl font-bold text-blue-600 mb-6">{currentTerm.word}</p>
-                  <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold">
+                  <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold mb-6">
                     {currentTerm.category}
+                  </div>
+                  <div className="bg-gray-100 p-4 rounded-lg mb-6">
+                    <p className="text-gray-700 text-sm italic">{currentTerm.definition}</p>
                   </div>
                 </div>
 
