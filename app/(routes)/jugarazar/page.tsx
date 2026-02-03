@@ -566,17 +566,9 @@ export default function JugarAzar(): JSX.Element {
               );
             })}
           </div>
-
-          {/* Resume */}
-          {answerSelected && (
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
-              <p className="text-blue-900 text-sm">{currentQuestion.resume}</p>
-            </div>
-          )}
-
           {/* Action Buttons */}
           {answerSelected && showAnswerResult && (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 mb-3">
               <button
                 onClick={handleContinueToWheel}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
@@ -591,6 +583,14 @@ export default function JugarAzar(): JSX.Element {
               </button>
             </div>
           )}
+          {/* Resume */}
+          {answerSelected && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-3">
+              <p className="text-blue-900 text-sm">{currentQuestion.resume}</p>
+            </div>
+          )}
+
+
         </div>
       )}
 

@@ -108,7 +108,7 @@ const AuthModal = () => {
     localStorage.setItem('cresi_user_data', JSON.stringify(userData));
   };
 
-  const handleAnonymousLogin = async (redirectTo: string = '/dashboard') => {
+  const handleAnonymousLogin = async (redirectTo: string = '/') => {
     if (!username.trim()) {
       setError('Por favor ingresa tu nombre');
       return;
@@ -469,7 +469,7 @@ const AuthModal = () => {
             {mode === 'profile-setup' && (
               <div className="space-y-2 pt-2">
                 <button
-                  onClick={() => handleAnonymousLogin('/dashboard')}
+                  onClick={() => handleAnonymousLogin('/')}
                   disabled={loading}
                   className="w-full bg-gray-100 text-gray-700 py-2 px-3 rounded-lg hover:bg-gray-200 
                            transition-colors font-medium text-xs flex items-center justify-center gap-2
