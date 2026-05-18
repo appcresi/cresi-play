@@ -4,7 +4,7 @@ import testData from "./data.json";
 import { IconHeart } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-	title: "CrESI | Amor sin violencia",
+	title: "ESI | Amor sin violencia | CrESI",
 	description:
 		"Aprendé a detectar señales de violencias en tus relaciones de pareja o amistades.",
 	keywords: [
