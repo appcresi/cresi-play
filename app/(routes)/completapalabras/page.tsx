@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Lecciones from "./components/Lecciones";
 
 export const metadata: Metadata = {
-  title: "CrESI | Completapalabras",
+  title: "ESI | Completapalabras | CrESI",
   description:
     "Aprendé sobre sexualidad completando las palabras de las lecciones.",
 };
