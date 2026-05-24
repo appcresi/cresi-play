@@ -182,30 +182,31 @@ class UserDataManager {
   }
 
   // Obtener estadísticas resumidas
-  static getStats(): {
+  static getStats(userData?: UserData): {
     daysActive: number;
     totalActivities: number;
     averageScore: number;
     lastActivity: string | null;
   } {
-    const userData = this.loadUserData();
+    // FIX: aceptar userData como parámetro para evitar leer datos viejos de localStorage
+    const data = userData ?? this.loadUserData();
     
-    const createdDate = new Date(userData.profile.createdAt);
+    const createdDate = new Date(data.profile.createdAt);
     const now = new Date();
     const daysActive = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
-    const totalActivities = userData.progress.completedActivities.length;
-    const totalScore = userData.game.totalScore;
+    const totalActivities = data.progress.completedActivities.length;
+    const totalScore = data.game.totalScore;
     const averageScore = totalActivities > 0 ? Math.round(totalScore / totalActivities) : 0;
     
     // Buscar la actividad más reciente
     const lastActivityTime = Math.max(
-      ...Object.values(userData.progress.activityTimes).map(time => new Date(time).getTime()),
+      ...Object.values(data.progress.activityTimes).map(time => new Date(time).getTime()),
       0
     );
     
     const lastActivity = lastActivityTime > 0 
-      ? Object.entries(userData.progress.activityTimes)
+      ? Object.entries(data.progress.activityTimes)
           .find(([, time]) => new Date(time).getTime() === lastActivityTime)?.[0] || null
       : null;
     
@@ -238,17 +239,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
     lastActivity: null as string | null
   });
 
+  // FIX: el efecto solo corre al montar el componente, sin depender de initialData
+  // para evitar que re-cargas desde localStorage sobreescriban el estado luego de una compra
   useEffect(() => {
     loadUserData();
-  }, [initialData]);
+  }, []);
 
   const loadUserData = () => {
-    // Cargar datos unificados
     const data = UserDataManager.loadUserData();
     setUserData(data);
-    
-    // Cargar estadísticas
-    const userStats = UserDataManager.getStats();
+    // FIX: pasar los datos frescos directamente a getStats para evitar leer localStorage dos veces
+    const userStats = UserDataManager.getStats(data);
     setStats(userStats);
   };
 
@@ -271,9 +272,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
     if (result.isConfirmed) {
       const resetData = UserDataManager.resetGameData();
       setUserData(resetData);
-      
-      // Actualizar stats
-      const userStats = UserDataManager.getStats();
+      // FIX: pasar resetData directamente para consistencia
+      const userStats = UserDataManager.getStats(resetData);
       setStats(userStats);
 
       await Swal.fire({
@@ -288,30 +288,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   };
 
   const handlePurchaseLife = () => {
-    const result = UserDataManager.purchaseLife(200);
-    
-    if (result.success && result.userData) {
-      setUserData(result.userData);
-      Swal.fire({
-        title: '¡Vida comprada!',
-        text: 'Has comprado una vida por 200 puntos.',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false,
-        customClass: {
-          popup: 'comic-popup'
-        }
-      });
-    } else {
-      Swal.fire({
-        title: 'Error',
-        text: result.error || 'No se pudo comprar la vida',
-        icon: 'error',
-        customClass: {
-          popup: 'comic-popup'
-        }
-      });
-    }
+    // PurchaseModal ya hizo la compra y guardó en localStorage.
+    // Solo releer el estado actualizado y sincronizar React.
+    const updatedData = UserDataManager.loadUserData();
+    setUserData(updatedData);
+    const userStats = UserDataManager.getStats(updatedData);
+    setStats(userStats);
     setIsPurchaseModalOpen(false);
   };
 

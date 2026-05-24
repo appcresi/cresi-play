@@ -180,7 +180,6 @@ const DEFAULT_FEATURES = [
     category: "Ejercicios",
     dueDate: ""
   },
-  
   {
     id: "amor",
     title: "Amor Sin Violencia",
@@ -259,52 +258,91 @@ const EducationalProgressPanel = () => {
     loadUserData();
   }, [user]);
 
- const loadUserData = async () => {
+  const loadUserData = async () => {
     console.log('📥 Cargando datos del usuario...');
     const localData = UserDataManager.loadUserData();
-    
-    // Si el usuario está registrado (no anónimo), intentar cargar desde Firestore
+
     if (user && !user.isAnonymous) {
       console.log('🔄 Usuario registrado - cargando configuración desde Firestore...');
-      
+
       try {
-        // Cargar datos completos desde Firestore
         const firestoreData = await UserDataSync.loadFromFirestore();
-        
+
         if (firestoreData) {
           console.log('✅ Datos cargados desde Firestore');
-          // Fusionar datos de Firestore con localStorage (Firestore tiene prioridad)
-          const mergedData = {
-            ...localData,
-            ...firestoreData,
-            dashboard: firestoreData.dashboard || localData.dashboard
-          };
 
-          // ✅ VALIDACIÓN: Verificar si el dashboard está vacío
-          if (!mergedData.dashboard || mergedData.dashboard.visibleActivities.length === 0) {
-            console.log('⚠️ Dashboard vacío detectado, inicializando con todas las actividades');
-            mergedData.dashboard = {
+          // FIX: comparar lastLogin — quien sea más reciente tiene prioridad
+          const firestoreTime = new Date(firestoreData.profile?.lastLogin ?? 0).getTime();
+          const localTime = new Date(localData.profile?.lastLogin ?? 0).getTime();
+          const localIsNewer = localTime > firestoreTime;
+
+          if (localIsNewer) {
+            console.log('⚠️ localStorage más reciente que Firestore — priorizando localStorage');
+            console.log('   Local lastLogin:', localData.profile.lastLogin);
+            console.log('   Firestore lastLogin:', firestoreData.profile.lastLogin);
+
+            // localStorage gana en game/progress/mood/achievements
+            // Firestore gana solo en dashboard si localStorage no lo tiene
+            const defaultDashboard = {
               visibleActivities: DEFAULT_FEATURES.map(f => f.id),
               activityOrder: DEFAULT_FEATURES.map(f => f.id)
             };
-          }
+            const mergedData: UserData = {
+              ...firestoreData,
+              ...localData,
+              dashboard: (localData.dashboard?.visibleActivities?.length ?? 0) > 0
+                ? localData.dashboard
+                : (firestoreData.dashboard ?? defaultDashboard)
+            };
 
-          setUserData(mergedData);
-          UserDataManager.saveUserData(mergedData); // Guardar en localStorage también
-          
-          // Actualizar estados del dashboard
-          if (mergedData.dashboard) {
+            if (!mergedData.dashboard || mergedData.dashboard.visibleActivities.length === 0) {
+              mergedData.dashboard = defaultDashboard;
+            }
+
+            setUserData(mergedData);
+            // Subir localStorage a Firestore para que quede sincronizado
+            UserDataManager.saveUserData(mergedData);
+
             setHiddenActivities(
               DEFAULT_FEATURES.map(f => f.id).filter(
                 id => !mergedData.dashboard.visibleActivities.includes(id)
               )
             );
             setOrderedActivities(mergedData.dashboard.activityOrder);
+
+          } else {
+            console.log('✅ Firestore más reciente — usando datos de Firestore');
+
+            const mergedData = {
+              ...localData,
+              ...firestoreData,
+              dashboard: firestoreData.dashboard || localData.dashboard
+            };
+
+            if (!mergedData.dashboard || mergedData.dashboard.visibleActivities.length === 0) {
+              console.log('⚠️ Dashboard vacío detectado, inicializando con todas las actividades');
+              mergedData.dashboard = {
+                visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+                activityOrder: DEFAULT_FEATURES.map(f => f.id)
+              };
+            }
+
+            setUserData(mergedData);
+            UserDataManager.saveUserData(mergedData);
+
+            if (mergedData.dashboard) {
+              setHiddenActivities(
+                DEFAULT_FEATURES.map(f => f.id).filter(
+                  id => !mergedData.dashboard.visibleActivities.includes(id)
+                )
+              );
+              setOrderedActivities(mergedData.dashboard.activityOrder);
+            }
           }
+
         } else {
           console.log('⚠️ No hay datos en Firestore, usando localStorage');
-          
-          // ✅ VALIDACIÓN: Verificar si localStorage también está vacío
+
           if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
             console.log('⚠️ Dashboard vacío en localStorage, inicializando con todas las actividades');
             localData.dashboard = {
@@ -323,10 +361,8 @@ const EducationalProgressPanel = () => {
         }
       } catch (error) {
         console.error('❌ Error cargando de Firestore:', error);
-        
-        // ✅ VALIDACIÓN: En caso de error, también validar localStorage
+
         if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
-          console.log('⚠️ Dashboard vacío después de error, inicializando con todas las actividades');
           localData.dashboard = {
             visibleActivities: DEFAULT_FEATURES.map(f => f.id),
             activityOrder: DEFAULT_FEATURES.map(f => f.id)
@@ -342,12 +378,9 @@ const EducationalProgressPanel = () => {
         setOrderedActivities(localData.dashboard.activityOrder);
       }
     } else {
-      // Usuario anónimo - solo usar localStorage
       console.log('👤 Usuario anónimo - usando solo localStorage');
-      
-      // ✅ VALIDACIÓN: Verificar si el dashboard está vacío para usuarios anónimos también
+
       if (!localData.dashboard || localData.dashboard.visibleActivities.length === 0) {
-        console.log('⚠️ Dashboard vacío para usuario anónimo, inicializando con todas las actividades');
         localData.dashboard = {
           visibleActivities: DEFAULT_FEATURES.map(f => f.id),
           activityOrder: DEFAULT_FEATURES.map(f => f.id)
@@ -362,11 +395,11 @@ const EducationalProgressPanel = () => {
       );
       setOrderedActivities(localData.dashboard.activityOrder);
     }
-    
+
     setLoadingDashboard(false);
   };
 
-  const categories = useMemo(() => 
+  const categories = useMemo(() =>
     ['Todos', ...Array.from(new Set(DEFAULT_FEATURES.map(f => f.category)))],
     []
   );
@@ -386,11 +419,11 @@ const EducationalProgressPanel = () => {
       });
 
     let filtered = features;
-    
+
     if (selectedCategory !== 'Todos') {
       filtered = filtered.filter(feature => feature.category === selectedCategory);
     }
-    
+
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(feature =>
@@ -398,17 +431,17 @@ const EducationalProgressPanel = () => {
         feature.description.toLowerCase().includes(term)
       );
     }
-    
+
     return filtered;
   };
 
   const getFilteredHiddenFeatures = () => {
     let hidden = getHiddenFeatures();
-    
+
     if (selectedCategory !== 'Todos') {
       hidden = hidden.filter(feature => feature.category === selectedCategory);
     }
-    
+
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       hidden = hidden.filter(feature =>
@@ -416,7 +449,7 @@ const EducationalProgressPanel = () => {
         feature.description.toLowerCase().includes(term)
       );
     }
-    
+
     return hidden;
   };
 
@@ -435,14 +468,14 @@ const EducationalProgressPanel = () => {
 
     setHiddenActivities(newHidden);
     const updatedData = UserDataManager.updateDashboardVisibility(newVisible);
-    
+
     if (!updatedData.dashboard) {
       updatedData.dashboard = {
         visibleActivities: newVisible,
         activityOrder: DEFAULT_FEATURES.map(f => f.id)
       };
     }
-    
+
     setUserData(updatedData);
   };
 
@@ -469,14 +502,14 @@ const EducationalProgressPanel = () => {
 
     setOrderedActivities(newOrder);
     const updatedData = UserDataManager.updateActivityOrder(newOrder);
-    
+
     if (!updatedData.dashboard) {
       updatedData.dashboard = {
         visibleActivities: DEFAULT_FEATURES.map(f => f.id),
         activityOrder: newOrder
       };
     }
-    
+
     setUserData(updatedData);
     setDraggedItem(null);
   };
@@ -572,7 +605,7 @@ const EducationalProgressPanel = () => {
                   </div>
                   <span className="text-sm font-medium text-gray-900">{userData.progress.completedActivities.length}/{DEFAULT_FEATURES.length}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconTrophy size={16} className="text-yellow-500" />
@@ -580,7 +613,7 @@ const EducationalProgressPanel = () => {
                   </div>
                   <span className="text-sm font-medium text-gray-900">{userData.game.totalScore}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconTarget size={16} className="text-blue-600" />
@@ -600,7 +633,7 @@ const EducationalProgressPanel = () => {
 
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(userData.progress.completedActivities.length / DEFAULT_FEATURES.length) * 100}%` }}
                   />
@@ -721,7 +754,7 @@ const EducationalProgressPanel = () => {
                     const activityScore = getActivityScore(feature.title);
 
                     return (
-                      <article 
+                      <article
                         key={feature.id}
                         draggable={editMode}
                         onDragStart={(e) => handleDragStart(e, feature.id)}
@@ -760,12 +793,12 @@ const EducationalProgressPanel = () => {
                         )}
 
                         {/* Header */}
-                        <div 
+                        <div
                           className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                           style={{ backgroundColor: `${feature.color}15` }}
                         >
                           {feature.image && (
-                            <div 
+                            <div
                               className="absolute inset-0 opacity-20"
                               style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                             />
@@ -782,8 +815,8 @@ const EducationalProgressPanel = () => {
 
                           <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
                             <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
-                              getLastVisitDate(feature.title) 
-                                ? 'text-gray-600 bg-white/80' 
+                              getLastVisitDate(feature.title)
+                                ? 'text-gray-600 bg-white/80'
                                 : 'text-orange-600 bg-orange-50/80'
                             }`}>
                               <IconCalendar size={10} className="md:hidden" />
@@ -793,7 +826,7 @@ const EducationalProgressPanel = () => {
                             </div>
                           </div>
 
-                          <div 
+                          <div
                             className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                             style={{ backgroundColor: feature.color }}
                           >
@@ -811,22 +844,22 @@ const EducationalProgressPanel = () => {
                             </h3>
                             {!editMode && <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />}
                           </div>
-                          
+
                           <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
                             {feature.description}
                           </p>
-                          
+
                           <div className="flex items-center justify-between gap-1">
-                            <span 
+                            <span
                               className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
-                              style={{ 
+                              style={{
                                 backgroundColor: `${feature.color}15`,
-                                color: feature.color 
+                                color: feature.color
                               }}
                             >
                               {feature.category}
                             </span>
-                            
+
                             {isCompleted && (
                               <div className="flex items-center space-x-1 md:space-x-2">
                                 {activityScore > 0 && (
@@ -850,7 +883,7 @@ const EducationalProgressPanel = () => {
 
                   {/* Hidden Features (only in edit mode) */}
                   {editMode && hiddenFeatures.map((feature) => (
-                    <article 
+                    <article
                       key={feature.id}
                       onClick={(e) => {
                         if (editMode) {
@@ -868,18 +901,18 @@ const EducationalProgressPanel = () => {
                       </div>
 
                       {/* Header */}
-                      <div 
+                      <div
                         className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
                         style={{ backgroundColor: `${feature.color}15` }}
                       >
                         {feature.image && (
-                          <div 
+                          <div
                             className="absolute inset-0 opacity-20"
                             style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                           />
                         )}
 
-                        <div 
+                        <div
                           className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
                           style={{ backgroundColor: feature.color }}
                         >
@@ -896,16 +929,16 @@ const EducationalProgressPanel = () => {
                             {feature.title}
                           </h3>
                         </div>
-                        
+
                         <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
                           {feature.description}
                         </p>
-                        
-                        <span 
+
+                        <span
                           className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full"
-                          style={{ 
+                          style={{
                             backgroundColor: `${feature.color}15`,
-                            color: feature.color 
+                            color: feature.color
                           }}
                         >
                           {feature.category}
