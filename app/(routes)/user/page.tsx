@@ -3,7 +3,7 @@ import UserProfileProps from "./components/UserProfileProps";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "CrESI | Perfil de Usuario",
+  title: "ESI | Perfil de Usuario | CrESI",
   description:
     "Aprendé sobre sexualidad completando las palabras de las lecciones.",
 };

@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport  } from 'next'
 import localFont from 'next/font/local'
 import Script from 'next/script'
 import './globals.css'
@@ -17,22 +17,19 @@ const monaSans = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
-  // MEJORADO 1: Title más optimizado con palabras clave
-  title: "Juegos ESI Gratis | Trivias, Pasapalabras y Más - CrESI",
-  
-  // MEJORADO 2: Icon path correcto
+
+  title: "ESI | Juegos ESI Trivias, Pasapalabras y Más | CrESI",
+
   icons: [
     {
-      rel: 'icon',
-      url: '/cresi-logo.ico'
-    }
+      rel: "icon",
+      url: "/cresi-logo.ico",
+    },
   ],
-  
-  // MEJORADO 3: Description corregida y con palabras clave
+
   description:
     "Juega trivias, pasapalabras y completaspalabras sobre ESI. Más de 700 preguntas educativas gratis. Aprende sobre Educación Sexual Integral mientras te diviertes con CrESI.",
-  
-  // MEJORADO 4: Keywords mejoradas
+
   keywords: [
     "juegos ESI",
     "trivia ESI",
@@ -46,11 +43,10 @@ export const metadata: Metadata = {
     "preguntas y respuestas",
     "CrESI",
     "recursos educativos",
-    "trivias didácticas"
+    "trivias didácticas",
   ],
-  
+
   openGraph: {
-    // MEJORADO 5: Title con palabra clave principal
     title: "Juegos ESI Gratis | Trivias y Pasapalabras - CrESI",
     description:
       "Juega trivias y pasapalabras sobre ESI. Más de 700 preguntas educativas gratis para aprender Educación Sexual Integral.",
@@ -67,7 +63,7 @@ export const metadata: Metadata = {
     ],
     type: "website",
   },
-  
+
   twitter: {
     card: "summary_large_image",
     title: "Juegos ESI | Trivias Gratis - CrESI",
@@ -75,9 +71,9 @@ export const metadata: Metadata = {
       "Juega trivias y pasapalabras sobre ESI. Aprende Educación Sexual Integral mientras te diviertes con CrESI.",
     images: ["https://jugar.cresi.com.ar/og-image.jpg"],
     site: "@appcresi",
-    creator: "@appcresi"
+    creator: "@appcresi",
   },
-  
+
   robots: {
     index: true,
     follow: true,
@@ -85,23 +81,20 @@ export const metadata: Metadata = {
       index: true,
       follow: true,
       "max-image-preview": "large",
-      "max-snippet": -1
-    }
+      "max-snippet": -1,
+    },
   },
-  
-  // NUEVO: Alternates para canonical
+
   alternates: {
-    canonical: "https://jugar.cresi.com.ar"
+    canonical: "https://jugar.cresi.com.ar",
   },
-  
-  // NUEVO: Viewport
-  viewport: {
-    width: "device-width",
-    initialScale: 1
-  },
-  
-  // NUEVO: Category
-  category: "education"
+
+  category: "education",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {

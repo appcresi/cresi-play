@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Story from "./components/Story";
 
 export const metadata: Metadata = {
-  title: "CrESI | Literatura",
+  title: "ESI | Literatura | CrESI",
   description:
     "Aprendé sobre distintos temas con las lecciones preparadas para que sepás todo sobre sexualidad.",
 };

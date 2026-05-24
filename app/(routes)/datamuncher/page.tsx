@@ -5,7 +5,7 @@ import React from 'react';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
-  title: "CrESI | DataMuncher",
+  title: "ESI | DataMuncher | CrESI",
   description:
     "¡Pon a prueba tus conocimientos mientras te divertís! Contestá preguntas, comé datos y acumulá puntos en este emocionante juego de CrESI.",
   keywords: [

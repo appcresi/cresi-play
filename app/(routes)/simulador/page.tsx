@@ -3,7 +3,7 @@ import ChatSimulator from "./components/ChatSimulator";
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: "CrESI | Completapalabras",
+  title: "ESI | Completapalabras | CrESI",
   description:
     "Aprendé sobre sexualidad completando las palabras de las lecciones.",
 };

@@ -3,7 +3,7 @@ import Lecciones from "./components/Lecciones";
 import { IconBook, IconSchool } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-	title: "Lecciones | CrESI - Educación Sexual Integral",
+	title: "ESI | Lecciones | CrESI",
 	description:
 		"Aprendé sobre Educación Sexual Integral con nuestras lecciones interactivas. Contenido didáctico sobre sexualidad, relaciones saludables y autocuidado.",
 	keywords: [

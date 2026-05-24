@@ -4,7 +4,7 @@ import { IconBriefcase } from "@tabler/icons-react";
 import VocacionClient from "./components/vocacion-client";
 
 export const metadata: Metadata = {
-	title: "Vocación y Profesiones | CrESI - Educación Sexual Integral",
+	title: "ESI | Vocación y Profesiones | CrESI",
 	description:
 		"Descubrí tus intereses vocacionales y explorá diferentes profesiones para planificar tu futuro con confianza.",
 	keywords: [

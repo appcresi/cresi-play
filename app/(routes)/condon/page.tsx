@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Condon from "./components/condon";
 
 export const metadata: Metadata = {
-  title: "CrESI | Prevención, uso del preservativo",
+  title: "ESI | Prevención, uso del preservativo | CrESI",
   description:
     "Aprendé sobre el uso correcto del preservativo.",
 };

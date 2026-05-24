@@ -3,7 +3,7 @@ import Wordgame from './components/Wordgame';
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: "CrESI | Pasapalabras",
+  title: "ESI | Pasapalabras | CrESI",
   description:
     'Adiviná la palabra oculta escondida detrás de la definición.',
 };

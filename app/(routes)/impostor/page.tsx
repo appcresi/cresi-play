@@ -4,7 +4,7 @@ import Impostor from './components/Impostor';
 import React from 'react';
 
 export const metadata: Metadata = {
-  title: "CrESI | Impostor ESI",
+  title: "ESI | Impostor ESI | CrESI",
   description:
     'Adiviná la palabra oculta escondida detrás de la definición.',
 };

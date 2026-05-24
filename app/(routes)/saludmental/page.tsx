@@ -3,7 +3,7 @@ import Test from "./components/Test";
 import { IconHeart } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-	title: "Test de Salud Mental | CrESI - Educación Sexual Integral",
+	title: "ESI | Test de Salud Mental | CrESI",
 	description:
 		"Test de salud mental para adolescentes y jóvenes. Evalúa tu estado emocional y recibe orientación sobre bienestar mental.",
 	keywords: [
