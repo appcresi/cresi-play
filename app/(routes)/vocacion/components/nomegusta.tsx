@@ -257,7 +257,7 @@ const TestVocacional = () => {
           {/* Header */}
           <div className="mb-12">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 mb-2">
-              🧭 Test Vocacional Inverso
+              ESI: Test Vocacional Inverso
             </h1>
             <p className="text-gray-600 text-lg">Descubrí tu camino evitando lo que no te gusta</p>
           </div>

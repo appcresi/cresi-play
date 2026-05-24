@@ -734,7 +734,7 @@ export default function ComicPoneloSimulator() {
             <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">Ponelo Bien</h1>
+            <h1 className="text-2xl font-bold text-gray-800">ESI: Ponelo Bien</h1>
           </div>
         </header>
 
@@ -827,7 +827,7 @@ export default function ComicPoneloSimulator() {
           <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded">
             <Heart className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Ponelo Bien</h1>
+          <h1 className="text-2xl font-bold text-gray-800">ESI: Ponelo Bien</h1>
         </div>
       </header>
 

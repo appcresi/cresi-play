@@ -484,7 +484,7 @@ const MoodTracker = () => {
               <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded">
                 <SmilePlus className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800">Mood Tracker</h1>
+              <h1 className="text-2xl font-bold text-gray-800">ESI: Mood Tracker</h1>
             </div>
             <GameStatusBar 
               title="Mood Tracker"

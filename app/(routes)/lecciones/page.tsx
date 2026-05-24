@@ -53,7 +53,7 @@ export default function LeccionesPage(): JSX.Element {
 
 					{/* Main heading */}
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 leading-tight mb-4">
-						Lecciones de{" "}
+						ESI: Lecciones de{" "}
 						<span className="text-emerald-600">Educación Sexual Integral</span>
 					</h1>
 

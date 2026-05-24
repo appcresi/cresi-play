@@ -47,7 +47,7 @@ const FinalReport: React.FC<FinalReportProps> = ({
       <div className="flex flex-wrap justify-center items-center gap-8 lg:justify-between">
         <div className="flex flex-col gap-6 lg:max-w-[50%]">
           <div className="bg-yellow-200 p-6 rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transform -rotate-1">
-            <h1 className="text-4xl font-bold mb-4">¡Pasapalabra ESI!</h1>
+            <h1 className="text-4xl font-bold mb-4">ESI: ¡Pasapalabra!</h1>
             <p className="text-lg">{performanceMessage}</p>
           </div>
 

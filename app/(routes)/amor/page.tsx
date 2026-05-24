@@ -74,7 +74,7 @@ export default function LoveTestPage(): JSX.Element {
 
 					{/* Title */}
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-4">
-						Amor
+						ESI: Amor
 						<span className="block text-rose-600">sin violencia</span>
 					</h1>
 

@@ -263,7 +263,7 @@ export default function CreateCustomTrivia() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Mis trivias</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">ESI: Mis trivias</h1>
               <p className="text-gray-600">{userTriviaCount} de {MAX_FREE_TRIVIAS} trivias creadas</p>
             </div>
             {canCreateMore && (

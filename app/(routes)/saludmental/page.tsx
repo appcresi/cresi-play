@@ -73,7 +73,7 @@ export default function MentalHealthTestPage(): JSX.Element {
 
 					{/* Title */}
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-4">
-						Salud
+						ESI: Salud
 						<span className="block text-purple-600">Mental</span>
 					</h1>
 

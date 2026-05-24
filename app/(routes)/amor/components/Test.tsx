@@ -70,7 +70,7 @@ export default function Test(): JSX.Element {
 					<div className="flex items-center justify-between mb-4">
 						<div>
 							<h1 className="text-3xl font-semibold text-gray-900">
-								Cuestionario
+								ESI: Cuestionario
 							</h1>
 							<p className="text-gray-600 mt-1">
 								Completa todas las preguntas

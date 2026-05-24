@@ -163,7 +163,7 @@ export default function Trivias(): JSX.Element {
       <div className="mx-auto px-4 max-w-6xl py-8">
         {/* Header con botón de crear trivia */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Trivias</h1>
+          <h1 className="text-3xl font-bold">ESI: Trivias</h1>
           {user && (
             <Link href="/crear-trivia">
               <button className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-bold transition shadow-lg">
