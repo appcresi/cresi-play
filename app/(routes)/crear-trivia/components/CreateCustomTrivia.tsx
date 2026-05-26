@@ -14,7 +14,16 @@ import {
   updateDoc
 } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
-import { IconTrash, IconPencil, IconCheck, IconX, IconSearch, IconPlus } from '@tabler/icons-react';
+import { 
+  IconTrash, 
+  IconPencil, 
+  IconCheck, 
+  IconX, 
+  IconSearch, 
+  IconPlus,
+  IconPlayerPlay,
+  IconCopy,
+} from '@tabler/icons-react';
 
 interface QuestionOption {
   first: string;
@@ -63,6 +72,7 @@ export default function CreateCustomTrivia() {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTriviaId, setEditingTriviaId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const canCreateMore = userTriviaCount < MAX_FREE_TRIVIAS;
 
@@ -242,6 +252,26 @@ export default function CreateCustomTrivia() {
     window.scrollTo(0, 0);
   };
 
+  const handleShare = (triviaId: string) => {
+    const url = `${window.location.origin}/trivias/${triviaId}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setCopiedId(triviaId);
+        setTimeout(() => setCopiedId(null), 2000);
+      })
+      .catch(() => {
+        // Fallback para entornos sin HTTPS o sin soporte de clipboard API
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        setCopiedId(triviaId);
+        setTimeout(() => setCopiedId(null), 2000);
+      });
+  };
+
   const filteredQuestions = questions.filter(q =>
     q.question?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -308,8 +338,8 @@ export default function CreateCustomTrivia() {
                 key={trivia.id}
                 className="bg-white rounded-lg p-6 border border-gray-200 hover:shadow-md transition"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">{trivia.name}</h3>
                     <p className="text-gray-600 text-sm mb-3">
                       {trivia.description || 'Sin descripción'}
@@ -318,7 +348,42 @@ export default function CreateCustomTrivia() {
                       {trivia.questions?.length || 0} preguntas
                     </span>
                   </div>
-                  <div className="flex gap-2 ml-4">
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Jugar */}
+                    <button
+                      onClick={() => router.push(`/trivias/${trivia.id}`)}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition"
+                      title="Jugar esta trivia"
+                    >
+                      <IconPlayerPlay size={16} />
+                      Jugar
+                    </button>
+
+                    {/* Compartir */}
+                    <button
+                      onClick={() => handleShare(trivia.id)}
+                      className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg border transition ${
+                        copiedId === trivia.id
+                          ? 'bg-green-50 text-green-700 border-green-300'
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border-gray-200'
+                      }`}
+                      title="Copiar link para compartir"
+                    >
+                      {copiedId === trivia.id ? (
+                        <>
+                          <IconCheck size={16} />
+                          Copiado
+                        </>
+                      ) : (
+                        <>
+                          <IconCopy size={16} />
+                          Compartir
+                        </>
+                      )}
+                    </button>
+
+                    {/* Editar */}
                     <button
                       onClick={() => handleEditTrivia(trivia)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
@@ -326,6 +391,8 @@ export default function CreateCustomTrivia() {
                     >
                       <IconPencil size={20} />
                     </button>
+
+                    {/* Eliminar */}
                     <button
                       onClick={() => handleDeleteTrivia(trivia.id)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
