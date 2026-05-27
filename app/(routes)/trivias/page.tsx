@@ -100,6 +100,7 @@ export default function Trivias(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'publicas' | 'mias'>('publicas');
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     const loadTrivias = async () => {
@@ -161,17 +162,60 @@ export default function Trivias(): JSX.Element {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="mx-auto px-4 max-w-6xl py-8">
-        {/* Header con botón de crear trivia */}
+
+        {/* Header con título y botones alineados horizontalmente */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">ESI: Trivias</h1>
-          {user && (
-            <Link href="/crear-trivia">
-              <button className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-bold transition shadow-lg">
-                +
+
+          <div className="flex items-center gap-2">
+            {/* Botón buscar */}
+            {(!user || customTrivias.length === 0 || activeTab === 'publicas') && (
+              <button
+                onClick={() => setShowSearch((prev) => !prev)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md transition-all duration-200 hover:shadow-lg ${
+                  showSearch ? 'bg-gray-500 hover:bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+                title={showSearch ? 'Cerrar búsqueda' : 'Buscar trivia'}
+              >
+                {showSearch ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                  </svg>
+                )}
               </button>
-            </Link>
-          )}
+            )}
+
+            {/* Botón crear trivia */}
+            {user && (
+              <Link href="/crear-trivia">
+                <button
+                  className="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-bold transition shadow-md hover:shadow-lg"
+                  title="Crear trivia"
+                >
+                  +
+                </button>
+              </Link>
+            )}
+
+            {/* Botón configuración */}
+            <div className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-md transition-all duration-200 hover:shadow-lg">
+              <TriviaSettings />
+            </div>
+          </div>
         </div>
+
+        {/* Barra de búsqueda desplegable */}
+        {showSearch && (!user || customTrivias.length === 0 || activeTab === 'publicas') && (
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <TriviaSearch indexes={indexes} />
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         {user && customTrivias.length > 0 && (
@@ -203,34 +247,18 @@ export default function Trivias(): JSX.Element {
 
         {/* Mis trivias tab */}
         {user && customTrivias.length > 0 && activeTab === 'mias' && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-20">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <TriviaGrid indexesByLevel={{ 1: customTrivias.map(t => ({ id: t.id, name: t.name, level: 1 })) }} />
           </div>
         )}
 
         {/* Trivias públicas tab */}
         {(!user || customTrivias.length === 0 || activeTab === 'publicas') && (
-          <>
-            {/* Search section */}
-            <div className="mb-6">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <TriviaSearch indexes={indexes} />
-              </div>
-            </div>
-
-            {/* Grid section */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-20">
-              <TriviaGrid indexesByLevel={indexesByLevel} />
-            </div>
-          </>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <TriviaGrid indexesByLevel={indexesByLevel} />
+          </div>
         )}
 
-        {/* Settings button - flotante */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl">
-            <TriviaSettings />
-          </div>
-        </div>
       </div>
     </main>
   );

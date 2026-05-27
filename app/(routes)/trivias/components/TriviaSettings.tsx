@@ -23,11 +23,10 @@ export default function TriviaSettings(): JSX.Element {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="p-3 flex items-center justify-center text-gray-600 hover:text-blue-600
-                 transition-colors duration-200"
+        className="w-10 h-10 flex items-center justify-center text-white transition-colors duration-200"
         aria-label="Configuración"
       >
-        <IconSettings size={24} />
+        <IconSettings size={20} />
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>

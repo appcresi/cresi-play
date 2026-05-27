@@ -77,17 +77,7 @@ export default function TriviaGrid({
                 key={numericLevel}
                 className="focus:outline-none"
               >
-                {/* Level description */}
-                <div className="mb-6 bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {levelLabels[numericLevel]}
-                  </h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {numericLevel === 1 && 'Perfectas para comenzar tu aprendizaje'}
-                    {numericLevel === 2 && 'Desafía tus conocimientos'}
-                    {numericLevel === 3 && 'Para expertos en el tema'}
-                  </p>
-                </div>
+                
 
                 {/* Grid of cards */}
                 <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
