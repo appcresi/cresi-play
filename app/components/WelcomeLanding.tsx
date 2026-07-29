@@ -200,17 +200,37 @@ const WelcomeLanding = () => {
             Para jugar por tu cuenta, o para llevar a toda tu clase.
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 mb-10">
-            <Link
-              href="#elegir"
-              className="flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E8514F] text-white font-bold
-                       px-7 py-3.5 rounded-full shadow-[0_8px_24px_-8px_rgba(255,107,107,0.6)]
-                       hover:shadow-[0_10px_28px_-6px_rgba(255,107,107,0.7)] hover:-translate-y-0.5
-                       transition-all"
-            >
-              Empezar ahora
-              <IconArrowRight className="w-5 h-5" />
-            </Link>
+          <div className="flex flex-col gap-3 mb-10">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/unirse"
+                className="flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E8514F] text-white font-bold
+                         px-7 py-3.5 rounded-full shadow-[0_8px_24px_-8px_rgba(255,107,107,0.6)]
+                         hover:shadow-[0_10px_28px_-6px_rgba(255,107,107,0.7)] hover:-translate-y-0.5
+                         transition-all"
+              >
+                Empezar ahora
+                <IconArrowRight className="w-5 h-5" />
+              </Link>
+
+              <Link
+                href="/clase"
+                className="flex items-center gap-2 bg-[#FFF3D6] hover:bg-[#FFEAB8] text-[#B9800A] font-bold
+                         px-6 py-3.5 rounded-full transition-all hover:-translate-y-0.5"
+              >
+                <IconKey className="w-5 h-5" />
+                Tengo un código
+              </Link>
+
+              <Link
+                href="/docente"
+                className="flex items-center gap-2 bg-[#E6F7F5] hover:bg-[#D3F2EE] text-[#238F85] font-bold
+                         px-6 py-3.5 rounded-full transition-all hover:-translate-y-0.5"
+              >
+                <IconChalkboard className="w-5 h-5" />
+                Soy docente
+              </Link>
+            </div>
             <span className="text-sm text-[#241B37]/50 font-medium">
               Sin costo · con o sin cuenta
             </span>
