@@ -6,715 +6,271 @@ import {
   IconShieldCheck,
   IconBrandPnpm,
   IconPacman,
+  IconMoodPuzzled,
   IconMoodTongueWink2,
+  IconBook,
+  IconHeart,
   IconSearch,
   IconX,
-  IconHeart,
   IconTrophy,
-  IconMoodHappy,
-  IconEdit,
-  IconTarget,
-  IconCircle,
-  IconCalendar,
-  IconBook,
+  IconFlame,
+  IconCircleCheck,
   IconChevronRight,
-  IconPlus,
-  IconEye,
-  IconEyeOff,
-  IconGripVertical,
-  IconSettings,
-  IconRotate,
-  IconMoodPuzzled
+  IconSchool,
+  IconMoodHappy,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
-import ClassroomService from '@/lib/classroomService';
+import ClassroomService, { Classroom } from '@/lib/classroomService';
 import { useAuth } from '@/context/AuthContext';
 import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 
-// Mapa de nombre de ícono (string, definido en lib/activities.ts) a componente.
-// Solo hace falta acá, que es donde realmente se pinta el ícono.
-const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
+// Mismo patrón que Features.tsx: el catálogo guarda el nombre del ícono
+// como string, acá lo resolvemos a componente.
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   IconCards,
   IconAB2,
   IconShieldCheck,
   IconBrandPnpm,
   IconPacman,
+  IconMoodPuzzled,
   IconMoodTongueWink2,
   IconBook,
   IconHeart,
-  IconMoodPuzzled,
 };
 
-const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {
-  const IconComponent = ICON_MAP[activity.iconName] ?? IconMoodPuzzled;
-  return {
-    ...activity,
-    icon: <IconComponent size={activity.iconSize ?? 20} />,
-  };
-});
+const ActivityIcon = ({ iconName, size = 18, className }: { iconName: string; size?: number; className?: string }) => {
+  const Icon = ICON_MAP[iconName] ?? IconMoodPuzzled;
+  return <Icon size={size} className={className} />;
+};
 
-
-
-
-const EducationalProgressPanel = () => {
+const ClassroomDesk = () => {
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
-  const [hiddenActivities, setHiddenActivities] = useState<string[]>([]);
-  const [orderedActivities, setOrderedActivities] = useState<string[]>([]);
-  const [loadingDashboard, setLoadingDashboard] = useState(true);
-
-  // Actividades habilitadas por el docente para la clase del alumno (si tiene una).
-  // `null` = sin restricción, se ven todas.
-  const [allowedActivities, setAllowedActivities] = useState<string[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     setMounted(true);
-    loadUserData();
+    (async () => {
+      const merged = await loadStudentUserData(user);
+      setUserData(merged);
+
+      const classroomId = merged.profile.classroomId;
+      if (classroomId) {
+        try {
+          const c = await ClassroomService.getClassroomById(classroomId);
+          setClassroom(c);
+        } catch (err) {
+          console.error('❌ Error cargando la clase:', err);
+        }
+      }
+      setLoading(false);
+    })();
   }, [user]);
 
-  // Trae la restricción de actividades de la clase, si el alumno pertenece a una.
-  // Es una restricción ABSOLUTA: se aplica antes de las preferencias personales
-  // del alumno (hiddenActivities/order), que solo operan dentro de lo permitido.
-  useEffect(() => {
-    const classroomId = userData.profile.classroomId;
-    if (!classroomId) {
-      setAllowedActivities(null);
-      return;
-    }
-    ClassroomService.getAllowedActivities(classroomId)
-      .then(setAllowedActivities)
-      .catch((err) => {
-        console.error('❌ Error obteniendo actividades habilitadas por el docente:', err);
-        setAllowedActivities(null);
-      });
-  }, [userData.profile.classroomId]);
+  // Actividades que el docente habilitó para esta clase. Si por algún
+  // motivo todavía no cargó la clase, no mostramos nada (mejor que mostrar
+  // de más por un instante).
+  const activities = useMemo(() => {
+    if (!classroom) return [];
+    if (!classroom.allowedActivities) return ACTIVITIES;
+    return ACTIVITIES.filter((a) => classroom.allowedActivities!.includes(a.id));
+  }, [classroom]);
 
-  // Pool de actividades que el alumno puede llegar a ver, ya filtrado por la
-  // restricción del docente (si la hay). Todo lo demás (búsqueda, categorías,
-  // visibilidad personal, estadísticas) parte de acá en vez de DEFAULT_FEATURES.
-  const effectiveFeatures = useMemo(() => {
-    if (!allowedActivities) return DEFAULT_FEATURES;
-    return DEFAULT_FEATURES.filter((f) => allowedActivities.includes(f.id));
-  }, [allowedActivities]);
-
-  const loadUserData = async () => {
-    const merged = await loadStudentUserData(user);
-    setUserData(merged);
-    setHiddenActivities(
-      DEFAULT_FEATURES.map(f => f.id).filter(
-        id => !merged.dashboard.visibleActivities.includes(id)
-      )
+  const filteredActivities = useMemo(() => {
+    if (!searchTerm.trim()) return activities;
+    const term = searchTerm.toLowerCase();
+    return activities.filter(
+      (a) => a.title.toLowerCase().includes(term) || a.description.toLowerCase().includes(term)
     );
-    setOrderedActivities(merged.dashboard.activityOrder);
-    setLoadingDashboard(false);
-  };
+  }, [activities, searchTerm]);
 
-  const categories = useMemo(() =>
-    ['Todos', ...Array.from(new Set(effectiveFeatures.map(f => f.category)))],
-    [effectiveFeatures]
-  );
+  const isCompleted = (title: string) => userData.progress.completedActivities.includes(title);
+  const getScore = (title: string) => userData.progress.activityScores[title] || 0;
 
-  const getVisibleFeatures = () => {
-    const dashboard = userData.dashboard || {
-      visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-      activityOrder: DEFAULT_FEATURES.map(f => f.id)
-    };
+  const completedCount = activities.filter((a) => isCompleted(a.title)).length;
+  const progressPercent = activities.length > 0 ? Math.round((completedCount / activities.length) * 100) : 0;
 
-    const features = effectiveFeatures
-      .filter(f => dashboard.visibleActivities.includes(f.id))
-      .sort((a, b) => {
-        const aIndex = dashboard.activityOrder.indexOf(a.id);
-        const bIndex = dashboard.activityOrder.indexOf(b.id);
-        return aIndex - bIndex;
-      });
-
-    let filtered = features;
-
-    if (selectedCategory !== 'Todos') {
-      filtered = filtered.filter(feature => feature.category === selectedCategory);
-    }
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(feature =>
-        feature.title.toLowerCase().includes(term) ||
-        feature.description.toLowerCase().includes(term)
-      );
-    }
-
-    return filtered;
-  };
-
-  const getFilteredHiddenFeatures = () => {
-    let hidden = getHiddenFeatures();
-
-    if (selectedCategory !== 'Todos') {
-      hidden = hidden.filter(feature => feature.category === selectedCategory);
-    }
-
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      hidden = hidden.filter(feature =>
-        feature.title.toLowerCase().includes(term) ||
-        feature.description.toLowerCase().includes(term)
-      );
-    }
-
-    return hidden;
-  };
-
-  const getHiddenFeatures = () => {
-    return effectiveFeatures.filter(f => hiddenActivities.includes(f.id));
-  };
-
-  const toggleActivityVisibility = (activityId: string) => {
-    const newHidden = hiddenActivities.includes(activityId)
-      ? hiddenActivities.filter(id => id !== activityId)
-      : [...hiddenActivities, activityId];
-
-    const newVisible = DEFAULT_FEATURES.map(f => f.id).filter(
-      id => !newHidden.includes(id)
-    );
-
-    setHiddenActivities(newHidden);
-    const updatedData = UserDataManager.updateDashboardVisibility(newVisible);
-
-    if (!updatedData.dashboard) {
-      updatedData.dashboard = {
-        visibleActivities: newVisible,
-        activityOrder: DEFAULT_FEATURES.map(f => f.id)
-      };
-    }
-
-    setUserData(updatedData);
-  };
-
-  const handleDragStart = (e: React.DragEvent, activityId: string) => {
-    setDraggedItem(activityId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (!draggedItem || draggedItem === targetId) return;
-
-    const newOrder = [...orderedActivities];
-    const draggedIndex = newOrder.indexOf(draggedItem);
-    const targetIndex = newOrder.indexOf(targetId);
-
-    newOrder.splice(draggedIndex, 1);
-    newOrder.splice(targetIndex, 0, draggedItem);
-
-    setOrderedActivities(newOrder);
-    const updatedData = UserDataManager.updateActivityOrder(newOrder);
-
-    if (!updatedData.dashboard) {
-      updatedData.dashboard = {
-        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
-        activityOrder: newOrder
-      };
-    }
-
-    setUserData(updatedData);
-    setDraggedItem(null);
-  };
-
-  const resetDashboard = () => {
-    if (confirm('¿Estás seguro de que querés resetear el panel a su estado original?')) {
-      const updatedData = UserDataManager.resetDashboard();
-      setUserData(updatedData);
-      setHiddenActivities([]);
-      setOrderedActivities(DEFAULT_FEATURES.map(f => f.id));
-      setEditMode(false);
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
-
-  const handleActivityClick = (activityTitle: string, route: string, e: React.MouseEvent) => {
-    if (editMode) return;
-    e.preventDefault();
+  const handleActivityClick = (activityTitle: string, route: string) => {
     UserDataManager.visitActivity(activityTitle);
-    const updatedData = UserDataManager.loadUserData();
-    setUserData(updatedData);
     window.location.href = route;
   };
 
-  const getActivityProgress = (activityTitle: string) => {
-    return userData.progress.completedActivities.includes(activityTitle);
-  };
-
-  const getActivityScore = (activityTitle: string) => {
-    return userData.progress.activityScores[activityTitle] || 0;
-  };
-
-  const getLastVisitDate = (activityTitle: string) => {
-    const lastVisit = userData.progress.lastVisits?.[activityTitle];
-    if (!lastVisit) return null;
-    return new Date(lastVisit);
-  };
-
-  const formatLastVisit = (activityTitle: string) => {
-    const lastVisit = getLastVisitDate(activityTitle);
-    if (!lastVisit) return "Sin visitar";
-
-    const now = new Date();
-    const diffMs = now.getTime() - lastVisit.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-    if (diffDays > 0) {
-      return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-    } else if (diffHours > 0) {
-      return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
-    } else if (diffMinutes > 0) {
-      return `Hace ${diffMinutes} min`;
-    } else {
-      return "Ahora mismo";
-    }
-  };
-
-  const visibleFeatures = getVisibleFeatures();
-  const hiddenFeatures = getHiddenFeatures();
-  const filteredHiddenFeatures = getFilteredHiddenFeatures();
-
-  if (!mounted || loadingDashboard) {
+  if (!mounted || loading) {
     return (
       <>
         <Header />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando tu panel...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Cargando tu aula...</p>
           </div>
         </div>
       </>
     );
   }
 
+  const bannerColor = classroom?.color ?? '#4F46E5';
+
   return (
     <>
       <Header />
       <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header con botones de control */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <aside className="hidden lg:block lg:col-span-1">
-            {/* Stats Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Tu Progreso</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <IconCircle size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-700">Completadas</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.progress.completedActivities.length}/{effectiveFeatures.length}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <IconTrophy size={16} className="text-yellow-500" />
-                    <span className="text-sm text-gray-700">Puntos</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.totalScore}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <IconTarget size={16} className="text-blue-600" />
-                    <span className="text-sm text-gray-700">Racha</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.streak} días</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <IconHeart size={16} className="text-red-500" />
-                    <span className="text-sm text-gray-700">Vidas</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.totalLives}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(userData.progress.completedActivities.length / effectiveFeatures.length) * 100}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  {Math.round((userData.progress.completedActivities.length / effectiveFeatures.length) * 100)}% completado
-                </p>
-              </div>
-            </div>
-
-            {/* Mood Card */}
-            {userData.mood.lastEntry && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-900">Estado de Ánimo</h3>
-                  <button
-                    onClick={() => window.location.href = '/moodtracker'}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <IconEdit size={16} />
-                  </button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <IconMoodHappy className="text-blue-500" size={20} />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{userData.mood.lastEntry.label}</p>
-                    <p className="text-xs text-gray-500">Hoy</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Reset Button */}
-            {editMode && (
-              <button
-                onClick={resetDashboard}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors"
-              >
-                <IconRotate size={16} />
-                <span>Resetear Panel</span>
-              </button>
-            )}
-          </aside>
-
-          {/* Main Content */}
-          <main className="lg:col-span-3">
-            {/* Search and Filter Bar */}
-            <div className="mb-6 flex flex-col sm:flex-row items-center gap-3">
-              {/* Buscador */}
-              <div className="relative flex-1 max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <IconSearch size={16} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Buscar actividades..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                />
-                {searchTerm && (
-                  <button
-                    onClick={clearSearch}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    <IconX size={16} />
-                  </button>
-                )}
-              </div>
-
-              {/* Categorías */}
-              <div className="relative w-full sm:w-44">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer bg-white"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                  <IconChevronRight size={16} className="text-gray-400 rotate-90" />
-                </div>
-              </div>
-
-              {/* Botón Personalizar */}
-              <button
-                onClick={() => setEditMode(!editMode)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                  editMode
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <IconSettings size={18} />
-                <span>{editMode ? 'Guardado' : 'Personalizar'}</span>
-              </button>
-            </div>
-
-            {/* Mode Indicator */}
-            {editMode && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center space-x-2">
-                <IconGripVertical size={16} />
-                <span>Modo edición: Arrastra las tarjetas para reordenarlas o haz clic en la X para ocultarlas</span>
-              </div>
-            )}
-
-            {/* Activities Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-              {visibleFeatures.length > 0 || (editMode && filteredHiddenFeatures.length > 0) ? (
-                <>
-                  {/* Visible Features */}
-                  {visibleFeatures.map((feature) => {
-                    const isCompleted = getActivityProgress(feature.title);
-                    const activityScore = getActivityScore(feature.title);
-
-                    return (
-                      <article
-                        key={feature.id}
-                        draggable={editMode}
-                        onDragStart={(e) => handleDragStart(e, feature.id)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, feature.id)}
-                        onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
-                        role="button"
-                        tabIndex={0}
-                        className={`relative bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 group ${
-                          editMode ? 'cursor-grab active:cursor-grabbing hover:shadow-lg' : 'hover:shadow-md cursor-pointer'
-                        } ${draggedItem === feature.id ? 'opacity-50 scale-95' : ''}`}
-                      >
-                        {/* Drag Handle */}
-                        {editMode && (
-                          <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <div className="bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700">
-                              <IconGripVertical size={16} />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Hide Button */}
-                        {editMode && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleActivityVisibility(feature.id);
-                            }}
-                            className="absolute -right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
-                            title="Ocultar actividad"
-                          >
-                            <div className="bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700">
-                              <IconX size={16} />
-                            </div>
-                          </button>
-                        )}
-
-                        {/* Header */}
-                        <div
-                          className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
-                          style={{ backgroundColor: `${feature.color}15` }}
-                        >
-                          {feature.image && (
-                            <div
-                              className="absolute inset-0 opacity-20"
-                              style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                            />
-                          )}
-
-                          {isCompleted && (
-                            <div className="absolute top-1 right-1 md:top-2 md:right-2">
-                              <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                <IconCircle size={12} className="text-white md:hidden" />
-                                <IconCircle size={14} className="text-white hidden md:block" />
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
-                            <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
-                              getLastVisitDate(feature.title)
-                                ? 'text-gray-600 bg-white/80'
-                                : 'text-orange-600 bg-orange-50/80'
-                            }`}>
-                              <IconCalendar size={10} className="md:hidden" />
-                              <IconCalendar size={12} className="hidden md:block" />
-                              <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
-                              <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
-                            </div>
-                          </div>
-
-                          <div
-                            className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
-                            style={{ backgroundColor: feature.color }}
-                          >
-                            <div className="text-white scale-55 md:scale-75">
-                              {feature.icon}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-2 md:p-4">
-                          <div className="flex items-center justify-between mb-1 md:mb-2">
-                            <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
-                              {feature.title}
-                            </h3>
-                            {!editMode && <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />}
-                          </div>
-
-                          <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
-                            {feature.description}
-                          </p>
-
-                          <div className="flex items-center justify-between gap-1">
-                            <span
-                              className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
-                              style={{
-                                backgroundColor: `${feature.color}15`,
-                                color: feature.color
-                              }}
-                            >
-                              {feature.category}
-                            </span>
-
-                            {isCompleted && (
-                              <div className="flex items-center space-x-1 md:space-x-2">
-                                {activityScore > 0 && (
-                                  <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
-                                    {activityScore} pts
-                                  </span>
-                                )}
-                                <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
-                                  Completado
-                                </span>
-                                <span className="text-[10px] text-green-600 font-medium sm:hidden">
-                                  ✓
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-
-                  {/* Hidden Features (only in edit mode) */}
-                  {editMode && hiddenFeatures.map((feature) => (
-                    <article
-                      key={feature.id}
-                      onClick={(e) => {
-                        if (editMode) {
-                          e.preventDefault();
-                          toggleActivityVisibility(feature.id);
-                        }
-                      }}
-                      className="relative bg-white rounded-lg shadow-sm border border-gray-300 transition-all duration-200 group cursor-pointer opacity-40 hover:opacity-60"
-                    >
-                      {/* Show Button (Plus) */}
-                      <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/5 group-hover:bg-black/10 transition-colors z-20">
-                        <div className="bg-green-600 text-white p-3 rounded-full shadow-lg group-hover:bg-green-700">
-                          <IconPlus size={24} />
-                        </div>
-                      </div>
-
-                      {/* Header */}
-                      <div
-                        className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
-                        style={{ backgroundColor: `${feature.color}15` }}
-                      >
-                        {feature.image && (
-                          <div
-                            className="absolute inset-0 opacity-20"
-                            style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-                          />
-                        )}
-
-                        <div
-                          className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
-                          style={{ backgroundColor: feature.color }}
-                        >
-                          <div className="text-white scale-55 md:scale-75">
-                            {feature.icon}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-2 md:p-4">
-                        <div className="flex items-center justify-between mb-1 md:mb-2">
-                          <h3 className="font-medium text-gray-900 text-xs md:text-sm line-clamp-1">
-                            {feature.title}
-                          </h3>
-                        </div>
-
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
-                          {feature.description}
-                        </p>
-
-                        <span
-                          className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full"
-                          style={{
-                            backgroundColor: `${feature.color}15`,
-                            color: feature.color
-                          }}
-                        >
-                          {feature.category}
-                        </span>
-                      </div>
-                    </article>
-                  ))}
-                </>
-              ) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-12">
-                  <div className="text-center">
-                    <IconSearch size={48} className="text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No se encontraron actividades
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      Intentá con otros términos de búsqueda o cambiá la categoría.
-                    </p>
-                    <button
-                      onClick={() => {
-                        clearSearch();
-                        setSelectedCategory('Todos');
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                    >
-                      Ver todas las actividades
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </main>
+      {/* Banner de la clase */}
+      <div className="w-full py-10 px-5" style={{ backgroundColor: bannerColor }}>
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+            <IconSchool className="w-7 h-7 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-white/80 text-xs font-medium mb-0.5">Tu aula</p>
+            <h1 className="text-white text-2xl font-bold truncate">
+              {classroom?.name ?? 'Mi clase'}
+            </h1>
+          </div>
         </div>
       </div>
 
-      <style jsx>{`
-        .line-clamp-1 {
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
+      <div className="max-w-4xl mx-auto px-5 -mt-6 pb-16">
+        {/* Tarjeta de resumen */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-medium text-gray-800">
+                Hola, {userData.profile.username} 👋
+              </p>
+              <p className="text-xs text-gray-500">
+                {completedCount}/{activities.length} actividades completadas
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 text-amber-600">
+                <IconTrophy className="w-4 h-4" />
+                <span className="text-sm font-bold">{userData.game.totalScore}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-orange-500">
+                <IconFlame className="w-4 h-4" />
+                <span className="text-sm font-bold">{userData.game.streak}</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2">
+            <div
+              className="h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%`, backgroundColor: bannerColor }}
+            />
+          </div>
+        </div>
+
+        {/* Buscador (solo si hay varias actividades) */}
+        {activities.length > 5 && (
+          <div className="relative mb-5 max-w-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <IconSearch size={16} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Buscar en tu aula..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-9 py-2 border border-gray-200 rounded-lg text-sm bg-white
+                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <IconX size={16} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Lista de actividades, estilo "curso" */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100">
+            <h2 className="text-sm font-semibold text-gray-700">Actividades de la clase</h2>
+          </div>
+
+          {filteredActivities.length === 0 ? (
+            <div className="p-8 text-center text-sm text-gray-400">
+              No se encontraron actividades.
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {filteredActivities.map((activity) => {
+                const done = isCompleted(activity.title);
+                const score = getScore(activity.title);
+                return (
+                  <li key={activity.id}>
+                    <button
+                      onClick={() => handleActivityClick(activity.title, activity.route)}
+                      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
+                        style={{ backgroundColor: activity.color }}
+                      >
+                        <ActivityIcon iconName={activity.iconName} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-gray-800 text-sm truncate">{activity.title}</p>
+                          <span
+                            className="hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
+                            style={{ backgroundColor: `${activity.color}15`, color: activity.color }}
+                          >
+                            {activity.category}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{activity.description}</p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {done ? (
+                          <div className="flex items-center gap-1.5 text-green-600">
+                            {score > 0 && <span className="text-xs font-medium">{score} pts</span>}
+                            <IconCircleCheck className="w-5 h-5" />
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400 hidden sm:inline">Empezar</span>
+                        )}
+                        <IconChevronRight className="w-4 h-4 text-gray-300" />
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* Mood tracker, como una fila más, no como tarjeta destacada */}
+        {userData.mood.lastEntry && (
+          <button
+            onClick={() => (window.location.href = '/moodtracker')}
+            className="w-full flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-gray-100
+                     px-5 py-4 mt-4 hover:bg-gray-50 transition-colors text-left"
+          >
+            <IconMoodHappy className="w-5 h-5 text-blue-500 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-800">Cómo te sentís hoy</p>
+              <p className="text-xs text-gray-500">Último registro: {userData.mood.lastEntry.label}</p>
+            </div>
+            <IconChevronRight className="w-4 h-4 text-gray-300" />
+          </button>
+        )}
+      </div>
       </div>
     </>
   );
 };
 
-export default EducationalProgressPanel;
+export default ClassroomDesk;
