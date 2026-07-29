@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
-import { IconRefresh, IconHome } from '@tabler/icons-react';
+import { IconRefresh, IconHome, IconDeviceFloppy } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
@@ -54,6 +54,10 @@ const CATEGORIES = [
 ];
 
 const STORAGE_KEY = 'cresi_user_data';
+// Claves temporales (sessionStorage) para "traspasar" el puntaje de una
+// partida sin cuenta hacia /unirse, y volver acá después de loguearse.
+const PENDING_SCORE_KEY = 'cresi_pending_score';
+const PENDING_RETURN_KEY = 'cresi_pending_return_to';
 const CORRECT_ANSWER_POINTS = 100;
 const DEFAULT_TIME = 60;
 
@@ -96,6 +100,8 @@ export default function JugarAzar(): JSX.Element {
   const [answerSelected, setAnswerSelected] = useState(false);
   const [showAnswerResult, setShowAnswerResult] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [progressSaved, setProgressSaved] = useState(false);
+  const [showExitSavePrompt, setShowExitSavePrompt] = useState(false);
 
   // ============================================
   // FUNCIONES DE CARGA Y GUARDADO
@@ -390,9 +396,21 @@ export default function JugarAzar(): JSX.Element {
     setLives(3);
     setTimeLeft(DEFAULT_TIME);
     setIsTimerPaused(false);
+    setProgressSaved(false);
   }, []);
 
   const handleExitGame = useCallback(() => {
+    // Sin cuenta y con puntos ganados en esta partida: ofrecemos guardar
+    // antes de tirarlos, en vez de salir directo.
+    if (!userData && sessionScore > 0) {
+      setShowExitSavePrompt(true);
+      return;
+    }
+    router.push('/');
+  }, [router, userData, sessionScore]);
+
+  const handleExitWithoutSaving = useCallback(() => {
+    setShowExitSavePrompt(false);
     router.push('/');
   }, [router]);
 
@@ -425,6 +443,27 @@ export default function JugarAzar(): JSX.Element {
     setShowPurchaseModal(false);
   }, [loadUserData]);
 
+  /**
+   * Quien juega desde el botón flotante de la landing (o cualquier acceso
+   * directo) no tiene ninguna cuenta todavía — `userData` queda `null` toda
+   * la partida, porque nunca pasó por /unirse. Al perder, guardamos el
+   * puntaje de ESTA partida en sessionStorage (dura solo hasta el login) y
+   * lo mandamos a /unirse; al volver acá, ese puntaje ya está sumado a su
+   * cuenta nueva.
+   */
+  const handleSaveProgress = useCallback(() => {
+    try {
+      sessionStorage.setItem(
+        PENDING_SCORE_KEY,
+        JSON.stringify({ score: sessionScore, savedAt: new Date().toISOString() })
+      );
+      sessionStorage.setItem(PENDING_RETURN_KEY, '/jugarazar');
+    } catch (error) {
+      console.error('❌ Error guardando el progreso pendiente:', error);
+    }
+    router.push('/unirse');
+  }, [sessionScore, router]);
+
   // ============================================
   // RENDER
   // ============================================
@@ -440,8 +479,6 @@ export default function JugarAzar(): JSX.Element {
           lives={lives}
           level={1}
           timeLeft={timeLeft}
-          currentQuestion={Math.max(1, allQuestions.length - usedQuestions.size + 1)}
-          totalQuestions={allQuestions.length}
         />
       )}
 
@@ -526,7 +563,7 @@ export default function JugarAzar(): JSX.Element {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8 text-center">
             <div className="mb-4">
               <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                Pregunta {Math.max(1, allQuestions.length - usedQuestions.size + 1)} de {allQuestions.length}
+                {selectedCategory} · Nivel {currentLevel}
               </span>
             </div>
             <p className="text-xl md:text-2xl font-medium leading-relaxed text-gray-800">
@@ -605,6 +642,28 @@ export default function JugarAzar(): JSX.Element {
             <p className="text-gray-600 mb-6">
               Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?
             </p>
+
+            {/* Alguien jugando sin ninguna cuenta: le ofrecemos guardar el
+                puntaje de esta partida antes de que se pierda. */}
+            {!userData && !progressSaved && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                <p className="text-indigo-900 font-medium mb-1">
+                  Ganaste {sessionScore} puntos en esta partida 🎉
+                </p>
+                <p className="text-indigo-700 text-sm mb-3">
+                  Todavía no tenés una cuenta — si te registrás ahora, guardamos este puntaje.
+                </p>
+                <button
+                  onClick={handleSaveProgress}
+                  className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5
+                           rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
+                >
+                  <IconDeviceFloppy size={18} />
+                  ¿Querés guardar tu progreso?
+                </button>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <button
                 onClick={() => setShowPurchaseModal(true)}
@@ -691,6 +750,36 @@ export default function JugarAzar(): JSX.Element {
         onClose={handleClosePurchaseModal}
         onPurchase={handlePurchaseLife}
       />
+
+      {/* Cartel al salir sin cuenta: última oportunidad de no perder el puntaje */}
+      {showExitSavePrompt && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+            <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <IconDeviceFloppy size={26} className="text-indigo-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">¿Querés guardar tu progreso?</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Llevás {sessionScore} puntos en esta partida. Si salís sin loguearte, se pierden.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSaveProgress}
+                className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700
+                         transition-colors font-medium text-sm"
+              >
+                Guardar mi progreso
+              </button>
+              <button
+                onClick={handleExitWithoutSaving}
+                className="w-full text-gray-500 hover:text-gray-700 py-2 text-sm"
+              >
+                Salir sin guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

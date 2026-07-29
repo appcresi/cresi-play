@@ -4,41 +4,8 @@ import { useRouter } from 'next/navigation';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
 import UserDataSync from '@/lib/userDataSync';
 import { auth } from '@/lib/firebase';
-
-// Estructura unificada de datos del usuario
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: any[];
-    lastEntry: any | null;
-  };
-  achievements: any[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
+import type { UserData } from '@/types/user';
+import { ACTIVITY_IDS } from '@/lib/activities';
 
 interface GameStatusProps {
   title?: string;
@@ -56,7 +23,9 @@ interface GameStatusProps {
 class UserDataManager {
   private static readonly STORAGE_KEY = 'cresi_user_data';
 
-  // Datos por defecto
+  // Datos por defecto. Usa el mismo tipo compartido que el resto de la app
+  // (types/user.ts) — antes tenía su propia forma achicada, sin `dashboard`,
+  // lo que rompía la compilación al pasarle estos datos a UserDataSync.
   public static getDefaultUserData(): UserData {
     return {
       profile: {
@@ -85,6 +54,10 @@ class UserDataManager {
         notifications: true,
         theme: 'light',
         language: 'es'
+      },
+      dashboard: {
+        visibleActivities: ACTIVITY_IDS,
+        activityOrder: ACTIVITY_IDS
       }
     };
   }
@@ -186,11 +159,14 @@ const GameStatusBar = ({
   }, []);
 
   useEffect(() => {
-    // Registrar visita a la actividad cuando se monta el componente
-    if (activityName) {
+    // Registrar visita a la actividad cuando se monta el componente.
+    // Solo si hay una sesión real (aunque sea anónima) — si no, esto
+    // creaba un perfil "fantasma" en localStorage para alguien que nunca
+    // se logueó, con nombre 'Estudiante' por default.
+    if (activityName && isAuthenticated) {
       UserDataManager.visitActivity(activityName);
     }
-  }, [activityName]);
+  }, [activityName, isAuthenticated]);
 
   const loadUserData = () => {
     const data = UserDataManager.loadUserData();
@@ -200,17 +176,28 @@ const GameStatusBar = ({
   // Sincronizar cambios de puntuación - CON DEBOUNCE
   useEffect(() => {
     if (score !== userData.game.totalScore) {
-      const updatedData = UserDataManager.updateGameScore(score, activityName);
-      setUserData(updatedData);
-      
-      // Sincronizar SOLO si NO es anónimo - sin esperar
-      if (isAuthenticated && !isAnonymous) {
-        // No esperar a que termine, ejecutar en background
-        UserDataSync.syncCompleteData(updatedData).catch(err => 
-          console.error('Error sincronizando en background:', err)
-        );
+      if (isAuthenticated) {
+        // Hay sesión real: esto sí corresponde persistir en localStorage
+        // (y a Firestore si no es anónima).
+        const updatedData = UserDataManager.updateGameScore(score, activityName);
+        setUserData(updatedData);
+
+        if (!isAnonymous) {
+          // No esperar a que termine, ejecutar en background
+          UserDataSync.syncCompleteData(updatedData).catch(err =>
+            console.error('Error sincronizando en background:', err)
+          );
+        }
+      } else {
+        // Sin ninguna sesión (ej. alguien jugando desde el botón flotante
+        // de "Jugar" sin loguearse): el puntaje se ve en pantalla igual,
+        // pero no se persiste — así no se crea un usuario fantasma.
+        setUserData((prev) => ({
+          ...prev,
+          game: { ...prev.game, totalScore: score },
+        }));
       }
-      
+
       setIsScoreAnimating(true);
       const timer = setTimeout(() => setIsScoreAnimating(false), 600);
       return () => clearTimeout(timer);
@@ -220,15 +207,20 @@ const GameStatusBar = ({
   // Sincronizar cambios de vidas - CON DEBOUNCE
   useEffect(() => {
     if (lives !== userData.game.totalLives) {
-      const updatedData = UserDataManager.updateLives(lives);
-      setUserData(updatedData);
-      
-      // Sincronizar SOLO si NO es anónimo - sin esperar
-      if (isAuthenticated && !isAnonymous) {
-        // No esperar a que termine, ejecutar en background
-        UserDataSync.syncCompleteData(updatedData).catch(err => 
-          console.error('Error sincronizando en background:', err)
-        );
+      if (isAuthenticated) {
+        const updatedData = UserDataManager.updateLives(lives);
+        setUserData(updatedData);
+
+        if (!isAnonymous) {
+          UserDataSync.syncCompleteData(updatedData).catch(err =>
+            console.error('Error sincronizando en background:', err)
+          );
+        }
+      } else {
+        setUserData((prev) => ({
+          ...prev,
+          game: { ...prev.game, totalLives: lives },
+        }));
       }
     }
   }, [lives, isAuthenticated, isAnonymous, userData.game.totalLives]);

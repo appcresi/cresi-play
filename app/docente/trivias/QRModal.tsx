@@ -56,9 +56,9 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
       aria-modal="true"
       aria-labelledby="qr-modal-title"
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
@@ -82,7 +82,7 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
 
           <div
             ref={qrRef}
-            className="p-4 bg-white border-2 border-gray-200 rounded-2xl shadow-inner"
+            className="p-4 bg-white border-2 border-gray-200 rounded-lg shadow-inner"
           >
             <QRCode
               value={url}
@@ -97,7 +97,7 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
 
           <button
             onClick={handleDownload}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition text-sm"
           >
             <IconDownload size={16} />
             Descargar PNG

@@ -18,6 +18,12 @@ import {
   IconCalendar,
   IconBook,
   IconChevronRight,
+  IconPlus,
+  IconEye,
+  IconEyeOff,
+  IconGripVertical,
+  IconSettings,
+  IconRotate,
   IconMoodPuzzled
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
@@ -50,12 +56,19 @@ const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {
   };
 });
 
+
+
+
 const EducationalProgressPanel = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
   const [mounted, setMounted] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [hiddenActivities, setHiddenActivities] = useState<string[]>([]);
+  const [orderedActivities, setOrderedActivities] = useState<string[]>([]);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
 
   // Actividades habilitadas por el docente para la clase del alumno (si tiene una).
@@ -68,6 +81,8 @@ const EducationalProgressPanel = () => {
   }, [user]);
 
   // Trae la restricción de actividades de la clase, si el alumno pertenece a una.
+  // Es una restricción ABSOLUTA: se aplica antes de las preferencias personales
+  // del alumno (hiddenActivities/order), que solo operan dentro de lo permitido.
   useEffect(() => {
     const classroomId = userData.profile.classroomId;
     if (!classroomId) {
@@ -82,9 +97,9 @@ const EducationalProgressPanel = () => {
       });
   }, [userData.profile.classroomId]);
 
-  // Pool de actividades que el alumno puede ver, ya filtrado por la
+  // Pool de actividades que el alumno puede llegar a ver, ya filtrado por la
   // restricción del docente (si la hay). Todo lo demás (búsqueda, categorías,
-  // estadísticas) parte de acá en vez de DEFAULT_FEATURES.
+  // visibilidad personal, estadísticas) parte de acá en vez de DEFAULT_FEATURES.
   const effectiveFeatures = useMemo(() => {
     if (!allowedActivities) return DEFAULT_FEATURES;
     return DEFAULT_FEATURES.filter((f) => allowedActivities.includes(f.id));
@@ -93,6 +108,12 @@ const EducationalProgressPanel = () => {
   const loadUserData = async () => {
     const merged = await loadStudentUserData(user);
     setUserData(merged);
+    setHiddenActivities(
+      DEFAULT_FEATURES.map(f => f.id).filter(
+        id => !merged.dashboard.visibleActivities.includes(id)
+      )
+    );
+    setOrderedActivities(merged.dashboard.activityOrder);
     setLoadingDashboard(false);
   };
 
@@ -102,7 +123,20 @@ const EducationalProgressPanel = () => {
   );
 
   const getVisibleFeatures = () => {
-    let filtered = effectiveFeatures;
+    const dashboard = userData.dashboard || {
+      visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+      activityOrder: DEFAULT_FEATURES.map(f => f.id)
+    };
+
+    const features = effectiveFeatures
+      .filter(f => dashboard.visibleActivities.includes(f.id))
+      .sort((a, b) => {
+        const aIndex = dashboard.activityOrder.indexOf(a.id);
+        const bIndex = dashboard.activityOrder.indexOf(b.id);
+        return aIndex - bIndex;
+      });
+
+    let filtered = features;
 
     if (selectedCategory !== 'Todos') {
       filtered = filtered.filter(feature => feature.category === selectedCategory);
@@ -119,11 +153,101 @@ const EducationalProgressPanel = () => {
     return filtered;
   };
 
+  const getFilteredHiddenFeatures = () => {
+    let hidden = getHiddenFeatures();
+
+    if (selectedCategory !== 'Todos') {
+      hidden = hidden.filter(feature => feature.category === selectedCategory);
+    }
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      hidden = hidden.filter(feature =>
+        feature.title.toLowerCase().includes(term) ||
+        feature.description.toLowerCase().includes(term)
+      );
+    }
+
+    return hidden;
+  };
+
+  const getHiddenFeatures = () => {
+    return effectiveFeatures.filter(f => hiddenActivities.includes(f.id));
+  };
+
+  const toggleActivityVisibility = (activityId: string) => {
+    const newHidden = hiddenActivities.includes(activityId)
+      ? hiddenActivities.filter(id => id !== activityId)
+      : [...hiddenActivities, activityId];
+
+    const newVisible = DEFAULT_FEATURES.map(f => f.id).filter(
+      id => !newHidden.includes(id)
+    );
+
+    setHiddenActivities(newHidden);
+    const updatedData = UserDataManager.updateDashboardVisibility(newVisible);
+
+    if (!updatedData.dashboard) {
+      updatedData.dashboard = {
+        visibleActivities: newVisible,
+        activityOrder: DEFAULT_FEATURES.map(f => f.id)
+      };
+    }
+
+    setUserData(updatedData);
+  };
+
+  const handleDragStart = (e: React.DragEvent, activityId: string) => {
+    setDraggedItem(activityId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!draggedItem || draggedItem === targetId) return;
+
+    const newOrder = [...orderedActivities];
+    const draggedIndex = newOrder.indexOf(draggedItem);
+    const targetIndex = newOrder.indexOf(targetId);
+
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedItem);
+
+    setOrderedActivities(newOrder);
+    const updatedData = UserDataManager.updateActivityOrder(newOrder);
+
+    if (!updatedData.dashboard) {
+      updatedData.dashboard = {
+        visibleActivities: DEFAULT_FEATURES.map(f => f.id),
+        activityOrder: newOrder
+      };
+    }
+
+    setUserData(updatedData);
+    setDraggedItem(null);
+  };
+
+  const resetDashboard = () => {
+    if (confirm('¿Estás seguro de que querés resetear el panel a su estado original?')) {
+      const updatedData = UserDataManager.resetDashboard();
+      setUserData(updatedData);
+      setHiddenActivities([]);
+      setOrderedActivities(DEFAULT_FEATURES.map(f => f.id));
+      setEditMode(false);
+    }
+  };
+
   const clearSearch = () => {
     setSearchTerm('');
   };
 
   const handleActivityClick = (activityTitle: string, route: string, e: React.MouseEvent) => {
+    if (editMode) return;
     e.preventDefault();
     UserDataManager.visitActivity(activityTitle);
     const updatedData = UserDataManager.loadUserData();
@@ -167,6 +291,8 @@ const EducationalProgressPanel = () => {
   };
 
   const visibleFeatures = getVisibleFeatures();
+  const hiddenFeatures = getHiddenFeatures();
+  const filteredHiddenFeatures = getFilteredHiddenFeatures();
 
   if (!mounted || loadingDashboard) {
     return (
@@ -187,6 +313,7 @@ const EducationalProgressPanel = () => {
       <Header />
       <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header con botones de control */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="hidden lg:block lg:col-span-1">
@@ -261,6 +388,17 @@ const EducationalProgressPanel = () => {
                 </div>
               </div>
             )}
+
+            {/* Reset Button */}
+            {editMode && (
+              <button
+                onClick={resetDashboard}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors"
+              >
+                <IconRotate size={16} />
+                <span>Resetear Panel</span>
+              </button>
+            )}
           </aside>
 
           {/* Main Content */}
@@ -306,23 +444,185 @@ const EducationalProgressPanel = () => {
                   <IconChevronRight size={16} className="text-gray-400 rotate-90" />
                 </div>
               </div>
+
+              {/* Botón Personalizar */}
+              <button
+                onClick={() => setEditMode(!editMode)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                  editMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <IconSettings size={18} />
+                <span>{editMode ? 'Guardado' : 'Personalizar'}</span>
+              </button>
             </div>
+
+            {/* Mode Indicator */}
+            {editMode && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-center space-x-2">
+                <IconGripVertical size={16} />
+                <span>Modo edición: Arrastra las tarjetas para reordenarlas o haz clic en la X para ocultarlas</span>
+              </div>
+            )}
 
             {/* Activities Grid */}
             <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-              {visibleFeatures.length > 0 ? (
-                visibleFeatures.map((feature) => {
-                  const isCompleted = getActivityProgress(feature.title);
-                  const activityScore = getActivityScore(feature.title);
+              {visibleFeatures.length > 0 || (editMode && filteredHiddenFeatures.length > 0) ? (
+                <>
+                  {/* Visible Features */}
+                  {visibleFeatures.map((feature) => {
+                    const isCompleted = getActivityProgress(feature.title);
+                    const activityScore = getActivityScore(feature.title);
 
-                  return (
+                    return (
+                      <article
+                        key={feature.id}
+                        draggable={editMode}
+                        onDragStart={(e) => handleDragStart(e, feature.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, feature.id)}
+                        onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
+                        role="button"
+                        tabIndex={0}
+                        className={`relative bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 group ${
+                          editMode ? 'cursor-grab active:cursor-grabbing hover:shadow-lg' : 'hover:shadow-md cursor-pointer'
+                        } ${draggedItem === feature.id ? 'opacity-50 scale-95' : ''}`}
+                      >
+                        {/* Drag Handle */}
+                        {editMode && (
+                          <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                            <div className="bg-blue-600 text-white p-2 rounded-full shadow-lg hover:bg-blue-700">
+                              <IconGripVertical size={16} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Hide Button */}
+                        {editMode && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleActivityVisibility(feature.id);
+                            }}
+                            className="absolute -right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                            title="Ocultar actividad"
+                          >
+                            <div className="bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700">
+                              <IconX size={16} />
+                            </div>
+                          </button>
+                        )}
+
+                        {/* Header */}
+                        <div
+                          className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
+                          style={{ backgroundColor: `${feature.color}15` }}
+                        >
+                          {feature.image && (
+                            <div
+                              className="absolute inset-0 opacity-20"
+                              style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                            />
+                          )}
+
+                          {isCompleted && (
+                            <div className="absolute top-1 right-1 md:top-2 md:right-2">
+                              <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <IconCircle size={12} className="text-white md:hidden" />
+                                <IconCircle size={14} className="text-white hidden md:block" />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
+                            <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
+                              getLastVisitDate(feature.title)
+                                ? 'text-gray-600 bg-white/80'
+                                : 'text-orange-600 bg-orange-50/80'
+                            }`}>
+                              <IconCalendar size={10} className="md:hidden" />
+                              <IconCalendar size={12} className="hidden md:block" />
+                              <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
+                              <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
+                            </div>
+                          </div>
+
+                          <div
+                            className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
+                            style={{ backgroundColor: feature.color }}
+                          >
+                            <div className="text-white scale-55 md:scale-75">
+                              {feature.icon}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-2 md:p-4">
+                          <div className="flex items-center justify-between mb-1 md:mb-2">
+                            <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
+                              {feature.title}
+                            </h3>
+                            {!editMode && <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />}
+                          </div>
+
+                          <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
+                            {feature.description}
+                          </p>
+
+                          <div className="flex items-center justify-between gap-1">
+                            <span
+                              className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
+                              style={{
+                                backgroundColor: `${feature.color}15`,
+                                color: feature.color
+                              }}
+                            >
+                              {feature.category}
+                            </span>
+
+                            {isCompleted && (
+                              <div className="flex items-center space-x-1 md:space-x-2">
+                                {activityScore > 0 && (
+                                  <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
+                                    {activityScore} pts
+                                  </span>
+                                )}
+                                <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
+                                  Completado
+                                </span>
+                                <span className="text-[10px] text-green-600 font-medium sm:hidden">
+                                  ✓
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+
+                  {/* Hidden Features (only in edit mode) */}
+                  {editMode && hiddenFeatures.map((feature) => (
                     <article
                       key={feature.id}
-                      onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
-                      role="button"
-                      tabIndex={0}
-                      className="relative bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 group hover:shadow-md cursor-pointer"
+                      onClick={(e) => {
+                        if (editMode) {
+                          e.preventDefault();
+                          toggleActivityVisibility(feature.id);
+                        }
+                      }}
+                      className="relative bg-white rounded-lg shadow-sm border border-gray-300 transition-all duration-200 group cursor-pointer opacity-40 hover:opacity-60"
                     >
+                      {/* Show Button (Plus) */}
+                      <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/5 group-hover:bg-black/10 transition-colors z-20">
+                        <div className="bg-green-600 text-white p-3 rounded-full shadow-lg group-hover:bg-green-700">
+                          <IconPlus size={24} />
+                        </div>
+                      </div>
+
                       {/* Header */}
                       <div
                         className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
@@ -334,28 +634,6 @@ const EducationalProgressPanel = () => {
                             style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                           />
                         )}
-
-                        {isCompleted && (
-                          <div className="absolute top-1 right-1 md:top-2 md:right-2">
-                            <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
-                              <IconCircle size={12} className="text-white md:hidden" />
-                              <IconCircle size={14} className="text-white hidden md:block" />
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
-                          <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
-                            getLastVisitDate(feature.title)
-                              ? 'text-gray-600 bg-white/80'
-                              : 'text-orange-600 bg-orange-50/80'
-                          }`}>
-                            <IconCalendar size={10} className="md:hidden" />
-                            <IconCalendar size={12} className="hidden md:block" />
-                            <span className="hidden sm:inline">{formatLastVisit(feature.title)}</span>
-                            <span className="sm:hidden">{formatLastVisit(feature.title).replace('Hace ', '')}</span>
-                          </div>
-                        </div>
 
                         <div
                           className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
@@ -370,47 +648,28 @@ const EducationalProgressPanel = () => {
                       {/* Content */}
                       <div className="p-2 md:p-4">
                         <div className="flex items-center justify-between mb-1 md:mb-2">
-                          <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
+                          <h3 className="font-medium text-gray-900 text-xs md:text-sm line-clamp-1">
                             {feature.title}
                           </h3>
-                          <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
                         </div>
 
                         <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
                           {feature.description}
                         </p>
 
-                        <div className="flex items-center justify-between gap-1">
-                          <span
-                            className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
-                            style={{
-                              backgroundColor: `${feature.color}15`,
-                              color: feature.color
-                            }}
-                          >
-                            {feature.category}
-                          </span>
-
-                          {isCompleted && (
-                            <div className="flex items-center space-x-1 md:space-x-2">
-                              {activityScore > 0 && (
-                                <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
-                                  {activityScore} pts
-                                </span>
-                              )}
-                              <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
-                                Completado
-                              </span>
-                              <span className="text-[10px] text-green-600 font-medium sm:hidden">
-                                ✓
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        <span
+                          className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full"
+                          style={{
+                            backgroundColor: `${feature.color}15`,
+                            color: feature.color
+                          }}
+                        >
+                          {feature.category}
+                        </span>
                       </div>
                     </article>
-                  );
-                })
+                  ))}
+                </>
               ) : (
                 <div className="col-span-full flex flex-col items-center justify-center py-12">
                   <div className="text-center">

@@ -43,12 +43,12 @@ export default function DeleteConfirmModal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40"
         onClick={onCancel}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-md p-6">
         <button
           onClick={onCancel}
           className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
@@ -63,7 +63,7 @@ export default function DeleteConfirmModal({
           </div>
 
           <div>
-            <h2 id="delete-modal-title" className="text-xl font-bold text-gray-900 mb-1">
+            <h2 id="delete-modal-title" className="text-lg font-bold text-gray-900 mb-1">
               ¿Eliminar trivia?
             </h2>
             <p className="text-gray-500 text-sm">
@@ -77,13 +77,13 @@ export default function DeleteConfirmModal({
             <button
               ref={cancelRef}
               onClick={onCancel}
-              className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition"
+              className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
             >
               Cancelar
             </button>
             <button
               onClick={onConfirm}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition"
             >
               <IconTrash size={17} />
               Eliminar

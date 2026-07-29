@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
+import ClassroomService from '@/lib/classroomService';
 import TriviaSettings from './components/TriviaSettings';
 import TriviaGrid from './components/TriviaGrid';
 import TriviaSearch from './components/TriviaSearch';
@@ -22,14 +22,9 @@ interface TriviaIndexFields {
   level: number;
 }
 
-interface CustomTrivia {
+interface ClassroomTrivia {
   id: string;
   name: string;
-  description?: string;
-  questions?: any[];
-  author: string;
-  isPublic?: boolean;
-  created_at?: string;
 }
 
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {
@@ -54,7 +49,7 @@ async function getTriviaIndexes(): Promise<TriviaIndexFields[]> {
     const triviaCollection = collection(db, 'trivia');
     const q = query(triviaCollection, where('author', '==', 'CRESI'));
     const querySnapshot = await getDocs(q);
-    
+
     const trivias: Trivia[] = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -67,40 +62,40 @@ async function getTriviaIndexes(): Promise<TriviaIndexFields[]> {
   }
 }
 
-async function getUserCustomTrivias(userId: string): Promise<CustomTrivia[]> {
+/**
+ * Trivias disponibles para el alumno: todas las que haya creado el docente
+ * dueño de su clase (no una asignación por clase puntual — cualquier
+ * trivia que arme ese docente ya se ve en todas sus clases).
+ */
+async function getTeacherTrivias(teacherId: string): Promise<ClassroomTrivia[]> {
   try {
     const triviaCollection = collection(db, 'trivia');
-    const q = query(triviaCollection, where('author', '==', userId));
+    const q = query(triviaCollection, where('author', '==', teacherId));
     const querySnapshot = await getDocs(q);
-    
-    const customTrivias: CustomTrivia[] = querySnapshot.docs.map((doc) => {
+
+    return querySnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: data.id || doc.id,
         name: data.name,
-        description: data.description,
-        questions: data.questions,
-        author: data.author,
-        isPublic: data.isPublic,
-        created_at: data.created_at
       };
     });
-
-    return customTrivias;
   } catch (error) {
-    console.error('Error fetching user trivias:', error);
+    console.error('Error fetching teacher trivias:', error);
     return [];
   }
 }
 
 export default function Trivias(): JSX.Element {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const [indexes, setIndexes] = useState<TriviaIndexFields[]>([]);
-  const [customTrivias, setCustomTrivias] = useState<CustomTrivia[]>([]);
+  const [classroomTrivias, setClassroomTrivias] = useState<ClassroomTrivia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'publicas' | 'mias'>('publicas');
+  const [activeTab, setActiveTab] = useState<'publicas' | 'clase'>('publicas');
   const [showSearch, setShowSearch] = useState(false);
+
+  const classroomId = profile?.profile?.classroomId ?? null;
 
   useEffect(() => {
     const loadTrivias = async () => {
@@ -119,19 +114,42 @@ export default function Trivias(): JSX.Element {
     loadTrivias();
   }, []);
 
+  // Si el alumno entró con código de clase, buscamos primero quién es el
+  // docente dueño de esa clase, y después las trivias que ese docente creó
+  // — sin importar para cuál de sus clases las haya pensado originalmente.
   useEffect(() => {
-    if (!user?.uid) {
-      setCustomTrivias([]);
+    if (!classroomId) {
+      setClassroomTrivias([]);
       return;
     }
 
-    const loadUserCustomTrivias = async () => {
-      const customData = await getUserCustomTrivias(user.uid);
-      setCustomTrivias(customData);
-    };
+    let cancelled = false;
+    ClassroomService.getClassroomById(classroomId)
+      .then((classroom) => {
+        if (cancelled) return;
+        if (!classroom?.teacherId) {
+          setClassroomTrivias([]);
+          return;
+        }
+        return getTeacherTrivias(classroom.teacherId).then((trivias) => {
+          if (cancelled) return;
+          // Si el docente restringió cuáles se ven en ESTA clase puntual,
+          // filtramos acá. `null` = sin restricción, se ven todas.
+          const filtered = classroom.visibleTrivias
+            ? trivias.filter((t) => classroom.visibleTrivias!.includes(t.id))
+            : trivias;
+          setClassroomTrivias(filtered);
+        });
+      })
+      .catch((err) => {
+        console.error('Error resolviendo el docente de la clase:', err);
+        if (!cancelled) setClassroomTrivias([]);
+      });
 
-    loadUserCustomTrivias();
-  }, [user?.uid]);
+    return () => {
+      cancelled = true;
+    };
+  }, [classroomId]);
 
   if (loading) {
     return (
@@ -158,6 +176,7 @@ export default function Trivias(): JSX.Element {
   }
 
   const indexesByLevel = organizeIndexesByLevel(indexes);
+  const showingPublicSection = classroomTrivias.length === 0 || activeTab === 'publicas';
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -168,8 +187,8 @@ export default function Trivias(): JSX.Element {
           <h1 className="text-3xl font-bold">ESI: Trivias</h1>
 
           <div className="flex items-center gap-2">
-            {/* Botón buscar */}
-            {(!user || customTrivias.length === 0 || activeTab === 'publicas') && (
+            {/* Botón buscar — solo tiene sentido sobre las trivias públicas */}
+            {showingPublicSection && (
               <button
                 onClick={() => setShowSearch((prev) => !prev)}
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md transition-all duration-200 hover:shadow-lg ${
@@ -189,17 +208,9 @@ export default function Trivias(): JSX.Element {
               </button>
             )}
 
-            {/* Botón crear trivia */}
-            {user && (
-              <Link href="/crear-trivia">
-                <button
-                  className="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center text-2xl font-bold transition shadow-md hover:shadow-lg"
-                  title="Crear trivia"
-                >
-                  +
-                </button>
-              </Link>
-            )}
+            {/* El botón "Crear trivia" (+) se sacó de acá — ahora vive en
+                el panel del docente, donde además se puede asignar la
+                trivia a una clase específica. */}
 
             {/* Botón configuración */}
             <div className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-md transition-all duration-200 hover:shadow-lg">
@@ -209,7 +220,7 @@ export default function Trivias(): JSX.Element {
         </div>
 
         {/* Barra de búsqueda desplegable */}
-        {showSearch && (!user || customTrivias.length === 0 || activeTab === 'publicas') && (
+        {showSearch && showingPublicSection && (
           <div className="mb-6">
             <div className="bg-white rounded-lg shadow-md p-6">
               <TriviaSearch indexes={indexes} />
@@ -218,18 +229,18 @@ export default function Trivias(): JSX.Element {
         )}
 
         {/* Tabs */}
-        {user && customTrivias.length > 0 && (
+        {classroomTrivias.length > 0 && (
           <div className="mb-6">
             <div className="flex gap-4 border-b border-gray-200">
               <button
-                onClick={() => setActiveTab('mias')}
+                onClick={() => setActiveTab('clase')}
                 className={`px-6 py-3 font-semibold transition ${
-                  activeTab === 'mias'
+                  activeTab === 'clase'
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                Mis trivias ({customTrivias.length})
+                Trivias de tu clase ({classroomTrivias.length})
               </button>
               <button
                 onClick={() => setActiveTab('publicas')}
@@ -245,15 +256,15 @@ export default function Trivias(): JSX.Element {
           </div>
         )}
 
-        {/* Mis trivias tab */}
-        {user && customTrivias.length > 0 && activeTab === 'mias' && (
+        {/* Trivias de la clase */}
+        {classroomTrivias.length > 0 && activeTab === 'clase' && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <TriviaGrid indexesByLevel={{ 1: customTrivias.map(t => ({ id: t.id, name: t.name, level: 1 })) }} />
+            <TriviaGrid indexesByLevel={{ 1: classroomTrivias.map(t => ({ id: t.id, name: t.name, level: 1 })) }} />
           </div>
         )}
 
-        {/* Trivias públicas tab */}
-        {(!user || customTrivias.length === 0 || activeTab === 'publicas') && (
+        {/* Trivias públicas */}
+        {showingPublicSection && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <TriviaGrid indexesByLevel={indexesByLevel} />
           </div>

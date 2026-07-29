@@ -42,17 +42,17 @@ export default function PreviewModal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-2xl max-h-[85vh] flex flex-col">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-2xl max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-              <IconEye size={18} className="text-blue-600" />
+            <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <IconEye size={18} className="text-indigo-600" />
             </div>
             <div>
               <h2 id="preview-modal-title" className="text-lg font-bold text-gray-900">
@@ -75,7 +75,7 @@ export default function PreviewModal({
           {questions.map((q, index) => {
             const allOptions = [q.answer, q.options.first, q.options.second, q.options.third];
             return (
-              <div key={q.id} className="border border-gray-200 rounded-xl overflow-hidden">
+              <div key={q.id} className="border border-gray-200 rounded-lg overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                   <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Pregunta {index + 1}
@@ -111,7 +111,7 @@ export default function PreviewModal({
         <div className="p-4 border-t border-gray-100">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition text-sm"
+            className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition text-sm"
           >
             Cerrar
           </button>

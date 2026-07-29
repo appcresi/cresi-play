@@ -1,48 +1,8 @@
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import type { UserData, DashboardConfig, UserRole } from '@/types/user';
 
-interface DashboardConfig {
-  visibleActivities: string[];
-  activityOrder: string[];
-}
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: any[];
-    lastEntry: any | null;
-  };
-  achievements: any[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-  dashboard?: {
-    visibleActivities: string[];
-    activityOrder: string[];
-  };
-}
+export type { UserData, UserRole };
 
 class UserDataSync {
   /**
@@ -148,7 +108,10 @@ class UserDataSync {
               character: { id: 0, name: '', image: '' },
               username: 'Usuario',
               createdAt: new Date().toISOString(),
-              lastLogin: new Date().toISOString()
+              lastLogin: new Date().toISOString(),
+              role: 'student',
+              classroomId: null,
+              className: null
             },
             game: {
               totalScore: 0,
@@ -227,7 +190,10 @@ class UserDataSync {
                 character: { id: 0, name: '', image: '' },
                 username: 'Usuario',
                 createdAt: new Date().toISOString(),
-                lastLogin: new Date().toISOString()
+                lastLogin: new Date().toISOString(),
+                role: 'student',
+                classroomId: null,
+                className: null
               },
               game: {
                 totalScore: score,
@@ -298,6 +264,7 @@ class UserDataSync {
         console.log('✅ Datos encontrados en Firestore');
         console.log('   Puntos:', data.game.totalScore);
         console.log('   Usuario:', data.profile.username);
+        console.log('   Rol:', data.profile.role ?? 'student');
         console.log('   Actividades completadas:', data.progress.completedActivities.length);
         console.log('   Dashboard configurado:', data.dashboard?.visibleActivities.length || 0, 'actividades visibles');
         return data;

@@ -21,8 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/context/AuthContext";
 
 import cresiLogo from "@/public/cresi-logo.webp";
 
@@ -31,56 +30,6 @@ interface NavigationLink {
   href: string;
 }
 
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
 
 interface SuggestedActivity {
   name: string;
@@ -90,56 +39,41 @@ interface SuggestedActivity {
   lastVisit?: string;
 }
 
-const STORAGE_KEY = 'cresi_user_data';
-
-export default function Header(): JSX.Element {
+export default function Header(): JSX.Element | null {
   const pathname = usePathname();
   const router = useRouter();
+  const { profile, logout, refreshProfile } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [currentSection, setCurrentSection] = useState<string>("CrESI");
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [suggestedActivities, setSuggestedActivities] = useState<SuggestedActivity[]>([]);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Solo renderizar contenido después de montar en cliente
+  // El perfil ya lo trae useAuth() (centralizado, sin polling ni listeners
+  // propios). Acá solo recalculamos las sugerencias cuando cambia.
   useEffect(() => {
     setMounted(true);
-    loadUserData();
-    
-    // Escuchar cambios en localStorage
-    const handleStorageChange = () => {
-      loadUserData();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // También escuchar cambios locales usando un interval
-    const interval = setInterval(() => {
-      loadUserData();
-    }, 500);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
   }, []);
 
-  const loadUserData = () => {
-    try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        calculateSuggestedActivities(data);
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
-  };
+  // Red de seguridad: justo después de loguearse, /unirse y /clase/[codigo]
+  // escriben localStorage y navegan a /escritorio casi al mismo tiempo. El
+  // evento 'cresi-session-updated' ya cubre esto, pero por si esa carrera
+  // se da justo antes de que el listener del contexto quede armado, forzamos
+  // una relectura apenas cambia la ruta.
+  useEffect(() => {
+    refreshProfile();
+  }, [pathname, refreshProfile]);
 
-  const calculateSuggestedActivities = (data: UserData) => {
+  useEffect(() => {
+    if (profile) {
+      calculateSuggestedActivities(profile);
+    } else {
+      setSuggestedActivities([]);
+    }
+  }, [profile]);
+
+  const calculateSuggestedActivities = (data: NonNullable<typeof profile>) => {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     
@@ -149,7 +83,7 @@ export default function Header(): JSX.Element {
       if (app.href === '/' || app.href === '/user') return;
 
       const activityId = app.href.substring(1);
-      const lastVisit = data.progress.lastVisits[activityId];
+      const lastVisit = data.progress?.lastVisits?.[activityId];
 
       if (!lastVisit) {
         activitySuggestions.push({
@@ -200,13 +134,31 @@ export default function Header(): JSX.Element {
     }
   }, [pathname]);
 
+  // El header entero se oculta hasta que sepamos que hay sesión — así la
+  // landing de bienvenida (sin loguearse todavía) no muestra accesos a
+  // "Aplicaciones"/"Configuración" que no tienen sentido sin usuario.
+  // Este header es para alumnos. Los docentes tienen el suyo propio
+  // (TeacherHeader, en app/docente/layout.tsx) con sus propias acciones.
+  const showHeader = mounted && !!profile?.profile && profile.profile.role !== 'teacher';
+  // Nunca pasamos "" a src: algunos perfiles (docentes, o alumnos legacy sin
+  // avatar elegido) tienen character.image vacío. Un src="" hace que el
+  // navegador re-pida la página entera, no solo que la imagen falle.
+  const avatarSrc = profile?.profile?.character?.image || '/logocresi.svg';
+
   useEffect(() => {
-    const headerHeight = 64;
-    document.body.style.paddingTop = `${headerHeight}px`;
+    document.body.style.paddingTop = showHeader ? '64px' : '0px';
     return () => {
       document.body.style.paddingTop = '0px';
     };
-  }, []);
+  }, [showHeader]);
+
+  // Si la imagen del avatar no carga (URL rota o vencida), mostramos el
+  // logo de CrESI en su lugar en vez de dejar el ícono roto del navegador.
+  // `onerror = null` evita un loop infinito si el propio fallback también fallara.
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = '/logocresi.svg';
+  };
 
   const getTimeSinceVisit = (lastVisit: string): string => {
     const now = new Date();
@@ -221,20 +173,11 @@ export default function Header(): JSX.Element {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      
-      // Cerrar sesión de Firebase
-      await signOut(auth);
-      
-      // Limpiar localStorage
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('cresi_profile');
-      
-      // Limpiar estado local
-      setUserData(null);
-      
+      await logout();
+
       // Redirigir a inicio
       router.push('/');
-      
+
       // Recargar página completamente después de un pequeño delay
       setTimeout(() => {
         window.location.href = '/';
@@ -245,27 +188,8 @@ export default function Header(): JSX.Element {
     }
   };
 
-  if (!mounted) {
-    return (
-      <header className="h-16 px-6 w-full fixed top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src={cresiLogo}
-                alt="Logotipo de CrESI"
-                width={40}
-                height={40}
-                className="rounded-lg"
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-medium text-gray-800">CrESI</h1>
-              </div>
-            </Link>
-          </div>
-        </nav>
-      </header>
-    );
+  if (!showHeader) {
+    return null;
   }
 
   const categorizedApps = applications.reduce((acc, app) => {
@@ -295,9 +219,9 @@ export default function Header(): JSX.Element {
               <h1 className="text-xl font-medium text-gray-800 group-hover:text-blue-600 transition-colors">
                 {currentSection}
               </h1>
-              {userData && (
+              {profile && (
                 <p className="text-xs text-gray-500">
-                  Hola, {userData.profile.username}
+                  Hola, {profile.profile.username}
                 </p>
               )}
             </div>
@@ -397,20 +321,21 @@ export default function Header(): JSX.Element {
                 >
                   <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white rounded-lg shadow-xl border border-gray-200">
                     <div className="p-4">
-                      {userData && (
+                      {profile && (
                         <div className="mb-4 pb-4 border-b border-gray-100">
                           <div className="flex items-center gap-3">
                             <img
-                              src={userData.profile.character.image}
-                              alt={userData.profile.username}
-                              className="w-10 h-10 rounded-full"
+                              src={avatarSrc}
+                              alt={profile.profile.username}
+                              onError={handleAvatarError}
+                              className="w-10 h-10 rounded-full object-cover"
                             />
                             <div>
                               <p className="text-sm font-medium text-gray-800">
-                                {userData.profile.username}
+                                {profile.profile.username}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {userData.game.totalScore} puntos • {userData.game.totalLives} vidas
+                                {profile.game.totalScore} puntos • {profile.game.totalLives} vidas
                               </p>
                             </div>
                           </div>
@@ -428,7 +353,7 @@ export default function Header(): JSX.Element {
                           <div className="grid grid-cols-3 gap-2">
                             {apps.map((application) => {
                               const activityId = application.href.substring(1);
-                              const isCompleted = userData?.progress.completedActivities.includes(activityId);
+                              const isCompleted = profile?.progress.completedActivities.includes(activityId);
                               
                               return (
                                 <Link
@@ -474,15 +399,16 @@ export default function Header(): JSX.Element {
           </Popover>
 
           {/* Avatar con Popover de Logout */}
-          {userData && (
+          {profile && (
             <Popover className="relative">
               {({ open, close }) => (
                 <>
                   <Popover.Button className="p-0 rounded-full hover:ring-2 hover:ring-blue-500 transition-all">
                     <img
-                      src={userData.profile.character.image}
-                      alt={userData.profile.username}
-                      className="w-8 h-8 rounded-full cursor-pointer"
+                      src={avatarSrc}
+                      alt={profile.profile.username}
+                      onError={handleAvatarError}
+                      className="w-8 h-8 rounded-full cursor-pointer object-cover"
                     />
                   </Popover.Button>
 
@@ -499,16 +425,17 @@ export default function Header(): JSX.Element {
                       <div className="p-4">
                         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
                           <img
-                            src={userData.profile.character.image}
-                            alt={userData.profile.username}
-                            className="w-10 h-10 rounded-full"
+                            src={avatarSrc}
+                            alt={profile.profile.username}
+                            onError={handleAvatarError}
+                            className="w-10 h-10 rounded-full object-cover"
                           />
                           <div>
                             <p className="text-sm font-medium text-gray-800">
-                              {userData.profile.username}
+                              {profile.profile.username}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {userData.game.totalScore} puntos
+                              {profile.game.totalScore} puntos
                             </p>
                           </div>
                         </div>

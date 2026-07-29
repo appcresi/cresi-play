@@ -1,45 +1,10 @@
 import UserDataSync from '@/lib/userDataSync';
+import ClassroomService from '@/lib/classroomService';
 import { auth } from '@/lib/firebase';
+import type { UserData, MoodRecord, Achievement, UserRole } from '@/types/user';
+import { ACTIVITY_IDS as DEFAULT_FEATURES } from '@/lib/activities';
 
-interface MoodRecord {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-interface UserData {
-  profile: {
-    character: { id: number; name: string; image: string };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: { totalScore: number; totalLives: number; streak: number };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: { history: MoodRecord[]; lastEntry: MoodRecord | null };
-  achievements: Achievement[];
-  settings: { notifications: boolean; theme: 'light' | 'dark'; language: 'es' | 'en' };
-  dashboard: { visibleActivities: string[]; activityOrder: string[] };
-}
-
-const DEFAULT_FEATURES = [
-  "trivias", "pasapalabras", "simulador", "completa", "datamuncher",
-  "moodtracker", "meme", "literatura", "biopuzzle", "condon", "lecciones", "saludmental", "vocacion", "amor", "impostor"
-];
+export type { UserData, UserRole };
 
 class UserDataManager {
   private static readonly STORAGE_KEY = 'cresi_user_data';
@@ -50,7 +15,10 @@ class UserDataManager {
         character: { id: 0, name: '', image: '' },
         username: 'Estudiante',
         createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        lastLogin: new Date().toISOString(),
+        role: 'student',
+        classroomId: null,
+        className: null
       },
       game: { totalScore: 0, totalLives: 3, streak: 0 },
       progress: {
@@ -92,8 +60,9 @@ class UserDataManager {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
       console.log('✅ Datos guardados en localStorage');
       
-      // Sincronizar con Firestore si el usuario NO es anónimo
       const currentUser = auth.currentUser;
+
+      // Sincronizar con Firestore (colección `users`) si el usuario NO es anónimo
       if (currentUser && !currentUser.isAnonymous) {
         console.log('📤 Iniciando sincronización completa con Firestore...');
         console.log('   Usuario:', currentUser.uid);
@@ -114,9 +83,43 @@ class UserDataManager {
       } else {
         console.log('⚠️ Usuario no autenticado - solo se guarda en localStorage');
       }
+
+      // Sincronizar el RESUMEN de progreso a la clase, si el alumno pertenece a una.
+      // Esto corre para cualquier usuario (anónimo o no) siempre que tenga classroomId,
+      // ya que es la única forma de que el docente vea el avance de alumnos con código.
+      this.syncClassroomProgressIfApplicable(userData);
     } catch (error) {
       console.error('❌ Error saving user data:', error);
     }
+  }
+
+  /**
+   * Sincroniza un resumen de progreso (puntaje, racha, actividades completadas)
+   * a `classrooms/{id}/estudiantes/{uid}` cuando el alumno pertenece a una clase.
+   * Deliberadamente NO incluye mood ni respuestas de tests sensibles.
+   * @private
+   */
+  private static syncClassroomProgressIfApplicable(userData: UserData): void {
+    const currentUser = auth.currentUser;
+    const classroomId = userData.profile.classroomId;
+    if (!currentUser || !classroomId) return;
+
+    const lastVisitDates = Object.values(userData.progress.lastVisits || {});
+    const lastActive = lastVisitDates.length > 0
+      ? lastVisitDates.reduce((latest, current) => (current > latest ? current : latest))
+      : null;
+
+    setTimeout(() => {
+      ClassroomService.syncStudentProgress(classroomId, currentUser.uid, {
+        totalScore: userData.game.totalScore,
+        streak: userData.game.streak,
+        completedActivities: userData.progress.completedActivities,
+        activityScores: userData.progress.activityScores,
+        lastActive,
+      }).catch(err => {
+        console.error('❌ Error sincronizando progreso con la clase:', err);
+      });
+    }, 100);
   }
 
   static visitActivity(activityTitle: string): UserData {
@@ -139,90 +142,6 @@ class UserDataManager {
     userData.game.totalScore += score;
     this.saveUserData(userData);
     return userData;
-  }
-
-  /**
-   * Actualizar visibilidad de actividades en el dashboard
-   * Sincroniza tanto en localStorage como en Firestore (si el usuario está registrado)
-   */
-  static updateDashboardVisibility(visibleActivities: string[]): UserData {
-    const userData = this.loadUserData();
-    if (!userData.dashboard) {
-      userData.dashboard = {
-        visibleActivities: DEFAULT_FEATURES,
-        activityOrder: DEFAULT_FEATURES
-      };
-    }
-    userData.dashboard.visibleActivities = visibleActivities;
-    console.log('✅ Actualizando visibilidad de actividades');
-    console.log(`   Actividades visibles: ${visibleActivities.length}/${DEFAULT_FEATURES.length}`);
-    this.saveUserData(userData);
-    
-    // Sincronizar solo el dashboard si el usuario está registrado
-    this.syncDashboardIfAuthenticated(userData);
-    
-    return userData;
-  }
-
-  /**
-   * Actualizar orden de actividades en el dashboard
-   * Sincroniza tanto en localStorage como en Firestore (si el usuario está registrado)
-   */
-  static updateActivityOrder(activityOrder: string[]): UserData {
-    const userData = this.loadUserData();
-    if (!userData.dashboard) {
-      userData.dashboard = {
-        visibleActivities: DEFAULT_FEATURES,
-        activityOrder: DEFAULT_FEATURES
-      };
-    }
-    userData.dashboard.activityOrder = activityOrder;
-    console.log('✅ Actualizando orden de actividades');
-    this.saveUserData(userData);
-    
-    // Sincronizar solo el dashboard si el usuario está registrado
-    this.syncDashboardIfAuthenticated(userData);
-    
-    return userData;
-  }
-
-  /**
-   * Resetear dashboard a su estado por defecto
-   * Sincroniza tanto en localStorage como en Firestore (si el usuario está registrado)
-   */
-  static resetDashboard(): UserData {
-    const userData = this.loadUserData();
-    userData.dashboard = {
-      visibleActivities: DEFAULT_FEATURES,
-      activityOrder: DEFAULT_FEATURES
-    };
-    console.log('✅ Reseteando dashboard');
-    this.saveUserData(userData);
-    
-    // Sincronizar solo el dashboard si el usuario está registrado
-    this.syncDashboardIfAuthenticated(userData);
-    
-    return userData;
-  }
-
-  /**
-   * Sincronizar configuración del dashboard con Firestore si el usuario está registrado
-   * @private
-   */
-  private static syncDashboardIfAuthenticated(userData: UserData): void {
-    const currentUser = auth.currentUser;
-    if (currentUser && !currentUser.isAnonymous) {
-      console.log('📤 Iniciando sincronización de dashboard con Firestore...');
-      setTimeout(() => {
-        UserDataSync.syncDashboardConfig(userData.dashboard)
-          .then(() => {
-            console.log('✅ Configuración del dashboard sincronizada exitosamente');
-          })
-          .catch(err => {
-            console.error('❌ Error sincronizando dashboard:', err);
-          });
-      }, 100);
-    }
   }
 
   static updateMoodEntry(moodRecord: MoodRecord): UserData {
