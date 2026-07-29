@@ -44,14 +44,28 @@ interface ShuffledOption {
   value: string;
 }
 
+// El `slug` es el nombre EXACTO del archivo en /public (sin tildes, en
+// minúscula) — nunca lo derivamos de `name` (el texto que se muestra),
+// porque eso rompe en producción: Windows/Mac no distinguen mayúsculas en
+// nombres de archivo, pero el servidor de Vercel (Linux) sí. Los archivos
+// en /public deben llamarse exactamente: salud.png, prevencion.png,
+// diversidad.png, derecho.png, proyecto.png, azar.png
 const CATEGORIES = [
-  { name: 'Salud', color: '#3B82F6' },
-  { name: 'Prevención', color: '#10B981' },
-  { name: 'Diversidad', color: '#8B5CF6' },
-  { name: 'Derecho', color: '#F59E0B' },
-  { name: 'Proyecto', color: '#EF4444' },
-  { name: 'Azar', color: '#F59E0B' },
+  { name: 'Salud', slug: 'salud', color: '#3B82F6' },
+  { name: 'Prevención', slug: 'prevencion', color: '#10B981' },
+  { name: 'Diversidad', slug: 'diversidad', color: '#8B5CF6' },
+  { name: 'Derecho', slug: 'derecho', color: '#F59E0B' },
+  { name: 'Proyecto', slug: 'proyecto', color: '#EF4444' },
+  { name: 'Azar', slug: 'azar', color: '#F59E0B' },
 ];
+
+function getCategorySlug(name: string): string {
+  return CATEGORIES.find((c) => c.name === name)?.slug ?? name.toLowerCase();
+}
+
+function getCategoryColor(name: string): string {
+  return CATEGORIES.find((c) => c.name === name)?.color ?? '#6366F1';
+}
 
 const STORAGE_KEY = 'cresi_user_data';
 // Claves temporales (sessionStorage) para "traspasar" el puntaje de una
@@ -484,51 +498,78 @@ export default function JugarAzar(): JSX.Element {
 
       {/* Spinning State */}
       {gameState === 'spinning' && (
-        <div className="flex flex-col items-center justify-center gap-8 max-w-4xl mx-auto">
-          <div className="relative w-96 h-96">
-            <img
-              src="/ruleta.png"
-              alt="Ruleta"
-              className="w-full h-full drop-shadow-2xl"
-              style={{
-                transform: `rotate(${rotation}deg)`,
-                transition: isSpinning ? 'transform 3s ease-out' : 'none',
-              }}
-            />
+        <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-xl px-8 py-10 flex flex-col items-center gap-6 w-full max-w-lg">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-800 mb-1">¡Girá la ruleta!</h2>
+              <p className="text-gray-400 text-sm">Te va a tocar una categoría al azar</p>
+            </div>
 
-            {/* Pointer */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 w-0 h-0 border-l-6 border-r-6 border-t-12 border-l-transparent border-r-transparent border-t-red-600"></div>
+            <div className="relative w-72 h-72 sm:w-80 sm:h-80">
+              <img
+                src="/ruleta.png"
+                alt="Ruleta"
+                className="w-full h-full drop-shadow-xl"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                  transition: isSpinning ? 'transform 3s ease-out' : 'none',
+                }}
+              />
+
+              {/* Pointer */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 drop-shadow-md">
+                <div className="w-0 h-0 border-l-[10px] border-r-[10px] border-t-[18px] border-l-transparent border-r-transparent border-t-[#FF6B6B]" />
+              </div>
+
+              {/* Centro decorativo */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-4 h-4 rounded-full bg-white shadow-md border-2 border-gray-100" />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSpin}
+              disabled={isSpinning}
+              className="bg-[#FF6B6B] hover:bg-[#E8514F] text-white font-bold py-3.5 px-10 rounded-full text-lg
+                       shadow-[0_8px_24px_-8px_rgba(255,107,107,0.6)] hover:shadow-[0_10px_28px_-6px_rgba(255,107,107,0.7)]
+                       hover:-translate-y-0.5 transition-all duration-300
+                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            >
+              {isSpinning ? 'Girando...' : '¡GIRAR!'}
+            </button>
           </div>
-
-          <button
-            onClick={handleSpin}
-            disabled={isSpinning}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 
-                     text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg hover:shadow-xl 
-                     transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSpinning ? 'Girando...' : '¡GIRAR!'}
-          </button>
 
           {/* Completed Categories */}
           {completedCategories.size > 0 && (
-            <div className="mt-8 w-full max-w-2xl">
-              <h3 className="text-center text-lg font-bold text-gray-800 mb-3">
-                ✅ Categorías Completadas ({completedCategories.size}/{CATEGORIES.length})
+            <div className="mt-2 w-full max-w-2xl">
+              <h3 className="text-center text-sm font-semibold text-gray-500 mb-3">
+                Categorías completadas ({completedCategories.size}/{CATEGORIES.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {Array.from(completedCategories).map((category) => {
+                  const color = getCategoryColor(category);
                   return (
                     <div
                       key={category}
-                      className="bg-gradient-to-br from-green-400 to-green-600 text-white p-3 rounded-lg text-center shadow-md flex flex-col items-center justify-center gap-2"
+                      className="bg-white border-2 rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 shadow-sm"
+                      style={{ borderColor: `${color}30` }}
                     >
-                      <img
-                        src={`/${category}.png`}
-                        alt={category}
-                        className="w-8 h-8"
-                      />
-                      <p className="font-semibold text-sm">{category}</p>
+                      <div className="relative">
+                        <img
+                          src={`/${getCategorySlug(category)}.png`}
+                          alt={category}
+                          className="w-8 h-8"
+                        />
+                        <div
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: color }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} className="w-2.5 h-2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="font-semibold text-xs" style={{ color }}>{category}</p>
                     </div>
                   );
                 })}
@@ -540,18 +581,42 @@ export default function JugarAzar(): JSX.Element {
 
       {/* Category Selected State */}
       {gameState === 'category-selected' && selectedCategory && (
-        <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-2xl p-8 text-center">
-            <p className="text-gray-600 text-lg mb-4">¡Categoría seleccionada!</p>
-            <img
-              src={`/${selectedCategory}.png`}
-              alt={selectedCategory}
-              className="w-24 h-24 mx-auto mb-4"
-            />
-            <h2 className="text-5xl font-bold mb-6">
+        <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-10 text-center max-w-sm w-full">
+            <p className="text-gray-400 text-sm font-medium uppercase tracking-wide mb-5">
+              ¡Categoría seleccionada!
+            </p>
+            <div
+              className="w-28 h-28 rounded-full mx-auto mb-5 flex items-center justify-center"
+              style={{ backgroundColor: `${getCategoryColor(selectedCategory)}15` }}
+            >
+              <img
+                src={`/${getCategorySlug(selectedCategory)}.png`}
+                alt={selectedCategory}
+                className="w-16 h-16"
+              />
+            </div>
+            <h2
+              className="text-3xl font-bold mb-5"
+              style={{ color: getCategoryColor(selectedCategory) }}
+            >
               {selectedCategory}
             </h2>
-            <p className="text-gray-500">Cargando preguntas...</p>
+            <div className="flex items-center justify-center gap-1.5">
+              <span
+                className="w-2 h-2 rounded-full animate-bounce"
+                style={{ backgroundColor: getCategoryColor(selectedCategory), animationDelay: '0ms' }}
+              />
+              <span
+                className="w-2 h-2 rounded-full animate-bounce"
+                style={{ backgroundColor: getCategoryColor(selectedCategory), animationDelay: '150ms' }}
+              />
+              <span
+                className="w-2 h-2 rounded-full animate-bounce"
+                style={{ backgroundColor: getCategoryColor(selectedCategory), animationDelay: '300ms' }}
+              />
+            </div>
+            <p className="text-gray-400 text-sm mt-3">Cargando preguntas...</p>
           </div>
         </div>
       )}
@@ -708,7 +773,7 @@ export default function JugarAzar(): JSX.Element {
                       className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
                     >
                       <img
-                        src={`/${category}.png`}
+                        src={`/${getCategorySlug(category)}.png`}
                         alt={category}
                         className="w-5 h-5"
                       />

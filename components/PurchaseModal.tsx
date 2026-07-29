@@ -1,119 +1,7 @@
 "use client"
-import { IconHeartPlus } from '@tabler/icons-react';
+import { IconHeartPlus, IconX } from '@tabler/icons-react';
 import Swal from 'sweetalert2';
-
-// UserData interfaces (matching MoodTracker and UnifiedWordGame)
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
-
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-// UserDataManager class
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      }
-    };
-  }
-
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        parsedData.profile.lastLogin = new Date().toISOString();
-        this.saveUserData(parsedData);
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-}
+import UserDataManager from '@/lib/userDataManager';
 
 const LIFE_PURCHASE_COST = 200;
 
@@ -137,77 +25,92 @@ const PurchaseModal = ({
   const userData = UserDataManager.loadUserData();
   const currentScore = userData.game.totalScore;
   const currentLives = userData.game.totalLives;
-  const canAfford = currentScore >= 200 && currentLives < 3;
+  const canAfford = currentScore >= LIFE_PURCHASE_COST && currentLives < 3;
 
   const handlePurchase = () => {
-    if (canAfford) {
-      const updatedUserData = { ...userData };
-      updatedUserData.game.totalScore = currentScore - 200;
-      updatedUserData.game.totalLives = Math.min(currentLives + 1, 3);
-      
-      UserDataManager.saveUserData(updatedUserData);
-      onPurchase();
-      onClose();
-      
-      Swal.fire({
-        icon: "success",
-        title: "¡Vida Extra Comprada!",
-        text: "¡Continúa jugando!",
-        showConfirmButton: false,
-        timer: 1000
-      });
-    }
+    if (!canAfford) return;
+
+    const updatedUserData = { ...userData };
+    updatedUserData.game.totalScore = currentScore - LIFE_PURCHASE_COST;
+    updatedUserData.game.totalLives = Math.min(currentLives + 1, 3);
+
+    UserDataManager.saveUserData(updatedUserData);
+    onPurchase();
+    onClose();
+
+    Swal.fire({
+      icon: "success",
+      title: "¡Vida Extra Comprada!",
+      text: "¡Continúa jugando!",
+      showConfirmButton: false,
+      timer: 1000
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm w-full mx-4">
-        <h2 className="text-2xl font-bold mb-4">{description}</h2>
-        <div className="flex justify-between mb-4">
-          <p>Costo: {LIFE_PURCHASE_COST} puntos</p>
-          <p>Tus puntos: {currentScore}</p>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+          aria-label="Cerrar"
+        >
+          <IconX size={18} />
+        </button>
+
+        <div className="flex flex-col items-center text-center gap-4">
+          <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+            <IconHeartPlus size={28} className="text-red-500" />
+          </div>
+
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">{description}</h2>
+            <p className="text-gray-500 text-sm">
+              Cuesta {LIFE_PURCHASE_COST} puntos · tenés {currentScore}
+            </p>
+          </div>
+
+          {currentLives >= 3 ? (
+            <div className="w-full pt-1">
+              <p className="text-amber-600 text-sm mb-4">Ya tenés el máximo de vidas.</p>
+              <button
+                onClick={onClose}
+                className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          ) : canAfford ? (
+            <div className="flex gap-3 w-full pt-1">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handlePurchase}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700
+                         text-white font-semibold rounded-full transition"
+              >
+                <IconHeartPlus size={18} />
+                Comprar
+              </button>
+            </div>
+          ) : (
+            <div className="w-full pt-1">
+              <p className="text-red-500 text-sm mb-4">
+                No tenés suficientes puntos para comprar {itemName}.
+              </p>
+              <button
+                onClick={onClose}
+                className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
         </div>
-        {currentLives >= 3 ? (
-          <div>
-            <p className="text-red-500 mb-4">
-              Ya tienes el máximo de vidas
-            </p>
-            <button
-              onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-            >
-              Cerrar
-            </button>
-          </div>
-        ) : canAfford ? (
-          <div className="flex gap-4">
-            <button
-              onClick={handlePurchase}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center gap-2"
-            >
-              <IconHeartPlus size={20} />
-              Comprar
-            </button>
-            <button
-              onClick={onClose}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-            >
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p className="text-red-500 mb-4">
-              No tienes suficientes puntos para comprar {itemName}
-            </p>
-            <button
-              onClick={onClose}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-            >
-              Cerrar
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
