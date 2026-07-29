@@ -12,16 +12,19 @@ import {
   IconPacman,
   IconMoodPuzzled,
   IconMoodTongueWink2,
-  IconBooks,
+  IconBook,
+  IconHeart,
   IconBell,
   IconSettings,
   IconLogout
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { ACTIVITIES } from "@/lib/activities";
+import ClassroomService from "@/lib/classroomService";
 
 import cresiLogo from "@/public/cresi-logo.webp";
 
@@ -47,6 +50,9 @@ export default function Header(): JSX.Element | null {
   const [currentSection, setCurrentSection] = useState<string>("CrESI");
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [suggestedActivities, setSuggestedActivities] = useState<SuggestedActivity[]>([]);
+  // Restricción de actividades de la clase del alumno (si tiene una).
+  // `null` = sin restricción, se ven todas — mismo criterio que Features.tsx.
+  const [allowedActivities, setAllowedActivities] = useState<string[] | null>(null);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -65,13 +71,30 @@ export default function Header(): JSX.Element | null {
     refreshProfile();
   }, [pathname, refreshProfile]);
 
+  // Si el alumno tiene clase, traemos qué actividades habilitó el docente.
+  useEffect(() => {
+    const classroomId = profile?.profile?.classroomId;
+    if (!classroomId) {
+      setAllowedActivities(null);
+      return;
+    }
+    ClassroomService.getAllowedActivities(classroomId)
+      .then(setAllowedActivities)
+      .catch((err) => {
+        console.error('❌ Error obteniendo actividades habilitadas por el docente:', err);
+        setAllowedActivities(null);
+      });
+  }, [profile?.profile?.classroomId]);
+
+  const applications = useMemo(() => buildApplications(allowedActivities), [allowedActivities]);
+
   useEffect(() => {
     if (profile) {
       calculateSuggestedActivities(profile);
     } else {
       setSuggestedActivities([]);
     }
-  }, [profile]);
+  }, [profile, applications]);
 
   const calculateSuggestedActivities = (data: NonNullable<typeof profile>) => {
     const now = new Date();
@@ -483,15 +506,43 @@ interface Application extends NavigationLink {
   category?: string;
 }
 
-const applications: Application[] = [
-  { name: "Inicio", href: "/", icon: <IconHome />, isExternal: false, category: "Principal" },
-  { name: "Perfil", href: "/user", icon: <IconUser />, isExternal: false, category: "Principal" },
-  { name: "Trivias", href: "/trivias", icon: <IconCards />, isExternal: false, category: "Juegos" },
-  { name: "Pasapalabras", href: "/pasapalabras", icon: <IconAB2 />, isExternal: false, category: "Juegos" },
-  { name: "Completa Palabras", href: "/completapalabras", icon: <IconBrandPnpm />, isExternal: false, category: "Juegos" },
-  { name: "Simulador Grooming", href: "/simulador", icon: <IconShieldCheck />, isExternal: false, category: "Seguridad" },
-  { name: "DataMuncher", href: "/datamuncher", icon: <IconPacman />, isExternal: false, category: "Herramientas" },
-  { name: "MoodTracker", href: "/moodtracker", icon: <IconMoodPuzzled />, isExternal: false, category: "Bienestar" },
-  { name: "Meme Creator", href: "/memegenerador", icon: <IconMoodTongueWink2 />, isExternal: false, category: "Creatividad" },
-  { name: "Literatura", href: "/literatura", icon: <IconBooks />, isExternal: false, category: "Educación" }
-];
+// Mismo mapa de ícono-por-nombre que usan Features.tsx / ClassroomDesk.tsx /
+// TeacherDashboard.tsx — así el ícono de cada actividad es igual en todos
+// lados, no una versión aparte inventada acá.
+const ICON_MAP: Record<string, JSX.Element> = {
+  IconCards: <IconCards />,
+  IconAB2: <IconAB2 />,
+  IconShieldCheck: <IconShieldCheck />,
+  IconBrandPnpm: <IconBrandPnpm />,
+  IconPacman: <IconPacman />,
+  IconMoodPuzzled: <IconMoodPuzzled />,
+  IconMoodTongueWink2: <IconMoodTongueWink2 />,
+  IconBook: <IconBook />,
+  IconHeart: <IconHeart />,
+};
+
+/**
+ * Antes esto era un array hardcodeado, separado del catálogo único
+ * (lib/activities.ts) — por eso el menú de apps del header ni sabía que
+ * existía una restricción por clase, y de paso le faltaban 7 de las 15
+ * actividades reales. Ahora sale del mismo catálogo que todo lo demás, y
+ * respeta `allowedActivities` si el alumno tiene una clase con restricción.
+ */
+function buildApplications(allowedActivities: string[] | null): Application[] {
+  const base: Application[] = [
+    { name: "Inicio", href: "/", icon: <IconHome />, isExternal: false, category: "Principal" },
+    { name: "Perfil", href: "/user", icon: <IconUser />, isExternal: false, category: "Principal" },
+  ];
+
+  const activityApps: Application[] = ACTIVITIES
+    .filter((a) => !allowedActivities || allowedActivities.includes(a.id))
+    .map((a) => ({
+      name: a.title,
+      href: a.route,
+      icon: ICON_MAP[a.iconName] ?? <IconMoodPuzzled />,
+      isExternal: false,
+      category: a.category,
+    }));
+
+  return [...base, ...activityApps];
+}

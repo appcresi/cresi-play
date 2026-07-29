@@ -3,10 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import Header from '@/components/Header';
 
-// Envuelve TODO lo que está bajo app/(routes)/ — la home ("/") y cada
-// página de juego (trivias, biopuzzle, condon, etc.). Antes cada página
-// no tenía ninguna protección; ahora la tienen todas de una sola vez acá.
+
 export default function StudentAreaLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { role } = useAuth();
@@ -26,5 +25,8 @@ export default function StudentAreaLayout({ children }: { children: React.ReactN
     );
   }
 
-  return <>{children}</>;
+  return <>
+  <Header />
+  {children}
+  </>;
 }

@@ -404,7 +404,7 @@ export default function CreateCustomTrivia() {
 
   if (!user) {
     return (
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
           <p className="text-gray-600">Debes estar logueado para crear una trivia personalizada.</p>
         </div>
@@ -419,7 +419,7 @@ export default function CreateCustomTrivia() {
   const role = profile?.profile?.role;
   if (role && role !== 'teacher') {
     return (
-      <div className="max-w-6xl mx-auto p-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
           <p className="text-gray-600">Esta sección es solo para docentes.</p>
         </div>
@@ -428,7 +428,7 @@ export default function CreateCustomTrivia() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
 
       {/* ── LIST ── */}
       {step === 'list' && (

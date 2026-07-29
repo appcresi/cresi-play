@@ -960,16 +960,23 @@ const VisibleTriviasSummary = ({ classroom, teacherId }: { classroom: Classroom;
     if (!teacherId) return;
     (async () => {
       try {
-        const q = query(collection(db, 'trivia'), where('author', '==', teacherId));
-        const snap = await getDocs(q);
-        const list: TeacherTriviaOption[] = snap.docs.map((d) => {
-          const data = d.data() as any;
+        const mapDoc = (isOwn: boolean) => (d: any): TeacherTriviaOption => {
+          const data = d.data();
           return {
             id: data.id || d.id,
             name: data.name,
             questionCount: Array.isArray(data.questions) ? data.questions.length : 0,
+            isOwn,
           };
-        });
+        };
+        const [ownSnap, cresiSnap] = await Promise.all([
+          getDocs(query(collection(db, 'trivia'), where('author', '==', teacherId))),
+          getDocs(query(collection(db, 'trivia'), where('author', '==', 'CRESI'))),
+        ]);
+        const list: TeacherTriviaOption[] = [
+          ...ownSnap.docs.map(mapDoc(true)),
+          ...cresiSnap.docs.map(mapDoc(false)),
+        ];
         const visible = classroom.visibleTrivias
           ? list.filter((t) => classroom.visibleTrivias!.includes(t.id))
           : list;
@@ -1010,7 +1017,9 @@ const VisibleTriviasSummary = ({ classroom, teacherId }: { classroom: Classroom;
               <IconClipboardList className="w-5 h-5" />
             </div>
             <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">{t.name}</p>
-            <p className="text-[10px] text-gray-500 leading-tight">{t.questionCount} preg.</p>
+            <p className="text-[10px] text-gray-500 leading-tight">
+              {t.questionCount} preg.{!t.isOwn && ' · CrESI'}
+            </p>
           </div>
         );
       })}
@@ -1482,6 +1491,8 @@ interface TeacherTriviaOption {
   id: string;
   name: string;
   questionCount: number;
+  /** true = la creó el docente; false = viene del catálogo de CrESI. */
+  isOwn: boolean;
 }
 
 const TriviasPicker = ({
@@ -1504,16 +1515,26 @@ const TriviasPicker = ({
     (async () => {
       try {
         setLoadingTrivias(true);
-        const q = query(collection(db, 'trivia'), where('author', '==', teacherId));
-        const snap = await getDocs(q);
-        const list: TeacherTriviaOption[] = snap.docs.map((d) => {
-          const data = d.data() as any;
+        const mapDoc = (isOwn: boolean) => (d: any): TeacherTriviaOption => {
+          const data = d.data();
           return {
             id: data.id || d.id,
             name: data.name,
             questionCount: Array.isArray(data.questions) ? data.questions.length : 0,
+            isOwn,
           };
-        });
+        };
+        // Las propias del docente + el catálogo de CrESI — el docente puede
+        // apagar tanto unas como otras (ej: una trivia de CrESI que todavía
+        // no corresponde a la edad de sus alumnos, o un tema que no vieron).
+        const [ownSnap, cresiSnap] = await Promise.all([
+          getDocs(query(collection(db, 'trivia'), where('author', '==', teacherId))),
+          getDocs(query(collection(db, 'trivia'), where('author', '==', 'CRESI'))),
+        ]);
+        const list: TeacherTriviaOption[] = [
+          ...ownSnap.docs.map(mapDoc(true)),
+          ...cresiSnap.docs.map(mapDoc(false)),
+        ];
         setTrivias(list);
         // Si visibleTrivias es null (sin restricción todavía), arrancamos
         // con todas tildadas — refleja el estado real ("se ven todas").
@@ -1635,7 +1656,9 @@ const TriviasPicker = ({
                   <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">
                     {trivia.name}
                   </p>
-                  <p className="text-[10px] text-gray-500 leading-tight">{trivia.questionCount} preg.</p>
+                  <p className="text-[10px] text-gray-500 leading-tight">
+                    {trivia.questionCount} preg.{!trivia.isOwn && ' · CrESI'}
+                  </p>
                 </button>
               );
             })}
