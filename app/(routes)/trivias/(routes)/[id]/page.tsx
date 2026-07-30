@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import TriviaGame from '../../components/TriviaGame';
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('trivias')?.color ?? '#1976D2';
 
 interface Question {
   question: string;
@@ -107,8 +110,12 @@ export default function TriviaPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-600">Cargando trivia...</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
+            style={{ borderColor: ACCENT }}
+          />
+          <p className="text-gray-500 text-sm">Cargando trivia...</p>
         </div>
       </div>
     );
@@ -117,8 +124,8 @@ export default function TriviaPage({ params }: PageProps) {
   if (error || !gameData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-red-600">{error || 'No se pudo cargar la trivia'}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+          <p className="text-red-600 text-sm">{error || 'No se pudo cargar la trivia'}</p>
         </div>
       </div>
     );

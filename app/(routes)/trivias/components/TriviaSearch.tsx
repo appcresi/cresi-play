@@ -1,76 +1,58 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { TriviaCard } from './TriviaCard';
 import { type TriviaIndexFields } from '@/types/trivia';
 import { IconSearch, IconX } from '@tabler/icons-react';
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('trivias')?.color ?? '#1976D2';
 
 export default function TriviaSearch({ indexes }: { indexes: TriviaIndexFields[] }): JSX.Element {
   const [query, setQuery] = useState<string>('');
-  const [shownIndexes, setShownIndexes] = useState<TriviaIndexFields[]>([]);
 
-  const handleSearch = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-
-    if (query.trim() !== '') {
-      const filteredIndexes = indexes.filter((index) =>
-        index.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setShownIndexes(filteredIndexes);
-    } else {
-      setShownIndexes([]);
-    }
-  };
+  const trimmedQuery = query.trim();
+  const shownIndexes = trimmedQuery !== ''
+    ? indexes.filter((index) => index.name.toLowerCase().includes(trimmedQuery.toLowerCase()))
+    : [];
 
   const clearSearch = (): void => {
     setQuery('');
-    setShownIndexes([]);
   };
 
   return (
     <section>
-      {/* Formulario de búsqueda */}
-      <form
-        onSubmit={handleSearch}
-        className="flex gap-3 items-center"
-      >
-        <div className="relative flex-1">
-          <IconSearch 
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
-            size={20} 
-          />
-          <input
-            type="text"
-            placeholder="Buscar trivias..."
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg 
-                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                      text-gray-700 placeholder-gray-400 transition-all duration-200"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 
-                        text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Limpiar búsqueda"
-            >
-              <IconX size={20} />
-            </button>
-          )}
-        </div>
-        <button
-          type="submit"
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold
-                    rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-        >
-          Buscar
-        </button>
-      </form>
+      {/* Búsqueda en vivo — no hace falta enviar el formulario */}
+      <div className="relative">
+        <IconSearch
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          size={20}
+        />
+        <input
+          type="text"
+          placeholder="Buscar trivias..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl 
+                    focus:outline-none focus:ring-2 focus:border-transparent
+                    text-gray-700 placeholder-gray-400 transition-all duration-200"
+          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 
+                      text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Limpiar búsqueda"
+          >
+            <IconX size={20} />
+          </button>
+        )}
+      </div>
 
       {/* Resultados de búsqueda */}
-      {query.trim() !== '' && (
+      {trimmedQuery !== '' && (
         <div className="mt-6">
           {/* Header de resultados */}
           <div className="mb-4 pb-3 border-b border-gray-200">
@@ -78,7 +60,7 @@ export default function TriviaSearch({ indexes }: { indexes: TriviaIndexFields[]
               Resultados de búsqueda
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              {shownIndexes.length > 0 
+              {shownIndexes.length > 0
                 ? `Se encontraron ${shownIndexes.length} trivia${shownIndexes.length !== 1 ? 's' : ''}`
                 : 'No se encontraron resultados'}
             </p>

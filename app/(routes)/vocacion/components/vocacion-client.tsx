@@ -1,99 +1,54 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Nomegusta from "./profesiones";
-import { IconBriefcase } from "@tabler/icons-react";
+import { IconBriefcase, IconArrowRight } from "@tabler/icons-react";
+import { getActivityById } from '@/lib/activities';
+import GameStatusBar from '@/components/GameStatusBar';
+import UserDataManager from '@/lib/userDataManager';
+
+const ACCENT = getActivityById('vocacion')?.color ?? '#388E3C';
 
 export default function VocacionClient() {
-	const [testStarted, setTestStarted] = useState(false);
+	const [score, setScore] = useState(0);
+	const [lives, setLives] = useState(3);
 
-	if (testStarted) {
-		return (
-			<section className="w-full min-h-screen bg-gray-50 py-8">
-				<div className="max-w-7xl mx-auto px-4">
-					{/* Botón para volver */}
-					<button
-						onClick={() => setTestStarted(false)}
-						className="mb-6 inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 font-medium transition"
-					>
-						<svg
-							className="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M15 19l-7-7 7-7"
-							/>
-						</svg>
-						Volver
-					</button>
-
-					{/* Test component */}
-					<Nomegusta />
-				</div>
-			</section>
-		);
-	}
+	useEffect(() => {
+		const data = UserDataManager.loadUserData();
+		setScore(data.game.totalScore);
+		setLives(data.game.totalLives);
+	}, []);
 
 	return (
-		<section className="w-full max-w-7xl mx-auto px-4 py-12">
-			{/* Header card */}
-			<div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-8">
-				{/* Color header bar */}
-				<div className="h-24 md:h-32 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 relative">
-					<div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiIC8+PC9zdmc+')] opacity-20"></div>
-				</div>
+		<section className="w-full max-w-7xl mx-auto px-4 pt-24 pb-12">
+			<GameStatusBar title="Test Vocacional" score={score} lives={lives} level={1} />
 
-				{/* Content */}
-				<div className="px-6 md:px-12 py-8 -mt-8 relative">
-					{/* Icon badge */}
-					<div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md border border-gray-100 mb-4">
-						<div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center">
-							<IconBriefcase className="w-5 h-5 text-white" />
-						</div>
-						<span className="font-semibold text-gray-700">
-							Descubrí tu camino profesional
-						</span>
-					</div>
-
-					{/* Title */}
-					<h1 className="text-4xl md:text-5xl lg:text-6xl font-normal text-gray-900 mb-4">
-						Vocación y
-						<span className="block text-emerald-600">Profesiones</span>
-					</h1>
-
-					{/* Description */}
-					<p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-3xl">
-						Este test está diseñado para adolescentes y jóvenes que desean explorar sus intereses y aptitudes profesionales. A través de preguntas prácticas, podrás identificar tus fortalezas, descubrir nuevas profesiones alineadas con tus intereses y tomar decisiones informadas sobre tu futuro laboral.
-					</p>
-				</div>
+			{/* Test component — embebido directo en la página, sin pantalla aparte */}
+			<div className="mb-8">
+				<Nomegusta onScoreChange={setScore} />
 			</div>
 
 			{/* Info cards */}
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-				<div className="bg-emerald-50 border border-emerald-100 rounded-lg p-5">
+				<div className="rounded-xl p-5 border" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
 					<div className="flex items-start gap-3">
-						<div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+						<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: ACCENT }}>
 							<IconBriefcase className="w-5 h-5 text-white" />
 						</div>
 						<div>
-							<p className="font-semibold text-emerald-900 mb-1">
+							<p className="font-semibold mb-1" style={{ color: ACCENT }}>
 								¿Por qué es importante?
 							</p>
-							<p className="text-sm text-emerald-700">
+							<p className="text-sm text-gray-600">
 								Conocer tu vocación te ayuda a elegir una carrera que sea satisfactoria y acorde a tus capacidades, aumentando tus posibilidades de éxito y realización personal.
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div className="bg-teal-50 border border-teal-100 rounded-lg p-5">
+				<div className="bg-teal-50 border border-teal-100 rounded-xl p-5">
 					<div className="flex items-start gap-3">
-						<div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
+						<div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center shrink-0">
 							<IconBriefcase className="w-5 h-5 text-white" />
 						</div>
 						<div>
@@ -108,46 +63,25 @@ export default function VocacionClient() {
 				</div>
 			</div>
 
-			{/* Botón flotante sticky - Opción 3 */}
-			<button
-				onClick={() => setTestStarted(true)}
-				className="fixed bottom-8 right-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold py-4 px-8 rounded-full shadow-2xl transition transform hover:scale-110 active:scale-95 z-50 flex items-center gap-2"
-			>
-				<IconBriefcase className="w-5 h-5" />
-				Hacer el Test
-			</button>
-
 			{/* Support info */}
-			<div className="mt-8 bg-cyan-50 border border-cyan-100 rounded-lg p-6">
+			<div className="bg-teal-50 border border-teal-100 rounded-xl p-6">
 				<div className="flex items-start gap-3">
-					<div className="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
+					<div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center shrink-0">
 						<IconBriefcase className="w-5 h-5 text-white" />
 					</div>
 					<div>
-						<h3 className="font-semibold text-cyan-900 mb-2">
+						<h3 className="font-semibold text-teal-900 mb-2">
 							¿Necesitás orientación?
 						</h3>
-						<p className="text-sm text-cyan-700 mb-3">
+						<p className="text-sm text-teal-700 mb-3">
 							Si después de realizar el test querés explorar más sobre las profesiones recomendadas o necesitás asesoramiento vocacional personalizado, no dudes en contactarnos.
 						</p>
 						<a
 							href="/contacto"
-							className="text-sm text-cyan-600 hover:text-cyan-700 font-medium inline-flex items-center gap-1"
+							className="text-sm text-teal-600 hover:text-teal-700 font-medium inline-flex items-center gap-1"
 						>
 							Contacta con nosotros
-							<svg
-								className="w-4 h-4"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M9 5l7 7-7 7"
-								/>
-							</svg>
+							<IconArrowRight className="w-4 h-4" />
 						</a>
 					</div>
 				</div>

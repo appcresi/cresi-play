@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
+import { useState, useEffect } from "react";
+import { IconRefresh, IconHeartHandshake } from "@tabler/icons-react";
 import testData from "../data.json";
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
+
+const ACTIVITY = getActivityById('amor');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Amor Sin Violencia';
+const ACCENT = ACTIVITY?.color ?? '#F57C00';
+const COMPLETION_POINTS = 200;
 
 /** Calcular la gravedad (o importancia) en base a la puntuación. */
 function calculateImportance(score: number): number {
@@ -18,23 +25,26 @@ function calculateImportance(score: number): number {
 	}
 }
 
-export default function Test(): JSX.Element {
+export default function Test({ onCompleted }: { onCompleted?: (newScore: number) => void }): JSX.Element {
 	const [actualQuestion, setActualQuestion] = useState<number>(0);
 	const [score, setScore] = useState<number>(0);
 	const [percentage, setPercentage] = useState<number>(0);
 	const [isFinished, setIsFinished] = useState<boolean>(false);
+	const [hasSavedCompletion, setHasSavedCompletion] = useState(false);
 
 	const { questions, results } = testData;
-
-	// 100: Porcentaje de la barra, questions.length: Cantidad de preguntas.
 	const oneQuestion = 100 / questions.length;
+
+	// Antes esta actividad no registraba absolutamente nada: ni la visita,
+	// ni el puntaje, ni que se hubiera completado. Ahora se anota apenas
+	// se abre esta pantalla.
+	useEffect(() => {
+		UserDataManager.visitActivity(ACTIVITY_TITLE);
+	}, []);
 
 	function handleAnswerSubmit(answerScore: 1 | 2 | 3 | 4): void {
 		setScore((previous) => previous + answerScore);
-		const newPercentage = percentage + oneQuestion;
-
-		/* Actualizar el porcentaje de completado del test. */
-		setPercentage(newPercentage);
+		setPercentage((previous) => previous + oneQuestion);
 
 		if (actualQuestion === questions.length - 1) {
 			setIsFinished(true);
@@ -43,112 +53,118 @@ export default function Test(): JSX.Element {
 		}
 	}
 
+	// Marca la actividad como completada y da un puntaje fijo — antes
+	// esto no pasaba nunca, ni siquiera al terminar el cuestionario.
 	useEffect(() => {
-		if (isFinished) {
-			Swal.fire({
-				icon: "question",
-				title: "Resultado",
-				text: results[calculateImportance(score)],
-				confirmButtonText: "Volver a empezar",
-			})
-				.then((value) => {
-					if (value.isConfirmed || value.isDismissed) {
-						window.location.reload();
-					}
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [isFinished, results, score]);
+		if (!isFinished || hasSavedCompletion) return;
+
+		const current = UserDataManager.loadUserData();
+		const updatedData = {
+			...current,
+			game: {
+				...current.game,
+				totalScore: current.game.totalScore + COMPLETION_POINTS
+			},
+			progress: {
+				...current.progress,
+				activityScores: {
+					...current.progress.activityScores,
+					[ACTIVITY_TITLE]: COMPLETION_POINTS
+				},
+				activityTimes: {
+					...current.progress.activityTimes,
+					[ACTIVITY_TITLE]: new Date().toISOString()
+				},
+				completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
+					? [...current.progress.completedActivities, ACTIVITY_TITLE]
+					: current.progress.completedActivities
+			}
+		};
+		UserDataManager.saveUserData(updatedData);
+		setHasSavedCompletion(true);
+		onCompleted?.(updatedData.game.totalScore);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isFinished]);
+
+	const resetTest = () => {
+		setActualQuestion(0);
+		setScore(0);
+		setPercentage(0);
+		setIsFinished(false);
+		setHasSavedCompletion(false);
+	};
+
+	if (isFinished) {
+		const resultText = results[calculateImportance(score)];
+
+		return (
+			<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center mb-8">
+				<div
+					className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+					style={{ backgroundColor: `${ACCENT}15` }}
+				>
+					<IconHeartHandshake className="w-8 h-8" style={{ color: ACCENT }} />
+				</div>
+				<h2 className="text-xl font-bold text-gray-900 mb-4">Resultado</h2>
+				<p className="text-gray-600 leading-relaxed mb-8 max-w-xl mx-auto">{resultText}</p>
+				<button
+					onClick={resetTest}
+					className="inline-flex items-center gap-2 px-6 py-2.5 text-white rounded-full font-semibold hover:opacity-90 transition-colors"
+					style={{ backgroundColor: ACCENT }}
+				>
+					<IconRefresh className="w-4.5 h-4.5" />
+					Volver a empezar
+				</button>
+			</div>
+		);
+	}
 
 	return (
-		<div className="min-h-screen bg-gray-50">
-			{/* Header estilo Classroom */}
-			<div className="bg-white border-b border-gray-200 sticky top-0 z-40">
-				<div className="max-w-4xl mx-auto px-6 py-6">
-					<div className="flex items-center justify-between mb-4">
-						<div>
-							<h1 className="text-3xl font-semibold text-gray-900">
-								ESI: Cuestionario
-							</h1>
-							<p className="text-gray-600 mt-1">
-								Completa todas las preguntas
-							</p>
-						</div>
-					</div>
-
-					{/* Barra de progreso */}
-					<div>
-						<div className="flex items-center justify-between mb-2">
-							<span className="text-sm font-medium text-gray-700">
-								Progreso
-							</span>
-							<span className="text-sm font-medium text-gray-600">
-								{actualQuestion + 1} de {questions.length}
-							</span>
-						</div>
-						<div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-							<div
-								className="h-full bg-blue-500 transition-all duration-500"
-								style={{ width: `${percentage}%` }}
-							/>
-						</div>
-					</div>
+		<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+			{/* Barra de progreso */}
+			<div className="mb-8">
+				<div className="flex items-center justify-between mb-2">
+					<span className="text-sm font-medium text-gray-600">Progreso</span>
+					<span className="text-sm font-medium text-gray-500">
+						{actualQuestion + 1} de {questions.length}
+					</span>
 				</div>
-			</div>
-
-			{/* Contenido principal */}
-			<div className="max-w-4xl mx-auto px-6 py-12">
-				<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-					{/* Número de pregunta */}
-					<div className="mb-8">
-						<span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded">
-							Pregunta {actualQuestion + 1} de {questions.length}
-						</span>
-					</div>
-
-					{/* Pregunta */}
+				<div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
 					<div
-						key={`question-${questions[actualQuestion]}`}
-						className="mb-10 animate-fade-in"
-					>
-						<h2 className="text-2xl font-semibold text-gray-900 leading-relaxed">
-							{questions[actualQuestion]}
-						</h2>
-					</div>
-
-					{/* Opciones de respuesta */}
-					<div className="grid grid-cols-2 gap-4">
-						{[
-							{ text: 'Sí', value: 4 as 4 },
-							{ text: 'A veces', value: 3 as 3 },
-							{ text: 'Rara vez', value: 2 as 2 },
-							{ text: 'No', value: 1 as 1 }
-						].map((answer) => (
-							<button
-								key={answer.text}
-								type="button"
-								onClick={() => handleAnswerSubmit(answer.value)}
-								className={`
-									p-4 text-center
-									border-2 border-gray-300 rounded-lg
-									font-medium text-gray-900
-									transition-all duration-200
-									hover:border-blue-500 hover:bg-blue-50
-									hover:shadow-md
-									focus:outline-none focus:ring-2 focus:ring-blue-500
-									active:bg-blue-100
-								`}
-							>
-								<span>{answer.text}</span>
-							</button>
-						))}
-					</div>
+						className="h-full transition-all duration-500"
+						style={{ width: `${percentage}%`, backgroundColor: ACCENT }}
+					/>
 				</div>
 			</div>
 
-			{/* Estilos globales */}
+			<div key={`question-${questions[actualQuestion]}`} className="mb-10 animate-fade-in">
+				<h2 className="text-xl font-semibold text-gray-900 leading-relaxed">
+					{questions[actualQuestion]}
+				</h2>
+			</div>
+
+			<div className="grid grid-cols-2 gap-4">
+				{[
+					{ text: 'Sí', value: 4 as 4 },
+					{ text: 'A veces', value: 3 as 3 },
+					{ text: 'Rara vez', value: 2 as 2 },
+					{ text: 'No', value: 1 as 1 }
+				].map((answer) => (
+					<button
+						key={answer.text}
+						type="button"
+						onClick={() => handleAnswerSubmit(answer.value)}
+						className="p-4 text-center border-2 border-gray-200 rounded-xl font-medium text-gray-800
+                     transition-all duration-200 hover:shadow-sm focus:outline-none focus:ring-2"
+						style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
+						onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; }}
+						onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
+					>
+						<span>{answer.text}</span>
+					</button>
+				))}
+			</div>
+
 			<style>{`
 				@keyframes fade-in {
 					from {

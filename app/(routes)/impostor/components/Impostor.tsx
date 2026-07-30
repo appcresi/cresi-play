@@ -1,50 +1,14 @@
 "use client";
 import { useState, useEffect } from 'react';
 import GameStatusBar from '@/components/GameStatusBar';
-import { ChevronUp, RotateCcw, Plus, Minus } from 'lucide-react';
+import { IconChevronUp, IconMinus, IconPlus } from '@tabler/icons-react';
 import esiTermsByCategory from '../data/esiTermsByCategory.json';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
-
-const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'ImpostorGame';
+const ACTIVITY = getActivityById('impostor');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Impostor';
+const ACCENT = ACTIVITY?.color ?? '#7B1FA2';
 
 export default function ESIImpostor() {
   const [gameState, setGameState] = useState<'setup' | 'names' | 'distribution' | 'playing' | 'reveal'>('setup');
@@ -65,70 +29,53 @@ export default function ESIImpostor() {
   const [score, setScore] = useState(0);
   const [sessionScore, setSessionScore] = useState(0);
   const [lives, setLives] = useState(3);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [roundNumber, setRoundNumber] = useState(1);
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: '', text: '', type: '' });
 
   useEffect(() => {
     loadUserData();
   }, []);
 
   useEffect(() => {
-    if (userData) {
+    if (hasLoaded) {
       saveUserData();
     }
-  }, [sessionScore, lives]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionScore]);
 
   const loadUserData = () => {
-    try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        setScore(data.game.totalScore);
-        setLives(data.game.totalLives);
-        
-        data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    UserDataManager.visitActivity(ACTIVITY_TITLE);
+    setHasLoaded(true);
   };
 
   const saveUserData = () => {
-    if (!userData) return;
-
-    try {
-      const updatedData: UserData = {
-        ...userData,
-        game: {
-          ...userData.game,
-          totalScore: score,
-          totalLives: lives
+    const current = UserDataManager.loadUserData();
+    const updatedData = {
+      ...current,
+      game: {
+        ...current.game,
+        totalScore: score
+      },
+      progress: {
+        ...current.progress,
+        activityScores: {
+          ...current.progress.activityScores,
+          [ACTIVITY_TITLE]: Math.max(current.progress.activityScores[ACTIVITY_TITLE] || 0, sessionScore)
         },
-        progress: {
-          ...userData.progress,
-          activityScores: {
-            ...userData.progress.activityScores,
-            [ACTIVITY_ID]: Math.max(
-              userData.progress.activityScores[ACTIVITY_ID] || 0,
-              sessionScore
-            )
-          },
-          activityTimes: {
-            ...userData.progress.activityTimes,
-            [ACTIVITY_ID]: new Date().toISOString()
-          }
+        activityTimes: {
+          ...current.progress.activityTimes,
+          [ACTIVITY_TITLE]: new Date().toISOString()
         }
-      };
+      }
+    };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      setUserData(updatedData);
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
+    UserDataManager.saveUserData(updatedData);
+    setUserData(updatedData);
   };
 
   useEffect(() => {
@@ -236,7 +183,7 @@ export default function ESIImpostor() {
       .map((_, idx) => idx)
       .filter(idx => !usedTermIndices.includes(idx));
 
-    if (availableIndices.length === 0 || lives <= 0) {
+    if (availableIndices.length === 0) {
       resetGame();
       return;
     }
@@ -280,12 +227,30 @@ export default function ESIImpostor() {
 
   const revealImpostor = () => {
     const earnedPoints = 50;
-    setSessionScore(sessionScore + earnedPoints);
-    setScore(score + earnedPoints);
+    setSessionScore(prev => prev + earnedPoints);
+    setScore(prev => prev + earnedPoints);
     setGameState('reveal');
     setTimerActive(false);
+
+    // Marcamos la actividad como completada apenas termina la primera
+    // ronda — este juego no tiene un "final" fijo (es de mesa, para jugar
+    // rondas indefinidamente), así que "completarlo" significa haber
+    // jugado al menos una vez, no llegar a un puntaje o nivel específico.
+    const current = UserDataManager.loadUserData();
+    if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      current.progress.completedActivities.push(ACTIVITY_TITLE);
+      UserDataManager.saveUserData(current);
+      setUserData(current);
+    }
   };
 
+  /**
+   * Antes esto ponía `lives` en 3 — y como hay un efecto que guarda cada
+   * vez que cambia el puntaje de sesión, terminaba reescribiendo las
+   * vidas COMPARTIDAS de toda la cuenta a 3, gratis. Este juego ni
+   * siquiera resta vidas en ningún momento, así que "reiniciar" no debía
+   * tocarlas para nada — ahora no lo hace.
+   */
   const resetGame = () => {
     setGameState('setup');
     setTimer(300);
@@ -295,9 +260,9 @@ export default function ESIImpostor() {
     setRoundTerms([]);
     setUsedTermIndices([]);
     setSessionScore(0);
-    setLives(3);
     setRoundNumber(1);
     setSelectedCategory('');
+    loadUserData();
   };
 
   const getPlayerDisplayName = (index: number) => {
@@ -317,28 +282,30 @@ export default function ESIImpostor() {
         <div className="max-w-4xl mx-auto">
 
           {gameState === 'setup' && (
-            <div className="space-y-8">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-3">Número de jugadores</h2>
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <h2 className="text-base font-semibold text-gray-900 mb-3">Número de jugadores</h2>
                 <div className="flex items-center gap-3 justify-center">
                   <button
                     onClick={() => changeNumPlayers(-1)}
-                    className="p-2 rounded-lg border-2 border-blue-500 text-blue-600 hover:bg-blue-50 transition"
+                    className="p-2 rounded-full border-2 hover:bg-gray-50 transition"
+                    style={{ borderColor: ACCENT, color: ACCENT }}
                   >
-                    <Minus size={20} />
+                    <IconMinus size={20} />
                   </button>
-                  <span className="text-4xl font-bold text-blue-600 w-20 text-center">{numPlayers}</span>
+                  <span className="text-4xl font-bold w-20 text-center" style={{ color: ACCENT }}>{numPlayers}</span>
                   <button
                     onClick={() => changeNumPlayers(1)}
-                    className="p-2 rounded-lg border-2 border-blue-500 text-blue-600 hover:bg-blue-50 transition"
+                    className="p-2 rounded-full border-2 hover:bg-gray-50 transition"
+                    style={{ borderColor: ACCENT, color: ACCENT }}
                   >
-                    <Plus size={20} />
+                    <IconPlus size={20} />
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-4">Selecciona una categoría</h2>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Seleccioná una categoría</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {Object.keys(esiTermsByCategory).map(cat => {
                     const categoryLabels: {[key: string]: {label: string, color: string, icon: string}} = {
@@ -353,7 +320,8 @@ export default function ESIImpostor() {
                       <button
                         key={cat}
                         onClick={() => toggleCategory(cat)}
-                        className={`p-3 rounded-lg font-semibold transition transform ${isSelected ? 'ring-4 ring-offset-2 ring-blue-500' : 'hover:scale-105'} bg-gradient-to-br ${info.color} text-white shadow-md hover:shadow-lg`}
+                        className={`p-3 rounded-xl font-semibold transition transform ${isSelected ? 'ring-4 ring-offset-2' : 'hover:scale-105'} bg-gradient-to-br ${info.color} text-white shadow-sm hover:shadow-md`}
+                        style={isSelected ? { '--tw-ring-color': ACCENT } as React.CSSProperties : undefined}
                       >
                         <div className="text-2xl mb-2">{info.icon}</div>
                         <div className="text-sm">{info.label}</div>
@@ -366,8 +334,8 @@ export default function ESIImpostor() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-3">Nombres de los Jugadores</h2>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <h2 className="text-base font-semibold text-gray-900 mb-3">Nombres de los jugadores</h2>
                 <div className="space-y-2 mb-4">
                   {Array(numPlayers).fill(null).map((_, i) => (
                     <input
@@ -376,22 +344,24 @@ export default function ESIImpostor() {
                       value={playerNames[i]}
                       onChange={(e) => updatePlayerName(i, e.target.value)}
                       placeholder={`Jugador ${i + 1}`}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                      style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                     />
                   ))}
                 </div>
                 <button
                   onClick={startGame}
                   disabled={!selectedCategory}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-bold transition"
+                  className="w-full text-white py-3 rounded-full font-bold transition disabled:bg-gray-300"
+                  style={!selectedCategory ? undefined : { backgroundColor: ACCENT }}
                 >
-                  Comenzar Juego
+                  Comenzar juego
                 </button>
               </div>
 
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm">
-                <p className="text-gray-700">
-                  <strong>¿Cómo funciona?</strong> Selecciona una categoría y los nombres de jugadores. Un jugador será el impostor. ¡Descubre quién es!
+              <div className="rounded-xl p-3 text-sm" style={{ backgroundColor: `${ACCENT}0D`, borderLeft: `4px solid ${ACCENT}` }}>
+                <p className="text-gray-600">
+                  <strong className="text-gray-800">¿Cómo funciona?</strong> Elegí una categoría y los nombres de los jugadores. Uno de ellos será el impostor. ¡Descubran quién es!
                 </p>
               </div>
             </div>
@@ -408,32 +378,35 @@ export default function ESIImpostor() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 style={{ transform: `translateY(${translateY}px)` }}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none touch-none overflow-hidden"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none touch-none overflow-hidden"
               >
                 {!revealed ? (
                   <div className="text-center space-y-6">
-                    <p className="text-gray-600 text-xl font-medium">{getPlayerDisplayName(currentPlayerIndex)}</p>
-                    <p className="text-5xl font-bold text-gray-800">Desliza hacia arriba</p>
-                    <ChevronUp className="w-12 h-12 text-blue-500 mx-auto animate-bounce" />
+                    <p className="text-gray-500 text-lg font-medium">{getPlayerDisplayName(currentPlayerIndex)}</p>
+                    <p className="text-4xl font-bold text-gray-800">Deslizá hacia arriba</p>
+                    <IconChevronUp className="w-10 h-10 mx-auto animate-bounce" style={{ color: ACCENT }} />
                   </div>
                 ) : (
-                  <div className="text-center space-y-8 w-full">
+                  <div className="text-center space-y-6 w-full">
                     {currentPlayerIndex === impostorIndex ? (
                       <>
-                        <p className="text-7xl font-bold text-red-500">?</p>
+                        <p className="text-6xl font-bold text-red-500">?</p>
                         <div>
-                          <p className="text-3xl font-bold text-red-600 mb-2">¡ERES EL IMPOSTOR!</p>
-                          <p className="text-gray-600 text-lg">No conoces la palabra. ¡Descúbrela haciendo preguntas!</p>
+                          <p className="text-2xl font-bold text-red-600 mb-2">¡Sos el impostor!</p>
+                          <p className="text-gray-500">No conocés la palabra. ¡Descubrila haciendo preguntas!</p>
                         </div>
                       </>
                     ) : (
                       <>
-                        <p className="text-6xl font-bold text-blue-600">{currentTerm.word}</p>
-                        <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold mb-4">
+                        <p className="text-5xl font-bold" style={{ color: ACCENT }}>{currentTerm.word}</p>
+                        <div
+                          className="inline-block px-5 py-1.5 rounded-full font-semibold text-sm"
+                          style={{ backgroundColor: `${ACCENT}15`, color: ACCENT }}
+                        >
                           {currentTerm.category}
                         </div>
-                        <div className="bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
-                          <p className="text-gray-700 text-sm italic">{currentTerm.definition}</p>
+                        <div className="bg-gray-50 p-4 rounded-xl max-w-md mx-auto">
+                          <p className="text-gray-600 text-sm italic">{currentTerm.definition}</p>
                         </div>
                       </>
                     )}
@@ -444,23 +417,24 @@ export default function ESIImpostor() {
               {revealed && (
                 <button
                   onClick={nextPlayer}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-bold text-lg transition"
+                  className="w-full text-white py-3.5 rounded-full font-bold transition hover:opacity-90"
+                  style={{ backgroundColor: ACCENT }}
                 >
-                  {currentPlayerIndex < numPlayers - 1 
+                  {currentPlayerIndex < numPlayers - 1
                     ? `Siguiente: ${getPlayerDisplayName(currentPlayerIndex + 1)}`
-                    : 'Comenzar Ronda'}
+                    : 'Comenzar ronda'}
                 </button>
               )}
 
-              <div className="bg-gray-100 rounded-lg p-4">
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-white rounded h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded transition-all"
-                      style={{ width: `${((currentPlayerIndex + 1) / numPlayers) * 100}%` }}
+                  <div className="flex-1 bg-gray-100 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full transition-all"
+                      style={{ width: `${((currentPlayerIndex + 1) / numPlayers) * 100}%`, backgroundColor: ACCENT }}
                     ></div>
                   </div>
-                  <p className="text-gray-700 font-medium">{currentPlayerIndex + 1}/{numPlayers}</p>
+                  <p className="text-gray-500 text-sm font-medium">{currentPlayerIndex + 1}/{numPlayers}</p>
                 </div>
               </div>
             </div>
@@ -468,16 +442,16 @@ export default function ESIImpostor() {
 
           {gameState === 'playing' && currentTerm && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                 <div className="text-center">
-                  <p className="text-gray-600 font-medium mb-3">Tiempo restante</p>
-                  <p className={`text-7xl font-bold font-mono ${timer <= 60 ? 'text-red-600' : 'text-blue-600'}`}>
+                  <p className="text-gray-500 font-medium mb-2 text-sm">Tiempo restante</p>
+                  <p className={`text-6xl font-bold font-mono ${timer <= 60 ? 'text-red-600' : 'text-gray-800'}`}>
                     {formatTime(timer)}
                   </p>
                   <div className="flex gap-3 justify-center mt-6">
                     <button
                       onClick={() => setTimerActive(!timerActive)}
-                      className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg font-semibold transition"
+                      className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-full font-semibold transition text-sm"
                     >
                       {timerActive ? '⏸ Pausar' : '▶ Reanudar'}
                     </button>
@@ -485,66 +459,70 @@ export default function ESIImpostor() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-lg text-gray-800 mb-3">¡Hora de Jugar!</h3>
-                <p className="text-gray-700">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="font-semibold text-gray-900 mb-2">¡Hora de jugar!</h3>
+                <p className="text-gray-600 text-sm">
                   Todos conocen la palabra excepto uno. Hagan preguntas estratégicas para identificar al impostor sin revelar completamente la palabra.
                 </p>
               </div>
 
               <button
                 onClick={revealImpostor}
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-bold text-lg transition"
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-full font-bold transition"
               >
-                Revelar Respuesta
+                Revelar respuesta
               </button>
             </div>
           )}
 
           {gameState === 'reveal' && currentTerm && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6">Resultado</h2>
-                  <p className="text-gray-600 mb-3">La palabra era:</p>
-                  <p className="text-6xl font-bold text-blue-600 mb-6">{currentTerm.word}</p>
-                  <div className="inline-block bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-semibold mb-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-5">Resultado</h2>
+                  <p className="text-gray-500 text-sm mb-2">La palabra era:</p>
+                  <p className="text-5xl font-bold mb-4" style={{ color: ACCENT }}>{currentTerm.word}</p>
+                  <div
+                    className="inline-block px-5 py-1.5 rounded-full font-semibold text-sm mb-5"
+                    style={{ backgroundColor: `${ACCENT}15`, color: ACCENT }}
+                  >
                     {currentTerm.category}
                   </div>
-                  <div className="bg-gray-100 p-4 rounded-lg mb-6">
-                    <p className="text-gray-700 text-sm italic">{currentTerm.definition}</p>
+                  <div className="bg-gray-50 p-4 rounded-xl mb-5">
+                    <p className="text-gray-600 text-sm italic">{currentTerm.definition}</p>
                   </div>
                 </div>
 
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
-                  <p className="font-bold text-red-700 text-lg">
-                    El impostor era: <span className="text-2xl">{getPlayerDisplayName(impostorIndex)}</span>
+                <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-4 mb-4">
+                  <p className="font-semibold text-red-700">
+                    El impostor era: <span className="text-lg">{getPlayerDisplayName(impostorIndex)}</span>
                   </p>
                 </div>
 
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-                  <p className="font-bold text-green-700 text-lg">
+                <div className="bg-green-50 border-l-4 border-green-500 rounded-xl p-4 mb-4">
+                  <p className="font-semibold text-green-700">
                     +50 puntos
                   </p>
                 </div>
 
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-8">
-                  <p className="text-gray-700 font-semibold mb-2">Información educativa:</p>
+                <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: `${ACCENT}0D`, borderLeft: `4px solid ${ACCENT}` }}>
+                  <p className="text-gray-800 font-medium text-sm mb-1">Información educativa:</p>
                   <p className="text-gray-600 text-sm">
                     Este término es fundamental para la ESI porque contribuye a la formación integral de estudiantes en temas de sexualidad, relaciones interpersonales, derechos y valores.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={nextRound}
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-bold transition"
+                    className="text-white py-3 rounded-full font-bold transition hover:opacity-90"
+                    style={{ backgroundColor: ACCENT }}
                   >
-                    Siguiente Ronda
+                    Siguiente ronda
                   </button>
                   <button
                     onClick={resetGame}
-                    className="bg-gray-400 hover:bg-gray-500 text-white py-4 rounded-lg font-bold transition"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-full font-bold transition"
                   >
                     Inicio
                   </button>

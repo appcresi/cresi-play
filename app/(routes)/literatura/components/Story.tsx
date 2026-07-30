@@ -1,78 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
-import { 
-  IconChevronLeft, 
-  IconChevronRight, 
+import {
+  IconChevronLeft,
+  IconChevronRight,
   IconArrowBack,
-  IconTrophyFilled, 
-  IconTrophyOff, 
+  IconTrophyFilled,
+  IconTrophyOff,
   IconBook,
   IconBooks,
-  IconSearch 
+  IconSearch
 } from "@tabler/icons-react";
 import GameStatusBar from '@/components/GameStatusBar';
 import { stories } from '../data/stories';
 import { splitIntoPages } from '../utils/textUtils';
 import type { Story, ReadingProgress } from '../types/types';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
-// Interfaces
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-    storyProgress: { [key: string]: { lastPage: number; percentage: number; pagesRead: string[] } };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
-
-const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'Historias';
+const ACTIVITY = getActivityById('literatura');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Literatura';
+const ACCENT = ACTIVITY?.color ?? '#F57C00';
 const POINTS_PER_PAGE = 5;
 
-// StoryCard Component
 interface StoryCardProps {
   story: Story;
   readingProgress?: ReadingProgress;
@@ -85,38 +34,38 @@ function StoryCard({ story, readingProgress, onSelect }: StoryCardProps) {
   return (
     <div
       onClick={onSelect}
-      className="relative bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer overflow-hidden"
+      className="relative bg-white rounded-xl border border-gray-100 hover:shadow-lg transition-shadow duration-200 cursor-pointer overflow-hidden"
     >
-      <div className="h-24 bg-gradient-to-br from-blue-500 to-purple-600 relative">
+      <div className="h-24 relative" style={{ background: `linear-gradient(to bottom right, ${ACCENT}, ${ACCENT}CC)` }}>
         <div className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md">
-          <IconBooks size={24} className="text-blue-600" />
+          <IconBooks size={24} style={{ color: ACCENT }} />
         </div>
       </div>
-      
+
       <div className="p-4">
-        <h3 className="text-xl font-medium text-gray-900 mb-1 line-clamp-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
           {story.title}
         </h3>
-        
-        <p className="text-sm text-gray-600 mb-3">
+
+        <p className="text-sm text-gray-500 mb-3">
           {story.author}
         </p>
-        
-        <p className="text-sm text-gray-700 mb-4 line-clamp-3">
+
+        <p className="text-sm text-gray-600 mb-4 line-clamp-3">
           {story.description}
         </p>
 
         {readingProgress && (
           <div className="space-y-2 mb-3">
             <div className="flex items-center gap-2 text-sm text-gray-700">
-              <TrophyIcon size={18} className={readingProgress.percentage === 100 ? "text-yellow-500" : "text-gray-400"} />
+              <TrophyIcon size={18} className={readingProgress.percentage === 100 ? "text-yellow-500" : "text-gray-300"} />
               <span className="font-medium">
                 {readingProgress.percentage}% completado
               </span>
             </div>
-            
+
             {readingProgress.lastPage > 0 && readingProgress.percentage < 100 && (
-              <div className="flex items-center gap-1 text-sm text-gray-600">
+              <div className="flex items-center gap-1 text-sm text-gray-500">
                 <IconBook size={16} />
                 <span>Página {readingProgress.lastPage + 1}</span>
               </div>
@@ -125,8 +74,8 @@ function StoryCard({ story, readingProgress, onSelect }: StoryCardProps) {
         )}
       </div>
 
-      <div className="border-t border-gray-200 px-4 py-3 bg-gray-50">
-        <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+      <div className="border-t border-gray-100 px-4 py-3 bg-gray-50">
+        <button className="text-sm font-semibold" style={{ color: ACCENT }}>
           {readingProgress?.lastPage ? 'Continuar leyendo' : 'Abrir'}
         </button>
       </div>
@@ -134,7 +83,6 @@ function StoryCard({ story, readingProgress, onSelect }: StoryCardProps) {
   );
 }
 
-// StorySearch Component
 interface StorySearchProps {
   onSearch: (query: string) => void;
   initialValue?: string;
@@ -152,7 +100,7 @@ function StorySearch({ onSearch, initialValue = "" }: StorySearchProps) {
   return (
     <div className="mb-6 max-w-2xl mx-auto">
       <div className="relative">
-        <IconSearch 
+        <IconSearch
           className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
           size={20}
         />
@@ -161,54 +109,54 @@ function StorySearch({ onSearch, initialValue = "" }: StorySearchProps) {
           placeholder="Buscar historias..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="w-full pl-12 pr-4 py-3 bg-gray-100 hover:bg-gray-200 focus:bg-white border border-transparent focus:border-blue-500 rounded-lg transition-colors duration-200 outline-none text-base"
+          className="w-full pl-12 pr-4 py-3 bg-gray-100 hover:bg-gray-200 focus:bg-white border border-transparent rounded-xl transition-colors duration-200 outline-none text-base focus:ring-2"
+          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
         />
       </div>
     </div>
   );
 }
 
-// StoryReader Component
 interface StoryReaderProps {
   selectedTitle: string;
   onBack: () => void;
-  userData: UserData | null;
+  storyProgress: Record<string, { lastPage: number; percentage: number; pagesRead: string[] }>;
   onPageRead: (storyTitle: string, pageIndex: number, totalPages: number) => void;
 }
 
-function StoryReader({ selectedTitle, onBack, userData, onPageRead }: StoryReaderProps) {
+function StoryReader({ selectedTitle, onBack, storyProgress, onPageRead }: StoryReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [storyPages, setStoryPages] = useState<string[]>([]);
   const [currentStory, setCurrentStory] = useState<Story | null>(null);
 
   useEffect(() => {
     const story = stories.find(s => s.title === selectedTitle);
-    if (story && userData) {
+    if (story) {
       const pages = splitIntoPages(story.content[0]);
-      const savedProgress = userData.progress.storyProgress?.[story.title];
+      const savedProgress = storyProgress[story.title];
       const lastPage = savedProgress?.lastPage || 0;
-      
+
       setCurrentStory(story);
       setStoryPages(pages);
       setCurrentPage(lastPage);
     }
-  }, [selectedTitle, userData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTitle]);
 
   if (!currentStory) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-lg text-gray-600">Cargando historia...</p>
+        <p className="text-lg text-gray-500">Cargando historia...</p>
       </div>
     );
   }
 
   const handlePageChange = (direction: 'next' | 'prev') => {
     const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
-    
+
     if (newPage >= 0 && newPage < storyPages.length) {
       setCurrentPage(newPage);
-      
-      // Si avanzamos a una nueva página, dar puntos
+
       if (direction === 'next') {
         onPageRead(currentStory.title, newPage, storyPages.length);
       }
@@ -217,60 +165,62 @@ function StoryReader({ selectedTitle, onBack, userData, onPageRead }: StoryReade
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4">
-        <div className="h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg relative">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm mb-4">
+        <div className="h-28 rounded-t-xl relative" style={{ background: `linear-gradient(to bottom right, ${ACCENT}, ${ACCENT}CC)` }}>
           <button
             onClick={onBack}
-            className="absolute top-4 left-4 flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-md transition-colors"
+            className="absolute top-4 left-4 flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-full shadow-md transition-colors"
           >
             <IconArrowBack size={20} />
             <span className="font-medium">Volver</span>
           </button>
         </div>
-        
+
         <div className="p-6 -mt-8">
-          <div className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
-            <h1 className="text-3xl font-medium text-gray-900 mb-2">
+          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
               {currentStory.title.replace(/\*\*/g, '')}
             </h1>
-            <p className="text-sm text-gray-600">por {currentStory.author}</p>
+            <p className="text-sm text-gray-500">por {currentStory.author}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 mb-4">
-        <p className="text-lg leading-relaxed text-gray-800">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 mb-4">
+        <p className="text-lg leading-relaxed text-gray-700">
           {storyPages[currentPage]}
         </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
         <div className="flex justify-between items-center">
           <button
             onClick={() => handlePageChange('prev')}
             disabled={currentPage === 0}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors ${
               currentPage === 0
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                : 'text-white hover:opacity-90'
             }`}
+            style={currentPage === 0 ? undefined : { backgroundColor: ACCENT }}
           >
             <IconChevronLeft size={20} />
             Anterior
           </button>
-          
-          <span className="text-sm font-medium text-gray-600">
+
+          <span className="text-sm font-medium text-gray-500">
             Página {currentPage + 1} de {storyPages.length}
           </span>
-          
+
           <button
             onClick={() => handlePageChange('next')}
             disabled={currentPage === storyPages.length - 1}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-colors ${
               currentPage === storyPages.length - 1
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                : 'text-white hover:opacity-90'
             }`}
+            style={currentPage === storyPages.length - 1 ? undefined : { backgroundColor: ACCENT }}
           >
             Siguiente
             <IconChevronRight size={20} />
@@ -281,11 +231,10 @@ function StoryReader({ selectedTitle, onBack, userData, onPageRead }: StoryReade
   );
 }
 
-// Main Story Component
 export default function Story(): JSX.Element {
   const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
 
@@ -294,74 +243,58 @@ export default function Story(): JSX.Element {
   }, []);
 
   const loadUserData = () => {
-    try {
-      const storedData = window.localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        setScore(data.game.totalScore);
-        setLives(data.game.totalLives);
-        
-        // Actualizar última visita
-        data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
-        
-        // Inicializar storyProgress si no existe
-        if (!data.progress.storyProgress) {
-          data.progress.storyProgress = {};
-        }
-        
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    UserDataManager.visitActivity(ACTIVITY_TITLE);
   };
 
-  const saveUserData = (updatedData: UserData) => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      setUserData(updatedData);
-      setScore(updatedData.game.totalScore);
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
+  const saveUserData = (updatedData: typeof userData) => {
+    UserDataManager.saveUserData(updatedData);
+    setUserData(updatedData);
+    setScore(updatedData.game.totalScore);
   };
 
+  /**
+   * Antes esto nunca tocaba `completedActivities` — "Literatura" nunca
+   * aparecía como completada en el resto de la app. Ahora se marca apenas
+   * un cuento llega al 100% (no hace falta terminar todos los cuentos).
+   *
+   * Además, el ID que se usaba para registrar visitas y tiempos era
+   * "Historias", que no coincide con el título real del catálogo
+   * ("Literatura") — por eso tampoco quedaba bien registrado ahí.
+   */
   const handlePageRead = (storyTitle: string, pageIndex: number, totalPages: number) => {
-    if (!userData) return;
-
+    const current = UserDataManager.loadUserData();
     const storyKey = `story_${storyTitle}`;
-    const currentProgress = userData.progress.storyProgress?.[storyTitle] || {
+    const currentProgress = current.progress.storyProgress?.[storyTitle] || {
       lastPage: 0,
       percentage: 0,
       pagesRead: []
     };
 
-    // Verificar si esta página ya fue leída antes
     const pageId = `${storyTitle}_page_${pageIndex}`;
     const isNewPage = !currentProgress.pagesRead.includes(pageId);
 
-    // Actualizar páginas leídas
-    const updatedPagesRead = isNewPage 
+    const updatedPagesRead = isNewPage
       ? [...currentProgress.pagesRead, pageId]
       : currentProgress.pagesRead;
 
-    // Calcular porcentaje
     const percentage = Math.round(((pageIndex + 1) / totalPages) * 100);
-
-    // Calcular puntos solo si es una página nueva
     const pointsEarned = isNewPage ? POINTS_PER_PAGE : 0;
+    const isStoryComplete = percentage === 100;
 
-    const updatedData: UserData = {
-      ...userData,
+    const updatedData = {
+      ...current,
       game: {
-        ...userData.game,
-        totalScore: userData.game.totalScore + pointsEarned
+        ...current.game,
+        totalScore: current.game.totalScore + pointsEarned
       },
       progress: {
-        ...userData.progress,
+        ...current.progress,
         storyProgress: {
-          ...userData.progress.storyProgress,
+          ...current.progress.storyProgress,
           [storyTitle]: {
             lastPage: pageIndex,
             percentage,
@@ -369,13 +302,16 @@ export default function Story(): JSX.Element {
           }
         },
         activityScores: {
-          ...userData.progress.activityScores,
-          [storyKey]: (userData.progress.activityScores[storyKey] || 0) + pointsEarned
+          ...current.progress.activityScores,
+          [storyKey]: (current.progress.activityScores[storyKey] || 0) + pointsEarned
         },
         activityTimes: {
-          ...userData.progress.activityTimes,
-          [ACTIVITY_ID]: new Date().toISOString()
-        }
+          ...current.progress.activityTimes,
+          [ACTIVITY_TITLE]: new Date().toISOString()
+        },
+        completedActivities: isStoryComplete
+          ? Array.from(new Set([...current.progress.completedActivities, ACTIVITY_TITLE]))
+          : current.progress.completedActivities
       }
     };
 
@@ -384,12 +320,12 @@ export default function Story(): JSX.Element {
 
   const handleBack = () => {
     setSelectedFeature(null);
-    loadUserData(); // Recargar datos al volver
+    loadUserData();
   };
 
   const getReadingProgress = (): Record<string, ReadingProgress> => {
-    if (!userData?.progress.storyProgress) return {};
-    
+    if (!userData.progress.storyProgress) return {};
+
     const progress: Record<string, ReadingProgress> = {};
     Object.entries(userData.progress.storyProgress).forEach(([title, data]) => {
       progress[title] = {
@@ -415,13 +351,13 @@ export default function Story(): JSX.Element {
         title="Historias"
         score={score}
         lives={lives}
-        level={selectedFeature ? readingProgress[selectedFeature]?.lastPage + 1 || 1 : 1}
+        level={selectedFeature ? (readingProgress[selectedFeature]?.lastPage ?? 0) + 1 : 1}
       />
 
       <div className="py-8 px-4 pt-24">
         {!selectedFeature ? (
           <div className="max-w-7xl mx-auto">
-            <StorySearch 
+            <StorySearch
               onSearch={setSearchTerm}
               initialValue={searchTerm}
             />
@@ -436,7 +372,7 @@ export default function Story(): JSX.Element {
               ))}
             </div>
             {filteredStories.length === 0 && (
-              <p className="text-center text-base text-gray-600 mt-8">
+              <p className="text-center text-base text-gray-500 mt-8">
                 No se encontraron historias que coincidan con tu búsqueda.
               </p>
             )}
@@ -445,7 +381,7 @@ export default function Story(): JSX.Element {
           <StoryReader
             selectedTitle={selectedFeature}
             onBack={handleBack}
-            userData={userData}
+            storyProgress={userData.progress.storyProgress || {}}
             onPageRead={handlePageRead}
           />
         )}

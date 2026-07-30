@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import { IconX } from '@tabler/icons-react';
 import { Feedback } from './Feedback';
 import { TextDisplay } from './TextDisplay';
 import { WordPool } from './WordPool';
@@ -7,68 +8,34 @@ import { GameControls } from './GameControls';
 import { processText, createWordsForLevel } from '../utils/gameUtils';
 import { GameLevel, Word, Blank, Lesson } from './types';
 import { gameLevels } from '../data/gameLevels';
-import GameStatusBar from '@/components/GameStatusBar';  
+import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
 interface WordDragGameProps {
   lessonTitle: string;
 }
 
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
+// El catálogo llama a esta actividad "Completa Palabras" en general — pero
+// acá adentro hay 4 lecciones distintas (Pubertad, Sexualidad, etc.), cada
+// una con su propio progreso. Guardamos las dos cosas: una clave POR
+// LECCIÓN (para el selector de lecciones) y el título general (para que el
+// resto de la app — Features, ClassroomDesk — reconozca la actividad como
+// completada apenas se termine cualquiera de las lecciones).
+const ACTIVITY = getActivityById('completa');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Completa Palabras';
+const ACCENT = ACTIVITY?.color ?? '#7B1FA2';
 
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
+const CORRECT_ANSWER_POINTS = 100;
+const INCORRECT_ANSWER_PENALTY = 50;
 
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
+/** Clave de progreso específica de esta lección (no del catálogo general). */
+export function lessonProgressKey(lessonTitle: string): string {
+  return `${ACTIVITY_TITLE}-${lessonTitle}`;
 }
-
-const STORAGE_KEY = 'cresi_user_data';
 
 const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
-  // Game state
   const [currentLevel, setCurrentLevel] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -78,14 +45,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [blanks, setBlanks] = useState<Blank[]>([]);
   const [textParts, setTextParts] = useState<string[]>([]);
   const [currentLessonData, setCurrentLessonData] = useState<GameLevel | null>(null);
-  
-  // UI state
+
   const [isClient, setIsClient] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
-  // Drag and touch state
   const [draggedWord, setDraggedWord] = useState<Word | null>(null);
   const [draggedBlankId, setDraggedBlankId] = useState<string | null>(null);
   const [touchStartX, setTouchStartX] = useState<number>(0);
@@ -95,88 +60,73 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [lastTouchTarget, setLastTouchTarget] = useState<Element | null>(null);
 
-  // UserData state
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [sessionScore, setSessionScore] = useState(0);
 
-  // Constants
-  const CORRECT_ANSWER_POINTS = 100;
-  const INCORRECT_ANSWER_PENALTY = 50;
-  const ACTIVITY_ID = `ArrastrarPalabras${lessonTitle.toLowerCase().replace(/\s+/g, '_')}`;
-  
-  // Cargar datos del usuario al inicio
+  const LESSON_KEY = lessonProgressKey(lessonTitle);
+
   useEffect(() => {
     loadUserData();
   }, []);
 
-  // Guardar datos cuando cambian sessionScore, lives o isGameOver
   useEffect(() => {
-    if (userData) {
+    if (hasLoaded) {
       saveUserData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionScore, lives, isGameOver, isLevelComplete]);
 
   const loadUserData = () => {
-    try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        
-        // Establecer el score total inicial
-        setScore(data.game.totalScore);
-        setLives(data.game.totalLives);
-        
-        // Actualizar última visita a esta actividad
-        data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    UserDataManager.visitActivity(LESSON_KEY);
+    setHasLoaded(true);
   };
 
   const saveUserData = () => {
-    if (!userData) return;
+    const current = UserDataManager.loadUserData();
+    const finishedLesson =
+      isLevelComplete && currentLessonData && currentLevel === currentLessonData.lecciones.length - 1;
 
-    try {
-      const updatedData: UserData = {
-        ...userData,
-        game: {
-          ...userData.game,
-          totalScore: userData.game.totalScore + sessionScore,
-          totalLives: lives
+    const lessonPercent = currentLessonData
+      ? Math.round(((finishedLesson ? currentLevel + 1 : currentLevel) / currentLessonData.lecciones.length) * 100)
+      : 0;
+
+    const updatedData = {
+      ...current,
+      game: {
+        ...current.game,
+        totalScore: current.game.totalScore + sessionScore,
+        totalLives: lives
+      },
+      progress: {
+        ...current.progress,
+        activityScores: {
+          ...current.progress.activityScores,
+          [LESSON_KEY]: Math.max(current.progress.activityScores[LESSON_KEY] || 0, lessonPercent),
+          ...(finishedLesson
+            ? { [ACTIVITY_TITLE]: Math.max(current.progress.activityScores[ACTIVITY_TITLE] || 0, sessionScore) }
+            : {})
         },
-        progress: {
-          ...userData.progress,
-          activityScores: {
-            ...userData.progress.activityScores,
-            [ACTIVITY_ID]: Math.max(
-              userData.progress.activityScores[ACTIVITY_ID] || 0,
-              sessionScore
-            )
-          },
-          activityTimes: {
-            ...userData.progress.activityTimes,
-            [ACTIVITY_ID]: new Date().toISOString()
-          },
-          completedActivities: isLevelComplete && currentLessonData && currentLevel === currentLessonData.lecciones.length - 1
-            ? Array.from(new Set([...userData.progress.completedActivities, ACTIVITY_ID]))
-            : userData.progress.completedActivities
-        }
-      };
+        activityTimes: {
+          ...current.progress.activityTimes,
+          [LESSON_KEY]: new Date().toISOString(),
+          ...(finishedLesson ? { [ACTIVITY_TITLE]: new Date().toISOString() } : {})
+        },
+        completedActivities: finishedLesson
+          ? Array.from(new Set([...current.progress.completedActivities, LESSON_KEY, ACTIVITY_TITLE]))
+          : current.progress.completedActivities
+      }
+    };
 
-      // Actualizar score total para el GameStatusBar
-      setScore(updatedData.game.totalScore);
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      setUserData(updatedData);
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
+    setScore(updatedData.game.totalScore);
+    UserDataManager.saveUserData(updatedData);
+    setUserData(updatedData);
   };
-  
-  // Initialize game
+
   useEffect(() => {
     setIsClient(true);
     const lessonData = gameLevels.find(level => level.title === lessonTitle);
@@ -188,10 +138,10 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
   const initializeLevel = (level: number, lessons: Lesson[]) => {
     if (!lessons[level]) return;
-    
+
     const { blanks: newBlanks, textParts: newTextParts, correctWords } = processText(lessons[level].text);
     const newWords = createWordsForLevel(correctWords, lessons[level].extraWords);
-    
+
     setBlanks(newBlanks);
     setWords(newWords);
     setTextParts(newTextParts);
@@ -202,8 +152,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const handlePurchaseLife = () => {
-    // El PurchaseModal ya maneja la compra y actualiza UserData
-    // Solo necesitamos recargar los datos y continuar el juego
     loadUserData();
     setShowPurchaseModal(false);
     if (isGameOver) {
@@ -215,18 +163,15 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const handleClosePurchaseModal = () => {
-    // Recargar datos por si se hizo una compra
-    loadUserData();
-    
-    // Si después de intentar comprar sigue sin vidas, mantener game over
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-      const data: UserData = JSON.parse(storedData);
-      if (data.game.totalLives < 1) {
-        setIsGameOver(true);
-      }
+    const data = UserDataManager.loadUserData();
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    setUserData(data);
+
+    if (data.game.totalLives < 1) {
+      setIsGameOver(true);
     }
-    
+
     setShowPurchaseModal(false);
   };
 
@@ -235,7 +180,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       const newLives = prevLives - 1;
       if (newLives <= 0) {
         setIsGameOver(true);
-        if (userData && userData.game.totalScore >= 200) {
+        if (userData.game.totalScore >= 200) {
           setShowPurchaseModal(true);
         }
         return 0;
@@ -254,7 +199,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     setLastTouchTarget(null);
   };
 
-  // Touch event handlers
   const handleTouchStart = (
     e: React.TouchEvent,
     word: Word | null,
@@ -280,13 +224,13 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     e.preventDefault();
 
     const touch = e.touches[0];
-    document.querySelectorAll('.drag-over').forEach(el => 
+    document.querySelectorAll('.drag-over').forEach(el =>
       el.classList.remove('drag-over')
     );
 
     const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-    const targetElement = elements.find(element => 
-      element.getAttribute('data-blank-id') || 
+    const targetElement = elements.find(element =>
+      element.getAttribute('data-blank-id') ||
       element.getAttribute('data-word-pool')
     );
 
@@ -318,7 +262,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     clearDragStates();
   };
 
-  // Drag event handlers
   const handleDragStart = (word: Word | null, blankId?: string) => {
     if (isGameOver) return;
     setDraggedWord(word);
@@ -349,8 +292,8 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
 
     const sourceBlankId = draggedBlankId || selectedBlankId;
     if (sourceBlankId) {
-      setBlanks(prevBlanks => prevBlanks.map(blank => 
-        blank.id === sourceBlankId 
+      setBlanks(prevBlanks => prevBlanks.map(blank =>
+        blank.id === sourceBlankId
           ? { ...blank, filledWord: undefined, filledWordId: undefined }
           : blank
       ));
@@ -358,8 +301,8 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       setWords(prevWords => prevWords.filter(word => word.id !== wordToMove.id));
     }
 
-    setBlanks(prevBlanks => prevBlanks.map(blank => 
-      blank.id === targetBlankId 
+    setBlanks(prevBlanks => prevBlanks.map(blank =>
+      blank.id === targetBlankId
         ? { ...blank, filledWord: wordToMove.text, filledWordId: wordToMove.id }
         : blank
     ));
@@ -371,11 +314,11 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const handleDropToPool = () => {
     if (isGameOver) return;
     const wordToReturn = draggedWord || selectedWord;
-    const sourceBlankId = draggedBlankId || selectedBlankId;  
+    const sourceBlankId = draggedBlankId || selectedBlankId;
     if (!wordToReturn || !sourceBlankId) return;
     setWords(prevWords => [...prevWords, wordToReturn]);
-    setBlanks(prevBlanks => prevBlanks.map(blank => 
-      blank.id === sourceBlankId 
+    setBlanks(prevBlanks => prevBlanks.map(blank =>
+      blank.id === sourceBlankId
         ? { ...blank, filledWord: undefined, filledWordId: undefined }
         : blank
     ));
@@ -395,7 +338,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       setFeedbackMessage('¡Correcto! ¡Muy bien!');
       setIsLevelComplete(true);
       setSessionScore(prevScore => prevScore + CORRECT_ANSWER_POINTS);
-      
+
       if (currentLessonData && currentLevel < currentLessonData.lecciones.length - 1) {
         setTimeout(handleNextLevel, 2000);
       }
@@ -433,8 +376,11 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+            style={{ borderColor: ACCENT }}
+          />
+          <p className="text-gray-500">Cargando...</p>
         </div>
       </div>
     );
@@ -443,37 +389,34 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-
-          <div className="p-6">
-            <GameStatusBar 
-              title={currentLessonData.title}
-              score={score}
-              lives={lives}
-              level={currentLevel + 1}
-            />
-          </div>
-
+        <div className="mb-6">
+          <GameStatusBar
+            title={currentLessonData.title}
+            score={score}
+            lives={lives}
+            level={currentLevel + 1}
+          />
+        </div>
 
         {isGameOver ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
             <div className="text-center">
-              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <IconX className="w-8 h-8 text-red-600" />
               </div>
-              <h2 className="text-3xl font-medium text-gray-800 mb-3">¡Game Over!</h2>
-              <p className="text-gray-600 mb-8">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Game Over!</h2>
+              <p className="text-gray-500 mb-8">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
               <div className="flex gap-3 justify-center">
-                <button 
+                <button
                   onClick={() => setShowPurchaseModal(true)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                  className="px-6 py-2.5 text-white rounded-full hover:opacity-90 transition-colors font-semibold shadow-sm"
+                  style={{ backgroundColor: ACCENT }}
                 >
                   Comprar Vida Extra
                 </button>
-                <button 
+                <button
                   onClick={resetGame}
-                  className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="px-6 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-semibold"
                 >
                   Reiniciar Juego
                 </button>
@@ -481,11 +424,10 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Feedback */}
+          <div className="space-y-4">
             {showFeedback && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <Feedback 
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <Feedback
                   message={feedbackMessage}
                   isComplete={isLevelComplete}
                   show={showFeedback}
@@ -493,9 +435,8 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
               </div>
             )}
 
-            {/* Text Display - Tarjeta principal */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-              <TextDisplay 
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <TextDisplay
                 textParts={textParts}
                 blanks={blanks}
                 onDragStart={handleDragStart}
@@ -505,13 +446,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
                 onDrop={handleDrop}
                 handleDragOver={handleDragOver}
                 isDragging={isDragging}
+                accentColor={ACCENT}
               />
             </div>
 
-            {/* Word Pool */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-800 mb-4">Palabras disponibles</h3>
-              <WordPool 
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <WordPool
                 words={words}
                 onDragStart={handleDragStart}
                 onTouchStart={handleTouchStart}
@@ -520,24 +460,24 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
                 onDrop={handleDropToPool}
                 handleDragOver={handleDragOver}
                 isDragging={isDragging}
+                accentColor={ACCENT}
               />
             </div>
 
-            {/* Game Controls */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <GameControls 
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <GameControls
                 onReset={resetGame}
                 onCheck={checkAnswers}
                 isComplete={isLevelComplete}
                 isLastLevel={currentLevel === currentLessonData.lecciones.length - 1}
                 onNext={handleNextLevel}
                 onBuyLife={() => setShowPurchaseModal(true)}
+                accentColor={ACCENT}
               />
             </div>
           </div>
         )}
 
-        {/* Modal de compra de vidas */}
         <PurchaseModal
           isOpen={showPurchaseModal}
           onClose={handleClosePurchaseModal}
@@ -552,7 +492,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
           transition: all 0.2s ease;
         }
         .drag-over {
-          background-color: rgba(59, 130, 246, 0.1);
+          background-color: ${ACCENT}1A;
           border-radius: 8px;
           transition: background-color 0.2s ease;
         }

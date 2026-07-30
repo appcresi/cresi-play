@@ -1,45 +1,16 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Calendar, SmilePlus, Angry, Trophy, Medal, Star, BookOpen, BarChart3, ArrowLeft } from 'lucide-react';
+import { IconCalendar, IconMedal, IconTrophy, IconBook, IconStar, IconChartBar, IconArrowLeft } from '@tabler/icons-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
+import type { Achievement } from '@/types/user';
 
-// Estructura unificada de datos del usuario
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
+const ACTIVITY = getActivityById('moodtracker');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'MoodTracker';
+const ACCENT = ACTIVITY?.color ?? '#0288D1';
 
-// Interfaces
 interface MoodEntry {
   date: string;
   mood: number;
@@ -55,15 +26,6 @@ interface Stats {
   mostCommonMood: string;
 }
 
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
 interface Mood {
   value: number;
   label: string;
@@ -71,176 +33,14 @@ interface Mood {
   bgColor: string;
 }
 
-// Clase para manejar los datos del usuario
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  // Datos por defecto
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      }
-    };
-  }
-
-  // Cargar datos del usuario
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        // Actualizar lastLogin
-        parsedData.profile.lastLogin = new Date().toISOString();
-        this.saveUserData(parsedData);
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  // Guardar datos del usuario
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-
-  // Añadir registro de humor
-  static addMoodRecord(moodRecord: MoodEntry): UserData {
-    const userData = this.loadUserData();
-    userData.mood.history.push(moodRecord);
-    userData.mood.lastEntry = moodRecord;
-    
-    // Mantener solo los últimos 90 días para optimizar rendimiento
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-    
-    userData.mood.history = userData.mood.history.filter(
-      record => new Date(record.date) >= ninetyDaysAgo
-    );
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Desbloquear logro
-  static unlockAchievement(achievement: Achievement): UserData {
-    const userData = this.loadUserData();
-    const existingIndex = userData.achievements.findIndex(a => a.id === achievement.id);
-    
-    if (existingIndex >= 0) {
-      if (!userData.achievements[existingIndex].unlocked) {
-        userData.achievements[existingIndex] = { 
-          ...achievement, 
-          unlocked: true, 
-          date: new Date().toISOString() 
-        };
-        // Dar puntos por logro desbloqueado
-        userData.game.totalScore += this.getAchievementPoints(achievement.id);
-      }
-    } else {
-      userData.achievements.push({ 
-        ...achievement, 
-        unlocked: true, 
-        date: new Date().toISOString() 
-      });
-      userData.game.totalScore += this.getAchievementPoints(achievement.id);
-    }
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Actualizar racha y dar recompensas
-  static updateStreakAndRewards(moodEntry: MoodEntry): UserData {
-    const userData = this.loadUserData();
-    
-    // Calcular nueva racha
-    const streak = this.calculateStreak(userData.mood.history.concat(moodEntry));
-    userData.game.streak = streak;
-    
-    // Dar recompensas
-    if (userData.game.totalLives < 3) {
-      userData.game.totalLives += 1;
-    } else {
-      userData.game.totalScore += 200;
-    }
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Calcular racha de días consecutivos
-  private static calculateStreak(history: MoodEntry[]): number {
-    if (history.length === 0) return 0;
-
-    let streak = 1;
-    const today = new Date().setHours(0, 0, 0, 0);
-    const yesterday = new Date(today - 86400000).setHours(0, 0, 0, 0);
-    
-    const lastEntry = new Date(history[history.length - 1].date).setHours(0, 0, 0, 0);
-    
-    if (lastEntry === today || lastEntry === yesterday) {
-      for (let i = history.length - 2; i >= 0; i--) {
-        const currentDate = new Date(history[i].date).setHours(0, 0, 0, 0);
-        const prevDate = new Date(history[i + 1].date).setHours(0, 0, 0, 0);
-        
-        if ((prevDate - currentDate) === 86400000) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-    } else {
-      return 0;
-    }
-    
-    return streak;
-  }
-
-  // Obtener puntos por tipo de logro
-  private static getAchievementPoints(achievementId: string): number {
-    const pointsMap: { [key: string]: number } = {
-      'streak-3': 500,
-      'mood-master': 1000,
-      'note-taker': 750,
-      'intensity-explorer': 500,
-      'streak-7': 1000,
-      'streak-30': 2000
-    };
-    return pointsMap[achievementId] || 100;
-  }
-}
+const ACHIEVEMENT_POINTS: Record<string, number> = {
+  'streak-3': 500,
+  'mood-master': 1000,
+  'note-taker': 750,
+  'intensity-explorer': 500,
+  'streak-7': 1000,
+  'streak-30': 2000
+};
 
 // MoodIcon Component
 const MoodIcon = ({ mood }: { mood: Mood }) => {
@@ -262,16 +62,16 @@ const MoodIcon = ({ mood }: { mood: Mood }) => {
 // Achievement Icon Component
 const AchievementIcon = ({ iconName, className }: { iconName: string; className: string }) => {
   switch (iconName) {
-    case 'Medal': return <Medal className={className} />;
-    case 'Trophy': return <Trophy className={className} />;
-    case 'BookOpen': return <BookOpen className={className} />;
-    case 'Star': return <Star className={className} />;
+    case 'Medal': return <IconMedal className={className} />;
+    case 'Trophy': return <IconTrophy className={className} />;
+    case 'BookOpen': return <IconBook className={className} />;
+    case 'Star': return <IconStar className={className} />;
     default: return null;
   }
 };
 
 const MoodTracker = () => {
-  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [intensityRating, setIntensityRating] = useState<number>(5);
   const [moodNote, setMoodNote] = useState('');
@@ -345,11 +145,15 @@ const MoodTracker = () => {
     loadUserData();
   }, []);
 
+  // Antes esta actividad nunca se registraba como visitada ni completada
+  // en ningún lado — la funcionalidad en sí (registrar humor, logros,
+  // racha) andaba bien, pero "MoodTracker" nunca aparecía marcada en el
+  // resto de la app.
   const loadUserData = () => {
     const data = UserDataManager.loadUserData();
     setUserData(data);
-    
-    // Inicializar achievements por defecto si no existen
+    UserDataManager.visitActivity(ACTIVITY_TITLE);
+
     if (data.achievements.length === 0) {
       const updatedData = { ...data, achievements: defaultAchievements };
       UserDataManager.saveUserData(updatedData);
@@ -359,57 +163,40 @@ const MoodTracker = () => {
 
   const checkAchievements = (updatedHistory: MoodEntry[]) => {
     let achievementsToUnlock: Achievement[] = [];
-    
-    // Logro de racha de 3 días
+
     if (userData.game.streak >= 3) {
-      const streakAchievement = userData.achievements.find(a => a.id === 'streak-3');
-      if (streakAchievement && !streakAchievement.unlocked) {
-        achievementsToUnlock.push(streakAchievement);
-      }
+      const a = userData.achievements.find(a => a.id === 'streak-3');
+      if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    // Logro de racha de 7 días
     if (userData.game.streak >= 7) {
-      const streakAchievement = userData.achievements.find(a => a.id === 'streak-7');
-      if (streakAchievement && !streakAchievement.unlocked) {
-        achievementsToUnlock.push(streakAchievement);
-      }
+      const a = userData.achievements.find(a => a.id === 'streak-7');
+      if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    // Logro de usar todas las emociones
     const usedMoods = new Set(updatedHistory.map(entry => entry.mood));
     if (usedMoods.size === moods.length) {
-      const moodAchievement = userData.achievements.find(a => a.id === 'mood-master');
-      if (moodAchievement && !moodAchievement.unlocked) {
-        achievementsToUnlock.push(moodAchievement);
-      }
+      const a = userData.achievements.find(a => a.id === 'mood-master');
+      if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    // Logro de escribir notas detalladas
     const notesCount = updatedHistory.filter(entry => entry.note && entry.note.length > 20).length;
     if (notesCount >= 5) {
-      const noteAchievement = userData.achievements.find(a => a.id === 'note-taker');
-      if (noteAchievement && !noteAchievement.unlocked) {
-        achievementsToUnlock.push(noteAchievement);
-      }
+      const a = userData.achievements.find(a => a.id === 'note-taker');
+      if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    // Logro de explorar todas las intensidades
     const usedIntensities = new Set(updatedHistory.map(entry => entry.intensity));
     if (usedIntensities.size >= 10) {
-      const intensityAchievement = userData.achievements.find(a => a.id === 'intensity-explorer');
-      if (intensityAchievement && !intensityAchievement.unlocked) {
-        achievementsToUnlock.push(intensityAchievement);
-      }
+      const a = userData.achievements.find(a => a.id === 'intensity-explorer');
+      if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    // Desbloquear logros
     achievementsToUnlock.forEach(achievement => {
-      UserDataManager.unlockAchievement(achievement);
+      UserDataManager.addAchievement({ ...achievement, unlocked: true }, ACHIEVEMENT_POINTS[achievement.id] || 100);
     });
 
     if (achievementsToUnlock.length > 0) {
-      // Recargar datos después de desbloquear logros
       const updatedData = UserDataManager.loadUserData();
       setUserData(updatedData);
     }
@@ -443,20 +230,29 @@ const MoodTracker = () => {
       intensity: intensityRating,
       note: moodNote
     };
-    
-    // Registrar entrada de humor
-    let updatedData = UserDataManager.addMoodRecord(newMoodEntry);
-    
-    // Actualizar racha y dar recompensas
-    updatedData = UserDataManager.updateStreakAndRewards(newMoodEntry);
-    
-    // Actualizar estado local
+
+    UserDataManager.updateMoodEntry(newMoodEntry);
+    let updatedData = UserDataManager.updateMoodStreakAndRewards(newMoodEntry);
+
+    // Se marca "MoodTracker" como completado desde el primer registro.
+    if (!updatedData.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      updatedData = {
+        ...updatedData,
+        progress: {
+          ...updatedData.progress,
+          completedActivities: [...updatedData.progress.completedActivities, ACTIVITY_TITLE],
+          activityTimes: {
+            ...updatedData.progress.activityTimes,
+            [ACTIVITY_TITLE]: new Date().toISOString()
+          }
+        }
+      };
+      UserDataManager.saveUserData(updatedData);
+    }
+
     setUserData(updatedData);
-    
-    // Verificar logros
     checkAchievements(updatedData.mood.history);
-    
-    // Limpiar formulario
+
     setSelectedMood(null);
     setIntensityRating(5);
     setMoodNote('');
@@ -475,67 +271,50 @@ const MoodTracker = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-2 rounded">
-                <SmilePlus className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-800">ESI: Mood Tracker</h1>
-            </div>
-            <GameStatusBar 
-              title="Mood Tracker"
-              score={userData.game.totalScore}
-              lives={userData.game.totalLives}
-              level={1}
-            />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <GameStatusBar
+        title="Mood Tracker"
+        score={userData.game.totalScore}
+        lives={userData.game.totalLives}
+        level={1}
+      />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 pt-24 pb-8">
         {showStats ? (
           <>
-            {/* Back Button */}
             <button
               onClick={() => setShowStats(false)}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium mb-6"
+              className="flex items-center gap-2 font-medium mb-6 hover:opacity-80 transition-opacity"
+              style={{ color: ACCENT }}
             >
-              <ArrowLeft className="w-5 h-5" />
+              <IconArrowLeft className="w-5 h-5" />
               Volver a registrar
             </button>
 
-            {/* Estadísticas */}
             {stats && (
               <>
-                {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-blue-500">
-                    <p className="text-gray-600 text-sm font-medium">Entradas Totales</p>
-                    <p className="text-3xl font-bold text-blue-600 mt-2">{stats.totalEntries}</p>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 border-t-4" style={{ borderTopColor: ACCENT }}>
+                    <p className="text-gray-500 text-sm font-medium">Entradas Totales</p>
+                    <p className="text-3xl font-bold mt-2" style={{ color: ACCENT }}>{stats.totalEntries}</p>
                   </div>
-                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-green-500">
-                    <p className="text-gray-600 text-sm font-medium">Racha Actual</p>
+                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-gray-100 p-6 border-t-4 border-t-green-500">
+                    <p className="text-gray-500 text-sm font-medium">Racha Actual</p>
                     <p className="text-3xl font-bold text-green-600 mt-2">{userData.game.streak} días</p>
                   </div>
-                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-purple-500">
-                    <p className="text-gray-600 text-sm font-medium">Intensidad Promedio</p>
+                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-gray-100 p-6 border-t-4 border-t-purple-500">
+                    <p className="text-gray-500 text-sm font-medium">Intensidad Promedio</p>
                     <p className="text-3xl font-bold text-purple-600 mt-2">{stats.avgIntensity}</p>
                   </div>
-                  <div className="bg-white rounded-lg shadow p-6 border-t-4 border-orange-500">
-                    <p className="text-gray-600 text-sm font-medium">Emoción Más Común</p>
+                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-gray-100 p-6 border-t-4 border-t-orange-500">
+                    <p className="text-gray-500 text-sm font-medium">Emoción Más Común</p>
                     <p className="text-lg font-bold text-orange-600 mt-2">{stats.mostCommonMood}</p>
                   </div>
                 </div>
 
-                {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Distribución de Emociones</h3>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4">Distribución de Emociones</h3>
                     <div className="flex justify-center">
                       <PieChart width={250} height={250}>
                         <Pie
@@ -559,8 +338,8 @@ const MoodTracker = () => {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Tu Aventura Emocional</h3>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="text-base font-semibold text-gray-900 mb-4">Tu Aventura Emocional</h3>
                     <div className="h-64 w-full">
                       <ResponsiveContainer>
                         <LineChart data={chartData}>
@@ -568,7 +347,7 @@ const MoodTracker = () => {
                           <YAxis yAxisId="left" stroke="#999" domain={[0, 10]} />
                           <YAxis yAxisId="right" orientation="right" stroke="#999" />
                           <Tooltip contentStyle={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
-                          <Line yAxisId="left" type="monotone" dataKey="valor" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                          <Line yAxisId="left" type="monotone" dataKey="valor" stroke={ACCENT} strokeWidth={2} dot={{ r: 4 }} />
                           <Line yAxisId="right" type="monotone" dataKey="intensidad" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -576,31 +355,30 @@ const MoodTracker = () => {
                   </div>
                 </div>
 
-                {/* Achievements */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Logros Desbloqueados</h3>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">Logros Desbloqueados</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {userData.achievements.map((achievement) => (
                       <div
                         key={achievement.id}
-                        className={`p-4 rounded-lg border-l-4 ${
-                          achievement.unlocked 
-                            ? 'bg-yellow-50 border-yellow-500' 
+                        className={`p-4 rounded-xl border-l-4 ${
+                          achievement.unlocked
+                            ? 'bg-yellow-50 border-yellow-500'
                             : 'bg-gray-50 border-gray-300'
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <AchievementIcon 
-                            iconName={achievement.iconName}
-                            className={`w-6 h-6 flex-shrink-0 ${
+                          <AchievementIcon
+                            iconName={achievement.iconName || ''}
+                            className={`w-6 h-6 shrink-0 ${
                               achievement.unlocked ? 'text-yellow-500' : 'text-gray-400'
                             }`}
                           />
                           <div>
                             <h4 className="font-bold text-gray-900">{achievement.name}</h4>
-                            <p className="text-sm text-gray-600">{achievement.description}</p>
+                            <p className="text-sm text-gray-500">{achievement.description}</p>
                             {achievement.unlocked && achievement.date && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-gray-400 mt-1">
                                 Desbloqueado: {new Date(achievement.date).toLocaleDateString()}
                               </p>
                             )}
@@ -615,49 +393,48 @@ const MoodTracker = () => {
           </>
         ) : (
           <>
-            {/* Quick Stats Bar */}
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-3 text-gray-700">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <span className="font-medium">Racha actual: <span className="font-bold text-blue-600">{userData.game.streak} días</span></span>
+                <IconCalendar className="w-5 h-5" style={{ color: ACCENT }} />
+                <span className="font-medium">Racha actual: <span className="font-bold" style={{ color: ACCENT }}>{userData.game.streak} días</span></span>
               </div>
               <button
                 onClick={() => setShowStats(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 text-white px-4 py-2 rounded-full font-semibold transition-colors hover:opacity-90"
+                style={{ backgroundColor: ACCENT }}
               >
-                <BarChart3 className="w-5 h-5" />
+                <IconChartBar className="w-5 h-5" />
                 Ver Estadísticas
               </button>
             </div>
 
-            {/* Mood Selection */}
-            <div className="bg-white rounded-lg shadow p-6 mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">¿Cómo te sentís hoy?</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-6">¿Cómo te sentís hoy?</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 gap-3">
                 {moods.map((mood) => (
                   <button
                     key={mood.label}
                     onClick={() => handleMoodSelect(mood)}
-                    className={`p-4 rounded-lg flex flex-col items-center justify-center transition-all ${
-                      selectedMood?.label === mood.label 
-                        ? `${mood.bgColor} ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-105` 
-                        : `${mood.bgColor} hover:shadow-md`
+                    className={`p-4 rounded-xl flex flex-col items-center justify-center transition-all ${
+                      selectedMood?.label === mood.label
+                        ? `${mood.bgColor} ring-2 ring-offset-2 shadow-md scale-105`
+                        : `${mood.bgColor} hover:shadow-sm`
                     }`}
+                    style={selectedMood?.label === mood.label ? ({ '--tw-ring-color': ACCENT } as React.CSSProperties) : undefined}
                   >
                     <MoodIcon mood={mood} />
-                    <span className="mt-2 text-xs font-medium text-gray-800 text-center">{mood.label}</span>
+                    <span className="mt-2 text-xs font-medium text-gray-700 text-center">{mood.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Intensity and Notes */}
             {selectedMood && (
-              <div className="bg-white rounded-lg shadow p-6 mb-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">
                   ¿Cuál es la intensidad de tu emoción?
                 </h3>
-                
+
                 <div className="mb-6">
                   <div className="flex items-center gap-4">
                     <input
@@ -666,57 +443,57 @@ const MoodTracker = () => {
                       max="10"
                       value={intensityRating}
                       onChange={(e) => setIntensityRating(parseInt(e.target.value))}
-                      className="flex-1 h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-lg appearance-none cursor-pointer"
+                      className="flex-1 h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full appearance-none cursor-pointer"
                     />
-                    <span className="text-2xl font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded min-w-fit">
+                    <span className="text-xl font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full min-w-fit">
                       {intensityRating}/10
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-600 mt-2">
+                  <div className="flex justify-between text-xs text-gray-400 mt-2">
                     <span>Muy bajo</span>
                     <span>Muy alto</span>
                   </div>
                 </div>
 
-                {/* Notes Section */}
                 <div className="mb-6">
-                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Agregar una nota (opcional)
                   </label>
                   <textarea
                     value={moodNote}
                     onChange={(e) => setMoodNote(e.target.value)}
                     placeholder="¿Qué te hizo sentir así?"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24"
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent resize-none h-24 text-sm"
+                    style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                 </div>
 
                 <button
                   onClick={handleSaveMood}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors"
+                  className="w-full text-white font-bold py-3 rounded-full transition-colors hover:opacity-90"
+                  style={{ backgroundColor: ACCENT }}
                 >
                   Guardar Emoción
                 </button>
               </div>
             )}
 
-            {/* Historial */}
             {userData.mood.history.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Historial Reciente</h3>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Historial Reciente</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {userData.mood.history.slice().reverse().map((entry, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border-l-4" style={{ borderColor: ACCENT }}>
                       <div className="flex items-center gap-3">
                         <MoodIcon mood={moods.find(m => m.value === entry.mood) || moods[0]} />
                         <div>
                           <p className="font-medium text-gray-900">{entry.label}</p>
-                          <p className="text-sm text-gray-600">{new Date(entry.date).toLocaleDateString()}</p>
+                          <p className="text-sm text-gray-500">{new Date(entry.date).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-gray-700">Intensidad: {entry.intensity}/10</p>
-                        {entry.note && <p className="text-xs text-gray-500 max-w-xs truncate">{entry.note}</p>}
+                        <p className="text-sm font-bold text-gray-600">Intensidad: {entry.intensity}/10</p>
+                        {entry.note && <p className="text-xs text-gray-400 max-w-xs truncate">{entry.note}</p>}
                       </div>
                     </div>
                   ))}

@@ -8,10 +8,11 @@ import {
 	IconPresentation,
 	IconHeart,
 	IconTrophy,
-	IconLock,
 	IconCheck,
 	IconArrowRight,
 } from "@tabler/icons-react";
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
 interface Feature {
 	title: string;
@@ -21,58 +22,9 @@ interface Feature {
 	difficulty: string;
 }
 
-interface MoodEntry {
-	date: string;
-	mood: number;
-	label: string;
-	intensity: number;
-	note?: string;
-}
-
-interface Achievement {
-	id: string;
-	name: string;
-	description: string;
-	iconName: string;
-	unlocked: boolean;
-	date?: string;
-}
-
-interface UserData {
-	profile: {
-		character: {
-			id: number;
-			name: string;
-			image: string;
-		};
-		username: string;
-		createdAt: string;
-		lastLogin: string;
-	};
-	game: {
-		totalScore: number;
-		totalLives: number;
-		streak: number;
-	};
-	progress: {
-		completedActivities: string[];
-		activityScores: { [key: string]: number };
-		activityTimes: { [key: string]: string };
-		lastVisits: { [key: string]: string };
-		storyProgress?: { [key: string]: { lastPage: number; percentage: number; pagesRead: string[] } };
-		lessonProgress?: { [key: string]: { percentage: number; completed: boolean } };
-	};
-	mood: {
-		history: MoodEntry[];
-		lastEntry: MoodEntry | null;
-	};
-	achievements: Achievement[];
-	settings: {
-		notifications: boolean;
-		theme: 'light' | 'dark';
-		language: 'es' | 'en';
-	};
-}
+const ACTIVITY = getActivityById('lecciones');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Lecciones';
+const ACCENT = ACTIVITY?.color ?? '#1976D2';
 
 const features: Feature[] = [
 	{
@@ -101,8 +53,6 @@ const features: Feature[] = [
 	},
 ];
 
-const STORAGE_KEY = 'cresi_user_data';
-const ACTIVITY_ID = 'Lecciones';
 const POINTS_PER_CORRECT_ANSWER = 100;
 const POINTS_PER_LEVEL_COMPLETION = 100;
 
@@ -111,7 +61,7 @@ export default function Lecciones(): JSX.Element {
 	const [correctPercentages, setCorrectPercentages] = useState<
 		Record<string, number | null>
 	>({});
-	const [userData, setUserData] = useState<UserData | null>(null);
+	const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
 	const [score, setScore] = useState(0);
 	const [lives, setLives] = useState(3);
 	const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
@@ -123,54 +73,29 @@ export default function Lecciones(): JSX.Element {
 	}, []);
 
 	const loadUserData = () => {
-		try {
-			const storedData = window.localStorage.getItem(STORAGE_KEY);
-			if (storedData) {
-				const data: UserData = JSON.parse(storedData);
-				setUserData(data);
-				setScore(data.game.totalScore);
-				setLives(data.game.totalLives);
+		const data = UserDataManager.loadUserData();
+		setUserData(data);
+		setScore(data.game.totalScore);
+		setLives(data.game.totalLives);
+		UserDataManager.visitActivity(ACTIVITY_TITLE);
 
-				// Actualizar última visita
-				data.progress.lastVisits[ACTIVITY_ID] = new Date().toISOString();
-
-				// Inicializar lessonProgress si no existe
-				if (!data.progress.lessonProgress) {
-					data.progress.lessonProgress = {};
-				}
-
-				// Cargar porcentajes de correctas desde localStorage y sincronizar con userData
-				const storedPercentages: Record<string, number | null> = {};
-				features.forEach((feature) => {
-					const percentage = localStorage.getItem(feature.title);
-					const parsedPercentage = percentage ? parseFloat(percentage) : null;
-					storedPercentages[feature.title] = parsedPercentage;
-
-					// Sincronizar con lessonProgress
-					if (parsedPercentage !== null) {
-						data.progress.lessonProgress![feature.title] = {
-							percentage: parsedPercentage,
-							completed: parsedPercentage > 65
-						};
-					}
-				});
-
-				setCorrectPercentages(storedPercentages);
-				window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-			}
-		} catch (error) {
-			console.error('Error loading user data:', error);
-		}
+		// Antes esto leía una clave suelta en localStorage (el nombre de la
+		// lección, ej. "Pubertad") que también usa Completapalabras para SUS
+		// lecciones — dos actividades distintas leyendo/escribiendo la misma
+		// clave global. El progreso de cada lección ya vive, correctamente
+		// aislado, en `progress.lessonProgress`; ahora leemos solo de ahí.
+		const percentages: Record<string, number | null> = {};
+		features.forEach((feature) => {
+			const entry = data.progress.lessonProgress?.[feature.title];
+			percentages[feature.title] = entry ? entry.percentage : null;
+		});
+		setCorrectPercentages(percentages);
 	};
 
-	const saveUserData = (updatedData: UserData) => {
-		try {
-			window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-			setUserData(updatedData);
-			setScore(updatedData.game.totalScore);
-		} catch (error) {
-			console.error('Error saving user data:', error);
-		}
+	const saveUserData = (updatedData: typeof userData) => {
+		UserDataManager.saveUserData(updatedData);
+		setUserData(updatedData);
+		setScore(updatedData.game.totalScore);
 	};
 
 	const handleDiscover = (title: string) => {
@@ -178,45 +103,36 @@ export default function Lecciones(): JSX.Element {
 	};
 
 	const handleAnswerCorrect = () => {
-		if (!userData) return;
-
-		const updatedData: UserData = {
+		const updatedData = {
 			...userData,
 			game: {
 				...userData.game,
 				totalScore: userData.game.totalScore + POINTS_PER_CORRECT_ANSWER
 			}
 		};
-
 		saveUserData(updatedData);
 	};
 
 	const handleLevelComplete = () => {
-		if (!userData) return;
-
-		const updatedData: UserData = {
+		const updatedData = {
 			...userData,
 			game: {
 				...userData.game,
 				totalScore: userData.game.totalScore + POINTS_PER_LEVEL_COMPLETION
 			}
 		};
-
 		saveUserData(updatedData);
 	};
 
 	const handleNoteCreated = () => {
-		if (!userData) return;
-
 		const POINTS_PER_NOTE = 50;
-		const updatedData: UserData = {
+		const updatedData = {
 			...userData,
 			game: {
 				...userData.game,
 				totalScore: userData.game.totalScore + POINTS_PER_NOTE
 			}
 		};
-
 		saveUserData(updatedData);
 	};
 
@@ -229,47 +145,53 @@ export default function Lecciones(): JSX.Element {
 		setCurrentLessonLevel(level);
 	};
 
+	/**
+	 * Antes esto nunca tocaba `completedActivities` — "Lecciones" jamás
+	 * aparecía como completada en el resto de la app, sin importar cuántas
+	 * lecciones terminaras. Ahora, apenas se completa UNA lección (>65%),
+	 * se marca la actividad general como completada (mismo criterio que
+	 * usamos en Completapalabras: no hace falta terminar las 3).
+	 */
 	const handleLessonComplete = (
 		title: string,
 		percentage: number,
 		correctAnswersCount: number,
 		levelsCompleted: number
 	) => {
-		if (!userData) return;
-
 		const isCompleted = percentage > 65;
-		const lessonKey = `lesson_${title}`;
+		const lessonKey = `${ACTIVITY_TITLE}-${title}`;
+		const current = UserDataManager.loadUserData();
 
-		const updatedData: UserData = {
-			...userData,
+		const updatedData = {
+			...current,
 			progress: {
-				...userData.progress,
+				...current.progress,
 				lessonProgress: {
-					...userData.progress.lessonProgress,
+					...current.progress.lessonProgress,
 					[title]: {
 						percentage,
 						completed: isCompleted
 					}
 				},
 				activityScores: {
-					...userData.progress.activityScores,
-					[lessonKey]: (userData.progress.activityScores[lessonKey] || 0) + (correctAnswersCount * POINTS_PER_CORRECT_ANSWER) + (levelsCompleted * POINTS_PER_LEVEL_COMPLETION)
+					...current.progress.activityScores,
+					[lessonKey]: (current.progress.activityScores[lessonKey] || 0) + (correctAnswersCount * POINTS_PER_CORRECT_ANSWER) + (levelsCompleted * POINTS_PER_LEVEL_COMPLETION)
 				},
 				activityTimes: {
-					...userData.progress.activityTimes,
-					[ACTIVITY_ID]: new Date().toISOString()
-				}
+					...current.progress.activityTimes,
+					[ACTIVITY_TITLE]: new Date().toISOString()
+				},
+				completedActivities: isCompleted
+					? Array.from(new Set([...current.progress.completedActivities, ACTIVITY_TITLE]))
+					: current.progress.completedActivities
 			}
 		};
 
-		// Actualizar correctPercentages local
 		setCorrectPercentages(prev => ({
 			...prev,
 			[title]: percentage
 		}));
 
-		// Guardar en ambos storages
-		localStorage.setItem(title, percentage.toString());
 		saveUserData(updatedData);
 	};
 
@@ -333,7 +255,7 @@ export default function Lecciones(): JSX.Element {
 								return (
 									<div
 										key={feature.title}
-										className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group relative"
+										className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden group relative"
 									>
 										{/* Top color bar */}
 										<div className={`h-2 bg-gradient-to-r ${colors.gradient}`}></div>
@@ -357,12 +279,12 @@ export default function Lecciones(): JSX.Element {
 											</div>
 
 											{/* Title */}
-											<h3 className="text-xl font-semibold text-gray-900 mb-3">
+											<h3 className="text-lg font-semibold text-gray-900 mb-2">
 												{feature.title}
 											</h3>
 
 											{/* Description */}
-											<p className="text-sm text-gray-600 leading-relaxed mb-4">
+											<p className="text-sm text-gray-500 leading-relaxed mb-4">
 												{feature.description}
 											</p>
 
@@ -391,7 +313,7 @@ export default function Lecciones(): JSX.Element {
 														</span>
 													</div>
 													{/* Progress bar */}
-													<div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+													<div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
 														<div
 															className={`h-full bg-gradient-to-r ${colors.gradient} transition-all duration-500`}
 															style={{ width: `${correctPercentage}%` }}
@@ -403,7 +325,7 @@ export default function Lecciones(): JSX.Element {
 											{/* CTA Button */}
 											<button
 												onClick={() => handleDiscover(feature.title)}
-												className={`w-full py-3 px-4 ${colors.bg} hover:opacity-90 text-white font-medium rounded-lg transition-all flex items-center justify-center gap-2 group-hover:gap-3 shadow-sm`}
+												className={`w-full py-2.5 px-4 ${colors.bg} hover:opacity-90 text-white font-medium rounded-full transition-all flex items-center justify-center gap-2 group-hover:gap-3 shadow-sm`}
 											>
 												<span>
 													{correctPercentage !== null
@@ -444,17 +366,17 @@ export default function Lecciones(): JSX.Element {
 
 				{/* Summary statistics */}
 				{!selectedFeature && Object.keys(correctPercentages).length > 0 && (
-					<div className="max-w-7xl mx-auto mt-8 bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-6">
+					<div className="max-w-7xl mx-auto mt-8 rounded-xl border p-6" style={{ backgroundColor: `${ACCENT}0A`, borderColor: `${ACCENT}30` }}>
 						<div className="flex flex-col md:flex-row items-center justify-between gap-4">
 							<div className="flex items-center gap-3">
-								<div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+								<div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: ACCENT }}>
 									<IconTrophy className="w-6 h-6 text-white" />
 								</div>
 								<div>
 									<p className="font-semibold text-gray-900">
 										Tu progreso general
 									</p>
-									<p className="text-sm text-gray-600">
+									<p className="text-sm text-gray-500">
 										{
 											features.filter(
 												(f) =>

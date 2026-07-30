@@ -1,147 +1,24 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Move, ArrowLeft, ArrowRight, Check, RefreshCw, Trophy, Heart, Target } from 'lucide-react';
-import { bodySystems, type BodyPart, type BodySystem } from '../data/bodySystems';
+import {
+  IconArrowsMove,
+  IconArrowLeft,
+  IconArrowRight,
+  IconCheck,
+  IconRefresh,
+} from '@tabler/icons-react';
+import { bodySystems, type BodyPart } from '../data/bodySystems';
 import GameStatusBar from '@/components/GameStatusBar';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
-// Estructura unificada de datos del usuario
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: any[];
-    lastEntry: any | null;
-  };
-  achievements: any[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
+const ACTIVITY = getActivityById('biopuzzle');
+const ACTIVITY_ID = ACTIVITY?.title ?? 'BioPuzzle';
+const ACCENT = ACTIVITY?.color ?? '#7B1FA2';
 
 interface DraggedItem {
   id: string;
-}
-
-// Clase para manejar los datos del usuario
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  // Datos por defecto
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      }
-    };
-  }
-
-  // Cargar datos del usuario
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  // Guardar datos del usuario
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-
-  // Actualizar puntuación del juego
-  static updateGameScore(newScore: number): UserData {
-    const userData = this.loadUserData();
-    userData.game.totalScore = newScore;
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Completar sistema anatómico
-  static completeSystem(systemName: string, score: number): UserData {
-    const userData = this.loadUserData();
-    const activityKey = `BioPuzzle-${systemName}`;
-    
-    if (!userData.progress.completedActivities.includes(activityKey)) {
-      userData.progress.completedActivities.push(activityKey);
-    }
-    
-    userData.progress.activityScores[activityKey] = score;
-    userData.progress.activityTimes[activityKey] = new Date().toISOString();
-    userData.game.totalScore += score * 50; // 50 puntos por cada parte correcta
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Registrar visita
-  static visitActivity(activityTitle: string): UserData {
-    const userData = this.loadUserData();
-    
-    if (!userData.progress.lastVisits) {
-      userData.progress.lastVisits = {};
-    }
-    
-    userData.progress.lastVisits[activityTitle] = new Date().toISOString();
-    this.saveUserData(userData);
-    return userData;
-  }
 }
 
 export default function AnatomiaApp() {
@@ -152,7 +29,7 @@ export default function AnatomiaApp() {
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [sessionScore, setSessionScore] = useState(0);
 
   const containerRef = useCallback((node: HTMLDivElement | null) => {
@@ -173,10 +50,9 @@ export default function AnatomiaApp() {
   const currentSystem = useCallback(() => bodySystems[currentSystemIndex], [currentSystemIndex]);
 
   useEffect(() => {
-    // Cargar datos del usuario y registrar visita
     const data = UserDataManager.loadUserData();
     setUserData(data);
-    UserDataManager.visitActivity('BioPuzzle');
+    UserDataManager.visitActivity(ACTIVITY_ID);
   }, []);
 
   useEffect(() => {
@@ -229,13 +105,15 @@ export default function AnatomiaApp() {
         )
       );
 
-      const newScore = score + 1;
-      setScore(newScore);
-      setSessionScore(prev => prev + 50); // 50 puntos por parte correcta
-      
-      // Actualizar puntuación global
-      const updatedData = UserDataManager.updateGameScore(userData.game.totalScore + 50);
-      setUserData(updatedData);
+      setScore((prev) => prev + 1);
+      setSessionScore(prev => prev + 50);
+
+      // Cargamos fresco en vez de confiar en el `userData` del closure —
+      // evita perder puntos si hay dos drops muy seguidos.
+      const updated = UserDataManager.loadUserData();
+      updated.game.totalScore += 50;
+      UserDataManager.saveUserData(updated);
+      setUserData(updated);
     }
 
     setDraggedItem(null);
@@ -254,10 +132,11 @@ export default function AnatomiaApp() {
       );
       setScore(prevScore => prevScore - 1);
       setSessionScore(prev => prev - 50);
-      
-      // Actualizar puntuación global
-      const updatedData = UserDataManager.updateGameScore(Math.max(0, userData.game.totalScore - 50));
-      setUserData(updatedData);
+
+      const updated = UserDataManager.loadUserData();
+      updated.game.totalScore = Math.max(0, updated.game.totalScore - 50);
+      UserDataManager.saveUserData(updated);
+      setUserData(updated);
     }
   };
 
@@ -270,67 +149,53 @@ export default function AnatomiaApp() {
   useEffect(() => {
     if (bodyParts.length > 0 && score === bodyParts.length) {
       setLevelCompleted(true);
-      // Completar sistema
-      UserDataManager.completeSystem(currentSystem().name, score);
+
+      const current = UserDataManager.loadUserData();
+      const systemKey = `${ACTIVITY_ID}-${currentSystem().name}`;
+
+      if (!current.progress.completedActivities.includes(systemKey)) {
+        current.progress.completedActivities.push(systemKey);
+      }
+      current.progress.activityScores[systemKey] = score;
+      current.progress.activityTimes[systemKey] = new Date().toISOString();
+
+      if (!current.progress.completedActivities.includes(ACTIVITY_ID)) {
+        current.progress.completedActivities.push(ACTIVITY_ID);
+      }
+      current.progress.activityScores[ACTIVITY_ID] = Math.max(
+        current.progress.activityScores[ACTIVITY_ID] || 0,
+        sessionScore
+      );
+      current.progress.activityTimes[ACTIVITY_ID] = new Date().toISOString();
+
+      UserDataManager.saveUserData(current);
+      setUserData(current);
     } else {
       setLevelCompleted(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [score, bodyParts.length, currentSystem]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       <GameStatusBar
         title="BioPuzzle"
         score={userData.game.totalScore}
         lives={userData.game.totalLives}
         level={currentSystemIndex + 1}
-        activityName="BioPuzzle"
+        activityName={ACTIVITY_ID}
       />
 
-      <div className="pt-20 px-4 pb-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-              <span className="text-3xl">🧬</span>
-            </div>
-            <h1 className="text-3xl font-medium text-gray-900 mb-2">ESI: Anatomía Humana</h1>
-            <p className="text-gray-600">Arrastra las partes del cuerpo a su ubicación correcta</p>
-          </div>
-
-          {/* System Navigation */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={goToPreviousSystem}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <ArrowLeft size={20} />
-                <span className="hidden sm:inline">Anterior</span>
-              </button>
-
-              <div className="text-center">
-                <h2 className="text-xl font-medium text-gray-900">{currentSystem().name}</h2>
-                <p className="text-sm text-gray-500">Sistema {currentSystemIndex + 1} de {bodySystems.length}</p>
-              </div>
-
-              <button
-                onClick={goToNextSystem}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <span className="hidden sm:inline">Siguiente</span>
-                <ArrowRight size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Main Game Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="flex-1 min-h-0 pt-10 px-4 pb-4 overflow-y-auto">
+        <div className="max-w-7xl mx-auto h-full flex flex-col gap-3">
+          {/* Área principal: tablero + panel lateral, ambos ocupando el alto restante */}
+          <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3">
             {/* Game Board */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="lg:col-span-2 min-h-0">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
                 <div
-                  className="relative w-full h-96 lg:h-[500px] bg-blue-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden"
+                  className="relative w-full h-96 lg:h-[500px] rounded-lg border-2 border-dashed border-gray-200 overflow-hidden"
+                  style={{ backgroundColor: `${ACCENT}0A` }}
                   ref={containerRef}
                 >
                   {/* Imagen del sistema */}
@@ -348,8 +213,8 @@ export default function AnatomiaApp() {
                         part.placed
                           ? 'border-2 border-green-400 bg-green-50 pointer-events-none'
                           : activeDropTargetId === part.id
-                            ? 'border-2 border-blue-400 bg-blue-50'
-                            : 'border-2 border-gray-300 border-dashed hover:border-blue-300 hover:bg-blue-25'
+                            ? 'border-2 bg-white/60'
+                            : 'border-2 border-gray-300 border-dashed hover:bg-white/40'
                       }`}
                       style={{
                         left: `${(part.correctPosition.x / 800) * 100}%`,
@@ -357,6 +222,7 @@ export default function AnatomiaApp() {
                         width: `${Math.max(60, (80 / 800) * containerSize.width)}px`,
                         height: `${Math.max(30, (35 / 800) * containerSize.height)}px`,
                         transform: 'translate(-50%, -50%)',
+                        ...(activeDropTargetId === part.id && !part.placed ? { borderColor: ACCENT } : {}),
                       }}
                       onDragOver={handleDragOver}
                       onDragEnter={() => !part.placed && handleDragEnter(part.id)}
@@ -370,10 +236,8 @@ export default function AnatomiaApp() {
                     part.currentPosition && (
                       <div
                         key={part.id}
-                        className={`absolute px-3 py-1 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 ${
-                          part.placed
-                            ? 'bg-green-500 text-white border border-green-600'
-                            : 'bg-red-500 text-white border border-red-600'
+                        className={`absolute px-3 py-1 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:scale-105 text-white ${
+                          part.placed ? 'bg-green-500' : 'bg-red-500'
                         }`}
                         style={{
                           left: `${(part.currentPosition.x / 800) * 100}%`,
@@ -393,79 +257,99 @@ export default function AnatomiaApp() {
             </div>
 
             {/* Side Panel */}
-            <div className="space-y-6">
-              {/* Progress Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Progreso</h3>
-                
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-600">Completado</span>
-                  <span className="text-sm font-medium text-gray-900">{score} / {bodyParts.length}</span>
+            <div className="min-h-0 flex flex-col gap-3 overflow-y-auto">
+              {/* Selector de sistema */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={goToPreviousSystem}
+                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+                    title="Sistema anterior"
+                  >
+                    <IconArrowLeft size={18} />
+                  </button>
+
+                  <div className="text-center min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 leading-tight truncate">{currentSystem().name}</p>
+                    <p className="text-[11px] text-gray-400">Sistema {currentSystemIndex + 1} de {bodySystems.length}</p>
+                  </div>
+
+                  <button
+                    onClick={goToNextSystem}
+                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+                    title="Siguiente sistema"
+                  >
+                    <IconArrowRight size={18} />
+                  </button>
                 </div>
-                
-                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+              </div>
+
+              {/* Progress Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2.5">Progreso</h3>
+
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs text-gray-500">Completado</span>
+                  <span className="text-xs font-medium text-gray-900">{score} / {bodyParts.length}</span>
+                </div>
+
+                <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
                   <div
-                    className="bg-blue-600 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${(score / bodyParts.length) * 100}%` }}
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(score / bodyParts.length) * 100}%`, backgroundColor: ACCENT }}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="text-lg font-semibold text-green-600">{score}</div>
-                    <div className="text-xs text-green-700">Correctas</div>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="py-2 bg-green-50 border border-green-100 rounded-lg">
+                    <div className="text-base font-semibold text-green-600">{score}</div>
+                    <div className="text-[10px] text-green-700">Correctas</div>
                   </div>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-lg font-semibold text-blue-600">{sessionScore}</div>
-                    <div className="text-xs text-blue-700">Puntos</div>
+                  <div className="py-2 rounded-lg border" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
+                    <div className="text-base font-semibold" style={{ color: ACCENT }}>{sessionScore}</div>
+                    <div className="text-[10px]" style={{ color: ACCENT }}>Puntos</div>
                   </div>
                 </div>
               </div>
 
               {/* Body Parts Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Partes disponibles</h3>
-                
-                <div className="space-y-2">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex-1 min-h-0 flex flex-col">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2.5 shrink-0">Partes disponibles</h3>
+
+                <div className="space-y-1.5 overflow-y-auto">
                   {bodyParts.map(part => (
                     !part.placed && (
                       <div
                         key={part.id}
                         draggable
                         onDragStart={(e) => handleDragStart(e, part.id)}
-                        className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg 
-                                 cursor-move hover:bg-blue-100 transition-colors group"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-move transition-colors group border"
+                        style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}
                       >
-                        <Move size={16} className="text-blue-600 group-hover:scale-110 transition-transform" />
-                        <span className="text-blue-900 font-medium">{part.name}</span>
+                        <IconArrowsMove size={14} style={{ color: ACCENT }} className="group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="text-sm font-medium" style={{ color: ACCENT }}>{part.name}</span>
                       </div>
                     )
                   ))}
 
                   {bodyParts.every(part => part.placed) && (
-                    <div className="flex items-center justify-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <Check size={20} className="text-green-600" />
-                      <span className="text-green-700 font-medium">¡Todas las partes ubicadas!</span>
+                    <div className="flex items-center justify-center gap-2 p-3 bg-green-50 border border-green-100 rounded-lg">
+                      <IconCheck size={18} className="text-green-600" />
+                      <span className="text-green-700 font-medium text-sm">¡Todas las partes ubicadas!</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Actions Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Acciones</h3>
-                
-                <div className="space-y-3">
-                  <button
-                    onClick={resetCurrentGame}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 
-                             text-white rounded-lg font-medium transition-colors"
-                  >
-                    <RefreshCw size={18} />
-                    Reiniciar
-                  </button>
-                </div>
-              </div>
+              {/* Actions */}
+              <button
+                onClick={resetCurrentGame}
+                className="shrink-0 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600
+                         text-white rounded-full font-medium text-sm transition-colors"
+              >
+                <IconRefresh size={16} />
+                Reiniciar
+              </button>
             </div>
           </div>
         </div>
@@ -473,46 +357,45 @@ export default function AnatomiaApp() {
 
       {/* Completion Modal */}
       {levelCompleted && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full p-8">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full p-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Check size={32} className="text-green-600" />
+              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <IconCheck size={28} className="text-green-600" />
               </div>
-              
-              <h3 className="text-2xl font-medium text-gray-900 mb-2">
+
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 ¡Sistema completado!
               </h3>
-              
-              <p className="text-gray-600 mb-6">
+
+              <p className="text-gray-500 text-sm mb-6">
                 Has identificado correctamente todas las partes del {currentSystem().name}
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-center p-3 bg-green-50 border border-green-100 rounded-lg">
                   <div className="text-lg font-semibold text-green-600">{score}</div>
                   <div className="text-xs text-green-700">Partes correctas</div>
                 </div>
-                <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="text-lg font-semibold text-blue-600">{sessionScore}</div>
-                  <div className="text-xs text-blue-700">Puntos ganados</div>
+                <div className="text-center p-3 rounded-lg border" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
+                  <div className="text-lg font-semibold" style={{ color: ACCENT }}>{sessionScore}</div>
+                  <div className="text-xs" style={{ color: ACCENT }}>Puntos ganados</div>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={goToNextSystem}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 
-                           text-white rounded-lg font-medium transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-full font-semibold hover:opacity-90 transition-colors"
+                  style={{ backgroundColor: ACCENT }}
                 >
                   Siguiente sistema
-                  <ArrowRight size={18} />
+                  <IconArrowRight size={18} />
                 </button>
-                
+
                 <button
                   onClick={resetCurrentGame}
-                  className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg 
-                           font-medium transition-colors"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Repetir
                 </button>

@@ -30,6 +30,9 @@ export interface TriviaAnsweredQuestion {
 
 export interface TriviaStatus {
   id: string
+  /** Nombre de la trivia — se agregó para poder mostrarla en el perfil
+   *  del alumno sin tener que volver a consultar Firestore. */
+  name?: string
   percentage: number
   completed: boolean
 }

@@ -1,6 +1,6 @@
 "use client"
 import { IconHeartPlus, IconX } from '@tabler/icons-react';
-import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import UserDataManager from '@/lib/userDataManager';
 
 const LIFE_PURCHASE_COST = 200;
@@ -38,13 +38,7 @@ const PurchaseModal = ({
     onPurchase();
     onClose();
 
-    Swal.fire({
-      icon: "success",
-      title: "¡Vida Extra Comprada!",
-      text: "¡Continúa jugando!",
-      showConfirmButton: false,
-      timer: 1000
-    });
+    toast.success('¡Vida extra comprada! Continuá jugando.', { duration: 2000 });
   };
 
   return (

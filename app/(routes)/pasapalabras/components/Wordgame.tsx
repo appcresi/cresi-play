@@ -1,134 +1,45 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowRight, HelpCircle, SkipForward
-} from 'lucide-react';
+import {
+  IconArrowRight,
+  IconHelp,
+  IconPlayerSkipForward,
+  IconSun,
+  IconMoon,
+  IconMaximize,
+} from '@tabler/icons-react';
 import { palabras } from '../utils/words';
 import toast, { Toaster } from 'react-hot-toast';
-import Image from 'next/image';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
-import FinalReport from '../components/FinalReport';
+import FinalReport from './FinalReport';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
-// UserData interfaces (matching MoodTracker)
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
-
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-// UserDataManager class (same as MoodTracker)
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      }
-    };
-  }
-
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        parsedData.profile.lastLogin = new Date().toISOString();
-        this.saveUserData(parsedData);
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-}
+// Mismo color que ya tiene "Pasapalabras" en el catálogo (la tarjeta que
+// ves en tu panel) — así la pantalla del juego se siente la misma cosa
+// que la tarjeta que tocaste para llegar acá, no un azul sin relación.
+const ACCENT = getActivityById('pasapalabras')?.color ?? '#388E3C';
+const ACTIVITY_TITLE = 'Pasapalabras';
 
 type LetterKey = keyof typeof palabras;
 const letters = Object.keys(palabras) as LetterKey[];
 
 const UnifiedWordGame = () => {
-  // UserData integration
-  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
+
+  // El círculo de letras se posiciona con trigonometría (Math.cos/sin).
+  // Aunque es una fórmula determinística, el servidor y el navegador
+  // pueden dar un resultado con una diferencia mínima en los últimos
+  // decimales por diferencias de plataforma en el cálculo de punto
+  // flotante — invisible a simple vista, pero suficiente para que React
+  // marque un mismatch de hidratación (compara el string exacto). La
+  // solución estándar es no renderizar ese cálculo durante el server
+  // render, solo después de montar en el cliente.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Game state
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
@@ -202,7 +113,7 @@ const UnifiedWordGame = () => {
   const handleLifeLoss = () => {
     const newLives = lives - 1;
     setLives(newLives);
-    
+
     if (newLives <= 0 && score >= 200) {
       setShowPurchaseModal(true);
     } else if (newLives <= 0) {
@@ -224,7 +135,7 @@ const UnifiedWordGame = () => {
     const updatedData = UserDataManager.loadUserData();
     setScore(updatedData.game.totalScore);
     setLives(updatedData.game.totalLives);
-    
+
     if (updatedData.game.totalLives < 1) {
       handleGameEnd();
     }
@@ -234,17 +145,17 @@ const UnifiedWordGame = () => {
   const handleSubmit = (value: string) => {
     if (!currentWord) return;
     const cleanedInput = value.replace(/\s+/g, '').toLowerCase();
-    
+
     if (cleanedInput === currentWord.palabra.toLowerCase()) {
       setGuessedLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
       setScore((prev) => prev + 100);
       setCorrectWords((prev) => [...prev, currentWord]);
       toast.success('¡Correcto!');
-      
+
       if (correctWords.length % 5 === 0) {
         setLevel(prev => prev + 1);
       }
-      
+
       moveToNextLetter();
     } else {
       toast.error('Incorrecto. Intenta de nuevo.');
@@ -252,7 +163,7 @@ const UnifiedWordGame = () => {
       setIncorrectWords((prev) => [...prev, currentWord]);
       setIsIncorrect(true);
       handleLifeLoss();
-      
+
       setTimeout(() => {
         moveToNextLetter();
       }, 1000);
@@ -279,8 +190,29 @@ const UnifiedWordGame = () => {
     }
   };
 
+  /**
+   * Antes esto solo guardaba puntos/vidas — nunca marcaba la actividad
+   * como completada, así que "Pasapalabras" nunca aparecía con el check
+   * verde en el panel del alumno. Ahora, además de guardar el estado del
+   * juego (ya lo hace GameStatusBar en vivo mientras jugás), registramos
+   * la finalización explícitamente.
+   *
+   * Nota: NO usamos UserDataManager.completeActivity() acá porque esa
+   * función suma el puntaje al total — y el total ya viene sumándose en
+   * vivo turno a turno vía GameStatusBar. Sumarlo de nuevo lo duplicaría.
+   * Por eso escribimos directo los campos de progreso, sin tocar el total.
+   */
   const handleGameEnd = () => {
     saveGameData();
+
+    const data = UserDataManager.loadUserData();
+    if (!data.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      data.progress.completedActivities.push(ACTIVITY_TITLE);
+    }
+    data.progress.activityScores[ACTIVITY_TITLE] = correctWords.length * 100;
+    data.progress.activityTimes[ACTIVITY_TITLE] = new Date().toISOString();
+    UserDataManager.saveUserData(data);
+
     setShowFinalReport(true);
   };
 
@@ -343,6 +275,14 @@ const UnifiedWordGame = () => {
     const radius = 155;
     const center = 190;
 
+    // Mismo tamaño del contenedor real, pero sin las letras posicionadas
+    // por trigonometría — evita el mismatch de hidratación mencionado
+    // arriba. Apenas el componente termina de montar en el cliente
+    // (una fracción de segundo), se reemplaza por el círculo real.
+    if (!mounted) {
+      return <div className="relative w-[380px] h-[380px]" />;
+    }
+
     return (
       <div className="relative w-[380px] h-[380px]">
         <div>
@@ -353,21 +293,26 @@ const UnifiedWordGame = () => {
 
             const isGuessed = guessedLetters.has(letter);
             const isPassed = passedLetters.has(letter);
-            const isIncorrect = incorrectLetters.has(letter);
+            const isIncorrectLetter = incorrectLetters.has(letter);
             const isCurrent = letter === letters[currentLetterIndex];
 
-            const classNames = `absolute flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 font-bold text-lg shadow-lg z-20
-              ${isGuessed ? 'bg-green-500 text-white scale-110' : 
-                isPassed ? 'bg-gray-500 text-white' : 
-                isIncorrect ? 'bg-red-500 text-white' : 
-                isCurrent ? 'bg-blue-600 text-white scale-125 ring-4 ring-blue-300' : 
-                'bg-purple-500 text-white'}`;
+            let bgStyle: React.CSSProperties = { backgroundColor: '#A855F7' }; // default (sin jugar)
+            if (isGuessed) bgStyle = { backgroundColor: '#22C55E' };
+            else if (isPassed) bgStyle = { backgroundColor: '#9CA3AF' };
+            else if (isIncorrectLetter) bgStyle = { backgroundColor: '#EF4444' };
+            else if (isCurrent) bgStyle = { backgroundColor: ACCENT };
 
             return (
               <div
                 key={letter}
-                className={classNames}
-                style={{ left: `${x}px`, top: `${y}px` }}
+                className={`absolute flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 font-bold text-lg shadow-md z-20 text-white
+                  ${isCurrent ? 'scale-125 ring-4' : ''}`}
+                style={{
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  ...bgStyle,
+                  ...(isCurrent ? { boxShadow: `0 0 0 4px ${ACCENT}40` } : {}),
+                }}
               >
                 {letter}
               </div>
@@ -386,7 +331,7 @@ const UnifiedWordGame = () => {
         lives={lives}
         level={level}
       />
-      
+
       <PurchaseModal
         isOpen={showPurchaseModal}
         onClose={handleClosePurchaseModal}
@@ -402,18 +347,17 @@ const UnifiedWordGame = () => {
         />
       ) : (
         <div className="container mx-auto px-4 py-6 max-w-6xl">
-          {/* Tarjeta de definición estilo Google Classroom */}
-          
-          <div className={`mb-8 ${isNightMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md overflow-hidden transition-colors duration-300 mx-auto max-w-4xl`}>
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-24 relative">
+          {/* Tarjeta de definición */}
+          <div className={`mb-8 ${isNightMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-md overflow-hidden transition-colors duration-300 mx-auto max-w-4xl`}>
+            <div className="h-24 relative" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
               <div className="absolute bottom-4 left-6 flex items-center gap-4">
-                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
-                  <span className="text-gray-600 text-xs font-medium">Letra</span>
-                  <p className="text-blue-600 font-bold text-2xl">{letters[currentLetterIndex]}</p>
+                <div className="bg-white rounded-xl px-4 py-2 shadow-sm">
+                  <span className="text-gray-500 text-xs font-medium">Letra</span>
+                  <p className="font-bold text-2xl" style={{ color: ACCENT }}>{letters[currentLetterIndex]}</p>
                 </div>
-                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
-                  <span className="text-gray-600 text-xs font-medium">Progreso</span>
-                  <p className="text-blue-600 font-bold text-lg">{progress}/{maxWords}</p>
+                <div className="bg-white rounded-xl px-4 py-2 shadow-sm">
+                  <span className="text-gray-500 text-xs font-medium">Progreso</span>
+                  <p className="font-bold text-lg" style={{ color: ACCENT }}>{progress}/{maxWords}</p>
                 </div>
               </div>
             </div>
@@ -425,24 +369,23 @@ const UnifiedWordGame = () => {
               )}
             </div>
           </div>
-          
+
           {/* Sección del juego */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative flex justify-center items-center">
               {/* Timer Circle */}
               <div className="absolute w-[380px] h-[380px] flex justify-center items-center pointer-events-none z-10">
                 <svg className="absolute inset-0 transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
-                  <circle 
-                    className="text-gray-200" 
-                    strokeWidth="6" 
-                    stroke="currentColor" 
-                    fill="transparent" 
-                    cx="50" 
-                    cy="50" 
-                    r="32" 
+                  <circle
+                    className="text-gray-200"
+                    strokeWidth="6"
+                    stroke="currentColor"
+                    fill="transparent"
+                    cx="50"
+                    cy="50"
+                    r="32"
                   />
                   <circle
-                    className="text-current"
                     strokeWidth="6"
                     strokeLinecap="round"
                     strokeDasharray="201.062"
@@ -466,7 +409,7 @@ const UnifiedWordGame = () => {
               {/* Área de respuesta en el centro */}
               <div className="absolute inset-0 flex flex-col justify-center items-center z-30">
                 {currentWord && (
-                  <div className="flex flex-col items-center gap-3 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl border-2 border-gray-200">
+                  <div className="flex flex-col items-center gap-3 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-100">
                     <input
                       type="text"
                       value={inputValue}
@@ -479,10 +422,11 @@ const UnifiedWordGame = () => {
                         }
                       }}
                       autoFocus
-                      className="w-48 px-4 py-2 text-base text-gray-900 bg-white border-2 border-blue-400 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-300 transition-all text-center font-medium shadow-md"
+                      className="w-48 px-4 py-2 text-base text-gray-900 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 transition-all text-center font-medium shadow-sm"
+                      style={{ borderColor: `${ACCENT}80` }}
                       placeholder="Respuesta"
                     />
-                    
+
                     <div className="flex justify-center gap-2">
                       <button
                         type="button"
@@ -490,32 +434,33 @@ const UnifiedWordGame = () => {
                           handleSubmit(inputValue);
                           setInputValue('');
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg font-medium shadow-md transition-all"
+                        className="text-white p-2.5 rounded-full font-medium shadow-sm transition-all hover:opacity-90"
+                        style={{ backgroundColor: ACCENT }}
                         title="Enviar respuesta"
                       >
-                        <ArrowRight size={18} />
+                        <IconArrowRight size={18} />
                       </button>
                       <button
                         type="button"
                         onClick={handleHelp}
-                        className="bg-amber-500 hover:bg-amber-600 text-white p-2.5 rounded-lg shadow-md transition-all"
+                        className="bg-amber-500 hover:bg-amber-600 text-white p-2.5 rounded-full shadow-sm transition-all"
                         title="Obtener pista"
                       >
-                        <HelpCircle size={18} />
+                        <IconHelp size={18} />
                       </button>
                       <button
                         type="button"
                         onClick={handlePass}
-                        className="bg-gray-600 hover:bg-gray-700 text-white p-2.5 rounded-lg shadow-md transition-all"
+                        className="bg-gray-500 hover:bg-gray-600 text-white p-2.5 rounded-full shadow-sm transition-all"
                         title="Pasar palabra"
                       >
-                        <SkipForward size={18} />
+                        <IconPlayerSkipForward size={18} />
                       </button>
                     </div>
 
                     <div className="flex flex-col items-center gap-1 text-center">
-                      <p className="text-xs text-gray-600 font-medium">
-                        Letras: <span className="font-bold text-gray-800">{inputValue.length}</span>
+                      <p className="text-xs text-gray-500 font-medium">
+                        Letras: <span className="font-bold text-gray-700">{inputValue.length}</span>
                       </p>
                       <div className="flex items-center gap-2">
                         <span className="text-2xl font-bold text-gray-800">{timeLeft}</span>
@@ -526,8 +471,8 @@ const UnifiedWordGame = () => {
               </div>
             </div>
           </div>
-          
-          <Toaster 
+
+          <Toaster
             position="top-center"
             toastOptions={{
               className: isNightMode ? 'bg-gray-800 text-white' : '',
@@ -537,28 +482,20 @@ const UnifiedWordGame = () => {
         </div>
       )}
 
-      <button 
-        onClick={toggleNightMode} 
-        className='fixed bottom-6 right-6 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 border border-gray-200'
+      <button
+        onClick={toggleNightMode}
+        className="fixed bottom-6 right-6 p-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-50 border border-gray-200 text-gray-600"
+        title={isNightMode ? 'Modo día' : 'Modo noche'}
       >
-        <Image 
-          src={isNightMode ? '/sun-mode.svg' : '/night-mode.svg'} 
-          alt="Modo" 
-          width={24} 
-          height={24} 
-        />
+        {isNightMode ? <IconSun size={20} /> : <IconMoon size={20} />}
       </button>
-      
-      <button 
-        onClick={handleFullscreen} 
-        className='hidden lg:block fixed bottom-6 left-6 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 border border-gray-200'
+
+      <button
+        onClick={handleFullscreen}
+        className="hidden lg:block fixed bottom-6 left-6 p-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-50 border border-gray-200 text-gray-600"
+        title="Pantalla completa"
       >
-        <Image 
-          src='/full-screen.svg' 
-          alt='Pantalla Completa' 
-          width={24} 
-          height={24} 
-        />
+        <IconMaximize size={20} />
       </button>
     </div>
   );

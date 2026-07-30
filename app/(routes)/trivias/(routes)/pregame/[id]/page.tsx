@@ -3,10 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
-import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare } from '@tabler/icons-react';
+import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare, IconCopy, IconCheck } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('trivias')?.color ?? '#1976D2';
 
 interface Trivia {
   id: string;
@@ -27,6 +30,7 @@ export default function Page({ params }: PageProps) {
   const [data, setData] = useState<Trivia | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const resolveParams = async () => {
@@ -67,11 +71,23 @@ export default function Page({ params }: PageProps) {
     fetchTrivia();
   }, [id]);
 
+  const shareLink = data ? `https://jugar.cresi.com.ar/trivias/pregame/${data.id}` : '';
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Error al copiar el link:', err);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
             <p className="text-gray-600">Cargando trivia...</p>
           </div>
         </div>
@@ -85,12 +101,12 @@ export default function Page({ params }: PageProps) {
         <div className="max-w-6xl mx-auto px-4 py-8">
           <Link
             href="/trivias"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
           >
             <IconArrowNarrowLeft size={20} />
             <span className="text-sm font-medium">Volver a trivias</span>
           </Link>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
             <p className="text-red-600">
               {error || 'No se pudo cargar la trivia'}
             </p>
@@ -101,81 +117,81 @@ export default function Page({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <main className="h-screen bg-gray-50 overflow-hidden">
+      <div className="max-w-5xl mx-auto px-4 py-4 h-full flex flex-col">
         {/* Back Button */}
         <Link
           href="/trivias"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-gray-600 hover:text-gray-900 mb-3 transition-colors w-fit shrink-0"
         >
-          <IconArrowNarrowLeft size={20} />
+          <IconArrowNarrowLeft size={18} />
           <span className="text-sm font-medium">Volver a trivias</span>
         </Link>
 
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-lg p-8 text-white mb-0">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <IconListNumbers size={24} />
+        <div className="rounded-t-xl px-6 py-4 text-white shrink-0" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+              <IconListNumbers size={18} />
             </div>
-            <div>
-              <p className="text-sm opacity-90">Trivia</p>
-              <h1 className="text-3xl font-bold">{data.name}</h1>
+            <div className="min-w-0">
+              <p className="text-xs opacity-90">Trivia</p>
+              <h1 className="text-xl font-bold truncate">{data.name}</h1>
             </div>
           </div>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
           {/* Left Column - Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 flex flex-col gap-3 min-h-0">
             {/* Info Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Trivia</h2>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <IconUser size={20} className="text-blue-600" />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3">Información de la Trivia</h2>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
+                    <IconUser size={16} style={{ color: ACCENT }} />
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Autor</p>
-                    <p className="text-sm font-medium text-gray-900">
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500">Autor</p>
+                    <p className="text-xs font-medium text-gray-900 truncate">
                       {data.author === 'CRESI' ? 'CrESI' : 'Usuario personalizado'}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <IconBolt size={20} className="text-purple-600" />
+                <div className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
+                    <IconBolt size={16} style={{ color: ACCENT }} />
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Nivel de dificultad</p>
-                    <p className="text-sm font-medium text-gray-900">Nivel {data.level}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <IconListNumbers size={20} className="text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Cantidad de preguntas</p>
-                    <p className="text-sm font-medium text-gray-900">{data.questions?.length || 0} preguntas</p>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500">Dificultad</p>
+                    <p className="text-xs font-medium text-gray-900">Nivel {data.level}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <IconCalendar size={20} className="text-orange-600" />
+                <div className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
+                    <IconListNumbers size={16} style={{ color: ACCENT }} />
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Fecha de creación</p>
-                    <p className="text-sm font-medium text-gray-900">
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500">Preguntas</p>
+                    <p className="text-xs font-medium text-gray-900">{data.questions?.length || 0} preguntas</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
+                    <IconCalendar size={16} style={{ color: ACCENT }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-500">Creación</p>
+                    <p className="text-xs font-medium text-gray-900 truncate">
                       {new Date(data.created_at).toLocaleDateString('es-AR', {
                         day: '2-digit',
-                        month: 'long',
+                        month: 'short',
                         year: 'numeric',
                       })}
                     </p>
@@ -187,48 +203,65 @@ export default function Page({ params }: PageProps) {
             {/* Play Button */}
             <Link
               href={`/trivias/${data.id}`}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
+              className="w-full text-white px-6 py-3 rounded-full font-semibold text-base flex items-center justify-center gap-2 transition-colors shadow-sm hover:opacity-90 shrink-0"
+              style={{ backgroundColor: ACCENT }}
             >
               Comenzar Trivia
-              <IconArrowNarrowRight size={24} />
+              <IconArrowNarrowRight size={20} />
             </Link>
           </div>
 
           {/* Right Column - QR Code */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-6">
-              <div className="flex items-center gap-2 mb-4">
-                <IconShare size={20} className="text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Compartir Trivia</h2>
+          <div className="lg:col-span-1 min-h-0">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-2">
+                <IconShare size={16} className="text-gray-600" />
+                <h2 className="text-sm font-semibold text-gray-900">Compartir Trivia</h2>
               </div>
-              
-              <p className="text-sm text-gray-600 mb-4">
-                Escaneá este código QR para compartir la trivia con otros
+
+              <p className="text-xs text-gray-500 mb-3">
+                Escaneá el QR o copiá el link para compartir
               </p>
 
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 flex justify-center">
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-center">
                 <QRCode
-                  size={200}
-                  style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                  value={`https://jugar.cresi.com.ar/trivias/pregame/${data.id}`}
+                  size={130}
+                  style={{ height: 'auto', maxWidth: '100%', width: '130px' }}
+                  value={shareLink}
                   viewBox={`0 0 256 256`}
                 />
               </div>
 
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-xs text-blue-700 text-center">
-                  Compartí este link con tus amigos para que jueguen
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
+                style={{
+                  backgroundColor: copied ? '#DCFCE7' : `${ACCENT}15`,
+                  color: copied ? '#16A34A' : ACCENT,
+                }}
+              >
+                {copied ? (
+                  <>
+                    <IconCheck size={16} />
+                    ¡Link copiado!
+                  </>
+                ) : (
+                  <>
+                    <IconCopy size={16} />
+                    Copiar link
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Settings Button (Fixed) */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <div className="bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
-            <TriviaSettings />
-          </div>
+      {/* Settings Button (Fixed) */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="bg-white rounded-full shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+          <TriviaSettings />
         </div>
       </div>
     </main>

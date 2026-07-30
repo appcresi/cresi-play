@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
 import UserDataSync from '@/lib/userDataSync';
+import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebase';
 import type { UserData } from '@/types/user';
-import { ACTIVITY_IDS } from '@/lib/activities';
 
 interface GameStatusProps {
   title?: string;
@@ -17,109 +17,6 @@ interface GameStatusProps {
   totalQuestions?: number;
   showProfile?: boolean;
   activityName?: string;
-}
-
-// Clase para manejar los datos del usuario
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  // Datos por defecto. Usa el mismo tipo compartido que el resto de la app
-  // (types/user.ts) — antes tenía su propia forma achicada, sin `dashboard`,
-  // lo que rompía la compilación al pasarle estos datos a UserDataSync.
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      },
-      dashboard: {
-        visibleActivities: ACTIVITY_IDS,
-        activityOrder: ACTIVITY_IDS
-      }
-    };
-  }
-
-  // Cargar datos del usuario
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  // Guardar datos del usuario
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-
-  // Actualizar puntuación de juego
-  static updateGameScore(newScore: number, activityName?: string): UserData {
-    const userData = this.loadUserData();
-    userData.game.totalScore = newScore;
-    
-    // Si se especifica actividad, actualizar su puntuación específica
-    if (activityName) {
-      userData.progress.activityScores[activityName] = newScore - userData.game.totalScore + (userData.progress.activityScores[activityName] || 0);
-    }
-    
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Actualizar vidas
-  static updateLives(newLives: number): UserData {
-    const userData = this.loadUserData();
-    userData.game.totalLives = Math.max(0, Math.min(3, newLives));
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Registrar visita a actividad
-  static visitActivity(activityTitle: string): UserData {
-    const userData = this.loadUserData();
-    
-    if (!userData.progress.lastVisits) {
-      userData.progress.lastVisits = {};
-    }
-    
-    userData.progress.lastVisits[activityTitle] = new Date().toISOString();
-    this.saveUserData(userData);
-    return userData;
-  }
 }
 
 const GameStatusBar = ({
@@ -243,8 +140,12 @@ const GameStatusBar = ({
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 hover:border-blue-400 transition-colors">
                   <img
-                    src={`/${userData.profile.character.image}`}
+                    src={`/${userData.profile.character.image.replace(/^\/+/, '')}`}
                     alt={userData.profile.character.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '/logocresi.svg';
+                    }}
                     className="w-full h-full object-cover"
                   />
                 </div>

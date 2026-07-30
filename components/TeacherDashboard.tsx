@@ -37,6 +37,7 @@ import { db } from '@/lib/firebase';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom, ClassroomStudent, PendingStudent } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
+import { colorForTrivia } from '@/lib/triviaColors';
 import { useAuth } from '@/context/AuthContext';
 
 // Mismo patrón que Features.tsx/ClassroomDesk.tsx: el catálogo guarda el
@@ -73,17 +74,6 @@ const ACTIVITIES_CATALOG = ACTIVITIES;
 // parte de un catálogo con paleta fija como las actividades) — les
 // asignamos uno automático a partir de su id, siempre el mismo para la
 // misma trivia, para que la tarjeta tenga la misma identidad visual.
-const TRIVIA_COLORS = [
-  '#1E88E5', '#039BE5', '#00897B', '#43A047', '#7CB342',
-  '#C0CA33', '#FDD835', '#FFB300', '#FB8C00', '#F4511E',
-  '#E53935', '#D81B60', '#8E24AA', '#5E35B1', '#3949AB',
-];
-
-function colorForTrivia(id: string): string {
-  const sum = id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return TRIVIA_COLORS[sum % TRIVIA_COLORS.length];
-}
-
 const TOTAL_ACTIVITIES = ACTIVITIES_CATALOG.length;
 
 const TeacherDashboard = () => {

@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { IconVolume2, IconVolumeOff } from "@tabler/icons-react"; // Usa la librería de íconos que prefieres
+import { IconVolume2, IconVolumeOff } from "@tabler/icons-react";
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('lecciones')?.color ?? '#1976D2';
 
 interface FloatingAudioButtonProps {
-  text: string; // Texto que se leerá
+  text: string;
 }
 
 const FloatingAudioButton: React.FC<FloatingAudioButtonProps> = ({ text }) => {
@@ -10,25 +13,32 @@ const FloatingAudioButton: React.FC<FloatingAudioButtonProps> = ({ text }) => {
 
   const handleToggleSpeech = () => {
     if (isSpeaking) {
-      window.speechSynthesis.cancel(); // Detener la lectura
+      window.speechSynthesis.cancel();
       setIsSpeaking(false);
     } else {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => setIsSpeaking(false); // Marcar como no hablando al terminar
-      window.speechSynthesis.speak(utterance); // Iniciar la lectura
+      utterance.onend = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
       setIsSpeaking(true);
     }
   };
 
+  // Antes el botón se veía gris con cursor "no disponible" cuando NO
+  // estaba leyendo — justo el estado en el que tocarlo SÍ hace algo
+  // (arranca la lectura). El botón nunca estuvo realmente deshabilitado,
+  // solo se veía así por error. Ahora el estado "listo para leer" se ve
+  // claramente clickeable, y el estado "leyendo" se distingue con un
+  // color de alerta suave (para indicar "tocá de nuevo para detener").
   return (
     <button
       onClick={handleToggleSpeech}
-      className={`fixed bottom-4 left-4 p-4 rounded-full shadow-lg transition-all ${
-        isSpeaking
-          ? "bg-blue-600 hover:bg-blue-700 text-white"
-          : "bg-gray-400 text-gray-200 cursor-not-allowed"
-      }`}
-      aria-label={isSpeaking ? "Detener lectura" : "Leer texto"}
+      className="fixed bottom-4 left-4 p-4 rounded-full shadow-lg transition-all hover:scale-105"
+      style={{
+        backgroundColor: isSpeaking ? '#DC2626' : ACCENT,
+        color: 'white',
+      }}
+      aria-label={isSpeaking ? "Detener lectura" : "Leer texto en voz alta"}
+      title={isSpeaking ? "Detener lectura" : "Leer texto en voz alta"}
     >
       {isSpeaking ? <IconVolume2 size={24} /> : <IconVolumeOff size={24} />}
     </button>

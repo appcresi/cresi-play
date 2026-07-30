@@ -8,16 +8,6 @@ export const metadata: Metadata = {
     "Aprendé a reconocer tus emociones y llevar un registros de tus estados de ánimo.",
 };
 
-export default async function Completeword(): Promise<JSX.Element> {
-  
-  return (
-        <main className="min-h-screen bg-gray-100 font-sans">
-          {/* Contenido principal */}
-          <div className="max-w-5xl mx-auto px-4 mt-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <MoodTracker />
-            </div>
-          </div>
-        </main>
-  );
+export default function MoodTrackerPage(): JSX.Element {
+  return <MoodTracker />;
 }

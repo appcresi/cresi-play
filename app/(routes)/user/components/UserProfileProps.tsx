@@ -11,236 +11,64 @@ import {
     IconTrash,
     IconTarget,
     IconCalendar,
-    IconUser
+    IconUser,
+    IconBook,
+    IconBooks,
+    IconBriefcase,
+    IconNotes,
+    IconAlertTriangle,
+    IconMedal,
+    IconStar,
+    IconCards,
+    IconAB2,
+    IconShieldCheck,
+    IconBrandPnpm,
+    IconPacman,
+    IconMoodPuzzled,
+    IconMoodTongueWink2,
+    IconCheck,
 } from "@tabler/icons-react";
 import PurchaseModal from '@/components/PurchaseModal';
-import Swal from 'sweetalert2';
+import UserDataManager from '@/lib/userDataManager';
+import { ACTIVITIES } from '@/lib/activities';
 
+// Los títulos reales del catálogo — se usan para filtrar
+// `completedActivities`, que además de estos títulos también contiene
+// claves internas más finas (una por trivia jugada, por sistema de
+// BioPuzzle, por lección puntual, etc.). Sin este filtro, "cuántas
+// actividades completaste" queda inflado por esos sub-registros.
+const CATALOG_TITLES = new Set(ACTIVITIES.map((a) => a.title));
+const TOTAL_ACTIVITIES = ACTIVITIES.length;
 
-// Estructura unificada de datos del usuario
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodRecord[];
-    lastEntry: MoodRecord | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
+// Mismo mapa ícono-por-nombre que usan Features.tsx / Header.tsx / etc.
+const ACTIVITY_ICON_MAP: Record<string, JSX.Element> = {
+  IconCards: <IconCards size={18} />,
+  IconAB2: <IconAB2 size={18} />,
+  IconShieldCheck: <IconShieldCheck size={18} />,
+  IconBrandPnpm: <IconBrandPnpm size={18} />,
+  IconPacman: <IconPacman size={18} />,
+  IconMoodPuzzled: <IconMoodPuzzled size={18} />,
+  IconMoodTongueWink2: <IconMoodTongueWink2 size={18} />,
+  IconBook: <IconBook size={18} />,
+  IconHeart: <IconHeart size={18} />,
+};
 
-interface MoodRecord {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-// Clase para manejar los datos del usuario
-class UserDataManager {
-  private static readonly STORAGE_KEY = 'cresi_user_data';
-
-  // Datos por defecto
-  public static getDefaultUserData(): UserData {
-    return {
-      profile: {
-        character: { id: 0, name: '', image: '' },
-        username: 'Estudiante',
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
-      },
-      game: {
-        totalScore: 0,
-        totalLives: 3,
-        streak: 0
-      },
-      progress: {
-        completedActivities: [],
-        activityScores: {},
-        activityTimes: {},
-        lastVisits: {}
-      },
-      mood: {
-        history: [],
-        lastEntry: null
-      },
-      achievements: [],
-      settings: {
-        notifications: true,
-        theme: 'light',
-        language: 'es'
-      }
-    };
+const AchievementIcon = ({ iconName, className }: { iconName?: string; className: string }) => {
+  switch (iconName) {
+    case 'Medal': return <IconMedal className={className} />;
+    case 'Trophy': return <IconTrophy className={className} />;
+    case 'BookOpen': return <IconBook className={className} />;
+    case 'Star': return <IconStar className={className} />;
+    default: return <IconTrophy className={className} />;
   }
+};
 
-  // Cargar datos del usuario
-  static loadUserData(): UserData {
-    try {
-      const storedData = localStorage.getItem(this.STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData) as UserData;
-        // Actualizar lastLogin
-        parsedData.profile.lastLogin = new Date().toISOString();
-        this.saveUserData(parsedData);
-        return parsedData;
-      }
-      return this.getDefaultUserData();
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      return this.getDefaultUserData();
-    }
-  }
-
-  // Guardar datos del usuario
-  static saveUserData(userData: UserData): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
-  }
-
-  // Actualizar datos de juego
-  static updateGameData(updates: Partial<UserData['game']>): UserData {
-    const userData = this.loadUserData();
-    userData.game = { ...userData.game, ...updates };
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Resetear todos los datos manteniendo perfil
-  static resetGameData(): UserData {
-    const userData = this.loadUserData();
-    userData.game = {
-      totalScore: 0,
-      totalLives: 3,
-      streak: 0
-    };
-    userData.progress = {
-      completedActivities: [],
-      activityScores: {},
-      activityTimes: {},
-      lastVisits: {}
-    };
-    userData.mood = {
-      history: [],
-      lastEntry: null
-    };
-    userData.achievements = [];
-    this.saveUserData(userData);
-    return userData;
-  }
-
-  // Comprar vida
-  static purchaseLife(cost: number): { success: boolean; userData?: UserData; error?: string } {
-    const userData = this.loadUserData();
-    
-    if (userData.game.totalLives >= 3) {
-      return { success: false, error: 'Ya tienes el máximo de vidas' };
-    }
-    
-    if (userData.game.totalScore < cost) {
-      return { success: false, error: 'No tienes suficientes puntos' };
-    }
-    
-    userData.game.totalLives += 1;
-    userData.game.totalScore -= cost;
-    this.saveUserData(userData);
-    
-    return { success: true, userData };
-  }
-
-  // Obtener estadísticas resumidas
-  static getStats(userData?: UserData): {
-    daysActive: number;
-    totalActivities: number;
-    averageScore: number;
-    lastActivity: string | null;
-  } {
-    // FIX: aceptar userData como parámetro para evitar leer datos viejos de localStorage
-    const data = userData ?? this.loadUserData();
-    
-    const createdDate = new Date(data.profile.createdAt);
-    const now = new Date();
-    const daysActive = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    
-    const totalActivities = data.progress.completedActivities.length;
-    const totalScore = data.game.totalScore;
-    const averageScore = totalActivities > 0 ? Math.round(totalScore / totalActivities) : 0;
-    
-    // Buscar la actividad más reciente
-    const lastActivityTime = Math.max(
-      ...Object.values(data.progress.activityTimes).map(time => new Date(time).getTime()),
-      0
-    );
-    
-    const lastActivity = lastActivityTime > 0 
-      ? Object.entries(data.progress.activityTimes)
-          .find(([, time]) => new Date(time).getTime() === lastActivityTime)?.[0] || null
-      : null;
-    
-    return {
-      daysActive,
-      totalActivities,
-      averageScore,
-      lastActivity
-    };
-  }
-}
-
-interface UserProfileProps {
-  initialData?: {
-    character?: any;
-    username?: string;
-    totalGameLives?: number;
-    totalGameScore?: number;
-  };
-}
-
-const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
+const UserProfile: React.FC = () => {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserData>(UserDataManager.getDefaultUserData());
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  const [stats, setStats] = useState({
-    daysActive: 0,
-    totalActivities: 0,
-    averageScore: 0,
-    lastActivity: null as string | null
-  });
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // FIX: el efecto solo corre al montar el componente, sin depender de initialData
-  // para evitar que re-cargas desde localStorage sobreescriban el estado luego de una compra
   useEffect(() => {
     loadUserData();
   }, []);
@@ -248,52 +76,47 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   const loadUserData = () => {
     const data = UserDataManager.loadUserData();
     setUserData(data);
-    // FIX: pasar los datos frescos directamente a getStats para evitar leer localStorage dos veces
-    const userStats = UserDataManager.getStats(data);
-    setStats(userStats);
   };
 
-  const handleDeleteHistory = async () => {
-    const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: "¡No podrás revertir esta acción! Se borrará todo tu progreso de juegos y actividades, pero se mantendrá tu perfil.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, bórralo',
-      cancelButtonText: 'Cancelar',
-      background: '#fff',
-      customClass: {
-        popup: 'comic-popup'
-      }
-    });
+  /**
+   * Antes esto era `completedActivities.length / 10` — un número fijo que
+   * no reflejaba el catálogo real (15 actividades), y encima
+   * `completedActivities` mezcla títulos de actividad con un montón de
+   * claves internas (una trivia puntual, un sistema de BioPuzzle, una
+   * lección puntual...). Filtramos primero para quedarnos solo con las
+   * que son actividades reales del catálogo.
+   */
+  const completedCatalogActivities = Array.from(
+    new Set(userData.progress.completedActivities.filter((id) => CATALOG_TITLES.has(id)))
+  );
+  const programPercentage = Math.min(
+    Math.round((completedCatalogActivities.length / TOTAL_ACTIVITIES) * 100),
+    100
+  );
 
-    if (result.isConfirmed) {
-      const resetData = UserDataManager.resetGameData();
-      setUserData(resetData);
-      // FIX: pasar resetData directamente para consistencia
-      const userStats = UserDataManager.getStats(resetData);
-      setStats(userStats);
+  const averageScore = completedCatalogActivities.length > 0
+    ? Math.round(userData.game.totalScore / completedCatalogActivities.length)
+    : 0;
 
-      await Swal.fire({
-        title: '¡Progreso reiniciado!',
-        text: 'Tu progreso de juegos ha sido eliminado. Tu perfil se mantiene intacto.',
-        icon: 'success',
-        customClass: {
-          popup: 'comic-popup'
-        }
-      });
-    }
+  const unlockedAchievements = userData.achievements
+    .filter((a) => a.unlocked)
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+
+  const lessonEntries = Object.entries(userData.progress.lessonProgress ?? {});
+  const storyEntries = Object.entries(userData.progress.storyProgress ?? {});
+  const vocationalResults = userData.progress.vocationalTest?.results;
+  const topVocationalAreas = vocationalResults
+    ? Object.values(vocationalResults).sort((a, b) => b.total - a.total).slice(0, 2)
+    : [];
+
+  const handleDeleteHistory = () => {
+    const resetData = UserDataManager.resetGameData();
+    setUserData(resetData);
+    setShowResetConfirm(false);
   };
 
   const handlePurchaseLife = () => {
-    // PurchaseModal ya hizo la compra y guardó en localStorage.
-    // Solo releer el estado actualizado y sincronizar React.
-    const updatedData = UserDataManager.loadUserData();
-    setUserData(updatedData);
-    const userStats = UserDataManager.getStats(updatedData);
-    setStats(userStats);
+    loadUserData();
     setIsPurchaseModalOpen(false);
   };
 
@@ -320,13 +143,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header Banner */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 h-48 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 h-40 overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0">
           <svg className="w-full h-full opacity-20" viewBox="0 0 100 20" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
               </pattern>
             </defs>
             <rect width="100" height="20" fill="url(#grid)" />
@@ -335,9 +158,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 -mt-24 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10 pb-10">
         {/* Profile Card */}
-        <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
           <div className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               {/* Avatar */}
@@ -361,10 +184,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
 
               {/* Profile Info */}
               <div className="flex-grow">
-                <h1 className="text-3xl font-normal text-gray-900 mb-1">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-1">
                   {userData.profile.username || 'Estudiante'}
                 </h1>
-                <p className="text-lg text-gray-600 mb-3">
+                <p className="text-base text-gray-500 mb-3">
                   {userData.profile.character.name || 'Sin personaje seleccionado'}
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-500">
@@ -383,7 +206,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleUpdateMood}
-                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium border border-gray-300 hover:border-blue-300"
+                  className="px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors text-sm font-semibold border border-gray-300 hover:border-indigo-300"
                 >
                   Actualizar estado
                 </button>
@@ -395,8 +218,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {/* Game Stats Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <IconTrophy size={20} className="text-amber-500" />
               Estadísticas de juego
             </h3>
@@ -413,7 +236,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
                 </div>
                 <span className="text-2xl font-semibold text-gray-900">{userData.game.totalLives}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center">
@@ -426,11 +249,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
                 </div>
                 <span className="text-2xl font-semibold text-gray-900">{userData.game.totalScore}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                    <IconTarget size={20} className="text-blue-500" />
+                  <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                    <IconTarget size={20} className="text-indigo-500" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">Racha</p>
@@ -443,8 +266,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
           </div>
 
           {/* Progress Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <IconEdit size={20} className="text-green-500" />
               Progreso académico
             </h3>
@@ -452,43 +275,43 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-700">Actividades completadas</span>
-                  <span className="text-sm text-gray-500">{userData.progress.completedActivities.length}</span>
+                  <span className="text-sm text-gray-500">{completedCatalogActivities.length} / {TOTAL_ACTIVITIES}</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min((userData.progress.completedActivities.length / 10) * 100, 100)}%` }}
+                    style={{ width: `${programPercentage}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  {Math.min(Math.round((userData.progress.completedActivities.length / 10) * 100), 100)}% del programa
+                  {programPercentage}% del programa
                 </p>
               </div>
-              
+
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Promedio por actividad</span>
-                  <span className="text-lg font-semibold text-gray-900">{stats.averageScore}</span>
+                  <span className="text-lg font-semibold text-gray-900">{averageScore}</span>
                 </div>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Logros desbloqueados</span>
                 <span className="text-lg font-semibold text-gray-900">
-                  {userData.achievements.filter(a => a.unlocked).length}
+                  {unlockedAchievements.length}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Mood & Activity Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <IconMoodHappy size={20} className="text-purple-500" />
               Estado y actividad
             </h3>
             <div className="space-y-4">
-              <div className="p-4 bg-purple-50 rounded-lg">
+              <div className="p-4 bg-purple-50 rounded-xl">
                 <div className="flex items-center gap-3 mb-2">
                   <IconMoodHappy size={24} className="text-purple-500" />
                   <div>
@@ -504,14 +327,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
                   </p>
                 )}
               </div>
-              
-              {stats.lastActivity && (
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900 mb-1">Última actividad</p>
-                  <p className="text-sm text-gray-600">{stats.lastActivity}</p>
-                </div>
-              )}
-              
+
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-500">
                   Registros de humor: {userData.mood.history.length}
@@ -521,17 +337,189 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
           </div>
         </div>
 
+        {/* Actividades — antes solo se veía un número ("5/15"), sin
+            saber cuáles. Ahora se ve la lista completa, marcando qué
+            actividades ya completaste (incluye Amor Sin Violencia y
+            Salud Mental Test, que antes no aparecían en ningún lado). */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <IconTarget size={20} className="text-indigo-500" />
+            Actividades ({completedCatalogActivities.length}/{TOTAL_ACTIVITIES})
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            {ACTIVITIES.map((activity) => {
+              const isDone = completedCatalogActivities.includes(activity.title);
+              return (
+                <div
+                  key={activity.id}
+                  className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-colors ${
+                    isDone
+                      ? 'border-transparent'
+                      : 'bg-gray-50 border-gray-100'
+                  }`}
+                  style={isDone ? { backgroundColor: `${activity.color}0D`, borderColor: `${activity.color}30` } : undefined}
+                >
+                  {isDone && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <IconCheck size={10} className="text-white" />
+                    </div>
+                  )}
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: isDone ? activity.color : '#E5E7EB', color: isDone ? 'white' : '#9CA3AF' }}
+                  >
+                    {ACTIVITY_ICON_MAP[activity.iconName] ?? <IconMoodPuzzled size={18} />}
+                  </div>
+                  <p className={`text-xs font-medium leading-tight ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>
+                    {activity.title}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Nuevas secciones — antes estos datos ya se guardaban, pero no
+            se mostraban en ningún lado del perfil */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Lecciones */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <IconBook size={20} className="text-blue-500" />
+              Lecciones
+            </h3>
+            {lessonEntries.length === 0 ? (
+              <p className="text-sm text-gray-400">Todavía no empezaste ninguna lección.</p>
+            ) : (
+              <div className="space-y-3">
+                {lessonEntries.map(([title, entry]) => (
+                  <div key={title}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-gray-700">{title}</span>
+                      <span className="text-xs text-gray-500">{entry.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                      <div
+                        className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                        style={{ width: `${entry.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Cuentos (Literatura) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <IconBooks size={20} className="text-orange-500" />
+              Cuentos leídos
+            </h3>
+            {storyEntries.length === 0 ? (
+              <p className="text-sm text-gray-400">Todavía no empezaste ningún cuento.</p>
+            ) : (
+              <div className="space-y-3">
+                {storyEntries.map(([title, entry]) => (
+                  <div key={title}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-gray-700 truncate pr-2">{title}</span>
+                      <span className="text-xs text-gray-500 shrink-0">{entry.percentage}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                      <div
+                        className="bg-orange-500 h-1.5 rounded-full transition-all duration-300"
+                        style={{ width: `${entry.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Test vocacional */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <IconBriefcase size={20} className="text-green-600" />
+              Test vocacional
+            </h3>
+            {topVocationalAreas.length === 0 ? (
+              <p className="text-sm text-gray-400">Todavía no hiciste el test vocacional.</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 mb-2">Tus áreas de mayor interés:</p>
+                {topVocationalAreas.map((area, i) => (
+                  <div key={area.name} className="flex items-center justify-between p-2.5 bg-green-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-800">
+                      {i === 0 ? '🥇' : '🥈'} {area.name}
+                    </span>
+                    <span className="text-xs font-semibold text-green-700">{area.total} pts</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Notas */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <IconNotes size={20} className="text-amber-600" />
+              Mis notas
+            </h3>
+            {userData.notes.length === 0 ? (
+              <p className="text-sm text-gray-400">Todavía no escribiste ninguna nota en las lecciones.</p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 mb-2">
+                  {userData.notes.length} nota{userData.notes.length !== 1 ? 's' : ''} en total
+                </p>
+                {userData.notes.slice(-3).reverse().map((note) => (
+                  <div key={note.id} className="p-2.5 bg-amber-50 rounded-lg">
+                    <p className="text-xs text-gray-700 line-clamp-2">{note.text}</p>
+                    <p className="text-[11px] text-gray-400 mt-1">{note.lessonTitle}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Achievements */}
+        {unlockedAchievements.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <IconMedal size={20} className="text-yellow-500" />
+              Logros desbloqueados
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {unlockedAchievements.map((achievement) => (
+                <div key={achievement.id} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <AchievementIcon iconName={achievement.iconName} className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">{achievement.name}</p>
+                    <p className="text-xs text-gray-500">{achievement.description}</p>
+                    {achievement.date && (
+                      <p className="text-[11px] text-gray-400 mt-1">{formatDate(achievement.date)}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Actions Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Acciones rápidas</h3>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-base font-semibold text-gray-900 mb-4">Acciones rápidas</h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
               disabled={userData.game.totalLives >= 3 || userData.game.totalScore < 200}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+              className={`flex items-center gap-2 px-4 py-3 rounded-full font-semibold text-sm transition-all ${
                 userData.game.totalLives >= 3 || userData.game.totalScore < 200
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md'
+                  : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
               }`}
             >
               <IconHeartPlus size={18} />
@@ -539,15 +527,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
             </button>
 
             <button
-              onClick={handleDeleteHistory}
-              className="flex items-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-sm transition-all shadow-sm hover:shadow-md"
+              onClick={() => setShowResetConfirm(true)}
+              className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full font-semibold text-sm transition-all"
             >
               <IconTrash size={18} />
               Reiniciar progreso
             </button>
           </div>
-          
-          <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+
+          <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
@@ -557,7 +545,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
               <div>
                 <h4 className="text-sm font-medium text-amber-800 mb-1">Información importante</h4>
                 <p className="text-sm text-amber-700">
-                  Al reiniciar el progreso se mantendrá tu perfil, pero se eliminarán todos los datos de juegos, actividades, estados de ánimo y logros.
+                  Al reiniciar el progreso se mantendrá tu perfil, pero se eliminarán todos los datos de juegos, actividades, estados de ánimo, logros, lecciones, cuentos y notas.
                 </p>
               </div>
             </div>
@@ -570,6 +558,40 @@ const UserProfile: React.FC<UserProfileProps> = ({ initialData }) => {
         onClose={() => setIsPurchaseModalOpen(false)}
         onPurchase={handlePurchaseLife}
       />
+
+      {/* Reset confirmation modal — antes era un Swal.fire nativo */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-md p-6">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+                <IconAlertTriangle size={28} className="text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 mb-1">¿Reiniciar progreso?</h2>
+                <p className="text-gray-500 text-sm">
+                  Se borrará todo tu progreso de juegos, actividades, estados de ánimo, logros, lecciones, cuentos y notas. Tu perfil se mantiene intacto. Esta acción no se puede deshacer.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full pt-2">
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteHistory}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition"
+                >
+                  <IconTrash size={17} />
+                  Sí, reiniciar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

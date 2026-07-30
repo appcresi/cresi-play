@@ -21,13 +21,13 @@ export type BodyPart = {
       name: 'Sistema Reproductor Masculino',
       imageUrl: 'imgleccion.jpg',
       parts: [
-        { id: '1', name: 'Pene', correctPosition: { x: 100, y: 600 }, placed: false },
-        { id: '2', name: 'Testículo', correctPosition: { x: 250, y: 700 }, placed: false },
+        { id: '1', name: 'Pene', correctPosition: { x: 150, y: 600 }, placed: false },
+        { id: '2', name: 'Testículo', correctPosition: { x: 270, y: 700 }, placed: false },
         { id: '3', name: 'Próstata', correctPosition: { x: 350, y: 400 }, placed: false },
         { id: '4', name: 'Vesícula seminal', correctPosition: { x: 450, y: 350 }, placed: false },
-        { id: '5', name: 'Uretra', correctPosition: { x: 100, y: 500 }, placed: false },
+        { id: '5', name: 'Uretra', correctPosition: { x: 200, y: 500 }, placed: false },
         { id: '6', name: 'Vejiga', correctPosition: { x: 350, y: 300 }, placed: false },
-        { id: '7', name: 'Conducto deferente', correctPosition: { x: 240, y: 450 }, placed: false },
+        { id: '7', name: 'Conducto deferente', correctPosition: { x: 260, y: 450 }, placed: false },
         { id: '8', name: 'Recto', correctPosition: { x: 500, y: 500 }, placed: false }
       ]
     },

@@ -25,7 +25,9 @@ class UserDataManager {
         completedActivities: [],
         activityScores: {},
         activityTimes: {},
-        lastVisits: {}
+        lastVisits: {},
+        lessonProgress: {},
+        storyProgress: {}
       },
       mood: { history: [], lastEntry: null },
       achievements: [],
@@ -33,7 +35,8 @@ class UserDataManager {
       dashboard: {
         visibleActivities: DEFAULT_FEATURES,
         activityOrder: DEFAULT_FEATURES
-      }
+      },
+      notes: []
     };
   }
 
@@ -44,6 +47,10 @@ class UserDataManager {
       if (storedData) {
         const parsedData = JSON.parse(storedData) as UserData;
         parsedData.profile.lastLogin = new Date().toISOString();
+        // Compatibilidad con cuentas guardadas antes de agregar este campo.
+        if (!parsedData.notes) {
+          parsedData.notes = [];
+        }
         this.saveUserData(parsedData);
         return parsedData;
       }
@@ -148,15 +155,117 @@ class UserDataManager {
     const userData = this.loadUserData();
     userData.mood.history.push(moodRecord);
     userData.mood.lastEntry = moodRecord;
+
+    // Mantener solo los últimos 90 días para no acumular indefinidamente.
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    userData.mood.history = userData.mood.history.filter(
+      (record) => new Date(record.date) >= ninetyDaysAgo
+    );
+
     this.saveUserData(userData);
     return userData;
   }
 
-  static addAchievement(achievement: Achievement): UserData {
+  /**
+   * Agrega un logro, o lo desbloquea si ya existía sin desbloquear.
+   * Otorga puntos solo en el momento en que pasa a `unlocked: true`
+   * (no se vuelven a dar si ya estaba desbloqueado).
+   */
+  static addAchievement(achievement: Achievement, points: number = 100): UserData {
     const userData = this.loadUserData();
-    if (!userData.achievements.find(a => a.id === achievement.id)) {
+    const existingIndex = userData.achievements.findIndex((a) => a.id === achievement.id);
+
+    if (existingIndex >= 0) {
+      if (!userData.achievements[existingIndex].unlocked && achievement.unlocked) {
+        userData.achievements[existingIndex] = {
+          ...achievement,
+          unlocked: true,
+          date: new Date().toISOString()
+        };
+        userData.game.totalScore += points;
+      }
+    } else {
       userData.achievements.push(achievement);
+      if (achievement.unlocked) {
+        userData.game.totalScore += points;
+      }
     }
+
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  /**
+   * Calcula la racha de días consecutivos con al menos un registro de
+   * humor, actualiza `game.streak`, y da una recompensa (recupera una
+   * vida si falta alguna, si no, puntos).
+   */
+  static updateMoodStreakAndRewards(moodEntry: MoodRecord): UserData {
+    const userData = this.loadUserData();
+    const streak = this.calculateMoodStreak([...userData.mood.history, moodEntry]);
+    userData.game.streak = streak;
+
+    if (userData.game.totalLives < 3) {
+      userData.game.totalLives += 1;
+    } else {
+      userData.game.totalScore += 200;
+    }
+
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  private static calculateMoodStreak(history: MoodRecord[]): number {
+    if (history.length === 0) return 0;
+
+    let streak = 1;
+    const today = new Date().setHours(0, 0, 0, 0);
+    const yesterday = new Date(today - 86400000).setHours(0, 0, 0, 0);
+
+    const lastEntry = new Date(history[history.length - 1].date).setHours(0, 0, 0, 0);
+
+    if (lastEntry === today || lastEntry === yesterday) {
+      for (let i = history.length - 2; i >= 0; i--) {
+        const currentDate = new Date(history[i].date).setHours(0, 0, 0, 0);
+        const prevDate = new Date(history[i + 1].date).setHours(0, 0, 0, 0);
+
+        if (prevDate - currentDate === 86400000) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    } else {
+      return 0;
+    }
+
+    return streak;
+  }
+
+  /**
+   * Sincroniza el puntaje mostrado en pantalla (prop `score` de
+   * GameStatusBar) con lo guardado. Si se indica `activityName`, también
+   * ajusta el puntaje registrado para esa actividad puntual en la misma
+   * proporción.
+   */
+  static updateGameScore(newScore: number, activityName?: string): UserData {
+    const userData = this.loadUserData();
+    const previousScore = userData.game.totalScore;
+    userData.game.totalScore = newScore;
+
+    if (activityName) {
+      userData.progress.activityScores[activityName] =
+        newScore - previousScore + (userData.progress.activityScores[activityName] || 0);
+    }
+
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  static updateLives(newLives: number): UserData {
+    const userData = this.loadUserData();
+    userData.game.totalLives = Math.max(0, Math.min(3, newLives));
     this.saveUserData(userData);
     return userData;
   }
@@ -164,6 +273,28 @@ class UserDataManager {
   static updateSettings(settings: Partial<UserData['settings']>): UserData {
     const userData = this.loadUserData();
     userData.settings = { ...userData.settings, ...settings };
+    this.saveUserData(userData);
+    return userData;
+  }
+
+  /**
+   * Reinicia el progreso de juego manteniendo el perfil (usuario,
+   * personaje, configuración). Cubre TODOS los campos de progreso,
+   * incluidos los que se fueron agregando con el tiempo (lecciones,
+   * cuentos, test vocacional, notas) — antes el reset solo conocía
+   * `game`, `progress`, `mood` y `achievements`, y dejaba resabios del
+   * resto.
+   */
+  static resetGameData(): UserData {
+    const userData = this.loadUserData();
+    const fresh = this.getDefaultUserData();
+
+    userData.game = fresh.game;
+    userData.progress = fresh.progress;
+    userData.mood = fresh.mood;
+    userData.achievements = fresh.achievements;
+    userData.notes = fresh.notes;
+
     this.saveUserData(userData);
     return userData;
   }

@@ -1,3 +1,11 @@
+// types/user.ts
+//
+// Única fuente de verdad para los tipos relacionados al usuario/perfil.
+// Antes estaban redefinidos (con variaciones sutiles) en AuthModal.tsx,
+// userDataManager.ts, userDataSync.ts, EducationalProgressPanel.tsx,
+// Features.tsx y Header.tsx. Cualquier cambio de forma va acá, una sola vez,
+// y todo lo demás importa desde este archivo.
+
 export type UserRole = 'student' | 'teacher';
 
 export interface Character {
@@ -12,6 +20,16 @@ export interface MoodRecord {
   label: string;
   intensity: number;
   note?: string;
+}
+
+/** Una nota que el alumno escribe mientras lee una lección (sección "Mis notas"). */
+export interface LessonNote {
+  id: string;
+  text: string;
+  lessonTitle: string;
+  level: number;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Achievement {
@@ -46,6 +64,16 @@ export interface UserProgress {
   activityScores: { [activityTitle: string]: number };
   activityTimes: { [activityTitle: string]: string };
   lastVisits: { [activityTitle: string]: string };
+  /** Progreso detallado por lección (usado por la actividad "Lecciones"). */
+  lessonProgress?: { [lessonTitle: string]: { percentage: number; completed: boolean } };
+  /** Progreso de lectura por cuento (usado por la actividad "Literatura"). */
+  storyProgress?: { [storyTitle: string]: { lastPage: number; percentage: number; pagesRead: string[] } };
+  /** Progreso del test vocacional (respuestas, resultados por área, y el sub-test por profesión). */
+  vocationalTest?: {
+    answers: Record<number, boolean>;
+    results?: Record<string, { name: string; questions: number[]; total: number }>;
+    professionAnswers?: Record<string, boolean[]>;
+  };
 }
 
 export interface UserGame {
@@ -73,4 +101,6 @@ export interface UserData {
   achievements: Achievement[];
   settings: UserSettings;
   dashboard: DashboardConfig;
+  /** Notas que el alumno escribe mientras lee las lecciones. */
+  notes: LessonNote[];
 }

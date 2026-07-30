@@ -1,5 +1,8 @@
 import React from 'react';
 import { AnswerOption } from '../types/types';
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('datamuncher')?.color ?? '#D32F2F';
 
 type GameCellProps = {
   x: number;
@@ -14,17 +17,17 @@ type GameCellProps = {
   answerOption?: AnswerOption;
 };
 
-const GameCell = ({ 
-  x, 
-  y, 
-  isWall, 
-  isPlayer, 
-  isGhost, 
-  ghostIndex, 
-  isQuiz, 
-  isDot, 
-  direction, 
-  answerOption 
+const GameCell = ({
+  x,
+  y,
+  isWall,
+  isPlayer,
+  isGhost,
+  ghostIndex,
+  isQuiz,
+  isDot,
+  direction,
+  answerOption
 }: GameCellProps) => {
   const getPlayerEmoji = () => {
     switch (direction) {
@@ -47,7 +50,7 @@ const GameCell = ({
     if (isGhost) return getEnemyEmoji(ghostIndex);
     if (answerOption) return answerOption.value ? '✅' : '❌';
     if (isQuiz) return '❓';
-    if (isDot) return <div className="w-1 h-1 sm:w-2 sm:h-2 bg-blue-400 rounded-full shadow-sm" />;
+    if (isDot) return <div className="w-1 h-1 sm:w-2 sm:h-2 rounded-full shadow-sm" style={{ backgroundColor: ACCENT }} />;
     return ' ';
   };
 

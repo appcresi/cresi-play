@@ -5,6 +5,9 @@ import { Dialog, Transition } from '@headlessui/react';
 import { IconSettings, IconClock, IconX } from '@tabler/icons-react';
 import type { GameSettings } from '../types/settings';
 import { getSettings, saveSettings } from '@/utils/trivia';
+import { getActivityById } from '@/lib/activities';
+
+const ACCENT = getActivityById('trivias')?.color ?? '#1976D2';
 
 export default function TriviaSettings(): JSX.Element {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -44,7 +47,7 @@ export default function TriviaSettings(): JSX.Element {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-black/40" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -59,13 +62,13 @@ export default function TriviaSettings(): JSX.Element {
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden 
-                                      bg-white rounded-lg shadow-xl
+                                      bg-white rounded-xl shadow-xl border border-gray-100
                                       transition-all">
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                  <div className="px-6 py-4" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
                     <div className="flex items-center justify-between">
-                      <Dialog.Title className="text-xl font-semibold text-white flex items-center gap-2">
-                        <IconSettings size={24} />
+                      <Dialog.Title className="text-lg font-bold text-white flex items-center gap-2">
+                        <IconSettings size={22} />
                         Configuración
                       </Dialog.Title>
                       <button
@@ -85,15 +88,16 @@ export default function TriviaSettings(): JSX.Element {
                     <div className="mb-6">
                       <label className="flex flex-col gap-3">
                         <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <IconClock size={18} className="text-blue-600" />
+                          <IconClock size={18} style={{ color: ACCENT }} />
                           Tiempo por pregunta
                         </span>
                         <select
                           value={selectedTime}
                           onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}
-                          className="w-full px-4 py-3 text-base bg-white border border-gray-300 rounded-lg
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                          className="w-full px-4 py-3 text-base bg-white border border-gray-300 rounded-xl
+                                   focus:outline-none focus:ring-2 focus:border-transparent
                                    transition-all cursor-pointer hover:border-gray-400"
+                          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                         >
                           {[15, 30, 45, 60, 90, 120].map((time) => (
                             <option value={time} key={time}>
@@ -109,21 +113,22 @@ export default function TriviaSettings(): JSX.Element {
                     </div>
 
                     {/* Info box */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-700">
+                    <div className="rounded-lg p-4" style={{ backgroundColor: `${ACCENT}0D`, border: `1px solid ${ACCENT}30` }}>
+                      <p className="text-sm" style={{ color: ACCENT }}>
                         ✓ Los cambios se guardan automáticamente
                       </p>
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
+                  <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100">
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium
-                               hover:bg-blue-700 transition-colors focus:outline-none 
-                               focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      className="px-6 py-2 text-white rounded-full font-semibold
+                               hover:opacity-90 transition-colors focus:outline-none 
+                               focus:ring-2 focus:ring-offset-2"
+                      style={{ backgroundColor: ACCENT }}
                     >
                       Cerrar
                     </button>

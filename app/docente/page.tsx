@@ -1,14 +1,17 @@
 "use client"
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Fredoka } from 'next/font/google';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import UserDataSync from '@/lib/userDataSync';
 import { useAuth } from '@/context/AuthContext';
-import { IconBrandGoogle, IconLoader, IconSchool, IconArrowLeft } from '@tabler/icons-react';
+import { IconBrandGoogle, IconLoader, IconArrowLeft } from '@tabler/icons-react';
 import TeacherDashboard from '@/components/TeacherDashboard';
 import type { UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
+
+const fredoka = Fredoka({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' });
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -83,8 +86,8 @@ export default function DocentePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+      <div className="min-h-screen bg-[#FFFBF8] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF6B6B]" />
       </div>
     );
   }
@@ -95,36 +98,36 @@ export default function DocentePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 p-6">
-        <div className="flex items-center justify-center mb-3">
-          <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center">
-            <IconSchool className="w-8 h-8 text-white" />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF8] to-[#E6F7F5] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full border border-[#241B37]/8 p-6">
+        <div className="flex items-center justify-center mb-4">
+          <img src="/logocresi.svg" alt="CrESI" className="w-16 h-16" />
         </div>
-        <h1 className="text-xl font-bold text-gray-800 text-center mb-1">Acceso para docentes</h1>
-        <p className="text-gray-600 text-center text-xs mb-6">
+        <h1 className={`${fredoka.className} text-2xl text-[#241B37] text-center mb-1`}>
+          Acceso para docentes
+        </h1>
+        <p className="text-[#241B37]/60 text-center text-xs mb-6">
           Ingresá con tu cuenta de Google. Si es tu primera vez, se crea automáticamente.
         </p>
 
         {error && (
-          <div className="p-2 bg-red-50 border border-red-200 rounded-lg mb-4">
-            <p className="text-red-700 text-xs">{error}</p>
+          <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl mb-4">
+            <p className="text-red-600 text-xs">{error}</p>
           </div>
         )}
 
         <button
           onClick={handleTeacherGoogleSignIn}
           disabled={signingIn}
-          className="w-full bg-indigo-600 text-white py-2.5 px-3 rounded-lg hover:bg-indigo-700
-                   transition-colors font-medium text-sm flex items-center justify-center gap-2
+          className="w-full bg-white border border-[#241B37]/15 hover:bg-gray-50 text-[#241B37] py-3 px-3
+                   rounded-full transition-colors font-bold text-sm flex items-center justify-center gap-2
                    disabled:opacity-50 disabled:cursor-not-allowed mb-4"
         >
-          {signingIn ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4" />}
+          {signingIn ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4 text-[#4285F4]" />}
           Continuar con Google
         </button>
 
-        <Link href="/" className="flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+        <Link href="/" className="flex items-center justify-center gap-1 text-xs text-[#241B37]/40 hover:text-[#241B37]/70">
           <IconArrowLeft className="w-3.5 h-3.5" /> ¿Sos alumno o alumna? Volver al inicio
         </Link>
       </div>

@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Nomegusta from "./components/profesiones";
-import { IconBriefcase } from "@tabler/icons-react";
 import VocacionClient from "./components/vocacion-client";
 
 export const metadata: Metadata = {
@@ -50,6 +48,6 @@ export const metadata: Metadata = {
 	},
 };
 
-export default async function VocacionPage(): Promise<JSX.Element> {
+export default function VocacionPage(): JSX.Element {
 	return <VocacionClient />;
 }

@@ -13,7 +13,15 @@ import TriviaReview from './TriviaReview';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import { IconBrandInstagram, IconMaximize, IconMoon, IconSun, IconRefresh, IconShoppingCart } from '@tabler/icons-react';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
 
+const ACTIVITY = getActivityById('trivias');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Trivias';
+const ACCENT = ACTIVITY?.color ?? '#1976D2';
+
+// Colores por opción (estilo Kahoot) — distinguen las 4 respuestas entre
+// sí, no tienen relación con la marca, así que no se tocan.
 const OPTION_COLORS: { [key in 0 | 1 | 2 | 3]: string } = {
   0: 'bg-red-500 hover:bg-red-600 border-red-600',
   1: 'bg-green-500 hover:bg-green-600 border-green-600',
@@ -25,58 +33,6 @@ const CORRECT_ANSWER_POINTS = 100;
 const INCORRECT_ANSWER_PENALTY = 50;
 const INSTAGRAM_BONUS_POINTS = 500;
 const INSTAGRAM_CLICKED_KEY = 'instagramClicked';
-const STORAGE_KEY = 'cresi_user_data';
-
-interface MoodEntry {
-  date: string;
-  mood: number;
-  label: string;
-  intensity: number;
-  note?: string;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  iconName: string;
-  unlocked: boolean;
-  date?: string;
-}
-
-interface UserData {
-  profile: {
-    character: {
-      id: number;
-      name: string;
-      image: string;
-    };
-    username: string;
-    createdAt: string;
-    lastLogin: string;
-  };
-  game: {
-    totalScore: number;
-    totalLives: number;
-    streak: number;
-  };
-  progress: {
-    completedActivities: string[];
-    activityScores: { [key: string]: number };
-    activityTimes: { [key: string]: string };
-    lastVisits: { [key: string]: string };
-  };
-  mood: {
-    history: MoodEntry[];
-    lastEntry: MoodEntry | null;
-  };
-  achievements: Achievement[];
-  settings: {
-    notifications: boolean;
-    theme: 'light' | 'dark';
-    language: 'es' | 'en';
-  };
-}
 
 interface TriviaGameProps {
   id: string;
@@ -97,7 +53,7 @@ export default function TriviaGame({
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [hasClickedInstagram, setHasClickedInstagram] = useState<boolean>(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
 
   useEffect(() => {
     loadUserData();
@@ -111,64 +67,55 @@ export default function TriviaGame({
   }, []);
 
   const loadUserData = () => {
-    try {
-      const storedData = localStorage.getItem(STORAGE_KEY);
-      if (storedData) {
-        const data: UserData = JSON.parse(storedData);
-        setUserData(data);
-        
-        setScore(data.game.totalScore);
-        setLives(data.game.totalLives);
-        
-        data.progress.lastVisits[id] = new Date().toISOString();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
+    const data = UserDataManager.loadUserData();
+    setUserData(data);
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    UserDataManager.visitActivity(id);
   };
 
+  /**
+   * Antes esto solo guardaba el progreso bajo `id` (el docId de ESTA
+   * trivia puntual) — nunca bajo el título general del catálogo
+   * ("Trivias"), así que jugar cualquier trivia nunca marcaba la
+   * actividad "Trivias" como completada en el resto de la app. Ahora se
+   * guardan las dos cosas: el registro fino por trivia (útil para el
+   * listado) y el título general (lo que el resto de la app mira).
+   */
   const saveUserData = () => {
-    if (!userData) return;
+    const current = UserDataManager.loadUserData();
 
-    try {
-      const updatedData: UserData = {
-        ...userData,
-        game: {
-          ...userData.game,
-          totalScore: score,
-          totalLives: lives
+    const updatedData = {
+      ...current,
+      game: {
+        ...current.game,
+        totalScore: score,
+        totalLives: lives
+      },
+      progress: {
+        ...current.progress,
+        activityScores: {
+          ...current.progress.activityScores,
+          [id]: Math.max(current.progress.activityScores[id] || 0, sessionScore)
         },
-        progress: {
-          ...userData.progress,
-          activityScores: {
-            ...userData.progress.activityScores,
-            [id]: Math.max(
-              userData.progress.activityScores[id] || 0,
-              sessionScore
-            )
-          },
-          activityTimes: {
-            ...userData.progress.activityTimes,
-            [id]: new Date().toISOString()
-          },
-          completedActivities: isFinished
-            ? Array.from(new Set([...userData.progress.completedActivities, id]))
-            : userData.progress.completedActivities
-        }
-      };
+        activityTimes: {
+          ...current.progress.activityTimes,
+          [id]: new Date().toISOString(),
+          ...(isFinished ? { [ACTIVITY_TITLE]: new Date().toISOString() } : {})
+        },
+        completedActivities: isFinished
+          ? Array.from(new Set([...current.progress.completedActivities, id, ACTIVITY_TITLE]))
+          : current.progress.completedActivities
+      }
+    };
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      setUserData(updatedData);
-    } catch (error) {
-      console.error('Error saving user data:', error);
-    }
+    UserDataManager.saveUserData(updatedData);
+    setUserData(updatedData);
   };
 
   useEffect(() => {
-    if (userData) {
-      saveUserData();
-    }
+    saveUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [score, lives, isFinished]);
 
   const [timeLeft, setTimeLeft] = useState<number | undefined>(
@@ -200,23 +147,23 @@ export default function TriviaGame({
       const newSessionScore = sessionScore + INSTAGRAM_BONUS_POINTS;
       setScore(newScore);
       setSessionScore(newSessionScore);
-      
+
       setHasClickedInstagram(true);
       localStorage.setItem(INSTAGRAM_CLICKED_KEY, 'true');
-      
+
       toast.success(`¡+${INSTAGRAM_BONUS_POINTS} puntos por seguirnos!`, {
         duration: 3000,
         icon: '🎉'
       });
     }
-    
+
     window.open('https://www.instagram.com/appcresi', '_blank');
   };
 
   const handleGameOver = () => {
     setIsGameOver(true);
     setTimeLeft(undefined);
-    if (userData && userData.game.totalScore >= 200) {
+    if (userData.game.totalScore >= 200) {
       setShowPurchaseModal(true);
     }
   };
@@ -234,10 +181,10 @@ export default function TriviaGame({
 
   const handleTimeOut = useCallback(() => {
     if (isTimerPaused) return;
-    
+
     setIsTimerPaused(true);
     toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
-    
+
     setLives(prevLives => {
       const newLives = prevLives - 1;
       if (newLives <= 0) {
@@ -273,7 +220,7 @@ export default function TriviaGame({
       setCorrectIndex(items[currentQuestion].question.answer);
 
       const isCorrect = answer === items[currentQuestion].question.answer;
-      
+
       if (isCorrect) {
         const newScore = score + CORRECT_ANSWER_POINTS;
         const newSessionScore = sessionScore + CORRECT_ANSWER_POINTS;
@@ -337,6 +284,7 @@ export default function TriviaGame({
 
     const updatedTrivia: TriviaStatus = {
       id: status?.id ?? id,
+      name,
       percentage: higherPercentage,
       completed: higherPercentage >= 80,
     };
@@ -345,7 +293,6 @@ export default function TriviaGame({
     toast.success('Se guardó tu progreso.');
   }, [id, calculateCorrectAnswersPercentage]);
 
-  // ✅ CORRECCIÓN: Llamar handleFinish en useEffect, no durante render
   useEffect(() => {
     if (isFinished) {
       handleFinish();
@@ -383,15 +330,11 @@ export default function TriviaGame({
 
   const handleClosePurchaseModal = () => {
     loadUserData();
-    
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-      const data: UserData = JSON.parse(storedData);
-      setScore(data.game.totalScore);
-      setLives(data.game.totalLives);
-      if (data.game.totalLives < 1) {
-        setIsGameOver(true);
-      }
+    const data = UserDataManager.loadUserData();
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+    if (data.game.totalLives < 1) {
+      setIsGameOver(true);
     }
     setShowPurchaseModal(false);
   };
@@ -427,8 +370,8 @@ export default function TriviaGame({
     <main className={`min-h-screen ${
       isNightMode ? 'bg-gray-900 text-white' : 'bg-gray-50'
     } transition-colors duration-300 pt-20`}>
-      
-      <GameStatusBar 
+
+      <GameStatusBar
         title={name}
         score={score}
         lives={lives}
@@ -441,7 +384,7 @@ export default function TriviaGame({
       {isGameOver ? (
         <div className="max-w-2xl mx-auto px-4 py-8">
           <div className={`${isNightMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} 
-                          rounded-lg shadow-lg border p-8 text-center`}>
+                          rounded-xl shadow-lg border p-8 text-center`}>
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">😢</span>
             </div>
@@ -450,19 +393,20 @@ export default function TriviaGame({
               Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <button 
+              <button
                 onClick={() => setShowPurchaseModal(true)}
-                className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 
-                         rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 text-white px-6 py-3 
+                         rounded-full hover:opacity-90 transition-colors font-medium"
+                style={{ backgroundColor: ACCENT }}
               >
                 <IconShoppingCart size={20} />
                 Comprar Vida Extra
               </button>
-              <button 
+              <button
                 onClick={resetGame}
                 className={`inline-flex items-center justify-center gap-2 ${
                   isNightMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-                } px-6 py-3 rounded-lg transition-colors font-medium`}
+                } px-6 py-3 rounded-full transition-colors font-medium`}
               >
                 <IconRefresh size={20} />
                 Reiniciar Juego
@@ -474,11 +418,12 @@ export default function TriviaGame({
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Question Card */}
           <div className={`${isNightMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} 
-                          rounded-lg shadow-sm border p-8 mb-8 text-center`}>
+                          rounded-xl shadow-sm border p-8 mb-8 text-center`}>
             <div className="mb-4">
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                isNightMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-700'
-              }`}>
+              <span
+                className="inline-block px-3 py-1 rounded-full text-sm font-medium"
+                style={isNightMode ? { backgroundColor: `${ACCENT}30`, color: '#93c5fd' } : { backgroundColor: `${ACCENT}15`, color: ACCENT }}
+              >
                 Pregunta {currentQuestion + 1} de {items.length}
               </span>
             </div>
@@ -495,7 +440,7 @@ export default function TriviaGame({
                 onClick={() => handleAnswer(option)}
                 disabled={timeLeft === 0 || timeLeft === undefined}
                 className={`${OPTION_COLORS[index as 0 | 1 | 2 | 3]} 
-                           text-white p-6 rounded-lg font-medium text-lg
+                           text-white p-6 rounded-xl font-medium text-lg
                            border-2 transition-all duration-200
                            hover:shadow-lg hover:-translate-y-1
                            disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0
@@ -520,7 +465,7 @@ export default function TriviaGame({
           title={hasClickedInstagram ? 'Ya recibiste los puntos' : '+500 puntos por seguirnos'}
         >
           <IconBrandInstagram size={24} className="text-white" />
-          
+
           {!hasClickedInstagram && (
             <div className="absolute -top-2 -right-2 bg-yellow-400 text-black text-xs font-bold 
                           px-2 py-1 rounded-full border-2 border-white animate-bounce shadow-sm">

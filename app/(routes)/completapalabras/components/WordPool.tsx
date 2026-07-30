@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconFileText, IconHandFinger } from '@tabler/icons-react';
 import { Word } from './types';
 
 interface WordPoolProps {
@@ -10,6 +11,7 @@ interface WordPoolProps {
   onDrop: () => void;
   handleDragOver: (e: React.DragEvent) => void;
   isDragging: boolean;
+  accentColor?: string;
 }
 
 export const WordPool: React.FC<WordPoolProps> = ({
@@ -20,18 +22,20 @@ export const WordPool: React.FC<WordPoolProps> = ({
   onTouchEnd,
   onDrop,
   handleDragOver,
-  isDragging
+  isDragging,
+  accentColor = '#7B1FA2',
 }) => (
   <div className="relative">
     {/* Encabezado de la sección */}
     <div className="mb-4 flex items-center gap-2">
-      <div className="w-1 h-6 bg-purple-600 rounded-full"></div>
-      <h3 className="text-lg font-medium text-gray-800">Banco de palabras</h3>
+      <div className="w-1 h-6 rounded-full" style={{ backgroundColor: accentColor }}></div>
+      <h3 className="text-base font-semibold text-gray-800">Banco de palabras</h3>
     </div>
 
     {/* Contenedor del banco de palabras */}
     <div
-      className="bg-purple-50 border border-purple-200 rounded-lg p-6 hover:border-purple-300 transition-colors min-h-[120px]"
+      className="rounded-xl p-6 border transition-colors min-h-[120px]"
+      style={{ backgroundColor: `${accentColor}0D`, borderColor: `${accentColor}30` }}
       onDragOver={handleDragOver}
       onDrop={onDrop}
       data-word-pool="true"
@@ -46,8 +50,8 @@ export const WordPool: React.FC<WordPoolProps> = ({
               onTouchStart={(e) => onTouchStart(e, word)}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm cursor-move 
-                       transition-all duration-200 hover:shadow-md hover:border-purple-400 hover:-translate-y-0.5
+              className="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm cursor-move
+                       transition-all duration-200 hover:shadow-md hover:-translate-y-0.5
                        active:shadow-sm active:translate-y-0"
             >
               <span className="font-medium text-gray-800 select-none">{word.text}</span>
@@ -57,10 +61,7 @@ export const WordPool: React.FC<WordPoolProps> = ({
       ) : (
         <div className="flex items-center justify-center h-20 text-gray-400">
           <div className="text-center">
-            <svg className="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+            <IconFileText className="w-7 h-7 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Todas las palabras han sido usadas</p>
           </div>
         </div>
@@ -68,11 +69,8 @@ export const WordPool: React.FC<WordPoolProps> = ({
     </div>
 
     {/* Instrucción sutil */}
-    <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
-      </svg>
+    <div className="mt-3 flex items-center gap-2 text-sm text-gray-400">
+      <IconHandFinger className="w-4 h-4 shrink-0" />
       <span>Arrastra las palabras desde aquí o toca para seleccionar</span>
     </div>
   </div>

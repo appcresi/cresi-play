@@ -2,13 +2,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { Fredoka } from 'next/font/google';
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import ClassroomService from '@/lib/classroomService';
 import UserDataSync from '@/lib/userDataSync';
-import { IconLoader, IconKey, IconArrowLeft, IconEye, IconEyeOff } from '@tabler/icons-react';
+import { IconLoader, IconArrowLeft, IconEye, IconEyeOff } from '@tabler/icons-react';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
+
+const fredoka = Fredoka({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' });
 
 const characters: Character[] = [
   { id: 1, name: 'Aventurero', image: '/personaje1.webp' },
@@ -137,64 +140,64 @@ export default function JoinClassPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 p-6">
-        <div className="flex items-center justify-center mb-3">
-          <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
-            <IconKey className="w-8 h-8 text-white" />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF8] to-[#FFE5E5] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full border border-[#241B37]/8 p-6">
+        <div className="flex items-center justify-center mb-4">
+          <img src="/logocresi.svg" alt="CrESI" className="w-16 h-16" />
         </div>
-        <h1 className="text-xl font-bold text-gray-800 text-center mb-1">Unite a tu clase</h1>
-        <p className="text-gray-600 text-center text-xs mb-6">
+        <h1 className={`${fredoka.className} text-2xl text-[#241B37] text-center mb-1`}>
+          Unite a tu clase
+        </h1>
+        <p className="text-[#241B37]/60 text-center text-xs mb-6">
           Ingresá el usuario y la contraseña que te dio tu docente. Podés usar
           esto las veces que necesites para volver a entrar.
         </p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Código de la clase</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 mb-1.5">Código de la clase</label>
             <input
               type="text"
               value={classCode}
               onChange={(e) => { setClassCode(e.target.value.toUpperCase()); setError(''); }}
               disabled={loading}
               maxLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none
-                       focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 text-sm tracking-widest
-                       text-center font-bold uppercase disabled:opacity-50"
+              className="w-full px-3 py-2.5 border border-[#241B37]/15 rounded-xl focus:outline-none
+                       focus:ring-2 focus:ring-[#FF6B6B] bg-white text-[#241B37] text-sm tracking-widest
+                       text-center font-bold uppercase placeholder-[#241B37]/30 disabled:opacity-50"
               placeholder="EJ: A3F9K2"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Usuario</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 mb-1.5">Usuario</label>
             <input
               type="text"
               value={manualUsername}
               onChange={(e) => { setManualUsername(e.target.value); setError(''); }}
               disabled={loading}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none
-                       focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 text-sm"
+              className="w-full px-3 py-2.5 border border-[#241B37]/15 rounded-xl focus:outline-none
+                       focus:ring-2 focus:ring-[#FF6B6B] bg-white text-[#241B37] placeholder-[#241B37]/30 text-sm"
               placeholder="El usuario que te dio tu docente"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1.5">Contraseña</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 mb-1.5">Contraseña</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={manualPassword}
                 onChange={(e) => { setManualPassword(e.target.value); setError(''); }}
                 disabled={loading}
-                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none
-                         focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 text-sm"
+                className="w-full px-3 py-2.5 pr-10 border border-[#241B37]/15 rounded-xl focus:outline-none
+                         focus:ring-2 focus:ring-[#FF6B6B] bg-white text-[#241B37] placeholder-[#241B37]/30 text-sm"
                 placeholder="La contraseña que te dio tu docente"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#241B37]/40 hover:text-[#241B37]/70"
                 title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? <IconEyeOff className="w-4 h-4" /> : <IconEye className="w-4 h-4" />}
@@ -203,21 +206,23 @@ export default function JoinClassPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">Elegí tu avatar</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 mb-2">Elegí tu avatar</label>
             <div className="grid grid-cols-3 gap-2">
               {characters.map((character) => (
                 <button
                   key={character.id}
                   onClick={() => { setSelectedCharacter(character); setError(''); }}
                   disabled={loading}
-                  className={`p-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500
-                    ${selectedCharacter?.id === character.id ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-gray-50 hover:bg-gray-100'}
+                  className={`p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]
+                    ${selectedCharacter?.id === character.id
+                      ? 'bg-[#FFE5E5] ring-2 ring-[#FF6B6B]'
+                      : 'bg-gray-50 hover:bg-gray-100'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <div className="w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-gray-200">
+                  <div className="w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
                     <img src={character.image} alt={character.name} loading="lazy" className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-center text-xs font-medium text-gray-700 leading-tight">{character.name}</p>
+                  <p className="text-center text-xs font-medium text-[#241B37]/70 leading-tight">{character.name}</p>
                 </button>
               ))}
             </div>
@@ -232,14 +237,14 @@ export default function JoinClassPage() {
           <button
             onClick={handleJoin}
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 px-3 rounded-lg hover:bg-blue-700
-                     transition-colors font-medium text-sm flex items-center justify-center gap-2
+            className="w-full bg-[#FF6B6B] hover:bg-[#E8514F] text-white py-3 px-3 rounded-full
+                     transition-colors font-bold text-sm flex items-center justify-center gap-2
                      disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <IconLoader className="w-4 h-4 animate-spin" /> : 'Unirme a la clase'}
           </button>
 
-          <Link href="/" className="flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-gray-600">
+          <Link href="/" className="flex items-center justify-center gap-1 text-xs text-[#241B37]/40 hover:text-[#241B37]/70">
             <IconArrowLeft className="w-3.5 h-3.5" /> Inicio
           </Link>
         </div>

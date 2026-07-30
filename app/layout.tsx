@@ -144,15 +144,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
         </Script>
       </head>
       <body className='bg-[#f3f4f6]'>
-        {/*
-          El Header de alumno YA NO se monta acá. Vivía global y decidía
-          mostrarse u ocultarse mirando si había un perfil en localStorage —
-          pero un perfil "fantasma" (creado sin sesión real, ver
-          GameStatusBar) podía hacer que apareciera donde no debía
-          (por ejemplo, en /unirse). Ahora cada vista de alumno
-          (Features, ClassroomDesk) lo monta directamente, así solo existe
-          donde realmente corresponde.
-        */}
         <AuthProvider>
           <main>
             {children}

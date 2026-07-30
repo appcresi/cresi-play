@@ -1,4 +1,3 @@
-// app/page.tsx
 import type { Metadata } from 'next';
 import DataMuncher from './components/DataMuncher';
 import React from 'react';
@@ -47,17 +46,6 @@ export const metadata: Metadata = {
   }
 };
 
-
-export default async function Completeword(): Promise<JSX.Element> {
-  
-  return (
-    <main className="min-h-screen bg-gray-100 font-sans">
-          {/* Contenido principal */}
-          <div className="max-w-5xl mx-auto px-4 mt-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-                  <DataMuncher />
-            </div>
-          </div>
-    </main>
-  );
+export default function DataMuncherPage(): JSX.Element {
+  return <DataMuncher />;
 }

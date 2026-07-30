@@ -8,7 +8,7 @@ interface TouchControlsProps {
 const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
     const buttonBaseClass = "w-14 h-14 bg-white/80 rounded-full flex items-center justify-center active:bg-white/60 shadow-md transition-colors";
   return (
-    <div className="flex  justify-center md:hidden">
+    <div className="flex justify-center md:hidden">
       <div className="grid grid-cols-3 gap-3 bg-black/10 backdrop-blur-sm p-4 rounded-xl">
         {/* Botón Superior */}
         <div className="col-start-2">
@@ -20,7 +20,7 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
             <IconArrowUp className="w-8 h-8" />
           </button>
         </div>
-        
+
         {/* Botones Laterales */}
         <div className="col-start-1 row-start-2 flex justify-end">
           <button
@@ -31,7 +31,7 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
             <IconArrowLeft className="w-8 h-8" />
           </button>
         </div>
-        
+
         <div className="col-start-3 row-start-2 flex justify-start">
           <button
             onClick={() => onMove('ArrowRight')}
@@ -41,7 +41,7 @@ const TouchControls: React.FC<TouchControlsProps> = ({ onMove }) => {
             <IconArrowRight className="w-8 h-8" />
           </button>
         </div>
-        
+
         {/* Botón Inferior */}
         <div className="col-start-2 row-start-3">
           <button
