@@ -31,14 +31,16 @@ import {
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { ACTIVITIES } from '@/lib/activities';
+import ClassroomService from '@/lib/classroomService';
 
 // Los títulos reales del catálogo — se usan para filtrar
 // `completedActivities`, que además de estos títulos también contiene
 // claves internas más finas (una por trivia jugada, por sistema de
 // BioPuzzle, por lección puntual, etc.). Sin este filtro, "cuántas
 // actividades completaste" queda inflado por esos sub-registros.
-const CATALOG_TITLES = new Set(ACTIVITIES.map((a) => a.title));
-const TOTAL_ACTIVITIES = ACTIVITIES.length;
+// Nota: ya no se calculan acá arriba como constantes de módulo, porque
+// ahora dependen de si el alumno tiene una clase con actividades
+// restringidas — se calculan adentro del componente (ver `visibleActivities`).
 
 // Mismo mapa ícono-por-nombre que usan Features.tsx / Header.tsx / etc.
 const ACTIVITY_ICON_MAP: Record<string, JSX.Element> = {
@@ -68,6 +70,9 @@ const UserProfile: React.FC = () => {
   const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  // null = sin clase, o sin restricción (se ven las 15). Si tiene clase
+  // con restricción, acá quedan solo los IDs habilitados por el docente.
+  const [allowedActivityIds, setAllowedActivityIds] = useState<string[] | null>(null);
 
   useEffect(() => {
     loadUserData();
@@ -76,6 +81,18 @@ const UserProfile: React.FC = () => {
   const loadUserData = () => {
     const data = UserDataManager.loadUserData();
     setUserData(data);
+
+    const classroomId = data.profile.classroomId;
+    if (classroomId) {
+      ClassroomService.getAllowedActivities(classroomId)
+        .then(setAllowedActivityIds)
+        .catch((err) => {
+          console.error('Error obteniendo actividades habilitadas por el docente:', err);
+          setAllowedActivityIds(null);
+        });
+    } else {
+      setAllowedActivityIds(null);
+    }
   };
 
   /**
@@ -85,14 +102,25 @@ const UserProfile: React.FC = () => {
    * claves internas (una trivia puntual, un sistema de BioPuzzle, una
    * lección puntual...). Filtramos primero para quedarnos solo con las
    * que son actividades reales del catálogo.
+   *
+   * Además, si el alumno entró con código de clase y su docente
+   * restringió qué actividades puede ver, el total y el % tienen que
+   * calcularse sobre esas actividades habilitadas, no sobre las 15 del
+   * catálogo completo — mostrar "3/15" cuando en realidad solo tiene 8
+   * disponibles es engañoso.
    */
+  const visibleActivities = allowedActivityIds
+    ? ACTIVITIES.filter((a) => allowedActivityIds.includes(a.id))
+    : ACTIVITIES;
+  const visibleActivityTitles = new Set(visibleActivities.map((a) => a.title));
+  const totalVisibleActivities = visibleActivities.length;
+
   const completedCatalogActivities = Array.from(
-    new Set(userData.progress.completedActivities.filter((id) => CATALOG_TITLES.has(id)))
+    new Set(userData.progress.completedActivities.filter((id) => visibleActivityTitles.has(id)))
   );
-  const programPercentage = Math.min(
-    Math.round((completedCatalogActivities.length / TOTAL_ACTIVITIES) * 100),
-    100
-  );
+  const programPercentage = totalVisibleActivities > 0
+    ? Math.min(Math.round((completedCatalogActivities.length / totalVisibleActivities) * 100), 100)
+    : 0;
 
   const averageScore = completedCatalogActivities.length > 0
     ? Math.round(userData.game.totalScore / completedCatalogActivities.length)
@@ -275,7 +303,7 @@ const UserProfile: React.FC = () => {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-700">Actividades completadas</span>
-                  <span className="text-sm text-gray-500">{completedCatalogActivities.length} / {TOTAL_ACTIVITIES}</span>
+                  <span className="text-sm text-gray-500">{completedCatalogActivities.length} / {totalVisibleActivities}</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
@@ -344,10 +372,10 @@ const UserProfile: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <IconTarget size={20} className="text-indigo-500" />
-            Actividades ({completedCatalogActivities.length}/{TOTAL_ACTIVITIES})
+            Actividades ({completedCatalogActivities.length}/{totalVisibleActivities})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-            {ACTIVITIES.map((activity) => {
+            {visibleActivities.map((activity) => {
               const isDone = completedCatalogActivities.includes(activity.title);
               return (
                 <div
