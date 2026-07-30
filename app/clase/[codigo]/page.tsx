@@ -121,6 +121,7 @@ export default function JoinClassPage() {
           achievements: [],
           settings: { notifications: true, theme: 'light', language: 'es' },
           dashboard: { visibleActivities: DEFAULT_FEATURES_IDS, activityOrder: DEFAULT_FEATURES_IDS },
+          notes: [],
         };
         localStorage.setItem('cresi_user_data', JSON.stringify(userData));
       }

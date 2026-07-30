@@ -54,6 +54,7 @@ export default function UnirseSinCodigoPage() {
     achievements: [],
     settings: { notifications: true, theme: 'light', language: 'es' },
     dashboard: { visibleActivities: DEFAULT_FEATURES_IDS, activityOrder: DEFAULT_FEATURES_IDS },
+    notes: [],
   });
 
   const finishLogin = () => {
