@@ -12,7 +12,6 @@ import {
   where,
   deleteDoc,
   updateDoc,
-  increment,
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -378,14 +377,9 @@ export default function CreateCustomTrivia() {
   };
 
   const handlePlay = async (triviaId: string) => {
-    // Increment play counter in background
-    try {
-      await updateDoc(doc(db, 'trivia', triviaId), {
-        playCount: increment(1),
-      });
-    } catch {
-      // Non-critical, don't block navigation
-    }
+    // El contador de partidas ahora se registra en la pantalla del juego
+    // en sí (app/(routes)/trivias/[id]/page.tsx), no acá — así cuenta
+    // partidas reales de cualquiera, no solo los clics desde este panel.
     router.push(`/trivias/${triviaId}`);
   };
 
@@ -543,6 +537,7 @@ export default function CreateCustomTrivia() {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {/* Jugar — acción principal */}
                       <button
+                        type="button"
                         onClick={() => handlePlay(trivia.id)}
                         className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-full transition"
                         aria-label={`Jugar trivia: ${trivia.name}`}
@@ -553,6 +548,7 @@ export default function CreateCustomTrivia() {
 
                       {/* Vista previa */}
                       <button
+                        type="button"
                         onClick={() => setPreviewModal({ open: true, trivia })}
                         className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
                         aria-label={`Ver previa de: ${trivia.name}`}
@@ -563,6 +559,7 @@ export default function CreateCustomTrivia() {
 
                       {/* Compartir (copiar link) */}
                       <button
+                        type="button"
                         onClick={() => handleShare(trivia.id)}
                         className={`p-2 rounded-full transition ${
                           copiedId === trivia.id
@@ -577,6 +574,7 @@ export default function CreateCustomTrivia() {
 
                       {/* QR */}
                       <button
+                        type="button"
                         onClick={() => setQrModal({ open: true, id: trivia.id, name: trivia.name })}
                         className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
                         aria-label="Generar código QR"
@@ -587,6 +585,7 @@ export default function CreateCustomTrivia() {
 
                       {/* Duplicar */}
                       <button
+                        type="button"
                         onClick={() => handleDuplicateTrivia(trivia)}
                         className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
                         aria-label="Duplicar trivia"
@@ -597,6 +596,7 @@ export default function CreateCustomTrivia() {
 
                       {/* Editar */}
                       <button
+                        type="button"
                         onClick={() => handleEditTrivia(trivia)}
                         className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition"
                         aria-label="Editar trivia"
@@ -607,6 +607,7 @@ export default function CreateCustomTrivia() {
 
                       {/* Eliminar */}
                       <button
+                        type="button"
                         onClick={() =>
                           setDeleteModal({ open: true, id: trivia.id, name: trivia.name })
                         }

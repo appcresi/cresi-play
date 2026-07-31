@@ -8,6 +8,14 @@ export type { UserData, UserRole };
 
 class UserDataManager {
   private static readonly STORAGE_KEY = 'cresi_user_data';
+  // Timers de sincronización pendientes — permiten "debounce": si
+  // `saveUserData` se llama muchas veces seguidas (típico jugando una
+  // trivia, sumando puntos rápido), se cancela el envío pendiente y se
+  // programa uno nuevo. Así, de 12 llamados seguidos en medio segundo,
+  // solo termina saliendo UNA sincronización real a Firestore (con los
+  // datos más recientes), no 12.
+  private static syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private static classroomSyncTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   public static getDefaultUserData(): UserData {
     return {
@@ -65,30 +73,20 @@ class UserDataManager {
     try {
       if (typeof window === 'undefined') return;
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userData));
-      console.log('✅ Datos guardados en localStorage');
-      
+
       const currentUser = auth.currentUser;
 
       // Sincronizar con Firestore (colección `users`) si el usuario NO es anónimo
       if (currentUser && !currentUser.isAnonymous) {
-        console.log('📤 Iniciando sincronización completa con Firestore...');
-        console.log('   Usuario:', currentUser.uid);
-        console.log('   Email:', currentUser.email);
-        
-        // Ejecutar en background sin esperar
-        setTimeout(() => {
-          UserDataSync.syncCompleteData(userData)
-            .then(() => {
-              console.log('✅ Datos completos sincronizados exitosamente con Firestore');
-            })
-            .catch(err => {
-              console.error('❌ Error sincronizando con Firestore:', err);
-            });
-        }, 100);
-      } else if (currentUser?.isAnonymous) {
-        console.log('⚠️ Usuario anónimo - solo se guarda en localStorage');
-      } else {
-        console.log('⚠️ Usuario no autenticado - solo se guarda en localStorage');
+        if (this.syncTimeoutId) {
+          clearTimeout(this.syncTimeoutId);
+        }
+        this.syncTimeoutId = setTimeout(() => {
+          this.syncTimeoutId = null;
+          UserDataSync.syncCompleteData(userData).catch(err => {
+            console.error('❌ Error sincronizando con Firestore:', err);
+          });
+        }, 800);
       }
 
       // Sincronizar el RESUMEN de progreso a la clase, si el alumno pertenece a una.
@@ -116,7 +114,11 @@ class UserDataManager {
       ? lastVisitDates.reduce((latest, current) => (current > latest ? current : latest))
       : null;
 
-    setTimeout(() => {
+    if (this.classroomSyncTimeoutId) {
+      clearTimeout(this.classroomSyncTimeoutId);
+    }
+    this.classroomSyncTimeoutId = setTimeout(() => {
+      this.classroomSyncTimeoutId = null;
       ClassroomService.syncStudentProgress(classroomId, currentUser.uid, {
         totalScore: userData.game.totalScore,
         streak: userData.game.streak,
@@ -126,7 +128,7 @@ class UserDataManager {
       }).catch(err => {
         console.error('❌ Error sincronizando progreso con la clase:', err);
       });
-    }, 100);
+    }, 800);
   }
 
   static visitActivity(activityTitle: string): UserData {

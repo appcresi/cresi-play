@@ -5,33 +5,22 @@ import { User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import type { UserData, UserRole } from '@/types/user';
 
-// Únicas claves de localStorage relacionadas a sesión en toda la app.
-// Si el día de mañana cambian, se tocan acá y en ningún otro lado.
+
 const PROFILE_STORAGE_KEY = 'cresi_user_data';
 const LEGACY_PROFILE_KEY = 'cresi_profile';
 
 interface AuthContextType {
-  /** Usuario de Firebase Auth (puede ser anónimo). */
+ 
   user: User | null;
-  /** true mientras Firebase todavía no resolvió el estado de auth. */
+ 
   loading: boolean;
   isAuthenticated: boolean;
-  /**
-   * Perfil "rápido" leído de localStorage (username, avatar, role, classroomId...).
-   * Se inicializa de forma SINCRÓNICA al montar, así componentes que necesitan
-   * saber el rol para decidir qué renderizar (ComicHome, TeacherDashboard) no
-   * tienen que esperar un tick — eso es lo que evita el "flash" de contenido
-   * equivocado. Para el alumno registrado, esto puede no reflejar todavía los
-   * últimos datos sincronizados desde Firestore; para eso está el merge propio
-   * que hace Features.tsx al cargar.
-   */
+  
   profile: UserData | null;
   role: UserRole | null;
-  /** Fuerza una relectura de `profile` desde localStorage. Normalmente no hace
-   * falta llamarlo a mano: el contexto ya escucha los eventos que indican que
-   * la sesión cambió. */
+ 
   refreshProfile: () => void;
-  /** Cierra sesión, limpia todo el localStorage de sesión y notifica a quien escuche. */
+  
   logout: () => Promise<void>;
 }
 
@@ -58,14 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    console.log('🔐 Inicializando listener de autenticación...');
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        console.log('✅ Usuario autenticado:', currentUser.uid);
-      } else {
-        console.log('⏸️ No hay usuario autenticado');
-      }
-
       setUser(currentUser);
       setFirebaseLoading(false);
       // Releemos el perfil cada vez que cambia el usuario de Firebase
@@ -89,24 +71,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.addEventListener('cresi-session-updated', handleSessionUpdated);
 
     return () => {
-      console.log('🧹 Limpiando listener de autenticación');
       unsubscribe();
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('cresi-session-updated', handleSessionUpdated);
     };
   }, [refreshProfile]);
 
-  // Firebase confirma la sesión (`user`) casi al instante, pero el perfil
-  // local (con el `role`) recién se escribe después — sobre todo en los
-  // logins con Google/email, que esperan ~1s y consultan Firestore antes de
-  // guardar nada. En esa ventana, `user` ya existe pero `profile` todavía
-  // no, y cualquier pantalla que decidiera qué mostrar mirando solo `user`
-  // terminaba mostrando el contenido de alumno un instante antes de que el
-  // rol de docente terminara de resolverse.
-  //
-  // Por eso `loading` sigue en `true` mientras haya un `user` sin `profile`
-  // todavía — con un tope de 2.5s para no colgar la UI si por lo que sea
-  // nunca aparece un perfil (por ejemplo, localStorage borrado a mano).
+
   const [waitingForProfile, setWaitingForProfile] = useState(false);
 
   useEffect(() => {

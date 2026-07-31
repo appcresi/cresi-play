@@ -3,6 +3,7 @@ import type { Metadata, Viewport  } from 'next'
 import localFont from 'next/font/local'
 import Script from 'next/script'
 import './globals.css'
+import InactivityGuard from '@/components/InactivityGuard';
 
 import Analytics from '@/components/Analytics'
 import Adsense from '@/components/Adsense'
@@ -146,6 +147,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
       <body className='bg-[#f3f4f6]'>
         <AuthProvider>
           <main>
+            <InactivityGuard />
             {children}
           </main>
         </AuthProvider>

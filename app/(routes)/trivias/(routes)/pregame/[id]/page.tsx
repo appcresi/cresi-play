@@ -117,8 +117,8 @@ export default function Page({ params }: PageProps) {
   }
 
   return (
-    <main className="h-screen bg-gray-50 overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 py-4 h-full flex flex-col">
+    <main className="min-h-screen bg-gray-50">
+      <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col">
         {/* Back Button */}
         <Link
           href="/trivias"
@@ -129,7 +129,7 @@ export default function Page({ params }: PageProps) {
         </Link>
 
         {/* Header Section */}
-        <div className="rounded-t-xl px-6 py-4 text-white shrink-0" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
+        <div className="rounded-xl px-6 py-4 text-white shrink-0 mb-3" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center shrink-0">
               <IconListNumbers size={18} />

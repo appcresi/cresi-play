@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import TriviaGame from '../../components/TriviaGame';
 import { getActivityById } from '@/lib/activities';
 
@@ -94,6 +94,18 @@ export default function TriviaPage({ params }: PageProps) {
         };
 
         setGameData(gameDataFormatted);
+
+        // Antes esto se contaba solo desde el botón "Jugar" del panel del
+        // docente — es decir, nunca reflejaba partidas reales de alumnos,
+        // ni funcionaba para trivias de CrESI. Acá es el único lugar por
+        // el que se entra a jugar de verdad, sin importar quién ni de
+        // quién sea la trivia — así el contador es real. No bloquea la
+        // carga del juego si falla (no es crítico).
+        updateDoc(doc(db, 'trivia', id), {
+          playCount: increment(1),
+        }).catch((err) => {
+          console.error('No se pudo registrar la partida:', err);
+        });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Error al obtener la trivia';

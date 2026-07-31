@@ -11,21 +11,17 @@ class UserDataSync {
   static async syncCompleteData(userData: UserData): Promise<void> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
-        console.log('❌ No hay usuario autenticado');
         return;
       }
 
       if (currentUser.isAnonymous) {
-        console.log('⚠️ Usuario anónimo - no se sincroniza con Firestore');
         return;
       }
 
-      console.log(`📤 Sincronizando TODOS los datos para usuario: ${currentUser.uid}`);
-
       const userDocRef = doc(db, 'users', currentUser.uid);
-      
+
       // Datos completos a guardar
       const dataToSave = {
         uid: currentUser.uid,
@@ -46,20 +42,16 @@ class UserDataSync {
 
       // Verificar si el documento existe
       const docSnapshot = await getDoc(userDocRef);
-      
+
       if (docSnapshot.exists()) {
         // Actualizar documento existente
         await updateDoc(userDocRef, dataToSave);
-        console.log('✅ Datos COMPLETOS sincronizados (actualizado)');
-        console.log('   Dashboard guardado:', userData.dashboard);
       } else {
         // Crear nuevo documento
         await setDoc(userDocRef, {
           ...dataToSave,
           createdAt: new Date().toISOString()
         });
-        console.log('✅ Datos COMPLETOS sincronizados (creado nuevo)');
-        console.log('   Dashboard guardado:', userData.dashboard);
       }
     } catch (error: any) {
       console.error('❌ Error sincronizando datos completos:', error);
@@ -72,23 +64,17 @@ class UserDataSync {
   static async syncDashboardConfig(dashboardConfig: DashboardConfig): Promise<void> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
-        console.log('❌ No hay usuario autenticado');
         return;
       }
 
       if (currentUser.isAnonymous) {
-        console.log('⚠️ Usuario anónimo - no se sincroniza con Firestore');
         return;
       }
 
-      console.log(`📤 Sincronizando configuración del dashboard para usuario: ${currentUser.uid}`);
-      console.log('   Actividades visibles:', dashboardConfig.visibleActivities.length);
-      console.log('   Orden personalizado:', dashboardConfig.activityOrder.length);
-
       const userDocRef = doc(db, 'users', currentUser.uid);
-      
+
       // Intentar actualizar el documento existente
       try {
         await updateDoc(userDocRef, {
@@ -96,11 +82,9 @@ class UserDataSync {
           'updatedAt': new Date().toISOString(),
           'lastSyncedAt': new Date().toISOString()
         });
-        console.log('✅ Configuración del dashboard sincronizada correctamente');
       } catch (error: any) {
         // Si el documento no existe, crearlo
         if (error.code === 'not-found') {
-          console.log('⚠️ Documento no existe, creando uno nuevo...');
           const defaultUserData = {
             uid: currentUser.uid,
             email: currentUser.email,
@@ -135,9 +119,8 @@ class UserDataSync {
             createdAt: new Date().toISOString(),
             lastSyncedAt: new Date().toISOString()
           };
-          
+
           await setDoc(userDocRef, defaultUserData);
-          console.log('✅ Documento creado con configuración del dashboard');
         } else {
           throw error;
         }
@@ -153,32 +136,24 @@ class UserDataSync {
   static async syncScoreOnly(score: number, lives: number): Promise<void> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
-        console.log('❌ No hay usuario autenticado');
         return;
       }
 
       if (currentUser.isAnonymous) {
-        console.log('⚠️ Usuario anónimo - no se sincroniza con Firestore');
         return;
       }
 
-      console.log(`📤 Sincronizando puntuación para usuario: ${currentUser.uid}`);
-      console.log(`   Puntos: ${score}, Vidas: ${lives}`);
-
       const userDocRef = doc(db, 'users', currentUser.uid);
-      
+
       await updateDoc(userDocRef, {
         'game.totalScore': score,
         'game.totalLives': lives,
         'lastSyncedAt': new Date().toISOString()
       });
-
-      console.log('✅ Puntuación sincronizada correctamente');
     } catch (error: any) {
       if (error.code === 'not-found') {
-        console.log('⚠️ Documento no existe, creando uno nuevo...');
         try {
           const currentUser = auth.currentUser;
           if (currentUser && !currentUser.isAnonymous) {
@@ -220,9 +195,8 @@ class UserDataSync {
               createdAt: new Date().toISOString(),
               lastSyncedAt: new Date().toISOString()
             };
-            
+
             await setDoc(userDocRef, defaultUserData);
-            console.log('✅ Documento creado y puntuación sincronizada');
           }
         } catch (createError) {
           console.error('❌ Error creando documento:', createError);
@@ -239,37 +213,21 @@ class UserDataSync {
   static async loadFromFirestore(): Promise<UserData | null> {
     try {
       const currentUser = auth.currentUser;
-      
-      console.log('🔍 Intentando cargar datos de Firestore...');
-      console.log('   Usuario actual:', currentUser?.uid);
-      console.log('   ¿Es anónimo?:', currentUser?.isAnonymous);
 
       if (!currentUser) {
-        console.log('❌ No hay usuario autenticado');
         return null;
       }
 
       if (currentUser.isAnonymous) {
-        console.log('⚠️ Usuario es anónimo - solo se usa localStorage');
         return null;
       }
 
       const userDocRef = doc(db, 'users', currentUser.uid);
-      
-      console.log('📚 Buscando documento en: users/' + currentUser.uid);
       const docSnapshot = await getDoc(userDocRef);
 
       if (docSnapshot.exists()) {
-        const data = docSnapshot.data() as UserData;
-        console.log('✅ Datos encontrados en Firestore');
-        console.log('   Puntos:', data.game.totalScore);
-        console.log('   Usuario:', data.profile.username);
-        console.log('   Rol:', data.profile.role ?? 'student');
-        console.log('   Actividades completadas:', data.progress.completedActivities.length);
-        console.log('   Dashboard configurado:', data.dashboard?.visibleActivities.length || 0, 'actividades visibles');
-        return data;
+        return docSnapshot.data() as UserData;
       } else {
-        console.log('⚠️ No existe documento en Firestore para este usuario');
         return null;
       }
     } catch (error) {
@@ -284,29 +242,18 @@ class UserDataSync {
   static async loadDashboardConfigFromFirestore(): Promise<DashboardConfig | null> {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser || currentUser.isAnonymous) {
-        console.log('⚠️ Usuario no autenticado o es anónimo');
         return null;
       }
 
-      console.log('🔍 Cargando configuración del dashboard desde Firestore...');
-      
       const userDocRef = doc(db, 'users', currentUser.uid);
       const docSnapshot = await getDoc(userDocRef);
 
       if (docSnapshot.exists()) {
         const data = docSnapshot.data();
-        if (data.dashboard) {
-          console.log('✅ Configuración del dashboard encontrada');
-          console.log('   Actividades visibles:', data.dashboard.visibleActivities.length);
-          return data.dashboard;
-        } else {
-          console.log('⚠️ No hay configuración de dashboard en Firestore');
-          return null;
-        }
+        return data.dashboard ?? null;
       } else {
-        console.log('⚠️ No existe documento en Firestore');
         return null;
       }
     } catch (error) {
