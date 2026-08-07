@@ -55,6 +55,7 @@ export default function UnirseSinCodigoPage() {
     settings: { notifications: true, theme: 'light', language: 'es' },
     dashboard: { visibleActivities: DEFAULT_FEATURES_IDS, activityOrder: DEFAULT_FEATURES_IDS },
     notes: [],
+    searchHistory: [],
   });
 
   const finishLogin = () => {
