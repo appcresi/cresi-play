@@ -44,7 +44,8 @@ class UserDataManager {
         visibleActivities: DEFAULT_FEATURES,
         activityOrder: DEFAULT_FEATURES
       },
-      notes: []
+      notes: [],
+      searchHistory: []
     };
   }
 
