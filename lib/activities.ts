@@ -160,6 +160,16 @@ export const ACTIVITIES: ActivityDefinition[] = [
     iconName: "IconMoodPuzzled",
     iconSize: 24,
   },
+  {
+    id: "buscador",
+    title: "Buscador de Preguntas",
+    description: "Buscá entre nuestro banco de preguntas sobre ESI por palabra clave.",
+    route: "/buscador",
+    color: "#4F46E5",
+    image: "/trivia.svg",
+    category: "Evaluación",
+    iconName: "IconSearch",
+  },
 ];
 
 /** Solo los ids, en el mismo orden — para defaults de visibilidad/orden del dashboard. */

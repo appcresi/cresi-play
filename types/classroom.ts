@@ -19,6 +19,10 @@ export interface Classroom {
   allowedActivities: string[] | null;
   /** IDs de trivias del docente visibles en esta clase. `null` = sin restricción (todas las del docente). */
   visibleTrivias: string[] | null;
+  /** Etiquetas (tag) del banco de preguntas bloqueadas enteras para esta clase. `null` = sin restricción. */
+  restrictedTags: string[] | null;
+  /** IDs de preguntas puntuales bloqueadas, aunque su etiqueta esté permitida. `null` = ninguna. */
+  restrictedQuestionIds: string[] | null;
   /** Color de banner asignado al crear la clase (estilo Google Classroom). */
   color: string;
 }

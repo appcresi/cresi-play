@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   IconCards,
   IconAB2,
@@ -40,6 +41,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   IconBook,
   IconHeart,
   IconMoodPuzzled,
+  IconSearch,
 };
 
 const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {
@@ -49,6 +51,10 @@ const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {
     icon: <IconComponent size={activity.iconSize ?? 20} />,
   };
 });
+
+// Color del botón flotante del buscador — mismo indigo que usamos en
+// /buscador y en ClassroomDesk.tsx.
+const SEARCH_ACCENT = '#4F46E5';
 
 const EducationalProgressPanel = () => {
   const { user } = useAuth();
@@ -454,6 +460,24 @@ const EducationalProgressPanel = () => {
         }
       `}</style>
       </div>
+
+      {/* Botón flotante del buscador — mismo que en ClassroomDesk.tsx, para
+          que el buscador tenga un acceso propio en vez de perderse entre
+          el resto de las actividades. */}
+      <Link
+        href="/buscador"
+        className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full shadow-lg
+                 hover:scale-110 transition-transform"
+        style={{ backgroundColor: SEARCH_ACCENT }}
+        title="Buscador de preguntas"
+        aria-label="Ir al buscador de preguntas"
+      >
+        <span
+          className="absolute inset-0 rounded-full animate-ping opacity-30"
+          style={{ backgroundColor: SEARCH_ACCENT }}
+        />
+        <IconSearch className="w-6 h-6 text-white relative z-10" />
+      </Link>
     </>
   );
 };

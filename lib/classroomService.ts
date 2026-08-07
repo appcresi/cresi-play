@@ -77,6 +77,8 @@ const ClassroomService = {
       code,
       allowedActivities: null,
       visibleTrivias: null,
+      restrictedTags: null,
+      restrictedQuestionIds: null,
       color,
       createdAt: serverTimestamp(),
     });
@@ -91,6 +93,8 @@ const ClassroomService = {
       pendingCount: 0,
       allowedActivities: null,
       visibleTrivias: null,
+      restrictedTags: null,
+      restrictedQuestionIds: null,
       color,
     };
   },
@@ -136,6 +140,8 @@ const ClassroomService = {
       createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
       allowedActivities: data.allowedActivities ?? null,
       visibleTrivias: data.visibleTrivias ?? null,
+      restrictedTags: data.restrictedTags ?? null,
+      restrictedQuestionIds: data.restrictedQuestionIds ?? null,
       color: data.color ?? fallbackColorFor(snap.id),
     };
   },
@@ -154,6 +160,22 @@ const ClassroomService = {
 
   async updateVisibleTrivias(classroomId: string, triviaIds: string[] | null): Promise<void> {
     await updateDoc(doc(db, 'classrooms', classroomId), { visibleTrivias: triviaIds });
+  },
+
+  /**
+   * Etiquetas del banco de preguntas bloqueadas ENTERAS para esta clase.
+   * `null` = sin restricción, se ven todas las etiquetas.
+   */
+  async updateRestrictedTags(classroomId: string, tags: string[] | null): Promise<void> {
+    await updateDoc(doc(db, 'classrooms', classroomId), { restrictedTags: tags });
+  },
+
+  /**
+   * Preguntas puntuales bloqueadas, aunque su etiqueta esté permitida.
+   * `null` = ninguna pregunta puntual bloqueada.
+   */
+  async updateRestrictedQuestionIds(classroomId: string, questionIds: string[] | null): Promise<void> {
+    await updateDoc(doc(db, 'classrooms', classroomId), { restrictedQuestionIds: questionIds });
   },
 
   /**
@@ -197,6 +219,8 @@ const ClassroomService = {
         pendingCount: pendingSnap.docs.filter((p) => !p.data().claimed).length,
         allowedActivities: data.allowedActivities ?? null,
         visibleTrivias: data.visibleTrivias ?? null,
+        restrictedTags: data.restrictedTags ?? null,
+        restrictedQuestionIds: data.restrictedQuestionIds ?? null,
         color: data.color ?? fallbackColorFor(d.id),
       });
     }

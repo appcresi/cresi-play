@@ -353,7 +353,7 @@ const WelcomeLanding = () => {
               <div className="w-11 h-11 rounded-2xl bg-[#E6F7F5] text-[#2FB8AC] flex items-center justify-center mb-4">
                 <IconChalkboard className="w-5 h-5" />
               </div>
-              <h3 className={`${fredoka.className} text-lg mb-2`}>Soy docente</h3>
+              <h3 className={`${fredoka.className} text-lg mb-2`}>Docente</h3>
               <p className="text-sm text-[#241B37]/60 leading-relaxed mb-4 flex-1">
                 Creá tu clase, sumá alumnos y elegí qué actividades pueden ver.
               </p>

@@ -1,11 +1,3 @@
-// types/user.ts
-//
-// Única fuente de verdad para los tipos relacionados al usuario/perfil.
-// Antes estaban redefinidos (con variaciones sutiles) en AuthModal.tsx,
-// userDataManager.ts, userDataSync.ts, EducationalProgressPanel.tsx,
-// Features.tsx y Header.tsx. Cualquier cambio de forma va acá, una sola vez,
-// y todo lo demás importa desde este archivo.
-
 export type UserRole = 'student' | 'teacher';
 
 export interface Character {
@@ -30,6 +22,12 @@ export interface LessonNote {
   level: number;
   createdAt: string;
   updatedAt?: string;
+}
+
+/** Un término que la persona buscó en el buscador de preguntas. */
+export interface SearchHistoryEntry {
+  term: string;
+  date: string;
 }
 
 export interface Achievement {
@@ -103,4 +101,6 @@ export interface UserData {
   dashboard: DashboardConfig;
   /** Notas que el alumno escribe mientras lee las lecciones. */
   notes: LessonNote[];
+  /** Términos buscados en el buscador de preguntas — últimos 200. */
+  searchHistory: SearchHistoryEntry[];
 }
