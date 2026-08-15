@@ -77,6 +77,7 @@ const ClassroomService = {
       code,
       allowedActivities: null,
       visibleTrivias: null,
+      visibleCompletaPalabras: null,
       restrictedTags: null,
       restrictedQuestionIds: null,
       color,
@@ -93,6 +94,7 @@ const ClassroomService = {
       pendingCount: 0,
       allowedActivities: null,
       visibleTrivias: null,
+      visibleCompletaPalabras: null,
       restrictedTags: null,
       restrictedQuestionIds: null,
       color,
@@ -140,6 +142,7 @@ const ClassroomService = {
       createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
       allowedActivities: data.allowedActivities ?? null,
       visibleTrivias: data.visibleTrivias ?? null,
+      visibleCompletaPalabras: data.visibleCompletaPalabras ?? null,
       restrictedTags: data.restrictedTags ?? null,
       restrictedQuestionIds: data.restrictedQuestionIds ?? null,
       color: data.color ?? fallbackColorFor(snap.id),
@@ -160,6 +163,21 @@ const ClassroomService = {
 
   async updateVisibleTrivias(classroomId: string, triviaIds: string[] | null): Promise<void> {
     await updateDoc(doc(db, 'classrooms', classroomId), { visibleTrivias: triviaIds });
+  },
+
+  /**
+   * IDs de lecciones de Completa Palabras (CrESI + propias del docente)
+   * visibles en esta clase. `null` = sin restricción (todas visibles).
+   */
+  async getVisibleCompletaPalabras(classroomId: string): Promise<string[] | null> {
+    const snap = await getDoc(doc(db, 'classrooms', classroomId));
+    if (!snap.exists()) return null;
+    const data = snap.data() as any;
+    return data.visibleCompletaPalabras ?? null;
+  },
+
+  async updateVisibleCompletaPalabras(classroomId: string, lessonIds: string[] | null): Promise<void> {
+    await updateDoc(doc(db, 'classrooms', classroomId), { visibleCompletaPalabras: lessonIds });
   },
 
   /**
@@ -219,6 +237,7 @@ const ClassroomService = {
         pendingCount: pendingSnap.docs.filter((p) => !p.data().claimed).length,
         allowedActivities: data.allowedActivities ?? null,
         visibleTrivias: data.visibleTrivias ?? null,
+        visibleCompletaPalabras: data.visibleCompletaPalabras ?? null,
         restrictedTags: data.restrictedTags ?? null,
         restrictedQuestionIds: data.restrictedQuestionIds ?? null,
         color: data.color ?? fallbackColorFor(d.id),

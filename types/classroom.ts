@@ -19,6 +19,8 @@ export interface Classroom {
   allowedActivities: string[] | null;
   /** IDs de trivias del docente visibles en esta clase. `null` = sin restricción (todas las del docente). */
   visibleTrivias: string[] | null;
+  /** IDs de lecciones de Completa Palabras (CrESI + propias del docente) visibles en esta clase. `null` = sin restricción (todas). */
+  visibleCompletaPalabras: string[] | null;
   /** Etiquetas (tag) del banco de preguntas bloqueadas enteras para esta clase. `null` = sin restricción. */
   restrictedTags: string[] | null;
   /** IDs de preguntas puntuales bloqueadas, aunque su etiqueta esté permitida. `null` = ninguna. */

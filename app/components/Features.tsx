@@ -19,7 +19,8 @@ import {
   IconCalendar,
   IconBook,
   IconChevronRight,
-  IconMoodPuzzled
+  IconMoodPuzzled,
+  IconPhoto
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService from '@/lib/classroomService';
@@ -42,6 +43,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   IconHeart,
   IconMoodPuzzled,
   IconSearch,
+  IconPhoto,
 };
 
 const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {

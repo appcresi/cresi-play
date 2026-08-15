@@ -34,6 +34,7 @@ export default function TeacherHeader(): JSX.Element {
   const navTabs = [
     { href: '/docente', label: 'Mis clases' },
     { href: '/docente/trivias', label: 'Mis trivias' },
+    { href: '/docente/completapalabras', label: 'Completa Palabras' },
   ];
 
   return (

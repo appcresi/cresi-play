@@ -325,6 +325,11 @@ const TeacherDashboard = () => {
               )
             );
           }}
+          onCompletaPalabrasChanged={(visibleCompletaPalabras) => {
+            setClassrooms((prev) =>
+              prev.map((c) => (c.id === selectedClassroom.id ? { ...c, visibleCompletaPalabras } : c))
+            );
+          }}
           onSelectStudent={setProgressStudent}
           onRemoveStudent={(uid) => handleRemoveStudent(selectedClassroom.id, uid)}
           onRemovePending={(pendingId) => handleRemovePending(selectedClassroom.id, pendingId)}

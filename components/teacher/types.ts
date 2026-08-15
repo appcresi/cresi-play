@@ -8,3 +8,11 @@ export interface TeacherTriviaOption {
   /** true = la creó el docente; false = viene del catálogo de CrESI. */
   isOwn: boolean;
 }
+
+export interface TeacherCompletaPalabrasOption {
+  id: string;
+  title: string;
+  leccionesCount: number;
+  /** true = la creó el docente; false = viene del catálogo de CrESI. */
+  isOwn: boolean;
+}

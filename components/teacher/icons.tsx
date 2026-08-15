@@ -10,6 +10,7 @@ import {
   IconHeart,
   IconMoodPuzzled,
   IconSearch,
+  IconPhoto,
 } from '@tabler/icons-react';
 
 // Mismo patrón que Features.tsx/ClassroomDesk.tsx: el catálogo guarda el
@@ -25,6 +26,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }
   IconBook,
   IconHeart,
   IconSearch,
+  IconPhoto,
 };
 
 export const ActivityIcon = ({ iconName, className }: { iconName: string; className?: string }) => {

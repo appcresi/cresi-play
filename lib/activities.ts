@@ -170,6 +170,16 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Evaluación",
     iconName: "IconSearch",
   },
+  {
+    id: "infografias",
+    title: "Infografías",
+    description: "Material visual educativo sobre salud, sexualidad y relaciones saludables, para consultar y descargar.",
+    route: "/infografias",
+    color: "#00897B",
+    image: "/trivia.svg",
+    category: "Lectura",
+    iconName: "IconPhoto",
+  },
 ];
 
 /** Solo los ids, en el mismo orden — para defaults de visibilidad/orden del dashboard. */

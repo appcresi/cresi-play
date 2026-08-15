@@ -7,22 +7,33 @@ import { WordPool } from './WordPool';
 import { GameControls } from './GameControls';
 import { processText, createWordsForLevel } from '../utils/gameUtils';
 import { GameLevel, Word, Blank, Lesson } from './types';
-import { gameLevels } from '../data/gameLevels';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { getActivityById } from '@/lib/activities';
 
 interface WordDragGameProps {
-  lessonTitle: string;
+  /** ID del documento en Firestore (colección `completapalabras`), no el
+   *  título — antes se pasaba el título directo y se buscaba en un array
+   *  hardcodeado; ahora el contenido vive en Firestore (CrESI o docentes),
+   *  así que hace falta el ID para poder traer el documento correcto. */
+  lessonId: string;
 }
 
 // El catálogo llama a esta actividad "Completa Palabras" en general — pero
-// acá adentro hay 4 lecciones distintas (Pubertad, Sexualidad, etc.), cada
-// una con su propio progreso. Guardamos las dos cosas: una clave POR
+// acá adentro hay varias lecciones distintas (Pubertad, Sexualidad, etc.),
+// cada una con su propio progreso. Guardamos las dos cosas: una clave POR
 // LECCIÓN (para el selector de lecciones) y el título general (para que el
 // resto de la app — Features, ClassroomDesk — reconozca la actividad como
 // completada apenas se termine cualquiera de las lecciones).
+//
+// La clave de progreso sigue basándose en el TÍTULO de la lección (no en
+// el ID de Firestore) a propósito: así el progreso que ya tenían guardado
+// los alumnos con las 4 lecciones originales de CrESI (Pubertad,
+// Sexualidad...) se sigue reconociendo igual, sin resetear a 0% por este
+// cambio.
 const ACTIVITY = getActivityById('completa');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Completa Palabras';
 const ACCENT = ACTIVITY?.color ?? '#7B1FA2';
@@ -35,7 +46,7 @@ export function lessonProgressKey(lessonTitle: string): string {
   return `${ACTIVITY_TITLE}-${lessonTitle}`;
 }
 
-const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
+const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -45,6 +56,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [blanks, setBlanks] = useState<Blank[]>([]);
   const [textParts, setTextParts] = useState<string[]>([]);
   const [currentLessonData, setCurrentLessonData] = useState<GameLevel | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const [isClient, setIsClient] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -64,11 +76,44 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [sessionScore, setSessionScore] = useState(0);
 
-  const LESSON_KEY = lessonProgressKey(lessonTitle);
+  // Antes esto se calculaba de entrada, porque el título venía como prop.
+  // Ahora hay que esperar a que la lección termine de cargar desde
+  // Firestore, así que puede ser null momentáneamente.
+  const LESSON_KEY = currentLessonData ? lessonProgressKey(currentLessonData.title) : null;
 
   useEffect(() => {
-    loadUserData();
-  }, []);
+    setIsClient(true);
+    fetchLesson();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId]);
+
+  const fetchLesson = async () => {
+    try {
+      const snap = await getDoc(doc(db, 'completapalabras', lessonId));
+      if (!snap.exists()) {
+        console.error('❌ No se encontró la lección de Completa Palabras:', lessonId);
+        setLoadError(true);
+        return;
+      }
+      const data = snap.data() as { title: string; lecciones: Lesson[] };
+      const lessonData: GameLevel = { title: data.title, lecciones: data.lecciones };
+      setCurrentLessonData(lessonData);
+      initializeLevel(0, lessonData.lecciones);
+    } catch (err) {
+      console.error('❌ Error cargando la lección de Completa Palabras:', err);
+      setLoadError(true);
+    }
+  };
+
+  // Recién cargamos los datos del usuario (y registramos la visita) una
+  // vez que sabemos el título real de la lección — antes de eso no
+  // tenemos la clave de progreso correcta.
+  useEffect(() => {
+    if (LESSON_KEY) {
+      loadUserData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [LESSON_KEY]);
 
   useEffect(() => {
     if (hasLoaded) {
@@ -78,6 +123,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   }, [sessionScore, lives, isGameOver, isLevelComplete]);
 
   const loadUserData = () => {
+    if (!LESSON_KEY) return;
     const data = UserDataManager.loadUserData();
     setUserData(data);
     setScore(data.game.totalScore);
@@ -87,6 +133,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
   };
 
   const saveUserData = () => {
+    if (!LESSON_KEY) return;
     const current = UserDataManager.loadUserData();
     const finishedLesson =
       isLevelComplete && currentLessonData && currentLevel === currentLessonData.lecciones.length - 1;
@@ -126,15 +173,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
   };
-
-  useEffect(() => {
-    setIsClient(true);
-    const lessonData = gameLevels.find(level => level.title === lessonTitle);
-    if (lessonData) {
-      setCurrentLessonData(lessonData);
-      initializeLevel(0, lessonData.lecciones);
-    }
-  }, [lessonTitle]);
 
   const initializeLevel = (level: number, lessons: Lesson[]) => {
     if (!lessons[level]) return;
@@ -371,6 +409,17 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonTitle }) => {
       initializeLevel(0, currentLessonData.lecciones);
     }
   };
+
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-sm">
+          <IconX className="w-10 h-10 text-red-400 mx-auto mb-3" />
+          <p className="text-gray-600">No se pudo cargar esta lección. Puede que ya no exista.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isClient || !currentLessonData) {
     return (

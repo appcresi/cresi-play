@@ -30,6 +30,7 @@ export const ClassroomDetailView = ({
   onActivitiesChanged,
   onTriviasChanged,
   onQuestionsChanged,
+  onCompletaPalabrasChanged,
   onSelectStudent,
   onRemoveStudent,
   onRemovePending,
@@ -60,6 +61,7 @@ export const ClassroomDetailView = ({
   onActivitiesChanged: (allowedActivities: string[] | null) => void;
   onTriviasChanged: (visibleTrivias: string[] | null) => void;
   onQuestionsChanged: (restrictedTags: string[] | null, restrictedQuestionIds: string[] | null) => void;
+  onCompletaPalabrasChanged: (visibleCompletaPalabras: string[] | null) => void;
   onSelectStudent: (s: ClassroomStudent) => void;
   onRemoveStudent: (uid: string) => void;
   onManageStudentCredentials: (s: ClassroomStudent) => void;
@@ -221,6 +223,7 @@ export const ClassroomDetailView = ({
             onActivitiesChanged={onActivitiesChanged}
             onTriviasChanged={onTriviasChanged}
             onQuestionsChanged={onQuestionsChanged}
+            onCompletaPalabrasChanged={onCompletaPalabrasChanged}
           />
         )}
 

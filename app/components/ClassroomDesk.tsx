@@ -21,6 +21,7 @@ import {
   IconMoodHappy,
   IconCopy,
   IconCheck,
+  IconPhoto,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService, { Classroom } from '@/lib/classroomService';
@@ -43,6 +44,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
   IconBook,
   IconHeart,
   IconSearch,
+  IconPhoto,
 };
 
 const ActivityIcon = ({ iconName, size = 18, className }: { iconName: string; size?: number; className?: string }) => {

@@ -17,7 +17,8 @@ import {
   IconBell,
   IconSettings,
   IconLogout,
-  IconSearch
+  IconSearch,
+  IconPhoto
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -521,6 +522,7 @@ const ICON_MAP: Record<string, JSX.Element> = {
   IconBook: <IconBook />,
   IconHeart: <IconHeart />,
   IconSearch: <IconSearch />,
+  IconPhoto: <IconPhoto />,
 };
 
 /**
