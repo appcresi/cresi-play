@@ -369,7 +369,7 @@ export default function TriviaGame({
 
   return (
     <main className={`min-h-screen ${
-      isNightMode ? 'bg-gray-900 text-white' : 'bg-gray-50'
+      isNightMode ? 'bg-gray-900 text-white' : 'bg-cream'
     } transition-colors duration-300 pt-20`}>
 
       <GameStatusBar

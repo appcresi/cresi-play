@@ -212,7 +212,7 @@ const ChatSimulator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <GameStatusBar
         title="Simulador de Chat Seguro"
         score={score}

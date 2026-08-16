@@ -378,7 +378,7 @@ const DataMuncher = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
+    <div className="min-h-screen bg-cream pb-safe">
       <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-8">
         <GameStatusBar
           title="DataMuncher"
@@ -388,12 +388,12 @@ const DataMuncher = () => {
           timeLeft={timeRemaining}
         />
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 sm:p-6 mb-3 sm:mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-2 sm:p-6 mb-3 sm:mb-6">
           <div className="w-full mx-auto">
             <div className="aspect-square w-full max-w-[min(100%,600px)] mx-auto">
               <div className="max-w-4xl mx-auto">
                 {currentQuestion ? (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-pink-light mb-4 p-6">
                     <div className="flex items-start gap-3">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
@@ -402,20 +402,20 @@ const DataMuncher = () => {
                         <IconHelp size={20} />
                       </div>
                       <div className="flex-1">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-1">Pregunta actual</h2>
-                        <p className="text-sm text-gray-600 leading-relaxed">{currentQuestion.question}</p>
+                        <h2 className="text-sm font-semibold text-ink mb-1">Pregunta actual</h2>
+                        <p className="text-sm text-ink/70 leading-relaxed">{currentQuestion.question}</p>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 p-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-pink-light mb-4 p-6">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-mint-accent flex items-center justify-center text-white shrink-0">
                         <IconInfoCircle size={20} />
                       </div>
                       <div className="flex-1">
-                        <h2 className="text-sm font-semibold text-gray-900 mb-1">Instrucciones</h2>
-                        <p className="text-sm text-gray-600 leading-relaxed">
+                        <h2 className="text-sm font-semibold text-ink mb-1">Instrucciones</h2>
+                        <p className="text-sm text-ink/70 leading-relaxed">
                           Busca las ❓ y luego dirígete hacia la ✅ si es Verdadera o hacia la ❌ si es Falsa
                         </p>
                       </div>
@@ -474,12 +474,12 @@ const DataMuncher = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-6 sticky bottom-2 sm:static">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 sm:mb-4 hidden sm:block">
+        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-3 sm:p-6 sticky bottom-2 sm:static">
+          <h3 className="text-sm sm:text-base font-semibold text-ink mb-2 sm:mb-4 hidden sm:block">
             Controles
           </h3>
           <TouchControls onMove={handleMove} />
-          <p className="text-xs sm:text-sm text-gray-400 text-center mt-2 sm:mt-4 hidden sm:block">
+          <p className="text-xs sm:text-sm text-ink/40 text-center mt-2 sm:mt-4 hidden sm:block">
             Usa las flechas del teclado o los botones táctiles para moverte
           </p>
         </div>

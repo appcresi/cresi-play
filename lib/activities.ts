@@ -42,7 +42,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#7B1FA2",
     image: "/completa.svg",
     category: "Ejercicios",
-    iconName: "IconBrandPnpm",
+    iconName: "IconTypography",
   },
   {
     id: "datamuncher",
@@ -92,7 +92,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#7B1FA2",
     image: "/biopluzzle.svg",
     category: "Lectura",
-    iconName: "IconMoodPuzzled",
+    iconName: "IconPuzzle",
     iconSize: 24,
   },
   {
@@ -103,7 +103,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#D32F2F",
     image: "/condon.svg",
     category: "Lectura",
-    iconName: "IconMoodPuzzled",
+    iconName: "IconShield",
     iconSize: 24,
   },
   {
@@ -114,7 +114,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#1976D2",
     image: "/trivia.svg",
     category: "Lectura",
-    iconName: "IconCards",
+    iconName: "IconNotebook",
     priority: true,
   },
   {
@@ -125,7 +125,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#388E3C",
     image: "/saludmental.svg",
     category: "Ejercicios",
-    iconName: "IconHeart",
+    iconName: "IconBrain",
     priority: true,
   },
   {
@@ -136,7 +136,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#388E3C",
     image: "/vocacion.svg",
     category: "Ejercicios",
-    iconName: "IconBrandPnpm",
+    iconName: "IconBriefcase",
     priority: true,
   },
   {
@@ -157,7 +157,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     color: "#7B1FA2",
     image: "/biopluzzle.svg",
     category: "Juegos Educativos",
-    iconName: "IconMoodPuzzled",
+    iconName: "IconMask",
     iconSize: 24,
   },
   {

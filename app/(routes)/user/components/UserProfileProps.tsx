@@ -19,19 +19,13 @@ import {
     IconAlertTriangle,
     IconMedal,
     IconStar,
-    IconCards,
-    IconAB2,
-    IconShieldCheck,
-    IconBrandPnpm,
-    IconPacman,
-    IconMoodPuzzled,
-    IconMoodTongueWink2,
     IconCheck,
 } from "@tabler/icons-react";
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { ACTIVITIES } from '@/lib/activities';
 import ClassroomService from '@/lib/classroomService';
+import { ActivityIcon } from '@/components/ActivityIcon';
 
 // Los títulos reales del catálogo — se usan para filtrar
 // `completedActivities`, que además de estos títulos también contiene
@@ -41,19 +35,6 @@ import ClassroomService from '@/lib/classroomService';
 // Nota: ya no se calculan acá arriba como constantes de módulo, porque
 // ahora dependen de si el alumno tiene una clase con actividades
 // restringidas — se calculan adentro del componente (ver `visibleActivities`).
-
-// Mismo mapa ícono-por-nombre que usan Features.tsx / Header.tsx / etc.
-const ACTIVITY_ICON_MAP: Record<string, JSX.Element> = {
-  IconCards: <IconCards size={18} />,
-  IconAB2: <IconAB2 size={18} />,
-  IconShieldCheck: <IconShieldCheck size={18} />,
-  IconBrandPnpm: <IconBrandPnpm size={18} />,
-  IconPacman: <IconPacman size={18} />,
-  IconMoodPuzzled: <IconMoodPuzzled size={18} />,
-  IconMoodTongueWink2: <IconMoodTongueWink2 size={18} />,
-  IconBook: <IconBook size={18} />,
-  IconHeart: <IconHeart size={18} />,
-};
 
 const AchievementIcon = ({ iconName, className }: { iconName?: string; className: string }) => {
   switch (iconName) {
@@ -396,7 +377,7 @@ const UserProfile: React.FC = () => {
                     className="w-9 h-9 rounded-full flex items-center justify-center"
                     style={{ backgroundColor: isDone ? activity.color : '#E5E7EB', color: isDone ? 'white' : '#9CA3AF' }}
                   >
-                    {ACTIVITY_ICON_MAP[activity.iconName] ?? <IconMoodPuzzled size={18} />}
+                    <ActivityIcon iconName={activity.iconName} size={18} />
                   </div>
                   <p className={`text-xs font-medium leading-tight ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>
                     {activity.title}

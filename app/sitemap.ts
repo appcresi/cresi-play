@@ -36,6 +36,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    {
+      url: `${BASE_URL}/docente`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
     ...GAME_ROUTES.map((route) => ({
       url: `${BASE_URL}/${route}`,
       lastModified: now,

@@ -147,7 +147,7 @@ export default function InfografiasClient(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <GameStatusBar title="Infografías" score={score} lives={lives} level={1} />
 
       <section className="w-full max-w-6xl mx-auto px-4 pt-24 pb-16">
@@ -165,7 +165,7 @@ export default function InfografiasClient(): JSX.Element {
                 Aprender más, para cuidarse mejor
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">Infografías</h1>
+            <h1 className="text-2xl md:text-3xl font-semibold text-ink mb-1">Infografías</h1>
             <p className="text-sm text-gray-500 max-w-2xl">
               Material visual educativo, gratuito, para consultar o descargar. +{POINTS_PER_VIEW} puntos por ver una,
               +{POINTS_PER_DOWNLOAD} por descargarla.

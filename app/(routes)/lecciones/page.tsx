@@ -52,19 +52,20 @@ export const metadata: Metadata = {
 
 export default function LeccionesPage(): JSX.Element {
 	return (
-		<section className="w-full max-w-7xl mx-auto px-4 py-12">
+		<div className="w-full min-h-screen bg-cream">
+		<section className="max-w-7xl mx-auto px-4 py-12">
 
 			{/* Lecciones component */}
 			<Lecciones />
 
 			{/* Bottom CTA */}
-			<div className="mt-12 bg-blue-50 border border-blue-100 rounded-xl p-6">
+			<div className="mt-12 bg-mint border border-mint-light rounded-xl p-6">
 				<div className="flex flex-col md:flex-row items-center justify-between gap-4">
 					<div>
-						<h3 className="font-semibold text-gray-900 mb-1">
+						<h3 className="font-semibold text-ink mb-1">
 							¿Terminaste todas las lecciones?
 						</h3>
-						<p className="text-sm text-gray-600">
+						<p className="text-sm text-ink/70">
 							Seguí practicando con nuestros juegos y trivias interactivas
 						</p>
 					</div>
@@ -74,7 +75,7 @@ export default function LeccionesPage(): JSX.Element {
 						rel="noopener noreferrer"
 						className="whitespace-nowrap"
 					>
-						<button className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-sm transition-colors flex items-center gap-2">
+						<button className="px-6 py-2.5 bg-coral hover:bg-coral-dark text-white font-semibold rounded-full shadow-sm transition-colors flex items-center gap-2">
 							<IconPlayerPlay className="w-4.5 h-4.5" />
 							<span>Ir a jugar</span>
 						</button>
@@ -82,5 +83,6 @@ export default function LeccionesPage(): JSX.Element {
 				</div>
 			</div>
 		</section>
+		</div>
 	);
 }

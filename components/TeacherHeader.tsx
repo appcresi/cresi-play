@@ -38,13 +38,13 @@ export default function TeacherHeader(): JSX.Element {
   ];
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 shadow-sm shrink-0">
+    <header className="w-full bg-cream shadow-sm shrink-0">
       <nav className="h-16 px-6 flex justify-between items-center max-w-6xl mx-auto">
         <Link href="/docente" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-coral flex items-center justify-center shrink-0">
             <IconSchool className="w-4.5 h-4.5 text-white" />
           </div>
-          <h1 className="hidden sm:block text-base font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors">
+          <h1 className="hidden sm:block text-base font-semibold text-ink group-hover:text-coral transition-colors">
             CrESI Docentes
           </h1>
         </Link>
@@ -52,14 +52,14 @@ export default function TeacherHeader(): JSX.Element {
         <Popover className="relative">
           {({ close }) => (
             <>
-              <Popover.Button className="flex items-center gap-2 hover:bg-gray-50 rounded-full pl-1 pr-3 py-1 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shrink-0">
+              <Popover.Button className="flex items-center gap-2 hover:bg-pink-light rounded-full pl-1 pr-3 py-1 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-mint text-mint-text flex items-center justify-center text-sm font-bold shrink-0">
                   {initial}
                 </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-[160px] truncate">
+                <span className="hidden sm:block text-sm font-medium text-ink/80 max-w-[160px] truncate">
                   {username}
                 </span>
-                <IconChevronDown className="w-4 h-4 text-gray-400" />
+                <IconChevronDown className="w-4 h-4 text-ink/40" />
               </Popover.Button>
 
               <Transition
@@ -71,10 +71,10 @@ export default function TeacherHeader(): JSX.Element {
                 leaveFrom="transform scale-100 opacity-100"
                 leaveTo="transform scale-95 opacity-0"
               >
-                <Popover.Panel className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-                  <div className="p-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-800 truncate">{username}</p>
-                    <p className="text-xs text-gray-500">Docente</p>
+                <Popover.Panel className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-pink-light overflow-hidden z-50">
+                  <div className="p-3 border-b border-pink-light">
+                    <p className="text-sm font-medium text-ink truncate">{username}</p>
+                    <p className="text-xs text-ink/60">Docente</p>
                   </div>
                   <button
                     onClick={() => { close(); handleLogout(); }}
@@ -94,7 +94,7 @@ export default function TeacherHeader(): JSX.Element {
 
       {/* Navegación fija del área de docente — visible en cualquier
           pantalla, no solo enterrada adentro de una clase puntual. */}
-      <div className="border-t border-gray-100">
+      <div className="border-t border-pink-light">
         <div className="max-w-6xl mx-auto px-6 flex gap-6">
           {navTabs.map((tab) => {
             const isActive = tab.href === '/docente'
@@ -106,8 +106,8 @@ export default function TeacherHeader(): JSX.Element {
                 href={tab.href}
                 className={`py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                   isActive
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-coral text-coral-dark'
+                    : 'border-transparent text-ink/60 hover:text-ink/80'
                 }`}
               >
                 {tab.label}

@@ -484,7 +484,7 @@ export default function JugarAzar(): JSX.Element {
   // ============================================
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pt-20 pb-8">
+    <main className="min-h-screen bg-cream pt-20 pb-8">
       <Toaster />
 
       {gameState === 'question' && !isGameOver && (
@@ -502,8 +502,8 @@ export default function JugarAzar(): JSX.Element {
         <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-xl px-8 py-10 flex flex-col items-center gap-6 w-full max-w-lg">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-1">¡Girá la ruleta!</h2>
-              <p className="text-gray-400 text-sm">Te va a tocar una categoría al azar</p>
+              <h2 className="text-2xl font-bold text-ink mb-1">¡Girá la ruleta!</h2>
+              <p className="text-ink/40 text-sm">Te va a tocar una categoría al azar</p>
             </div>
 
             <div className="relative w-72 h-72 sm:w-80 sm:h-80">
@@ -526,7 +526,7 @@ export default function JugarAzar(): JSX.Element {
 
               {/* Centro decorativo */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-4 h-4 rounded-full bg-white shadow-md border-2 border-gray-100" />
+                <div className="w-4 h-4 rounded-full bg-white shadow-md border-2 border-pink-light" />
               </div>
             </div>
 
@@ -545,7 +545,7 @@ export default function JugarAzar(): JSX.Element {
           {/* Completed Categories */}
           {completedCategories.size > 0 && (
             <div className="mt-2 w-full max-w-2xl">
-              <h3 className="text-center text-sm font-semibold text-gray-500 mb-3">
+              <h3 className="text-center text-sm font-semibold text-ink/60 mb-3">
                 Categorías completadas ({completedCategories.size}/{CATEGORIES.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -588,7 +588,7 @@ export default function JugarAzar(): JSX.Element {
       {gameState === 'category-selected' && selectedCategory && (
         <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-xl p-10 text-center max-w-sm w-full">
-            <p className="text-gray-400 text-sm font-medium uppercase tracking-wide mb-5">
+            <p className="text-ink/40 text-sm font-medium uppercase tracking-wide mb-5">
               ¡Categoría seleccionada!
             </p>
             <div
@@ -623,7 +623,7 @@ export default function JugarAzar(): JSX.Element {
                 style={{ backgroundColor: getCategoryColor(selectedCategory), animationDelay: '300ms' }}
               />
             </div>
-            <p className="text-gray-400 text-sm mt-3">Cargando preguntas...</p>
+            <p className="text-ink/40 text-sm mt-3">Cargando preguntas...</p>
           </div>
         </div>
       )}
@@ -632,13 +632,13 @@ export default function JugarAzar(): JSX.Element {
       {gameState === 'question' && !isGameOver && currentQuestion && (
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Question Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8 text-center">
+          <div className="bg-white rounded-lg shadow-sm border border-pink-light p-8 mb-8 text-center">
             <div className="mb-4">
               <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                 {selectedCategory} · Nivel {currentLevel}
               </span>
             </div>
-            <p className="text-xl md:text-2xl font-medium leading-relaxed text-gray-800">
+            <p className="text-xl md:text-2xl font-medium leading-relaxed text-ink">
               {currentQuestion.question}
             </p>
           </div>
@@ -680,13 +680,13 @@ export default function JugarAzar(): JSX.Element {
             <div className="flex flex-col sm:flex-row gap-3 mb-3">
               <button
                 onClick={handleContinueToWheel}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
+                className="flex-1 bg-coral hover:bg-coral-dark text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
               >
                 Siguiente Pregunta
               </button>
               <button
                 onClick={handleExitGame}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
+                className="flex-1 bg-ink/80 hover:bg-ink text-white font-bold py-3 px-4 rounded-lg transition-all duration-300"
               >
                 Salir del Juego
               </button>
@@ -711,24 +711,24 @@ export default function JugarAzar(): JSX.Element {
               <span className="text-3xl">😢</span>
             </div>
             <h2 className="text-3xl font-bold mb-3">Game Over</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ink/70 mb-6">
               Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?
             </p>
 
             {/* Alguien jugando sin ninguna cuenta: le ofrecemos guardar el
                 puntaje de esta partida antes de que se pierda. */}
             {!userData && !progressSaved && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
-                <p className="text-indigo-900 font-medium mb-1">
+              <div className="bg-mint border border-mint-light rounded-lg p-4 mb-6">
+                <p className="text-ink font-medium mb-1">
                   Ganaste {sessionScore} puntos en esta partida 🎉
                 </p>
-                <p className="text-indigo-700 text-sm mb-3">
+                <p className="text-ink/70 text-sm mb-3">
                   Todavía no tenés una cuenta — si te registrás ahora, guardamos este puntaje.
                 </p>
                 <button
                   onClick={handleSaveProgress}
-                  className="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-2.5
-                           rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
+                  className="inline-flex items-center justify-center gap-2 bg-coral text-white px-5 py-2.5
+                           rounded-lg hover:bg-coral-dark transition-colors font-medium text-sm"
                 >
                   <IconDeviceFloppy size={18} />
                   ¿Querés guardar tu progreso?
@@ -739,15 +739,15 @@ export default function JugarAzar(): JSX.Element {
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <button
                 onClick={() => setShowPurchaseModal(true)}
-                className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 
-                         rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 bg-coral text-white px-6 py-3
+                         rounded-lg hover:bg-coral-dark transition-colors font-medium"
               >
                 💳 Comprar Vida Extra
               </button>
               <button
                 onClick={handlePlayAgain}
-                className="inline-flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300
-                         text-gray-800 px-6 py-3 rounded-lg transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 bg-pink-light hover:bg-[#FFD6D6]
+                         text-ink px-6 py-3 rounded-lg transition-colors font-medium"
               >
                 <IconRefresh size={20} />
                 Reiniciar Juego
@@ -767,11 +767,11 @@ export default function JugarAzar(): JSX.Element {
             <h2 className="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600">
               ¡CAMPEÓN!
             </h2>
-            <p className="text-gray-600 text-lg mb-4">
+            <p className="text-ink/70 text-lg mb-4">
               ¡Completaste todas las categorías!
             </p>
             <div className="mb-6">
-              <p className="text-gray-700 text-sm mb-3">Categorías Completadas:</p>
+              <p className="text-ink/80 text-sm mb-3">Categorías Completadas:</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
                 {Array.from(completedCategories).map((category) => {
                   return (
@@ -792,15 +792,15 @@ export default function JugarAzar(): JSX.Element {
                 })}
               </div>
             </div>
-            <p className="text-3xl font-bold text-indigo-600 mb-2">+{sessionScore} puntos</p>
-            <p className="text-gray-700 mb-8">
+            <p className="text-3xl font-bold text-coral-dark mb-2">+{sessionScore} puntos</p>
+            <p className="text-ink/80 mb-8">
               Puntuación total: <span className="font-bold text-2xl text-purple-600">{score}</span>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={handlePlayAgain}
-                className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 
+                className="inline-flex items-center justify-center gap-2 bg-coral hover:bg-coral-dark
                          text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
               >
                 <IconRefresh size={20} />
@@ -808,7 +808,7 @@ export default function JugarAzar(): JSX.Element {
               </button>
               <button
                 onClick={handleExitGame}
-                className="inline-flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 
+                className="inline-flex items-center justify-center gap-2 bg-ink/80 hover:bg-ink
                          text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
               >
                 <IconHome size={20} />
@@ -829,24 +829,24 @@ export default function JugarAzar(): JSX.Element {
       {showExitSavePrompt && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
-            <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <IconDeviceFloppy size={26} className="text-indigo-600" />
+            <div className="w-14 h-14 bg-mint rounded-full flex items-center justify-center mx-auto mb-4">
+              <IconDeviceFloppy size={26} className="text-mint-text" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">¿Querés guardar tu progreso?</h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <h3 className="text-lg font-bold text-ink mb-2">¿Querés guardar tu progreso?</h3>
+            <p className="text-sm text-ink/70 mb-6">
               Llevás {sessionScore} puntos en esta partida. Si salís sin loguearte, se pierden.
             </p>
             <div className="flex flex-col gap-2">
               <button
                 onClick={handleSaveProgress}
-                className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700
+                className="w-full bg-coral text-white py-2.5 px-4 rounded-lg hover:bg-coral-dark
                          transition-colors font-medium text-sm"
               >
                 Guardar mi progreso
               </button>
               <button
                 onClick={handleExitWithoutSaving}
-                className="w-full text-gray-500 hover:text-gray-700 py-2 text-sm"
+                className="w-full text-ink/60 hover:text-ink/80 py-2 text-sm"
               >
                 Salir sin guardar
               </button>

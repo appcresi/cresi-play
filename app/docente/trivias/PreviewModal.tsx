@@ -47,23 +47,23 @@ export default function PreviewModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-2xl max-h-[85vh] flex flex-col">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-pink-light w-full max-w-2xl max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-pink-light">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <IconEye size={18} className="text-indigo-600" />
+            <div className="w-9 h-9 bg-mint rounded-lg flex items-center justify-center">
+              <IconEye size={18} className="text-mint-text" />
             </div>
             <div>
-              <h2 id="preview-modal-title" className="text-lg font-bold text-gray-900">
+              <h2 id="preview-modal-title" className="text-lg font-bold text-ink">
                 Vista previa
               </h2>
-              <p className="text-sm text-gray-500">{triviaName} · {questions.length} preguntas</p>
+              <p className="text-sm text-ink/60">{triviaName} · {questions.length} preguntas</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+            className="p-1.5 text-ink/40 hover:text-ink/70 hover:bg-pink-light rounded-lg transition"
             aria-label="Cerrar vista previa"
           >
             <IconX size={18} />
@@ -75,12 +75,12 @@ export default function PreviewModal({
           {questions.map((q, index) => {
             const allOptions = [q.answer, q.options.first, q.options.second, q.options.third];
             return (
-              <div key={q.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <div key={q.id} className="border border-pink-light rounded-lg overflow-hidden">
+                <div className="bg-cream px-4 py-3 border-b border-pink-light">
+                  <span className="text-xs font-semibold text-ink/40 uppercase tracking-wider">
                     Pregunta {index + 1}
                   </span>
-                  <p className="text-sm font-medium text-gray-900 mt-1">{q.question}</p>
+                  <p className="text-sm font-medium text-ink mt-1">{q.question}</p>
                 </div>
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {allOptions.map((option, i) => {
@@ -91,7 +91,7 @@ export default function PreviewModal({
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border ${
                           isCorrect
                             ? 'bg-green-50 border-green-300 text-green-800 font-medium'
-                            : 'bg-white border-gray-200 text-gray-600'
+                            : 'bg-white border-pink-light text-ink/70'
                         }`}
                       >
                         {isCorrect && (
@@ -108,10 +108,10 @@ export default function PreviewModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-pink-light">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition text-sm"
+            className="w-full px-4 py-2.5 bg-pink-light hover:bg-pink text-ink font-semibold rounded-lg transition text-sm"
           >
             Cerrar
           </button>

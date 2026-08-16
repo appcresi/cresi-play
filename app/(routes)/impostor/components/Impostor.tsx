@@ -270,7 +270,7 @@ export default function ESIImpostor() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-cream flex flex-col">
       <GameStatusBar
         title="CrESI: El Impostor"
         score={score}

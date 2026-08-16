@@ -2,12 +2,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodTongueWink2,
   IconSearch,
   IconX,
   IconHeart,
@@ -17,10 +11,7 @@ import {
   IconTarget,
   IconCircle,
   IconCalendar,
-  IconBook,
   IconChevronRight,
-  IconMoodPuzzled,
-  IconPhoto
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService from '@/lib/classroomService';
@@ -29,30 +20,12 @@ import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
+import { ActivityIcon } from '@/components/ActivityIcon';
 
-// Mapa de nombre de ícono (string, definido en lib/activities.ts) a componente.
-// Solo hace falta acá, que es donde realmente se pinta el ícono.
-const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
-  IconMoodPuzzled,
-  IconSearch,
-  IconPhoto,
-};
-
-const DEFAULT_FEATURES = ACTIVITIES.map((activity) => {
-  const IconComponent = ICON_MAP[activity.iconName] ?? IconMoodPuzzled;
-  return {
-    ...activity,
-    icon: <IconComponent size={activity.iconSize ?? 20} />,
-  };
-});
+const DEFAULT_FEATURES = ACTIVITIES.map((activity) => ({
+  ...activity,
+  icon: <ActivityIcon iconName={activity.iconName} size={activity.iconSize ?? 20} />,
+}));
 
 // Color del botón flotante del buscador — mismo indigo que usamos en
 // /buscador y en ClassroomDesk.tsx.

@@ -121,13 +121,13 @@ export default function TriviaPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
           <div
             className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
             style={{ borderColor: ACCENT }}
           />
-          <p className="text-gray-500 text-sm">Cargando trivia...</p>
+          <p className="text-ink/60 text-sm">Cargando trivia...</p>
         </div>
       </div>
     );
@@ -135,8 +135,8 @@ export default function TriviaPage({ params }: PageProps) {
 
   if (error || !gameData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
           <p className="text-red-600 text-sm">{error || 'No se pudo cargar la trivia'}</p>
         </div>
       </div>

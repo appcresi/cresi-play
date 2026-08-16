@@ -346,7 +346,7 @@ export default function Story(): JSX.Element {
   );
 
   return (
-    <section className="min-h-screen bg-gray-50">
+    <section className="min-h-screen bg-cream">
       <GameStatusBar
         title="Historias"
         score={score}

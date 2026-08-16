@@ -1,39 +1,56 @@
-'use client';
+import type { Metadata } from 'next';
+import TeacherAreaShell from '@/components/teacher/TeacherAreaShell';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import TeacherHeader from '@/components/TeacherHeader';
+// Server component solo para poder exportar metadata — la lógica de guarda
+// de rol y el header docente viven en TeacherAreaShell (cliente), ver ahí.
+// Quien visita /docente sin sesión (incluidos los buscadores) ve siempre la
+// landing pública de app/docente/page.tsx, nunca el dashboard privado.
+export const metadata: Metadata = {
+  title: 'Aula Virtual ESI para Docentes | CrESI',
+  description:
+    'Creá tu aula virtual de Educación Sexual Integral: sumá alumnos con un código de clase, elegí qué actividades y trivias ven, y seguí su progreso en vivo. Gratis, con tu cuenta de Google.',
+  keywords: [
+    'aula virtual ESI',
+    'plataforma ESI para docentes',
+    'panel docente ESI',
+    'clase virtual educación sexual integral',
+    'gestión de clase ESI',
+    'personalizar contenido ESI',
+    'seguimiento de progreso alumnos',
+  ],
+  openGraph: {
+    type: 'website',
+    locale: 'es_AR',
+    url: 'https://jugar.cresi.com.ar/docente',
+    siteName: 'CrESI',
+    title: 'Aula Virtual ESI para Docentes | CrESI',
+    description:
+      'Creá tu clase, elegí qué actividades y trivias de ESI ven tus alumnos, y seguí su progreso en vivo. Gratis.',
+    images: [
+      {
+        url: 'https://jugar.cresi.com.ar/illustration-1.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'CrESI - Aula Virtual ESI para Docentes',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Aula Virtual ESI para Docentes | CrESI',
+    description:
+      'Creá tu clase, elegí qué actividades de ESI ven tus alumnos, y seguí su progreso en vivo.',
+    images: ['https://jugar.cresi.com.ar/illustration-1.jpg'],
+  },
+  alternates: {
+    canonical: 'https://jugar.cresi.com.ar/docente',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
-// Envuelve app/docente/page.tsx (login + dashboard). Acá vive:
-// - La guarda de rol: si alguien con rol de alumno llega acá, lo mandamos a "/".
-// - El header propio de docentes, que solo se muestra una vez logueado
-//   (antes de eso, page.tsx ya muestra su propia pantalla de login sin header).
 export default function TeacherAreaLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { user, loading, role } = useAuth();
-  // `role` ausente (null) puede ser: todavía no cargó, o un usuario sin rol
-  // asignado. Solo redirigimos si SABEMOS que no es docente, no ante la duda.
-  const isKnownNonTeacher = !!role && role !== 'teacher';
-
-  useEffect(() => {
-    if (isKnownNonTeacher) {
-      router.replace('/');
-    }
-  }, [isKnownNonTeacher, router]);
-
-  if (loading || isKnownNonTeacher) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      {user && <TeacherHeader />}
-      <div className="flex-1">{children}</div>
-    </div>
-  );
+  return <TeacherAreaShell>{children}</TeacherAreaShell>;
 }

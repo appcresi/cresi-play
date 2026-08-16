@@ -134,42 +134,42 @@ export const CreateTareaModal = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">{existing ? 'Editar tarea' : 'Nueva tarea'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <div className="flex items-center justify-between p-5 border-b border-pink-light">
+          <h2 className="text-lg font-bold text-ink">{existing ? 'Editar tarea' : 'Nueva tarea'}</h2>
+          <button onClick={onClose} className="text-ink/40 hover:text-ink/70">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1">Título</label>
+            <label className="block text-sm font-semibold text-ink mb-1">Título</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej: Repaso de consentimiento"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1">Consigna</label>
+            <label className="block text-sm font-semibold text-ink mb-1">Consigna</label>
             <textarea
               value={consigna}
               onChange={(e) => setConsigna(e.target.value)}
               rows={3}
               placeholder="Qué tiene que hacer el alumno..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1">¿Ligada a alguna actividad?</label>
+            <label className="block text-sm font-semibold text-ink mb-1">¿Ligada a alguna actividad?</label>
             <select
               value={linkedType}
               onChange={(e) => setLinkedType(e.target.value as LinkedActivityType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             >
               {Object.entries(TYPE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -181,18 +181,18 @@ export const CreateTareaModal = ({
 
           {needsItem && (
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">Elegí cuál</label>
+              <label className="block text-sm font-semibold text-ink mb-1">Elegí cuál</label>
               {loadingItems ? (
-                <div className="flex items-center gap-2 text-gray-400 text-sm py-2">
+                <div className="flex items-center gap-2 text-ink/40 text-sm py-2">
                   <IconLoader className="w-4 h-4 animate-spin" /> Cargando opciones...
                 </div>
               ) : itemOptions.length === 0 ? (
-                <p className="text-xs text-gray-400">No hay opciones disponibles todavía.</p>
+                <p className="text-xs text-ink/40">No hay opciones disponibles todavía.</p>
               ) : (
                 <select
                   value={linkedId ?? ''}
                   onChange={(e) => setLinkedId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                 >
                   <option value="" disabled>
                     Seleccionar...
@@ -209,22 +209,22 @@ export const CreateTareaModal = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">Puntos</label>
+              <label className="block text-sm font-semibold text-ink mb-1">Puntos</label>
               <input
                 type="number"
                 min={0}
                 value={points}
                 onChange={(e) => setPoints(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">Fecha de entrega</label>
+              <label className="block text-sm font-semibold text-ink mb-1">Fecha de entrega</label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
               />
             </div>
           </div>
@@ -234,14 +234,14 @@ export const CreateTareaModal = ({
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={onClose}
-              className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+              className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2 rounded-full bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2 rounded-full bg-coral text-white text-sm font-medium hover:bg-coral-dark disabled:opacity-50 flex items-center gap-2"
             >
               {saving && <IconLoader className="w-4 h-4 animate-spin" />}
               {existing ? 'Guardar cambios' : 'Crear tarea'}

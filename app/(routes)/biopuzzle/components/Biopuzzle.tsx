@@ -178,7 +178,7 @@ export default function AnatomiaApp() {
   }, [score, bodyParts.length, currentSystem]);
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+    <div className="h-screen bg-cream overflow-hidden flex flex-col">
       <GameStatusBar
         title="BioPuzzle"
         score={userData.game.totalScore}

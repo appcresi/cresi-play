@@ -4,15 +4,6 @@ import Link from 'next/link';
 import { Fredoka } from 'next/font/google';
 import {
   IconArrowRight,
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodPuzzled,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
   IconSparkles,
   IconUsers,
   IconChalkboard,
@@ -23,6 +14,7 @@ import {
   IconPlayerPlay,
 } from '@tabler/icons-react';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
+import { ActivityIcon } from '@/components/ActivityIcon';
 
 // Display face con personalidad, usada con restricción (solo títulos grandes).
 // El resto del texto sigue en Mona Sans, que ya usa toda la app.
@@ -100,23 +92,6 @@ const Reveal = ({
 };
 
 // ---------- Datos ----------
-
-const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodPuzzled,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
-};
-
-const ActivityIcon = ({ iconName, size = 20, className }: { iconName: string; size?: number; className?: string }) => {
-  const Icon = ICON_MAP[iconName] ?? IconMoodPuzzled;
-  return <Icon size={size} className={className} />;
-};
 
 const HERO_CARD_IDS = ['trivias', 'simulador', 'moodtracker'];
 const HERO_CARDS = HERO_CARD_IDS.map((id) => getActivityById(id)).filter(Boolean) as typeof ACTIVITIES;

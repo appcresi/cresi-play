@@ -201,7 +201,7 @@ export default function UnirseSinCodigoPage() {
                   className={`p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]
                     ${selectedCharacter?.id === character.id
                       ? 'bg-[#FFE5E5] ring-2 ring-[#FF6B6B]'
-                      : 'bg-gray-50 hover:bg-gray-100'}
+                      : 'bg-cream hover:bg-[#FFE5E5]'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="relative w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
@@ -235,7 +235,7 @@ export default function UnirseSinCodigoPage() {
               onClick={handleGoogleSignIn}
               disabled={!!loading}
               className="w-full flex items-center justify-center gap-2 bg-white border border-[#241B37]/15
-                       hover:bg-gray-50 text-[#241B37] font-bold py-3 px-4 rounded-full transition-colors text-sm
+                       hover:bg-cream text-[#241B37] font-bold py-3 px-4 rounded-full transition-colors text-sm
                        disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading === 'google' ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4 text-[#4285F4]" />}

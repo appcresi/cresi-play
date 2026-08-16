@@ -43,10 +43,10 @@ const PurchaseModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-pink-light w-full max-w-sm p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+          className="absolute top-4 right-4 p-1.5 text-ink/40 hover:text-ink/70 hover:bg-pink-light rounded-lg transition"
           aria-label="Cerrar"
         >
           <IconX size={18} />
@@ -58,8 +58,8 @@ const PurchaseModal = ({
           </div>
 
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">{description}</h2>
-            <p className="text-gray-500 text-sm">
+            <h2 className="text-lg font-bold text-ink mb-1">{description}</h2>
+            <p className="text-ink/60 text-sm">
               Cuesta {LIFE_PURCHASE_COST} puntos · tenés {currentScore}
             </p>
           </div>
@@ -69,7 +69,7 @@ const PurchaseModal = ({
               <p className="text-amber-600 text-sm mb-4">Ya tenés el máximo de vidas.</p>
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+                className="w-full px-4 py-2.5 bg-pink-light hover:bg-pink text-ink font-semibold rounded-lg transition"
               >
                 Cerrar
               </button>
@@ -78,7 +78,7 @@ const PurchaseModal = ({
             <div className="flex gap-3 w-full pt-1">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition"
+                className="flex-1 px-4 py-2.5 border border-pink-light text-ink/80 font-semibold rounded-full hover:bg-cream transition"
               >
                 Cancelar
               </button>
@@ -98,7 +98,7 @@ const PurchaseModal = ({
               </p>
               <button
                 onClick={onClose}
-                className="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+                className="w-full px-4 py-2.5 bg-pink-light hover:bg-pink text-ink font-semibold rounded-lg transition"
               >
                 Cerrar
               </button>

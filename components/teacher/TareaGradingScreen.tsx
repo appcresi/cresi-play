@@ -135,17 +135,17 @@ export const TareaGradingScreen = ({
   return (
     <div>
       {/* Encabezado */}
-      <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+      <div className="border-b border-pink-light bg-white sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-3 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-ink/60 hover:text-ink mb-3 transition-colors"
           >
             <IconArrowLeft className="w-4 h-4" />
             Volver a la clase
           </button>
-          <h1 className="text-xl font-semibold text-gray-900">📌 {tarea.title}</h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold text-ink">📌 {tarea.title}</h1>
+          <p className="text-xs text-ink/60 mt-1">
             Entrega: {new Date(tarea.dueDate).toLocaleDateString('es-AR')} · {tarea.points} puntos ·{' '}
             {LINKED_TYPE_LABELS[tarea.linkedActivity.type]}
             {tarea.linkedActivity.label ? `: ${tarea.linkedActivity.label}` : ''}
@@ -158,7 +158,7 @@ export const TareaGradingScreen = ({
               key={key}
               onClick={() => setSubTab(key)}
               className={`py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                subTab === key ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                subTab === key ? 'border-coral text-coral-dark' : 'border-transparent text-ink/60 hover:text-ink/80'
               }`}
             >
               {key === 'instrucciones' ? 'Instrucciones' : 'Trabajo de los alumnos'}
@@ -170,72 +170,72 @@ export const TareaGradingScreen = ({
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* ── Instrucciones ── */}
         {subTab === 'instrucciones' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 max-w-2xl">
+          <div className="bg-white rounded-lg shadow-sm border border-pink-light p-5 max-w-2xl">
             {!editingConsigna ? (
               <>
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="text-base font-semibold text-gray-900">{tarea.title}</h2>
+                  <h2 className="text-base font-semibold text-ink">{tarea.title}</h2>
                   <button
                     onClick={() => setEditingConsigna(true)}
-                    className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 shrink-0"
+                    className="flex items-center gap-1.5 text-xs font-medium text-coral-dark hover:text-coral shrink-0"
                   >
                     <IconPencil className="w-3.5 h-3.5" />
                     Editar
                   </button>
                 </div>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{tarea.consigna}</p>
+                <p className="text-sm text-ink/80 whitespace-pre-wrap">{tarea.consigna}</p>
               </>
             ) : (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Título</label>
+                  <label className="block text-xs font-semibold text-ink/80 mb-1">Título</label>
                   <input
                     value={titleDraft}
                     onChange={(e) => setTitleDraft(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Consigna</label>
+                  <label className="block text-xs font-semibold text-ink/80 mb-1">Consigna</label>
                   <textarea
                     value={consignaDraft}
                     onChange={(e) => setConsignaDraft(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Puntos</label>
+                    <label className="block text-xs font-semibold text-ink/80 mb-1">Puntos</label>
                     <input
                       type="number"
                       min={0}
                       value={pointsDraft}
                       onChange={(e) => setPointsDraft(Number(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Fecha de entrega</label>
+                    <label className="block text-xs font-semibold text-ink/80 mb-1">Fecha de entrega</label>
                     <input
                       type="date"
                       value={dueDateDraft}
                       onChange={(e) => setDueDateDraft(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <button
                     onClick={() => setEditingConsigna(false)}
-                    className="px-4 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-full"
+                    className="px-4 py-1.5 text-sm text-ink/70 hover:bg-pink-light rounded-full"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSaveConsigna}
                     disabled={savingConsigna}
-                    className="px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-4 py-1.5 text-sm bg-coral text-white rounded-full hover:bg-coral-dark disabled:opacity-50 flex items-center gap-1.5"
                   >
                     {savingConsigna && <IconLoader className="w-3.5 h-3.5 animate-spin" />}
                     Guardar
@@ -252,28 +252,28 @@ export const TareaGradingScreen = ({
             {/* Cifras, igual que en el feed del Tablón */}
             <div className="flex items-center gap-8 mb-6">
               <div>
-                <p className="text-3xl font-semibold text-gray-900 leading-none">{entregadas}</p>
-                <p className="text-xs text-gray-500 mt-1">Entregadas</p>
+                <p className="text-3xl font-semibold text-ink leading-none">{entregadas}</p>
+                <p className="text-xs text-ink/60 mt-1">Entregadas</p>
               </div>
               <div>
-                <p className="text-3xl font-semibold text-gray-900 leading-none">{students.length}</p>
-                <p className="text-xs text-gray-500 mt-1">Asignadas</p>
+                <p className="text-3xl font-semibold text-ink leading-none">{students.length}</p>
+                <p className="text-xs text-ink/60 mt-1">Asignadas</p>
               </div>
               <div>
-                <p className="text-3xl font-semibold text-gray-900 leading-none">{evaluadas}</p>
-                <p className="text-xs text-gray-500 mt-1">Evaluadas</p>
+                <p className="text-3xl font-semibold text-ink leading-none">{evaluadas}</p>
+                <p className="text-xs text-ink/60 mt-1">Evaluadas</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-pink-light overflow-hidden">
               {loadingEntregas ? (
-                <div className="flex items-center justify-center py-12 text-gray-400">
+                <div className="flex items-center justify-center py-12 text-ink/40">
                   <IconLoader className="w-6 h-6 animate-spin" />
                 </div>
               ) : sortedStudents.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-12">Todavía no hay alumnos en esta clase.</p>
+                <p className="text-sm text-ink/40 text-center py-12">Todavía no hay alumnos en esta clase.</p>
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-pink-light">
                   {sortedStudents.map((s) => {
                     const entrega = entregas[s.uid];
                     const isExpanded = expandedUid === s.uid;
@@ -281,7 +281,7 @@ export const TareaGradingScreen = ({
                     let statusBadge: React.ReactNode;
                     if (!entrega) {
                       statusBadge = (
-                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <span className="flex items-center gap-1 text-xs text-ink/40">
                           <IconClock className="w-3.5 h-3.5" /> Sin entregar
                         </span>
                       );
@@ -293,7 +293,7 @@ export const TareaGradingScreen = ({
                       );
                     } else {
                       statusBadge = (
-                        <span className="flex items-center gap-1 text-xs font-medium text-indigo-600">
+                        <span className="flex items-center gap-1 text-xs font-medium text-coral-dark">
                           <IconCheck className="w-3.5 h-3.5" /> Entregada, sin calificar
                         </span>
                       );
@@ -305,35 +305,35 @@ export const TareaGradingScreen = ({
                           onClick={() => entrega && openStudent(s.uid)}
                           disabled={!entrega}
                           className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${
-                            entrega ? 'hover:bg-gray-50' : 'cursor-default'
+                            entrega ? 'hover:bg-cream' : 'cursor-default'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <img
                               src={s.character?.image}
                               alt={s.character?.name}
-                              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              className="w-8 h-8 rounded-full object-cover border border-pink-light"
                             />
-                            <span className="text-sm font-medium text-gray-800">{s.username}</span>
+                            <span className="text-sm font-medium text-ink">{s.username}</span>
                           </div>
                           {statusBadge}
                         </button>
 
                         {isExpanded && entrega && (
-                          <div className="px-5 pb-4 bg-gray-50">
-                            <p className="text-xs text-gray-500 mb-1">
+                          <div className="px-5 pb-4 bg-cream">
+                            <p className="text-xs text-ink/60 mb-1">
                               Entregó el {new Date(entrega.submittedAt).toLocaleString('es-AR')}
                               {entrega.manuallyMarkedDone && ' · marcó la actividad como hecha'}
                             </p>
                             {entrega.responseText && (
-                              <div className="bg-white rounded-lg border border-gray-200 p-3 text-sm text-gray-700 mb-3 whitespace-pre-wrap">
+                              <div className="bg-white rounded-lg border border-pink-light p-3 text-sm text-ink/80 mb-3 whitespace-pre-wrap">
                                 {entrega.responseText}
                               </div>
                             )}
 
                             <div className="flex gap-2 items-start">
                               <div className="w-24">
-                                <label className="block text-[11px] font-medium text-gray-600 mb-1">Nota</label>
+                                <label className="block text-[11px] font-medium text-ink/70 mb-1">Nota</label>
                                 <div className="flex items-center gap-1">
                                   <input
                                     type="number"
@@ -341,19 +341,19 @@ export const TareaGradingScreen = ({
                                     max={tarea.points}
                                     value={gradeDraft}
                                     onChange={(e) => setGradeDraft(e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm"
+                                    className="w-full px-2 py-1.5 border border-pink-light rounded-lg text-sm"
                                   />
-                                  <span className="text-xs text-gray-400 shrink-0">/{tarea.points}</span>
+                                  <span className="text-xs text-ink/40 shrink-0">/{tarea.points}</span>
                                 </div>
                               </div>
                               <div className="flex-1">
-                                <label className="block text-[11px] font-medium text-gray-600 mb-1">Comentario (opcional)</label>
+                                <label className="block text-[11px] font-medium text-ink/70 mb-1">Comentario (opcional)</label>
                                 <input
                                   type="text"
                                   value={feedbackDraft}
                                   onChange={(e) => setFeedbackDraft(e.target.value)}
                                   placeholder="Devolución para el alumno..."
-                                  className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm"
+                                  className="w-full px-2 py-1.5 border border-pink-light rounded-lg text-sm"
                                 />
                               </div>
                             </div>
@@ -361,13 +361,13 @@ export const TareaGradingScreen = ({
                               <button
                                 onClick={() => handleSaveGrade(s.uid)}
                                 disabled={savingGrade || gradeDraft === ''}
-                                className="px-4 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-full hover:bg-indigo-700 disabled:opacity-50"
+                                className="px-4 py-1.5 bg-coral text-white text-xs font-semibold rounded-full hover:bg-coral-dark disabled:opacity-50"
                               >
                                 Guardar calificación
                               </button>
                               <button
                                 onClick={() => setExpandedUid(null)}
-                                className="px-3 py-1.5 text-gray-500 text-xs font-medium rounded-full hover:bg-gray-100 flex items-center gap-1"
+                                className="px-3 py-1.5 text-ink/60 text-xs font-medium rounded-full hover:bg-pink-light flex items-center gap-1"
                               >
                                 <IconX className="w-3.5 h-3.5" />
                                 Cerrar

@@ -59,19 +59,19 @@ export const ActivitiesPicker = ({
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="text-sm font-medium text-gray-900">Actividades visibles</h3>
+        <h3 className="text-sm font-medium text-ink">Actividades visibles</h3>
         <SaveIndicator state={saveState} />
       </div>
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-ink/60 mb-3">
         Tocá una tarjeta para prenderla/apagarla — se guarda solo. Los alumnos de esta
         clase solo ven las que estén marcadas ({selected.size}/{totalActivities}).
       </p>
 
       <div className="flex gap-3 text-xs mb-3">
-        <button onClick={selectAll} className="text-indigo-600 hover:underline font-medium">
+        <button onClick={selectAll} className="text-coral-dark hover:underline font-medium">
           Marcar todas
         </button>
-        <button onClick={selectNone} className="text-gray-500 hover:underline font-medium">
+        <button onClick={selectNone} className="text-ink/60 hover:underline font-medium">
           Desmarcar todas
         </button>
       </div>

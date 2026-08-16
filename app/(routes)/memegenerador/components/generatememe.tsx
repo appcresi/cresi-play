@@ -266,7 +266,7 @@ export default function MemeGenerator() {
   }, [topText, bottomText, selectedMeme, activeText]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <GameStatusBar title="Meme Creator" score={score} lives={lives} />
 
       <div className="container mx-auto p-2 sm:p-4 pt-24">

@@ -219,7 +219,7 @@ export default function JoinClassPage() {
                   className={`p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]
                     ${selectedCharacter?.id === character.id
                       ? 'bg-[#FFE5E5] ring-2 ring-[#FF6B6B]'
-                      : 'bg-gray-50 hover:bg-gray-100'}
+                      : 'bg-cream hover:bg-[#FFE5E5]'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="relative w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">

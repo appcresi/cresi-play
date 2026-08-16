@@ -5,9 +5,17 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import ClassroomService from '@/lib/classroomService';
+import { IconSearch, IconX, IconCards } from '@tabler/icons-react';
 import TriviaSettings from './components/TriviaSettings';
 import TriviaGrid from './components/TriviaGrid';
 import TriviaSearch from './components/TriviaSearch';
+import GameStatusBar from '@/components/GameStatusBar';
+import UserDataManager from '@/lib/userDataManager';
+import { getActivityById } from '@/lib/activities';
+
+const ACTIVITY = getActivityById('trivias');
+const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Trivias';
+const ACCENT = ACTIVITY?.color ?? '#1976D2';
 
 interface Trivia {
   id: string;
@@ -103,8 +111,16 @@ export default function Trivias(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
 
   const classroomId = profile?.profile?.classroomId ?? null;
+
+  useEffect(() => {
+    const data = UserDataManager.loadUserData();
+    setScore(data.game.totalScore);
+    setLives(data.game.totalLives);
+  }, []);
 
   useEffect(() => {
     // Sin clase: mismo catálogo público de siempre, sin restricción.
@@ -160,105 +176,95 @@ export default function Trivias(): JSX.Element {
     };
   }, [classroomId]);
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-4 max-w-6xl py-8">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-gray-600">Cargando trivias...</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-4 max-w-6xl py-8">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <p className="text-red-600">{error}</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   const indexesByLevel = organizeIndexesByLevel(indexes);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto px-4 max-w-6xl py-8">
+    <div className="min-h-screen bg-cream">
+      <GameStatusBar title="Trivias" score={score} lives={lives} level={1} activityName={ACTIVITY_TITLE} />
 
-        {/* Header con título y botones alineados horizontalmente */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">
-            {classroomId ? 'Trivias de tu clase' : 'ESI: Trivias'}
-          </h1>
+      <section className="w-full max-w-6xl mx-auto px-4 pt-24 pb-16">
+        {/* Header — mismo patrón que /infografias: banner con degradé de
+            marca + eyebrow + título, en vez del título suelto de antes. */}
+        <div className="bg-white rounded-xl border border-pink-light shadow-sm overflow-hidden mb-6">
+          <div className="h-20 md:h-28 relative" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiIC8+PC9zdmc+')] opacity-20" />
+          </div>
+          <div className="px-6 py-6 flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}15` }}>
+                  <IconCards size={18} style={{ color: ACCENT }} />
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: ACCENT }}>
+                  Poné a prueba lo que sabés
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-semibold text-ink mb-1">
+                {classroomId ? 'Trivias de tu clase' : 'Trivias'}
+              </h1>
+              <p className="text-sm text-ink/60 max-w-2xl">
+                {classroomId
+                  ? 'Las trivias que tu docente habilitó para esta clase.'
+                  : 'Elegí un nivel y jugá — cada trivia suma puntos a tu perfil.'}
+              </p>
+            </div>
 
-          <div className="flex items-center gap-2">
-            {/* Botón buscar — solo tiene sentido sobre el catálogo público
-                completo; si hay clase, el listado ya viene acotado por el
-                docente y suele ser chico. */}
-            {!classroomId && (
-              <button
-                onClick={() => setShowSearch((prev) => !prev)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md transition-all duration-200 hover:shadow-lg ${
-                  showSearch ? 'bg-gray-500 hover:bg-gray-600' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-                title={showSearch ? 'Cerrar búsqueda' : 'Buscar trivia'}
-              >
-                {showSearch ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Búsqueda — solo tiene sentido sobre el catálogo público
+                  completo; si hay clase, el listado ya viene acotado por el
+                  docente y suele ser chico. */}
+              {!classroomId && (
+                <button
+                  onClick={() => setShowSearch((prev) => !prev)}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: showSearch ? '#6B7280' : ACCENT }}
+                  title={showSearch ? 'Cerrar búsqueda' : 'Buscar trivia'}
+                >
+                  {showSearch ? <IconX size={18} /> : <IconSearch size={18} />}
+                </button>
+              )}
 
-            {/* El botón "Crear trivia" (+) se sacó de acá — ahora vive en
-                el panel del docente, donde además se puede elegir qué se
-                ve en cada clase. */}
-
-            {/* Botón configuración */}
-            <div className="bg-blue-600 hover:bg-blue-700 rounded-full shadow-md transition-all duration-200 hover:shadow-lg">
-              <TriviaSettings />
+              {/* El botón "Crear trivia" (+) se sacó de acá — ahora vive en
+                  el panel del docente, donde además se puede elegir qué se
+                  ve en cada clase. */}
+              <div className="rounded-full shadow-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: ACCENT }}>
+                <TriviaSettings />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Barra de búsqueda desplegable (solo sin clase) */}
         {showSearch && !classroomId && (
-          <div className="mb-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <TriviaSearch indexes={indexes} />
-            </div>
+          <div className="bg-white rounded-xl border border-pink-light shadow-sm p-6 mb-6">
+            <TriviaSearch indexes={indexes} />
           </div>
         )}
 
-        {classroomId ? (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            {classroomTrivias && classroomTrivias.length > 0 ? (
-              <TriviaGrid
-                indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1 })) }}
-              />
-            ) : (
-              <p className="text-gray-500 text-center py-8">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: ACCENT }} />
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-xl border border-pink-light shadow-sm p-6 text-center">
+            <p className="text-red-600 text-sm font-medium">{error}</p>
+          </div>
+        ) : classroomId ? (
+          classroomTrivias && classroomTrivias.length > 0 ? (
+            <TriviaGrid
+              indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1 })) }}
+            />
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-ink/60 text-sm font-medium">
                 Todavía no hay trivias disponibles para tu clase.
               </p>
-            )}
-          </div>
+            </div>
+          )
         ) : (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <TriviaGrid indexesByLevel={indexesByLevel} />
-          </div>
+          <TriviaGrid indexesByLevel={indexesByLevel} />
         )}
-
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }

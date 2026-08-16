@@ -231,7 +231,7 @@ export default function Lecciones(): JSX.Element {
 	};
 
 	return (
-		<section className="min-h-screen bg-gray-50">
+		<section className="min-h-screen bg-cream">
 			<GameStatusBar
 				title="Lecciones"
 				score={score}

@@ -51,16 +51,16 @@ export const WorkInClassTab = ({
   const [subTab, setSubTab] = useState<WorkSubTab>('actividades');
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="flex border-b border-gray-100 px-5 overflow-x-auto">
+    <div className="bg-white rounded-lg shadow-sm border border-pink-light overflow-hidden">
+      <div className="flex border-b border-pink-light px-5 overflow-x-auto">
         {SUB_TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setSubTab(t.key)}
             className={`py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
               subTab === t.key
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-coral text-coral-dark'
+                : 'border-transparent text-ink/60 hover:text-ink/80'
             }`}
           >
             {t.label}

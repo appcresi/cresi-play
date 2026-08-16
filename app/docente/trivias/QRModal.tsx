@@ -58,10 +58,10 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
     >
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
-      <div className="relative bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-sm p-6">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-pink-light w-full max-w-sm p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition"
+          className="absolute top-4 right-4 p-1.5 text-ink/40 hover:text-ink/70 hover:bg-pink-light rounded-lg transition"
           aria-label="Cerrar"
         >
           <IconX size={18} />
@@ -69,20 +69,20 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
 
         <div className="flex flex-col items-center text-center gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <IconShare size={18} className="text-indigo-600" />
+            <div className="w-9 h-9 bg-mint rounded-lg flex items-center justify-center">
+              <IconShare size={18} className="text-mint-text" />
             </div>
             <div className="text-left">
-              <h2 id="qr-modal-title" className="text-base font-bold text-gray-900">
+              <h2 id="qr-modal-title" className="text-base font-bold text-ink">
                 Código QR
               </h2>
-              <p className="text-xs text-gray-500 truncate max-w-[180px]">{triviaName}</p>
+              <p className="text-xs text-ink/60 truncate max-w-[180px]">{triviaName}</p>
             </div>
           </div>
 
           <div
             ref={qrRef}
-            className="p-4 bg-white border-2 border-gray-200 rounded-lg shadow-inner"
+            className="p-4 bg-white border-2 border-pink-light rounded-lg shadow-inner"
           >
             <QRCode
               value={url}
@@ -93,11 +93,11 @@ export default function QRModal({ isOpen, triviaName, url, onClose }: QRModalPro
             />
           </div>
 
-          <p className="text-xs text-gray-400 break-all max-w-[260px]">{url}</p>
+          <p className="text-xs text-ink/40 break-all max-w-[260px]">{url}</p>
 
           <button
             onClick={handleDownload}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-coral hover:bg-coral-dark text-white font-semibold rounded-lg transition text-sm"
           >
             <IconDownload size={16} />
             Descargar PNG

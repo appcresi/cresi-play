@@ -2,15 +2,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodPuzzled,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
   IconSearch,
   IconX,
   IconTrophy,
@@ -21,7 +12,6 @@ import {
   IconMoodHappy,
   IconCopy,
   IconCheck,
-  IconPhoto,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService, { Classroom } from '@/lib/classroomService';
@@ -30,30 +20,10 @@ import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
+import { ActivityIcon } from '@/components/ActivityIcon';
 import { TareasStudentTab } from '@/components/student/TareasStudentTab';
 import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
-
-// Mismo patrón que Features.tsx: el catálogo guarda el nombre del ícono
-// como string, acá lo resolvemos a componente.
-const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodPuzzled,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
-  IconSearch,
-  IconPhoto,
-};
-
-const ActivityIcon = ({ iconName, size = 18, className }: { iconName: string; size?: number; className?: string }) => {
-  const Icon = ICON_MAP[iconName] ?? IconMoodPuzzled;
-  return <Icon size={size} className={className} />;
-};
 
 // Color del botón flotante del buscador — mismo indigo que usamos en
 // /buscador y en la pestaña "Preguntas" del docente.
@@ -134,10 +104,10 @@ const ClassroomDesk = () => {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-cream flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">Cargando tu aula...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coral mx-auto mb-4" />
+            <p className="text-ink/70">Cargando tu aula...</p>
           </div>
         </div>
       </>
@@ -155,7 +125,7 @@ const ClassroomDesk = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-cream">
         {/* Banner de la clase */}
         <div className="w-full py-10 px-5" style={{ backgroundColor: bannerColor }}>
           <div className="max-w-5xl mx-auto flex items-center gap-4">
@@ -172,7 +142,7 @@ const ClassroomDesk = () => {
         </div>
 
         {/* Solapas, estilo Classroom */}
-        <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="border-b border-pink-light bg-white sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-5 flex gap-6 overflow-x-auto">
             {TABS.map((t) => (
               <button
@@ -180,8 +150,8 @@ const ClassroomDesk = () => {
                 onClick={() => setTab(t.key)}
                 className={`py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
                   tab === t.key
-                    ? 'border-indigo-600 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-coral text-coral-dark'
+                    : 'border-transparent text-ink/60 hover:text-ink/80'
                 }`}
               >
                 {t.label}
@@ -196,22 +166,22 @@ const ClassroomDesk = () => {
             <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 items-start">
               {/* Columna chica: código de la clase — mismo lugar que en el panel del docente */}
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">Código de tu clase</h3>
-                  <p className="text-xs text-gray-500 mb-3">
+                <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-4">
+                  <h3 className="text-sm font-medium text-ink mb-1">Código de tu clase</h3>
+                  <p className="text-xs text-ink/60 mb-3">
                     Para volver a entrar desde otro dispositivo.
                   </p>
                   {classroom?.code && (
                     <button
                       onClick={handleCopyCode}
                       title="Copiar link de tu clase"
-                      className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100
-                               rounded-lg text-sm font-mono font-bold tracking-widest text-gray-800 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-cream hover:bg-pink-light
+                               rounded-lg text-sm font-mono font-bold tracking-widest text-ink transition-colors"
                     >
                       {classroom.code}
                       {copiedCode
                         ? <IconCheck className="w-4 h-4 text-green-600" />
-                        : <IconCopy className="w-4 h-4 text-gray-400" />}
+                        : <IconCopy className="w-4 h-4 text-ink/40" />}
                     </button>
                   )}
                   {copiedCode && (
@@ -225,19 +195,19 @@ const ClassroomDesk = () => {
               {/* Columna grande: tareas, resumen y humor */}
               <div className="space-y-4">
                 {classroom && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Tareas</h3>
+                  <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
+                    <h3 className="text-sm font-medium text-ink mb-3">Tareas</h3>
                     <TareasFeedSummary classroomId={classroom.id} emptyLabel="Tu docente todavía no asignó ninguna tarea." />
                   </div>
                 )}
 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-ink">
                         Hola, {userData.profile.username} 👋
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-ink/60">
                         {completedCount}/{activities.length} actividades completadas
                       </p>
                     </div>
@@ -252,7 +222,7 @@ const ClassroomDesk = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div className="w-full bg-pink-light rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all duration-300"
                       style={{ width: `${progressPercent}%`, backgroundColor: bannerColor }}
@@ -263,15 +233,15 @@ const ClassroomDesk = () => {
                 {userData.mood.lastEntry && (
                   <button
                     onClick={() => (window.location.href = '/moodtracker')}
-                    className="w-full flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-gray-100
-                             px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-pink-light
+                             px-5 py-4 hover:bg-cream transition-colors text-left"
                   >
                     <IconMoodHappy className="w-5 h-5 text-blue-500 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800">Cómo te sentís hoy</p>
-                      <p className="text-xs text-gray-500">Último registro: {userData.mood.lastEntry.label}</p>
+                      <p className="text-sm font-medium text-ink">Cómo te sentís hoy</p>
+                      <p className="text-xs text-ink/60">Último registro: {userData.mood.lastEntry.label}</p>
                     </div>
-                    <IconChevronRight className="w-4 h-4 text-gray-300" />
+                    <IconChevronRight className="w-4 h-4 text-ink/25" />
                   </button>
                 )}
               </div>
@@ -287,20 +257,20 @@ const ClassroomDesk = () => {
               {activities.length > 5 && (
                 <div className="relative mb-5 max-w-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <IconSearch size={16} className="text-gray-400" />
+                    <IconSearch size={16} className="text-ink/40" />
                   </div>
                   <input
                     type="text"
                     placeholder="Buscar en tu aula..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-9 py-2 border border-gray-200 rounded-lg text-sm bg-white
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full pl-9 pr-9 py-2 border border-pink-light rounded-lg text-sm bg-white
+                             focus:ring-2 focus:ring-coral focus:border-coral outline-none"
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink/40 hover:text-ink/70"
                     >
                       <IconX size={16} />
                     </button>
@@ -308,17 +278,17 @@ const ClassroomDesk = () => {
                 </div>
               )}
 
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-700">Actividades de la clase</h2>
+              <div className="bg-white rounded-2xl shadow-sm border border-pink-light overflow-hidden">
+                <div className="px-5 py-3 border-b border-pink-light">
+                  <h2 className="text-sm font-semibold text-ink/80">Actividades de la clase</h2>
                 </div>
 
                 {filteredActivities.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-gray-400">
+                  <div className="p-8 text-center text-sm text-ink/40">
                     No se encontraron actividades.
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="divide-y divide-pink-light">
                     {filteredActivities.map((activity) => {
                       const done = isCompleted(activity.title);
                       const score = getScore(activity.title);
@@ -326,18 +296,18 @@ const ClassroomDesk = () => {
                         <li key={activity.id}>
                           <button
                             onClick={() => handleActivityClick(activity.title, activity.route)}
-                            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+                            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-cream transition-colors text-left"
                           >
                             <div
                               className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
                               style={{ backgroundColor: activity.color }}
                             >
-                              <ActivityIcon iconName={activity.iconName} />
+                              <ActivityIcon iconName={activity.iconName} size={18} />
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <p className="font-medium text-gray-800 text-sm truncate">{activity.title}</p>
+                                <p className="font-medium text-ink text-sm truncate">{activity.title}</p>
                                 <span
                                   className="hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
                                   style={{ backgroundColor: `${activity.color}15`, color: activity.color }}
@@ -345,7 +315,7 @@ const ClassroomDesk = () => {
                                   {activity.category}
                                 </span>
                               </div>
-                              <p className="text-xs text-gray-500 truncate mt-0.5">{activity.description}</p>
+                              <p className="text-xs text-ink/60 truncate mt-0.5">{activity.description}</p>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
@@ -355,9 +325,9 @@ const ClassroomDesk = () => {
                                   <IconCircleCheck className="w-5 h-5" />
                                 </div>
                               ) : (
-                                <span className="text-xs text-gray-400 hidden sm:inline">Empezar</span>
+                                <span className="text-xs text-ink/40 hidden sm:inline">Empezar</span>
                               )}
-                              <IconChevronRight className="w-4 h-4 text-gray-300" />
+                              <IconChevronRight className="w-4 h-4 text-ink/25" />
                             </div>
                           </button>
                         </li>
@@ -372,11 +342,11 @@ const ClassroomDesk = () => {
           {/* ── Boletín ── */}
           {tab === 'boletin' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-800">Tu progreso general</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-ink">Tu progreso general</p>
+                    <p className="text-xs text-ink/60">
                       {completedCount}/{activities.length} actividades completadas
                     </p>
                   </div>
@@ -385,7 +355,7 @@ const ClassroomDesk = () => {
                     <span className="text-sm font-bold">{userData.game.totalScore} pts</span>
                   </div>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-2 mt-3">
+                <div className="w-full bg-pink-light rounded-full h-2 mt-3">
                   <div
                     className="h-2 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%`, backgroundColor: bannerColor }}
@@ -393,17 +363,17 @@ const ClassroomDesk = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-700">Actividades completadas</h2>
+              <div className="bg-white rounded-2xl shadow-sm border border-pink-light overflow-hidden">
+                <div className="px-5 py-3 border-b border-pink-light">
+                  <h2 className="text-sm font-semibold text-ink/80">Actividades completadas</h2>
                 </div>
 
                 {completedActivitiesList.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-gray-400">
+                  <div className="p-8 text-center text-sm text-ink/40">
                     Todavía no completaste ninguna actividad — van a aparecer acá apenas termines la primera.
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-100">
+                  <ul className="divide-y divide-pink-light">
                     {completedActivitiesList.map((activity) => (
                       <li key={activity.id} className="flex items-center justify-between px-5 py-4">
                         <div className="flex items-center gap-3 min-w-0">
@@ -413,7 +383,7 @@ const ClassroomDesk = () => {
                           >
                             <ActivityIcon iconName={activity.iconName} size={16} />
                           </div>
-                          <p className="text-sm font-medium text-gray-800 truncate">{activity.title}</p>
+                          <p className="text-sm font-medium text-ink truncate">{activity.title}</p>
                         </div>
                         <span className="text-sm font-bold text-yellow-600 shrink-0">
                           {getScore(activity.title)} pts

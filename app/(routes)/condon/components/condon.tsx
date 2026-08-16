@@ -34,7 +34,12 @@ function buildShuffledSteps(): Step[] {
 }
 
 export default function ComicPoneloSimulator() {
-  const [steps, setSteps] = useState<Step[]>(() => buildShuffledSteps());
+  // Arranca con el orden original (determinístico) para que el HTML del
+  // servidor coincida con el primer render del cliente — el mezclado con
+  // Math.random() da un resultado distinto en cada uno y rompe la
+  // hidratación. El mezclado real pasa recién en el useEffect de abajo,
+  // que solo corre en el cliente después de montar.
+  const [steps, setSteps] = useState<Step[]>(stepsData);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -47,6 +52,8 @@ export default function ComicPoneloSimulator() {
 
   useEffect(() => {
     loadUserData();
+    setSteps(buildShuffledSteps());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUserData = () => {
@@ -173,7 +180,7 @@ export default function ComicPoneloSimulator() {
 
   if (completed) {
     return (
-      <>
+      <div className="min-h-screen bg-cream">
         <GameStatusBar
           key={gameKey}
           title="Ponelo Bien"
@@ -242,7 +249,7 @@ export default function ComicPoneloSimulator() {
             </div>
           </div>
         </main>
-      </>
+      </div>
     );
   }
 
@@ -250,7 +257,7 @@ export default function ComicPoneloSimulator() {
   const selectedOptionData = selectedOption !== null ? currentStepData.options[selectedOption] : null;
 
   return (
-    <>
+    <div className="min-h-screen bg-cream">
       <GameStatusBar
         key={gameKey}
         title="Ponelo Bien"
@@ -380,6 +387,6 @@ export default function ComicPoneloSimulator() {
           </div>
         </div>
       </main>
-    </>
+    </div>
   );
 }

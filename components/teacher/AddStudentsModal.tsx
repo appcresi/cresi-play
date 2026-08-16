@@ -80,20 +80,20 @@ export const AddStudentsModal = ({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Añadir estudiantes</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+        <div className="flex items-center justify-between p-5 border-b border-pink-light">
+          <h2 className="text-lg font-bold text-ink">Añadir estudiantes</h2>
+          <button onClick={onClose} className="text-ink/40 hover:text-ink/70">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex border-b border-gray-100 px-5">
+        <div className="flex border-b border-pink-light px-5">
           <button
             onClick={() => { setTab('individual'); setError(''); }}
             className={`py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === 'individual'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-coral text-coral-dark'
+                : 'border-transparent text-ink/60 hover:text-ink/80'
             }`}
           >
             Añadir individualmente
@@ -102,8 +102,8 @@ export const AddStudentsModal = ({
             onClick={() => { setTab('masiva'); setError(''); }}
             className={`py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === 'masiva'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-coral text-coral-dark'
+                : 'border-transparent text-ink/60 hover:text-ink/80'
             }`}
           >
             Añadir de forma masiva
@@ -114,8 +114,8 @@ export const AddStudentsModal = ({
           {tab === 'individual' ? (
             <>
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-1">Estudiante</label>
-                <p className="text-xs text-gray-500 mb-2">
+                <label className="block text-sm font-bold text-ink mb-1">Estudiante</label>
+                <p className="text-xs text-ink/60 mb-2">
                   Cómo saber quién es quién en tu clase. Por ejemplo, Maria L. Mínimo 3 caracteres.
                   Admite letras, números y símbolos.
                 </p>
@@ -125,14 +125,14 @@ export const AddStudentsModal = ({
                   onChange={(e) => { setName(e.target.value); setError(''); }}
                   placeholder="Por ejemplo, María L."
                   disabled={saving}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-1">Inicio de sesión de estudiante</label>
-                <p className="text-xs text-gray-500 mb-2">
+                <label className="block text-sm font-bold text-ink mb-1">Inicio de sesión de estudiante</label>
+                <p className="text-xs text-ink/60 mb-2">
                   Contraseña única que este estudiante utilizará para iniciar sesión. Mínimo 3 caracteres.
                   Admite letras, números y símbolos.
                 </p>
@@ -142,8 +142,8 @@ export const AddStudentsModal = ({
                   onChange={(e) => { setPassword(e.target.value); setError(''); }}
                   placeholder="Por ejemplo, MarL632"
                   disabled={saving}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
 
@@ -153,15 +153,15 @@ export const AddStudentsModal = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                  className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleAddIndividual}
                   disabled={!isValidIndividual || saving}
-                  className="px-5 py-2 rounded-full bg-gray-800 text-white text-sm font-medium
-                           hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed
+                  className="px-5 py-2 rounded-full bg-coral text-white text-sm font-medium
+                           hover:bg-coral-dark disabled:bg-pink-light disabled:cursor-not-allowed
                            flex items-center gap-2"
                 >
                   {saving && <IconLoader className="w-4 h-4 animate-spin" />}
@@ -172,8 +172,8 @@ export const AddStudentsModal = ({
           ) : (
             <>
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-1">Lista de estudiantes</label>
-                <p className="text-xs text-gray-500 mb-2">
+                <label className="block text-sm font-bold text-ink mb-1">Lista de estudiantes</label>
+                <p className="text-xs text-ink/60 mb-2">
                   Una línea por estudiante, con el formato: <span className="font-mono">Nombre, contraseña</span>
                 </p>
                 <textarea
@@ -182,8 +182,8 @@ export const AddStudentsModal = ({
                   disabled={savingBulk}
                   rows={6}
                   placeholder={'María L., MarL632\nJuan P., JuaP219'}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-mono
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm font-mono
+                           focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
 
@@ -206,15 +206,15 @@ export const AddStudentsModal = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                  className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleAddBulk}
                   disabled={savingBulk || !bulkText.trim()}
-                  className="px-5 py-2 rounded-full bg-gray-800 text-white text-sm font-medium
-                           hover:bg-gray-900 disabled:bg-gray-300 disabled:cursor-not-allowed
+                  className="px-5 py-2 rounded-full bg-coral text-white text-sm font-medium
+                           hover:bg-coral-dark disabled:bg-pink-light disabled:cursor-not-allowed
                            flex items-center gap-2"
                 >
                   {savingBulk && <IconLoader className="w-4 h-4 animate-spin" />}

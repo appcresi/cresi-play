@@ -400,8 +400,8 @@ export default function CreateCompletaPalabras() {
   if (!user) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
-          <p className="text-gray-600">Debés estar logueado para crear una lección de Completa Palabras.</p>
+        <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
+          <p className="text-ink/70">Debés estar logueado para crear una lección de Completa Palabras.</p>
         </div>
       </div>
     );
@@ -411,8 +411,8 @@ export default function CreateCompletaPalabras() {
   if (role && role !== 'teacher') {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
-          <p className="text-gray-600">Esta sección es solo para docentes.</p>
+        <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
+          <p className="text-ink/70">Esta sección es solo para docentes.</p>
         </div>
       </div>
     );
@@ -426,10 +426,10 @@ export default function CreateCompletaPalabras() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-ink mb-1">
                   Mis lecciones de Completa Palabras
                 </h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-ink/60">
                   {userLessons.length} lección{userLessons.length !== 1 ? 'es' : ''} creada{userLessons.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -465,18 +465,18 @@ export default function CreateCompletaPalabras() {
           {lessonsLoading && (
             <div className="animate-pulse space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-gray-100 rounded-lg" />
+                <div key={i} className="h-24 bg-pink-light rounded-lg" />
               ))}
             </div>
           )}
 
           {!lessonsLoading && lessonsError && (
-            <div className="bg-white rounded-lg p-8 text-center border border-gray-200">
+            <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
               <IconAlertCircle size={32} className="text-red-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-4">No se pudieron cargar tus lecciones</p>
+              <p className="text-ink/70 mb-4">No se pudieron cargar tus lecciones</p>
               <button
                 onClick={loadUserLessons}
-                className="flex items-center gap-2 mx-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium"
+                className="flex items-center gap-2 mx-auto px-4 py-2 bg-pink-light hover:bg-pink text-ink/80 rounded-lg transition text-sm font-medium"
               >
                 <IconRefresh size={16} />
                 Reintentar
@@ -485,8 +485,8 @@ export default function CreateCompletaPalabras() {
           )}
 
           {!lessonsLoading && !lessonsError && userLessons.length === 0 && (
-            <div className="bg-white rounded-lg p-12 text-center border border-gray-200">
-              <p className="text-gray-500 mb-4 text-lg">Aún no creaste ninguna lección</p>
+            <div className="bg-white rounded-lg p-12 text-center border border-pink-light">
+              <p className="text-ink/60 mb-4 text-lg">Aún no creaste ninguna lección</p>
               <button
                 onClick={() => setStep('create')}
                 className="px-5 py-2 text-white rounded-full text-sm font-semibold hover:opacity-90 transition"
@@ -504,7 +504,7 @@ export default function CreateCompletaPalabras() {
                 return (
                   <div
                     key={lesson.id}
-                    className="bg-white rounded-lg p-5 border border-gray-200 hover:shadow-md transition"
+                    className="bg-white rounded-lg p-5 border border-pink-light hover:shadow-md transition"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -515,9 +515,9 @@ export default function CreateCompletaPalabras() {
                           <IconBooks className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-base font-semibold text-gray-900 mb-0.5 truncate">{lesson.title}</h3>
+                          <h3 className="text-base font-semibold text-ink mb-0.5 truncate">{lesson.title}</h3>
                           <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            <span className="inline-block px-2.5 py-0.5 bg-pink-light text-ink/70 text-xs rounded-full">
                               {lesson.lecciones.length} lección{lesson.lecciones.length !== 1 ? 'es' : ''}
                             </span>
                             <span
@@ -545,7 +545,7 @@ export default function CreateCompletaPalabras() {
                         <button
                           type="button"
                           onClick={() => handleDuplicateLesson(lesson)}
-                          className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+                          className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-full transition"
                           aria-label="Duplicar lección"
                           title="Duplicar"
                         >
@@ -555,7 +555,7 @@ export default function CreateCompletaPalabras() {
                         <button
                           type="button"
                           onClick={() => handleEditLesson(lesson)}
-                          className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition"
+                          className="p-2 text-ink/40 hover:bg-pink-light rounded-full transition"
                           style={{ color: undefined }}
                           onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; }}
                           onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
@@ -568,7 +568,7 @@ export default function CreateCompletaPalabras() {
                         <button
                           type="button"
                           onClick={() => setDeleteModal({ open: true, id: lesson.id, title: lesson.title })}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition"
+                          className="p-2 text-ink/40 hover:text-red-600 hover:bg-red-50 rounded-full transition"
                           aria-label="Eliminar lección"
                           title="Eliminar"
                         >
@@ -591,7 +591,7 @@ export default function CreateCompletaPalabras() {
             <h1
               ref={formTitleRef}
               tabIndex={-1}
-              className="text-2xl sm:text-3xl font-semibold text-gray-900 outline-none"
+              className="text-2xl sm:text-3xl font-semibold text-ink outline-none"
             >
               {editingLessonId ? 'Editar lección' : 'Crear nueva lección'}
             </h1>
@@ -602,7 +602,7 @@ export default function CreateCompletaPalabras() {
                 setError('');
                 setMessage('');
               }}
-              className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-lg transition"
               aria-label="Volver al listado"
             >
               <IconX size={22} />
@@ -611,8 +611,8 @@ export default function CreateCompletaPalabras() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Título */}
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <label htmlFor="lesson-title" className="block text-sm font-semibold text-gray-900 mb-3">
+            <div className="bg-white rounded-lg p-6 border border-pink-light">
+              <label htmlFor="lesson-title" className="block text-sm font-semibold text-ink mb-3">
                 Título de la lección *
               </label>
               <input
@@ -621,15 +621,15 @@ export default function CreateCompletaPalabras() {
                 value={lessonTitle}
                 onChange={(e) => setLessonTitle(e.target.value)}
                 placeholder="Ej: Consentimiento"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                className="w-full px-4 py-2 border border-pink-light rounded-lg focus:outline-none focus:ring-2"
                 style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
               />
             </div>
 
             {/* Lecciones (bloques de texto con huecos) */}
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <div className="bg-white rounded-lg p-6 border border-pink-light">
               <div className="flex items-center justify-between mb-4">
-                <label className="text-sm font-semibold text-gray-900">
+                <label className="text-sm font-semibold text-ink">
                   Lecciones ({lecciones.length})
                 </label>
                 <button
@@ -644,7 +644,7 @@ export default function CreateCompletaPalabras() {
               </div>
 
               {lecciones.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">
+                <p className="text-sm text-ink/40 text-center py-8">
                   Todavía no agregaste ninguna lección — tocá &quot;Agregar desde el banco de preguntas&quot; para sumar la primera.
                 </p>
               ) : (
@@ -652,9 +652,9 @@ export default function CreateCompletaPalabras() {
                   {lecciones.map((leccion, index) => {
                     const { textParts, blanks } = processText(leccion.text);
                     return (
-                      <div key={index} className="p-3 border border-gray-200 rounded-lg">
+                      <div key={index} className="p-3 border border-pink-light rounded-lg">
                         <div className="flex items-start justify-between gap-3">
-                          <p className="text-sm text-gray-700 flex-1 leading-relaxed">
+                          <p className="text-sm text-ink/80 flex-1 leading-relaxed">
                             {textParts.map((part, i) => (
                               <span key={i}>
                                 {part}
@@ -673,7 +673,7 @@ export default function CreateCompletaPalabras() {
                             <button
                               type="button"
                               onClick={() => openEditLeccionEditor(index)}
-                              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition"
+                              className="p-1.5 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded transition"
                               aria-label="Editar esta lección"
                             >
                               <IconPencil size={15} />
@@ -681,14 +681,14 @@ export default function CreateCompletaPalabras() {
                             <button
                               type="button"
                               onClick={() => handleRemoveLeccion(index)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                              className="p-1.5 text-ink/40 hover:text-red-600 hover:bg-red-50 rounded transition"
                               aria-label="Quitar esta lección"
                             >
                               <IconX size={15} />
                             </button>
                           </div>
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-2">
+                        <p className="text-[11px] text-ink/40 mt-2">
                           {blanks.length} hueco{blanks.length !== 1 ? 's' : ''} · palabras de relleno: {leccion.extraWords.join(', ')}
                         </p>
                       </div>
@@ -727,7 +727,7 @@ export default function CreateCompletaPalabras() {
                   setEditingLessonId(null);
                   resetForm();
                 }}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition"
+                className="px-6 py-3 border border-pink-light text-ink/80 rounded-full font-semibold hover:bg-cream transition"
               >
                 Cancelar
               </button>
@@ -741,29 +741,29 @@ export default function CreateCompletaPalabras() {
       {showBankGenerator && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
+            <div className="flex items-center justify-between p-5 border-b border-pink-light shrink-0">
               <div className="flex items-center gap-2">
                 {selectedTag && (
                   <button
                     onClick={() => setSelectedTag(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-ink/40 hover:text-ink/70"
                     aria-label="Volver a elegir etiqueta"
                   >
                     <IconArrowLeft className="w-5 h-5" />
                   </button>
                 )}
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-ink">
                   {selectedTag ? `Preguntas de "${selectedTag}"` : 'Elegí una etiqueta'}
                 </h2>
               </div>
-              <button onClick={() => setShowBankGenerator(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowBankGenerator(false)} className="text-ink/40 hover:text-ink/70">
                 <IconX className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-5 overflow-y-auto flex-1">
               {loadingBank ? (
-                <div className="flex items-center justify-center py-12 text-gray-400">
+                <div className="flex items-center justify-center py-12 text-ink/40">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: ACCENT }} />
                 </div>
               ) : !selectedTag ? (
@@ -774,7 +774,7 @@ export default function CreateCompletaPalabras() {
                       value={tagFilter}
                       onChange={(e) => setTagFilter(e.target.value)}
                       placeholder="Filtrar etiquetas..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2"
+                      className="w-full px-4 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2"
                       style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                     />
                   </div>
@@ -785,7 +785,7 @@ export default function CreateCompletaPalabras() {
                         <button
                           key={tag}
                           onClick={() => setSelectedTag(tag)}
-                          className="px-3 py-2 text-sm text-left rounded-lg border border-gray-200 hover:border-transparent transition"
+                          className="px-3 py-2 text-sm text-left rounded-lg border border-pink-light hover:border-transparent transition"
                           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${ACCENT}15`; e.currentTarget.style.color = ACCENT; }}
                           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = ''; }}
                         >
@@ -797,12 +797,12 @@ export default function CreateCompletaPalabras() {
               ) : (
                 <div className="space-y-2">
                   {questionsForSelectedTag.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-8">No hay preguntas con esta etiqueta.</p>
+                    <p className="text-sm text-ink/40 text-center py-8">No hay preguntas con esta etiqueta.</p>
                   ) : (
                     questionsForSelectedTag.map((q) => (
-                      <div key={q.id} className="p-3 border border-gray-200 rounded-lg">
-                        <p className="text-sm text-gray-800 font-medium mb-1">{q.question}</p>
-                        <p className="text-sm text-gray-500 mb-2">{q.resume?.trim() || q.answer}</p>
+                      <div key={q.id} className="p-3 border border-pink-light rounded-lg">
+                        <p className="text-sm text-ink font-medium mb-1">{q.question}</p>
+                        <p className="text-sm text-ink/60 mb-2">{q.resume?.trim() || q.answer}</p>
                         <button
                           type="button"
                           onClick={() => handleUseBankQuestion(q)}
@@ -824,13 +824,13 @@ export default function CreateCompletaPalabras() {
       {showLeccionEditor && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between p-5 border-b border-pink-light">
+              <h2 className="text-lg font-bold text-ink">
                 {editingLeccionIndex !== null ? 'Editar lección' : 'Nueva lección'}
               </h2>
               <button
                 onClick={() => setShowLeccionEditor(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-ink/40 hover:text-ink/70"
               >
                 <IconX className="w-5 h-5" />
               </button>
@@ -838,10 +838,10 @@ export default function CreateCompletaPalabras() {
 
             <div className="p-5 space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                <label className="block text-sm font-semibold text-ink mb-1">
                   Texto de la lección
                 </label>
-                <p className="text-xs text-gray-500 mb-2">
+                <p className="text-xs text-ink/60 mb-2">
                   Este texto viene del banco de preguntas de CrESI — no se puede reescribir.
                   Seleccioná con el mouse cada palabra que querés que sea un hueco para completar,
                   y tocá &quot;Marcar como hueco&quot;.
@@ -851,7 +851,7 @@ export default function CreateCompletaPalabras() {
                   value={draftText}
                   readOnly
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm leading-relaxed bg-gray-50
+                  className="w-full px-4 py-3 border border-pink-light rounded-lg text-sm leading-relaxed bg-cream
                            focus:outline-none focus:ring-2 cursor-text"
                   style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                 />
@@ -864,18 +864,18 @@ export default function CreateCompletaPalabras() {
                   <IconTag size={15} />
                   Marcar selección como hueco
                 </button>
-                <p className="text-[11px] text-gray-400 mt-1.5">
+                <p className="text-[11px] text-ink/40 mt-1.5">
                   {countBlanks(draftText)} hueco{countBlanks(draftText) !== 1 ? 's' : ''} marcado{countBlanks(draftText) !== 1 ? 's' : ''} hasta ahora.
                 </p>
               </div>
 
               {/* Vista previa — cada hueco es un chip con su palabra, tocable para desmarcarlo */}
               {draftText && bracesBalanced(draftText) && (
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-xs font-semibold text-gray-500 mb-2">
+                <div className="p-4 bg-cream rounded-lg border border-pink-light">
+                  <p className="text-xs font-semibold text-ink/60 mb-2">
                     Vista previa — tocá un hueco para desmarcarlo
                   </p>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-ink/80 leading-relaxed">
                     {processText(draftText).textParts.map((part, i, arr) => {
                       const blank = processText(draftText).blanks[i];
                       return (
@@ -902,17 +902,17 @@ export default function CreateCompletaPalabras() {
 
               {/* Palabras de relleno */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                <label className="block text-sm font-semibold text-ink mb-1">
                   Palabras de relleno
                 </label>
-                <p className="text-xs text-gray-500 mb-2">
+                <p className="text-xs text-ink/60 mb-2">
                   Palabras que van a aparecer como opciones incorrectas, además de las correctas
                   (los huecos que marcaste arriba).
                 </p>
 
                 {suggestedWords.length > 0 && (
-                  <div className="mb-3 p-2.5 bg-gray-50 rounded-lg border border-gray-100">
-                    <p className="text-[11px] text-gray-500 mb-1.5">
+                  <div className="mb-3 p-2.5 bg-cream rounded-lg border border-pink-light">
+                    <p className="text-[11px] text-ink/60 mb-1.5">
                       Sugeridas (de otras preguntas de la misma etiqueta) — tocá para sumar:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -943,7 +943,7 @@ export default function CreateCompletaPalabras() {
                       }
                     }}
                     placeholder="Escribí una palabra y tocá Enter"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2"
+                    className="flex-1 px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                   <button
@@ -960,7 +960,7 @@ export default function CreateCompletaPalabras() {
                     {draftExtraWords.map((word) => (
                       <span
                         key={word}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-pink-light text-ink/80 text-xs rounded-full"
                       >
                         {word}
                         <button
@@ -987,7 +987,7 @@ export default function CreateCompletaPalabras() {
                 <button
                   type="button"
                   onClick={() => setShowLeccionEditor(false)}
-                  className="px-5 py-2 rounded-full border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                  className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
                 >
                   Cancelar
                 </button>
@@ -1009,16 +1009,16 @@ export default function CreateCompletaPalabras() {
       {previewModal?.open && (
         <div className="fixed inset-0 bg-black/40 z-50 overflow-y-auto">
           <div className="min-h-screen flex flex-col">
-            <div className="bg-white border-b border-gray-200 px-5 py-3 flex items-center justify-between sticky top-0 z-10">
-              <h2 className="text-sm font-bold text-gray-900">Probando: {previewModal.title}</h2>
+            <div className="bg-white border-b border-pink-light px-5 py-3 flex items-center justify-between sticky top-0 z-10">
+              <h2 className="text-sm font-bold text-ink">Probando: {previewModal.title}</h2>
               <button
                 onClick={() => setPreviewModal(null)}
-                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+                className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-full transition"
               >
                 <IconX size={20} />
               </button>
             </div>
-            <div className="flex-1 bg-gray-50">
+            <div className="flex-1 bg-cream">
               <WordDragGame lessonId={previewModal.id} />
             </div>
           </div>
@@ -1029,14 +1029,14 @@ export default function CreateCompletaPalabras() {
       {deleteModal.open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-5">
-            <h3 className="font-bold text-gray-900 mb-1">¿Eliminar esta lección?</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="font-bold text-ink mb-1">¿Eliminar esta lección?</h3>
+            <p className="text-sm text-ink/60 mb-4">
               &quot;{deleteModal.title}&quot; se va a borrar. Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setDeleteModal({ open: false, id: '', title: '' })}
-                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-sm text-ink/70 hover:bg-pink-light rounded-lg"
               >
                 Cancelar
               </button>

@@ -18,7 +18,7 @@ const monaSans = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://jugar.cresi.com.ar"),
 
-  title: "ESI | Juegos ESI Trivias, Pasapalabras y Más | CrESI",
+  title: "CrESI | Aula Virtual y Juegos de Educación Sexual Integral",
 
   icons: [
     {
@@ -28,28 +28,31 @@ export const metadata: Metadata = {
   ],
 
   description:
-    "Juega trivias, pasapalabras y completaspalabras sobre ESI. Más de 700 preguntas educativas gratis. Aprende sobre Educación Sexual Integral mientras te diviertes con CrESI.",
+    "Aula virtual gratuita de ESI: docentes crean su clase y eligen qué contenido ven sus alumnos, que aprenden jugando con más de 700 preguntas, trivias y actividades sobre Educación Sexual Integral.",
 
   keywords: [
+    "aula virtual ESI",
+    "plataforma ESI para docentes",
+    "panel docente ESI",
+    "educación sexual integral",
     "juegos ESI",
     "trivia ESI",
-    "educación sexual integral",
+    "clase virtual ESI",
+    "recursos educativos ESI",
     "juegos educativos",
     "trivias gratis",
     "pasapalabras ESI",
     "completaspalabras",
     "aprender jugando",
     "juegos para adolescentes",
-    "preguntas y respuestas",
     "CrESI",
-    "recursos educativos",
-    "trivias didácticas",
+    "seguimiento de progreso alumnos",
   ],
 
   openGraph: {
-    title: "Juegos ESI Gratis | Trivias y Pasapalabras - CrESI",
+    title: "CrESI | Aula Virtual ESI para Docentes y Alumnos",
     description:
-      "Juega trivias y pasapalabras sobre ESI. Más de 700 preguntas educativas gratis para aprender Educación Sexual Integral.",
+      "Docentes: creá tu clase y personalizá qué actividades de ESI ve cada alumno. Alumnos: aprendé jugando con trivias y más de 700 preguntas educativas gratis.",
     url: "https://jugar.cresi.com.ar",
     siteName: "CrESI - Jugar",
     locale: "es_AR",
@@ -58,7 +61,7 @@ export const metadata: Metadata = {
         url: "https://jugar.cresi.com.ar/illustration-1.jpg",
         width: 1200,
         height: 630,
-        alt: "Juegos ESI Gratis - CrESI Trivias y Pasapalabras",
+        alt: "CrESI - Aula Virtual y Juegos de Educación Sexual Integral",
       },
     ],
     type: "website",
@@ -66,9 +69,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Juegos ESI | Trivias Gratis - CrESI",
+    title: "CrESI | Aula Virtual ESI para Docentes y Alumnos",
     description:
-      "Juega trivias y pasapalabras sobre ESI. Aprende Educación Sexual Integral mientras te diviertes con CrESI.",
+      "Docentes: creá tu clase y personalizá el contenido de ESI. Alumnos: aprendé jugando con trivias y juegos gratis.",
     images: ["https://jugar.cresi.com.ar/illustration-1.jpg"],
     site: "@appcresi",
     creator: "@appcresi",
@@ -106,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
         <link rel="preload" href="/pasapalabras.svg" as="image" />
         <link rel="preload" href="/simulador.svg" as="image" />
         
-        {/* NUEVO: Schema.org - Organization */}
+        {/* Schema.org - Organization */}
         <Script id="schema-org-organization" type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -114,32 +117,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
             "name": "CrESI",
             "url": "https://jugar.cresi.com.ar",
             "logo": "https://jugar.cresi.com.ar/cresi-logo.ico",
-            "description": "Plataforma de juegos educativos sobre Educación Sexual Integral (ESI)",
+            "description": "Aula virtual y plataforma de juegos educativos sobre Educación Sexual Integral (ESI), con panel docente para personalizar contenido y seguir el progreso de la clase.",
             "sameAs": [
               "https://www.instagram.com/appcresi",
               "https://www.facebook.com/appcresi"
             ]
           })}
         </Script>
-        
-        {/* NUEVO: Schema.org - WebApplication */}
+
+        {/* Schema.org - WebApplication */}
         <Script id="schema-org-webapp" type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": "CrESI - Juegos ESI",
+            "name": "CrESI - Aula Virtual ESI",
             "url": "https://jugar.cresi.com.ar",
-            "description": "Plataforma de juegos educativos sobre Educación Sexual Integral",
+            "description": "Plataforma de Educación Sexual Integral con aula virtual: los docentes crean su clase, eligen qué actividades y trivias ven sus alumnos, y siguen su progreso en vivo.",
             "applicationCategory": "EducationalApplication",
+            "audience": [
+              {
+                "@type": "EducationalAudience",
+                "educationalRole": "teacher"
+              },
+              {
+                "@type": "EducationalAudience",
+                "educationalRole": "student"
+              }
+            ],
+            "featureList": [
+              "Creación de clases virtuales con código de acceso",
+              "Personalización de qué actividades y trivias ve cada clase",
+              "Seguimiento del progreso de cada alumno",
+              "Más de 700 preguntas educativas sobre ESI",
+              "Trivias, pasapalabras y juegos interactivos"
+            ],
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "ARS"
-            },
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.8",
-              "ratingCount": "1247"
             }
           })}
         </Script>

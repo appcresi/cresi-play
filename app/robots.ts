@@ -9,8 +9,10 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/api/',
-        '/docente',
-        '/docente/',
+        // /docente en sí es la landing pública para captar docentes — se
+        // deja indexar. Sus sub-herramientas son privadas (panel logueado).
+        '/docente/trivias',
+        '/docente/completapalabras',
         '/escritorio',
         '/clase',
         '/clase/',

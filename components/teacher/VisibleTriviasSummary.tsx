@@ -43,14 +43,14 @@ export const VisibleTriviasSummary = ({ classroom, teacherId }: { classroom: Cla
 
   if (trivias === null) {
     return (
-      <div className="flex items-center gap-2 text-gray-400 text-xs py-2">
+      <div className="flex items-center gap-2 text-ink/40 text-xs py-2">
         <IconLoader className="w-4 h-4 animate-spin" /> Cargando...
       </div>
     );
   }
 
   if (trivias.length === 0) {
-    return <p className="text-xs text-gray-400">Todavía no hay trivias seleccionadas.</p>;
+    return <p className="text-xs text-ink/40">Todavía no hay trivias seleccionadas.</p>;
   }
 
   return (
@@ -69,8 +69,8 @@ export const VisibleTriviasSummary = ({ classroom, teacherId }: { classroom: Cla
             >
               <IconClipboardList className="w-5 h-5" />
             </div>
-            <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">{t.name}</p>
-            <p className="text-[10px] text-gray-500 leading-tight">
+            <p className="text-xs font-semibold text-ink leading-tight mb-0.5 line-clamp-2 break-words">{t.name}</p>
+            <p className="text-[10px] text-ink/60 leading-tight">
               {t.questionCount} preg.{!t.isOwn && ' · CrESI'}
             </p>
           </div>

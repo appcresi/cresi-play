@@ -20,7 +20,8 @@ export default function VocacionClient() {
 	}, []);
 
 	return (
-		<section className="w-full max-w-7xl mx-auto px-4 pt-24 pb-12">
+		<div className="w-full min-h-screen bg-cream">
+		<section className="max-w-7xl mx-auto px-4 pt-24 pb-12">
 			<GameStatusBar title="Test Vocacional" score={score} lives={lives} level={1} />
 
 			{/* Test component — embebido directo en la página, sin pantalla aparte */}
@@ -87,5 +88,6 @@ export default function VocacionClient() {
 				</div>
 			</div>
 		</section>
+		</div>
 	);
 }

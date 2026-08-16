@@ -1,11 +1,16 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Fredoka } from 'next/font/google';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
 import UserDataSync from '@/lib/userDataSync';
 import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebase';
 import type { UserData } from '@/types/user';
+
+// Misma tipografía "con personalidad" que la home/onboarding, restringida
+// acá al título — el resto de la franja sigue en Mona Sans.
+const fredoka = Fredoka({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' });
 
 interface GameStatusProps {
   title?: string;
@@ -127,7 +132,7 @@ const GameStatusBar = ({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-cream shadow-sm">
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Left Section - Profile & Title */}
@@ -138,7 +143,7 @@ const GameStatusBar = ({
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
                 title="Volver al inicio"
               >
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 hover:border-blue-400 transition-colors">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-white border-2 border-pink-light hover:border-coral transition-colors">
                   <img
                     src={`/${userData.profile.character.image.replace(/^\/+/, '')}`}
                     alt={userData.profile.character.name}
@@ -150,19 +155,19 @@ const GameStatusBar = ({
                   />
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">{userData.profile.username}</p>
-                  <p className="text-xs text-gray-500">{userData.profile.character.name}</p>
+                  <p className="text-sm font-medium text-ink">{userData.profile.username}</p>
+                  <p className="text-xs text-ink/60">{userData.profile.character.name}</p>
                 </div>
               </button>
             )}
-            
-            <div className="border-l border-gray-200 pl-4">
-              <h1 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                <IconTrophy size={20} className="text-amber-500" />
+
+            <div className="border-l border-pink-light pl-4">
+              <h1 className={`${fredoka.className} text-lg text-ink flex items-center gap-2`}>
+                <IconTrophy size={20} className="text-gold-accent" />
                 {title}
               </h1>
               {activityName && (
-                <p className="text-xs text-gray-500">{activityName}</p>
+                <p className="text-xs text-ink/60">{activityName}</p>
               )}
             </div>
           </div>
@@ -171,23 +176,23 @@ const GameStatusBar = ({
           <div className="flex items-center space-x-3">
             {/* Questions Progress */}
             {typeof currentQuestion === 'number' && totalQuestions && (
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
-                <IconCheckbox size={16} className="text-purple-600" />
+              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-mint rounded-full">
+                <IconCheckbox size={16} className="text-mint-text" />
                 <div className="text-sm">
-                  <span className="font-medium text-gray-900">{currentQuestion}</span>
-                  <span className="text-gray-500">/{totalQuestions}</span>
+                  <span className="font-medium text-ink">{currentQuestion}</span>
+                  <span className="text-ink/50">/{totalQuestions}</span>
                 </div>
               </div>
             )}
 
             {/* Timer */}
             {typeof timeLeft === 'number' && (
-              <div className={`flex items-center space-x-2 px-3 py-2 border rounded-lg ${
-                timeLeft <= 10 
-                  ? 'bg-red-50 border-red-200 text-red-700' 
-                  : 'bg-blue-50 border-blue-200 text-blue-700'
+              <div className={`flex items-center space-x-2 px-3 py-2 rounded-full ${
+                timeLeft <= 10
+                  ? 'bg-coral text-white'
+                  : 'bg-mint text-mint-text'
               }`}>
-                <IconClock size={16} className={timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'} />
+                <IconClock size={16} className={timeLeft <= 10 ? 'text-white' : 'text-mint-text'} />
                 <div className={`text-sm font-medium ${timeLeft <= 10 ? 'animate-pulse' : ''}`}>
                   {timeLeft}s
                 </div>
@@ -195,12 +200,12 @@ const GameStatusBar = ({
             )}
 
             {/* Score */}
-            <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-              <IconTrophy size={16} className="text-green-600" />
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gold-light rounded-full">
+              <IconTrophy size={16} className="text-gold-accent" />
               <div className="text-sm">
-                <span className="text-xs text-gray-500 hidden sm:inline">Puntos: </span>
-                <span className={`font-medium text-gray-900 ${
-                  isScoreAnimating ? 'text-green-600 font-bold animate-pulse' : ''
+                <span className="text-xs text-ink/50 hidden sm:inline">Puntos: </span>
+                <span className={`font-medium text-ink ${
+                  isScoreAnimating ? 'text-gold-accent font-bold animate-pulse' : ''
                 }`}>
                   {userData.game.totalScore.toLocaleString()}
                 </span>
@@ -208,23 +213,23 @@ const GameStatusBar = ({
             </div>
 
             {/* Streak */}
-            <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
-              <IconTarget size={16} className="text-orange-600" />
+            <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-pink-light rounded-full">
+              <IconTarget size={16} className="text-coral-dark" />
               <div className="text-sm">
-                <span className="text-xs text-gray-500">Racha: </span>
-                <span className="font-medium text-gray-900">{userData.game.streak}</span>
+                <span className="text-xs text-ink/50">Racha: </span>
+                <span className="font-medium text-ink">{userData.game.streak}</span>
               </div>
             </div>
 
             {/* Lives */}
-            <div className="flex items-center space-x-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-2 px-3 py-2 bg-pink-light rounded-full">
               <div className="flex items-center space-x-1">
                 {/* Mobile: Show number */}
                 <div className="sm:hidden flex items-center space-x-1">
-                  <IconHeart size={16} className="text-red-600" />
-                  <span className="text-sm font-medium text-gray-900">{userData.game.totalLives}</span>
+                  <IconHeart size={16} className="text-coral-dark" />
+                  <span className="text-sm font-medium text-ink">{userData.game.totalLives}</span>
                 </div>
-                
+
                 {/* Desktop: Show hearts */}
                 <div className="hidden sm:flex space-x-1">
                   {[...Array(3)].map((_, i) =>
@@ -232,13 +237,13 @@ const GameStatusBar = ({
                       <IconHeartFilled
                         key={i}
                         size={16}
-                        className="text-red-500 transition-all duration-200 hover:scale-110"
+                        className="text-coral transition-all duration-200 hover:scale-110"
                       />
                     ) : (
                       <IconHeart
                         key={i}
                         size={16}
-                        className="text-gray-300 transition-all duration-200"
+                        className="text-ink/20 transition-all duration-200"
                       />
                     )
                   )}
@@ -247,20 +252,20 @@ const GameStatusBar = ({
             </div>
 
             {/* Level Badge */}
-            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-lg">
-              <IconStarFilled size={16} className="text-indigo-600" />
+            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-mint rounded-full">
+              <IconStarFilled size={16} className="text-mint-accent" />
               <div className="text-sm">
-                <span className="text-xs text-gray-500">Nivel: </span>
-                <span className="font-medium text-gray-900">{level}</span>
+                <span className="text-xs text-ink/50">Nivel: </span>
+                <span className="font-medium text-ink">{level}</span>
               </div>
             </div>
 
             {/* Auth Status Indicator */}
-            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="hidden lg:flex items-center space-x-2 px-3 py-2 bg-white border border-pink-light rounded-full">
               <div className={`w-2 h-2 rounded-full ${
-                isAnonymous ? 'bg-gray-400' : 'bg-green-500'
+                isAnonymous ? 'bg-ink/30' : 'bg-mint-accent'
               }`}></div>
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-ink/60">
                 {isAnonymous ? 'Invitado' : 'Registrado'}
               </span>
             </div>
@@ -270,13 +275,13 @@ const GameStatusBar = ({
         {/* Mobile Progress Bar for Questions */}
         {typeof currentQuestion === 'number' && totalQuestions && (
           <div className="sm:hidden mt-3 flex items-center space-x-3">
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+            <div className="flex-1 bg-pink-light rounded-full h-2">
+              <div
+                className="bg-coral h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(currentQuestion / totalQuestions) * 100}%` }}
               />
             </div>
-            <span className="text-xs text-gray-600 font-medium">
+            <span className="text-xs text-ink/60 font-medium">
               {currentQuestion}/{totalQuestions}
             </span>
           </div>

@@ -324,7 +324,7 @@ const UnifiedWordGame = () => {
   });
 
   return (
-    <div className={`min-h-screen ${isNightMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+    <div className={`min-h-screen ${isNightMode ? 'bg-gray-900' : 'bg-cream'} transition-colors duration-300`}>
       <GameStatusBar
         title="Pasapalabra"
         score={score}

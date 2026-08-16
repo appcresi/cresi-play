@@ -28,7 +28,7 @@ export const ToggleCard = ({
     className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 ${
       isOn
         ? 'border-transparent shadow-sm'
-        : 'border-gray-100 opacity-50 grayscale hover:opacity-75 hover:grayscale-0'
+        : 'border-pink-light opacity-50 grayscale hover:opacity-75 hover:grayscale-0'
     }`}
     style={isOn ? { borderColor: color, backgroundColor: `${color}0D` } : undefined}
   >
@@ -46,9 +46,9 @@ export const ToggleCard = ({
     >
       {icon}
     </div>
-    <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">
+    <p className="text-xs font-semibold text-ink leading-tight mb-0.5 line-clamp-2 break-words">
       {title}
     </p>
-    <p className="text-[10px] text-gray-500 leading-tight">{subtitle}</p>
+    <p className="text-[10px] text-ink/60 leading-tight">{subtitle}</p>
   </button>
 );

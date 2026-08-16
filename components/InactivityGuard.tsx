@@ -113,25 +113,25 @@ export default function InactivityGuard(): JSX.Element | null {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-sm w-full p-6 text-center">
+      <div className="bg-white rounded-xl shadow-2xl border border-pink-light max-w-sm w-full p-6 text-center">
         <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <IconClock size={28} className="text-amber-600" />
         </div>
-        <h2 className="text-lg font-bold text-gray-900 mb-2">¿Seguís ahí?</h2>
-        <p className="text-gray-500 text-sm mb-1">
+        <h2 className="text-lg font-bold text-ink mb-2">¿Seguís ahí?</h2>
+        <p className="text-ink/60 text-sm mb-1">
           Tu sesión se va a cerrar por inactividad en:
         </p>
         <p className="text-3xl font-bold text-amber-600 mb-5">{secondsLeft}s</p>
         <div className="flex gap-3">
           <button
             onClick={handleLogout}
-            className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition"
+            className="flex-1 px-4 py-2.5 border border-pink-light text-ink/80 font-semibold rounded-full hover:bg-cream transition"
           >
             Cerrar sesión
           </button>
           <button
             onClick={resetTimers}
-            className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full transition"
+            className="flex-1 px-4 py-2.5 bg-coral hover:bg-coral-dark text-white font-semibold rounded-full transition"
           >
             Seguir usando
           </button>

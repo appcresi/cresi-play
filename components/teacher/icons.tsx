@@ -1,35 +1,4 @@
-import React from 'react';
-import {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
-  IconMoodPuzzled,
-  IconSearch,
-  IconPhoto,
-} from '@tabler/icons-react';
-
-// Mismo patrón que Features.tsx/ClassroomDesk.tsx: el catálogo guarda el
-// ícono como nombre (string), acá lo resolvemos a componente — solo hace
-// falta donde realmente se pinta.
-export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  IconCards,
-  IconAB2,
-  IconShieldCheck,
-  IconBrandPnpm,
-  IconPacman,
-  IconMoodTongueWink2,
-  IconBook,
-  IconHeart,
-  IconSearch,
-  IconPhoto,
-};
-
-export const ActivityIcon = ({ iconName, className }: { iconName: string; className?: string }) => {
-  const Icon = ICON_MAP[iconName] ?? IconMoodPuzzled;
-  return <Icon className={className} />;
-};
+// Reexporta el mapa de íconos compartido (components/ActivityIcon.tsx) para
+// no romper los imports existentes que apuntan a './icons' dentro de
+// components/teacher/. Antes este archivo tenía su propia copia del mapa.
+export { ActivityIcon, ICON_MAP } from '@/components/ActivityIcon';

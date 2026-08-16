@@ -78,23 +78,23 @@ export const InfografiasPicker = ({
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+        <h3 className="text-sm font-medium text-ink flex items-center gap-1.5">
           <IconPhoto className="w-4 h-4" style={{ color: ACCENT }} />
           Infografías visibles
         </h3>
         {!loading && infografias.length > 0 && <SaveIndicator state={saveState} />}
       </div>
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-ink/60 mb-3">
         Tocá una infografía para prenderla/apagarla en esta clase — se guarda solo
         ({visibleCount}/{infografias.length} visibles).
       </p>
 
       {loading ? (
-        <div className="flex items-center justify-center py-8 text-gray-400">
+        <div className="flex items-center justify-center py-8 text-ink/40">
           <IconLoader className="w-5 h-5 animate-spin" />
         </div>
       ) : infografias.length === 0 ? (
-        <p className="text-sm text-gray-500">No se pudo cargar el listado de infografías.</p>
+        <p className="text-sm text-ink/60">No se pudo cargar el listado de infografías.</p>
       ) : (
         <>
           <button onClick={allowAll} className="hover:underline text-xs font-medium mb-3 block" style={{ color: ACCENT }}>
@@ -110,7 +110,7 @@ export const InfografiasPicker = ({
                   type="button"
                   onClick={() => toggle(info.id)}
                   className={`relative text-left rounded-xl border-2 overflow-hidden transition-all min-w-0 ${
-                    isBlocked ? 'border-gray-100 opacity-50 grayscale' : 'border-transparent shadow-sm'
+                    isBlocked ? 'border-pink-light opacity-50 grayscale' : 'border-transparent shadow-sm'
                   }`}
                   style={!isBlocked ? { borderColor: ACCENT } : undefined}
                 >
@@ -122,7 +122,7 @@ export const InfografiasPicker = ({
                       <IconCheck className="w-3 h-3 text-white" />
                     </div>
                   )}
-                  <div className="relative w-full h-20 bg-gray-100">
+                  <div className="relative w-full h-20 bg-pink-light">
                     <Image
                       src={info.cover}
                       alt={info.title}
@@ -131,7 +131,7 @@ export const InfografiasPicker = ({
                       className="object-cover"
                     />
                   </div>
-                  <p className="text-[11px] font-medium text-gray-800 leading-tight p-2 line-clamp-2">
+                  <p className="text-[11px] font-medium text-ink leading-tight p-2 line-clamp-2">
                     {info.title}
                   </p>
                 </button>

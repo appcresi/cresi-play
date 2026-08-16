@@ -164,7 +164,7 @@ export default function BuscadorClient(): JSX.Element {
   const trimmedQuery = query.trim();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       <GameStatusBar title="Buscador de Preguntas" score={score} lives={lives} level={1} />
 
       <section className="w-full max-w-4xl mx-auto px-4 pt-24 pb-12">

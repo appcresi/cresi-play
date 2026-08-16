@@ -13,7 +13,7 @@ export const ClassroomCard = ({
   onCopyCode: (code: string) => void;
   copiedCode: string | null;
 }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group">
+  <div className="bg-white rounded-xl shadow-sm border border-pink-light overflow-hidden hover:shadow-md transition-shadow group">
     {/* Banner de color, estilo Classroom */}
     <button onClick={onOpen} className="block w-full text-left">
       <div
@@ -29,7 +29,7 @@ export const ClassroomCard = ({
     {/* Cuerpo */}
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+        <div className="flex items-center gap-1.5 text-xs text-ink/60">
           <IconUsers className="w-3.5 h-3.5" />
           {classroom.studentCount ?? 0} alumno{(classroom.studentCount ?? 0) !== 1 ? 's' : ''}
         </div>
@@ -44,13 +44,13 @@ export const ClassroomCard = ({
       <button
         onClick={() => onCopyCode(classroom.code)}
         title="Copiar link para compartir con tus alumnos"
-        className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100
-                 rounded-lg text-sm font-mono font-bold tracking-widest text-gray-700 transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-3 py-1.5 bg-cream hover:bg-pink-light
+                 rounded-lg text-sm font-mono font-bold tracking-widest text-ink/80 transition-colors"
       >
         {classroom.code}
         {copiedCode === classroom.code
           ? <IconCheck className="w-4 h-4 text-green-600" />
-          : <IconCopy className="w-4 h-4 text-gray-400" />}
+          : <IconCopy className="w-4 h-4 text-ink/40" />}
       </button>
     </div>
   </div>

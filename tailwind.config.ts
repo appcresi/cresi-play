@@ -1,5 +1,4 @@
 import type { Config } from 'tailwindcss'
-import colors from 'tailwindcss/colors'
 
 const config: Config = {
   content: [
@@ -12,10 +11,30 @@ const config: Config = {
         sans: ['var(--font-mona-sans)']
       },
       colors: {
-        primary: {
-          DEFAULT: colors.violet[600],
-          dark: colors.violet[900],
-          light: colors.violet[100]
+        // Paleta del sistema "moderno" (home, /unirse, /clase, login docente)
+        // — antes vivía como hex sueltos repetidos en esos archivos. Se va
+        // extendiendo acá a medida que el resto de la app la adopta.
+        cream: '#FFFBF8',
+        ink: '#241B37',
+        coral: {
+          DEFAULT: '#FF6B6B',
+          dark: '#E8514F'
+        },
+        pink: {
+          DEFAULT: '#FFE5E5',
+          light: '#FFD6D6'
+        },
+        gold: {
+          DEFAULT: '#FFF3D6',
+          light: '#FFEAB8',
+          text: '#B9800A',
+          accent: '#E8A400'
+        },
+        mint: {
+          DEFAULT: '#E6F7F5',
+          light: '#D3F2EE',
+          text: '#238F85',
+          accent: '#2FB8AC'
         }
       },
 			keyframes: {

@@ -53,7 +53,8 @@ const ACCENT = "#388E3C";
 
 export default function MentalHealthTestPage(): JSX.Element {
 	return (
-		<section className="w-full max-w-7xl mx-auto px-4 pt-24 pb-12">
+		<div className="w-full min-h-screen bg-cream">
+		<section className="max-w-7xl mx-auto px-4 pt-24 pb-12">
 
 			{/* Test component */}
 			<SaludMentalSection />
@@ -69,7 +70,7 @@ export default function MentalHealthTestPage(): JSX.Element {
 							<p className="font-semibold mb-1" style={{ color: ACCENT }}>
 								¿Por qué es importante?
 							</p>
-							<p className="text-sm text-gray-600">
+							<p className="text-sm text-ink/70">
 								Cuidar de tu salud mental es fundamental para prevenir problemas más graves como depresión o aislamiento social
 							</p>
 						</div>
@@ -118,5 +119,6 @@ export default function MentalHealthTestPage(): JSX.Element {
 				</div>
 			</div>
 		</section>
+		</div>
 	);
 }
