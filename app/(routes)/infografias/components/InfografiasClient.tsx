@@ -15,6 +15,7 @@ import {
 } from "@tabler/icons-react";
 import GameStatusBar from "@/components/GameStatusBar";
 import UserDataManager from "@/lib/userDataManager";
+import ClassroomService from "@/lib/classroomService";
 import { getActivityById } from "@/lib/activities";
 
 const ACTIVITY = getActivityById("infografias");
@@ -49,18 +50,30 @@ export default function InfografiasClient(): JSX.Element {
     (async () => {
       try {
         const snap = await getDocs(query(collection(db, "infografias"), where("author", "==", "CRESI")));
-        setItems(
-          snap.docs.map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              title: data.title,
-              informacion: data.informacion,
-              cover: data.cover,
-              download: data.download,
-            };
-          })
-        );
+        let all = snap.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            title: data.title,
+            informacion: data.informacion,
+            cover: data.cover,
+            download: data.download,
+          };
+        });
+
+        // Si el alumno entró con código, aplicamos lo que haya
+        // restringido su docente para esta clase.
+        const userData = UserDataManager.loadUserData();
+        const classroomId = userData.profile.classroomId;
+        if (classroomId) {
+          const classroom = await ClassroomService.getClassroomById(classroomId);
+          if (classroom?.restrictedInfografias) {
+            const blocked = new Set(classroom.restrictedInfografias);
+            all = all.filter((item) => !blocked.has(item.id));
+          }
+        }
+
+        setItems(all);
       } catch (err) {
         console.error("❌ Error cargando infografías:", err);
       } finally {
@@ -206,6 +219,7 @@ export default function InfografiasClient(): JSX.Element {
                       src={item.cover}
                       alt={`Infografía: ${item.title}`}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end justify-center pb-4">

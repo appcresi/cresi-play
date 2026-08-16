@@ -80,6 +80,7 @@ const ClassroomService = {
       visibleCompletaPalabras: null,
       restrictedTags: null,
       restrictedQuestionIds: null,
+      restrictedInfografias: null,
       color,
       createdAt: serverTimestamp(),
     });
@@ -97,6 +98,7 @@ const ClassroomService = {
       visibleCompletaPalabras: null,
       restrictedTags: null,
       restrictedQuestionIds: null,
+      restrictedInfografias: null,
       color,
     };
   },
@@ -145,6 +147,7 @@ const ClassroomService = {
       visibleCompletaPalabras: data.visibleCompletaPalabras ?? null,
       restrictedTags: data.restrictedTags ?? null,
       restrictedQuestionIds: data.restrictedQuestionIds ?? null,
+      restrictedInfografias: data.restrictedInfografias ?? null,
       color: data.color ?? fallbackColorFor(snap.id),
     };
   },
@@ -197,6 +200,16 @@ const ClassroomService = {
   },
 
   /**
+   * Infografías bloqueadas para esta clase. `null` = ninguna bloqueada
+   * (todas visibles) — mismo criterio "lista de bloqueadas" que
+   * restrictedTags/restrictedQuestionIds: una infografía nueva que se
+   * suba después queda visible por default.
+   */
+  async updateRestrictedInfografias(classroomId: string, infografiaIds: string[] | null): Promise<void> {
+    await updateDoc(doc(db, 'classrooms', classroomId), { restrictedInfografias: infografiaIds });
+  },
+
+  /**
    * Elimina la clase junto con sus alumnos (reclamados y pendientes).
    * Requiere que el docente tenga permiso de escritura sobre `estudiantes`
    * (ver regla actualizada) para poder limpiar la subcolección.
@@ -220,29 +233,36 @@ const ClassroomService = {
     const q = query(collection(db, 'classrooms'), where('profesorId', '==', teacherId));
     const snap = await getDocs(q);
 
-    const classrooms: Classroom[] = [];
-    for (const d of snap.docs) {
-      const data = d.data() as any;
-      const [studentsSnap, pendingSnap] = await Promise.all([
-        getDocs(collection(db, 'classrooms', d.id, 'estudiantes')),
-        getDocs(collection(db, 'classrooms', d.id, 'estudiantesPendientes')),
-      ]);
-      classrooms.push({
-        id: d.id,
-        name: data.name,
-        teacherId: data.profesorId,
-        code: data.code,
-        createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
-        studentCount: studentsSnap.size,
-        pendingCount: pendingSnap.docs.filter((p) => !p.data().claimed).length,
-        allowedActivities: data.allowedActivities ?? null,
-        visibleTrivias: data.visibleTrivias ?? null,
-        visibleCompletaPalabras: data.visibleCompletaPalabras ?? null,
-        restrictedTags: data.restrictedTags ?? null,
-        restrictedQuestionIds: data.restrictedQuestionIds ?? null,
-        color: data.color ?? fallbackColorFor(d.id),
-      });
-    }
+    // Antes este `for` esperaba cada clase antes de pasar a la siguiente
+    // (await adentro del loop) — con 15-20 clases eran 15-20 pares de
+    // lecturas en fila. Al pedirlas todas juntas con Promise.all, siguen
+    // siendo las mismas lecturas, pero corren en paralelo: el tiempo total
+    // pasa a ser el de la clase más lenta, no la suma de todas.
+    const classrooms = await Promise.all(
+      snap.docs.map(async (d) => {
+        const data = d.data() as any;
+        const [studentsSnap, pendingSnap] = await Promise.all([
+          getDocs(collection(db, 'classrooms', d.id, 'estudiantes')),
+          getDocs(collection(db, 'classrooms', d.id, 'estudiantesPendientes')),
+        ]);
+        return {
+          id: d.id,
+          name: data.name,
+          teacherId: data.profesorId,
+          code: data.code,
+          createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+          studentCount: studentsSnap.size,
+          pendingCount: pendingSnap.docs.filter((p) => !p.data().claimed).length,
+          allowedActivities: data.allowedActivities ?? null,
+          visibleTrivias: data.visibleTrivias ?? null,
+          visibleCompletaPalabras: data.visibleCompletaPalabras ?? null,
+          restrictedTags: data.restrictedTags ?? null,
+          restrictedQuestionIds: data.restrictedQuestionIds ?? null,
+          restrictedInfografias: data.restrictedInfografias ?? null,
+          color: data.color ?? fallbackColorFor(d.id),
+        };
+      })
+    );
     return classrooms;
   },
 

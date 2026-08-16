@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Fredoka } from 'next/font/google';
@@ -166,7 +167,7 @@ export default function UnirseSinCodigoPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#FFFBF8] to-[#FFE5E5] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full border border-[#241B37]/8 p-6">
         <div className="flex items-center justify-center mb-4">
-          <img src="/logocresi.svg" alt="CrESI" className="w-16 h-16" />
+          <Image src="/logocresi.svg" alt="CrESI" width={64} height={64} className="w-16 h-16" />
         </div>
         <h1 className={`${fredoka.className} text-2xl text-[#241B37] text-center mb-1`}>
           ¡Te damos la bienvenida!
@@ -203,8 +204,8 @@ export default function UnirseSinCodigoPage() {
                       : 'bg-gray-50 hover:bg-gray-100'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <div className="w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
-                    <img src={character.image} alt={character.name} loading="lazy" className="w-full h-full object-cover" />
+                  <div className="relative w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
+                    <Image src={character.image} alt={character.name} fill sizes="120px" className="object-cover" />
                   </div>
                   <p className="text-center text-xs font-medium text-[#241B37]/70 leading-tight">{character.name}</p>
                 </button>

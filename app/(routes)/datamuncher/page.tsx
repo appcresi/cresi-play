@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "CrESI",
     images: [
       {
-        url: "illustration-1.jpg",
+        url: "/illustration-1.jpg",
         width: 1200,
         height: 630,
         alt: "DataMuncher - Responde preguntas y gana puntos mientras comes datos.",
@@ -38,7 +38,10 @@ export const metadata: Metadata = {
     title: "CrESI | DataMuncher",
     description:
       "¡Divertite y aprendé con DataMuncher! Contestá preguntas, comé datos y acumulá puntos para ganar. ¿Estás listo para el desafío?",
-    images: ["illustration-1.jpg"],
+    images: ["/illustration-1.jpg"],
+  },
+  alternates: {
+    canonical: "https://jugar.cresi.com.ar/datamuncher",
   },
   robots: {
     index: true,

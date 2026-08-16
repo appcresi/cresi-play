@@ -17,14 +17,14 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "es_AR",
-		url: "https://cresi.com.ar/vocacion",
+		url: "https://jugar.cresi.com.ar/vocacion",
 		siteName: "CrESI",
 		title: "Vocación y Profesiones | CrESI",
 		description:
 			"Descubrí tus intereses vocacionales con nuestra prueba interactiva para adolescentes y jóvenes.",
 		images: [
 			{
-				url: "/og-image-vocacion.jpg",
+				url: "/illustration-2.jpg",
 				width: 1200,
 				height: 630,
 				alt: "Vocación y Profesiones CrESI",
@@ -36,11 +36,11 @@ export const metadata: Metadata = {
 		title: "Vocación y Profesiones | CrESI",
 		description:
 			"Exploá tus intereses vocacionales y descubrí tu carrera ideal.",
-		images: ["/twitter-image-vocacion.jpg"],
+		images: ["/illustration-2.jpg"],
 		creator: "@cresi",
 	},
 	alternates: {
-		canonical: "https://cresi.com.ar/vocacion",
+		canonical: "https://jugar.cresi.com.ar/vocacion",
 	},
 	robots: {
 		index: true,

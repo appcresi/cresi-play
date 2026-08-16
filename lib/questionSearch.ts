@@ -11,38 +11,57 @@ export interface BankQuestion {
   level: number;
 }
 
-let cachedQuestions: BankQuestion[] | null = null;
-let inFlightFetch: Promise<BankQuestion[]> | null = null;
+/** Documento completo de `questions` tal cual está en Firestore (incluye
+ *  `options`, que BankQuestion no necesita para el buscador pero sí hace
+ *  falta, por ejemplo, al armar una trivia a partir del banco). */
+export interface RawQuestionDoc {
+  id: string;
+  [key: string]: any;
+}
+
+let cachedRawQuestions: RawQuestionDoc[] | null = null;
+let inFlightRawFetch: Promise<RawQuestionDoc[]> | null = null;
 
 /**
  * Trae las ~1000 preguntas de la colección `questions`, una sola vez por
  * sesión (se guardan en memoria — recargar la página vuelve a pedirlas,
- * pero navegar entre pantallas dentro de la misma sesión no).
+ * pero navegar entre pantallas dentro de la misma sesión no). Es la ÚNICA
+ * lectura real a Firestore de esta colección: tanto `loadQuestionBank`
+ * (buscador de alumnos) como `loadFullQuestionBank` (panel docente, arma
+ * trivias) comparten este mismo caché en vez de cada uno pedir su propia
+ * copia completa del banco.
  */
-export async function loadQuestionBank(): Promise<BankQuestion[]> {
-  if (cachedQuestions) return cachedQuestions;
-  if (inFlightFetch) return inFlightFetch;
+async function loadRawQuestions(): Promise<RawQuestionDoc[]> {
+  if (cachedRawQuestions) return cachedRawQuestions;
+  if (inFlightRawFetch) return inFlightRawFetch;
 
-  inFlightFetch = (async () => {
+  inFlightRawFetch = (async () => {
     const snap = await getDocs(collection(db, 'questions'));
-    const questions: BankQuestion[] = snap.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: data.id ?? doc.id,
-        question: data.question ?? '',
-        answer: data.answer ?? '',
-        resume: data.resume ?? '',
-        category: data.category ?? '',
-        tag: data.tag ?? '',
-        level: typeof data.level === 'number' ? data.level : Number(data.level) || 1,
-      };
-    });
-    cachedQuestions = questions;
-    inFlightFetch = null;
-    return questions;
+    const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    cachedRawQuestions = docs;
+    inFlightRawFetch = null;
+    return docs;
   })();
 
-  return inFlightFetch;
+  return inFlightRawFetch;
+}
+
+/** Documentos completos del banco, tal cual están en Firestore (con `options` incluido). */
+export async function loadFullQuestionBank(): Promise<RawQuestionDoc[]> {
+  return loadRawQuestions();
+}
+
+export async function loadQuestionBank(): Promise<BankQuestion[]> {
+  const raw = await loadRawQuestions();
+  return raw.map((data) => ({
+    id: data.id,
+    question: data.question ?? '',
+    answer: data.answer ?? '',
+    resume: data.resume ?? '',
+    category: data.category ?? '',
+    tag: data.tag ?? '',
+    level: typeof data.level === 'number' ? data.level : Number(data.level) || 1,
+  }));
 }
 
 /** Saca tildes para poder comparar "prevencion" con "Prevención". */

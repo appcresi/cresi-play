@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { IconLoader, IconCheck, IconTag, IconChevronDown, IconSearch } from '@tabler/icons-react';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { loadQuestionBank, getDistinctTags, type BankQuestion } from '@/lib/questionSearch';
 import { SaveIndicator } from './SaveIndicator';
+import { useAutosave } from './useAutosave';
 
 // El color del buscador de preguntas — es indigo, no pertenece a ninguna
 // actividad puntual del catálogo (mismo que en la pantalla del alumno).
@@ -37,8 +38,7 @@ export const QuestionsPicker = ({
   );
   const [expandedTag, setExpandedTag] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState('');
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { saveState, scheduleSave } = useAutosave();
 
   useEffect(() => {
     loadQuestionBank()
@@ -60,33 +60,22 @@ export const QuestionsPicker = ({
     ? tags.filter((t) => t.toLowerCase().includes(tagFilter.trim().toLowerCase()))
     : tags;
 
-  const scheduleSave = (nextTags: Set<string>, nextQuestionIds: Set<string>) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        setSaveState('saving');
-        const tagsValue = nextTags.size === 0 ? null : Array.from(nextTags);
-        const idsValue = nextQuestionIds.size === 0 ? null : Array.from(nextQuestionIds);
-        await Promise.all([
-          ClassroomService.updateRestrictedTags(classroom.id, tagsValue),
-          ClassroomService.updateRestrictedQuestionIds(classroom.id, idsValue),
-        ]);
-        onChanged(tagsValue, idsValue);
-        setSaveState('saved');
-        setTimeout(() => setSaveState((s) => (s === 'saved' ? 'idle' : s)), 1500);
-      } catch (err) {
-        console.error(err);
-        setSaveState('error');
-      }
-    }, 600);
-  };
+  const save = (nextTags: Set<string>, nextQuestionIds: Set<string>) => scheduleSave(async () => {
+    const tagsValue = nextTags.size === 0 ? null : Array.from(nextTags);
+    const idsValue = nextQuestionIds.size === 0 ? null : Array.from(nextQuestionIds);
+    await Promise.all([
+      ClassroomService.updateRestrictedTags(classroom.id, tagsValue),
+      ClassroomService.updateRestrictedQuestionIds(classroom.id, idsValue),
+    ]);
+    onChanged(tagsValue, idsValue);
+  });
 
   const toggleTag = (tag: string) => {
     setBlockedTags((prev) => {
       const next = new Set(prev);
       if (next.has(tag)) next.delete(tag);
       else next.add(tag);
-      scheduleSave(next, blockedQuestionIds);
+      save(next, blockedQuestionIds);
       return next;
     });
   };
@@ -96,7 +85,7 @@ export const QuestionsPicker = ({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      scheduleSave(blockedTags, next);
+      save(blockedTags, next);
       return next;
     });
   };
@@ -104,7 +93,7 @@ export const QuestionsPicker = ({
   const allowAll = () => {
     setBlockedTags(new Set());
     setBlockedQuestionIds(new Set());
-    scheduleSave(new Set(), new Set());
+    save(new Set(), new Set());
   };
 
   const visibleTagCount = tags.length - blockedTags.size;

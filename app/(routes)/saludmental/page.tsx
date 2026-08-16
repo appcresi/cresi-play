@@ -18,14 +18,14 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "es_AR",
-		url: "https://cresi.com.ar/test",
+		url: "https://jugar.cresi.com.ar/saludmental",
 		siteName: "CrESI",
 		title: "Test de Salud Mental | CrESI",
 		description:
 			"Evalúa tu salud mental con nuestro test interactivo para adolescentes y jóvenes.",
 		images: [
 			{
-				url: "/og-image-test.jpg",
+				url: "/illustration-1.jpg",
 				width: 1200,
 				height: 630,
 				alt: "Test de Salud Mental CrESI",
@@ -37,11 +37,11 @@ export const metadata: Metadata = {
 		title: "Test de Salud Mental | CrESI",
 		description:
 			"Evalúa tu estado emocional con nuestro test de salud mental.",
-		images: ["/twitter-image-test.jpg"],
+		images: ["/illustration-1.jpg"],
 		creator: "@cresi",
 	},
 	alternates: {
-		canonical: "https://cresi.com.ar/test",
+		canonical: "https://jugar.cresi.com.ar/saludmental",
 	},
 	robots: {
 		index: true,

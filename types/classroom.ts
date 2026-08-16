@@ -25,6 +25,8 @@ export interface Classroom {
   restrictedTags: string[] | null;
   /** IDs de preguntas puntuales bloqueadas, aunque su etiqueta esté permitida. `null` = ninguna. */
   restrictedQuestionIds: string[] | null;
+  /** IDs de infografías bloqueadas para esta clase. `null` = ninguna bloqueada (todas visibles). */
+  restrictedInfografias: string[] | null;
   /** Color de banner asignado al crear la clase (estilo Google Classroom). */
   color: string;
 }

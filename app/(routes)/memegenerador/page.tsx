@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "ESI | Meme Creator | CrESI",
   description:
     'Creá todos los memes divertidos que quieras para concientizar.',
+  alternates: {
+    canonical: "https://jugar.cresi.com.ar/memegenerador",
+  },
 };
 
 export default function MemeGeneratorPage(): JSX.Element {

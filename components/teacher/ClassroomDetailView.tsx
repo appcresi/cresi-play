@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { IconPencil, IconCheck, IconX, IconLoader, IconDotsVertical, IconCopy, IconUserPlus, IconTrash } from '@tabler/icons-react';
 import type { Classroom, ClassroomStudent, PendingStudent } from '@/types/classroom';
+import type { Tarea } from '@/types/tarea';
 import type { DetailTab } from './types';
 import { VisibleActivitiesSummary } from './VisibleActivitiesSummary';
 import { VisibleTriviasSummary } from './VisibleTriviasSummary';
 import { WorkInClassTab } from './WorkInClassTab';
 import { StudentsGrid } from './StudentsGrid';
+import { TareaGradingScreen } from './TareaGradingScreen';
+import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
+import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
 
 export const ClassroomDetailView = ({
   classroom,
@@ -31,6 +35,7 @@ export const ClassroomDetailView = ({
   onTriviasChanged,
   onQuestionsChanged,
   onCompletaPalabrasChanged,
+  onInfografiasChanged,
   onSelectStudent,
   onRemoveStudent,
   onRemovePending,
@@ -62,6 +67,7 @@ export const ClassroomDetailView = ({
   onTriviasChanged: (visibleTrivias: string[] | null) => void;
   onQuestionsChanged: (restrictedTags: string[] | null, restrictedQuestionIds: string[] | null) => void;
   onCompletaPalabrasChanged: (visibleCompletaPalabras: string[] | null) => void;
+  onInfografiasChanged: (restrictedInfografias: string[] | null) => void;
   onSelectStudent: (s: ClassroomStudent) => void;
   onRemoveStudent: (uid: string) => void;
   onManageStudentCredentials: (s: ClassroomStudent) => void;
@@ -71,6 +77,7 @@ export const ClassroomDetailView = ({
   totalActivities: number;
 }) => {
   const [showClassMenu, setShowClassMenu] = useState(false);
+  const [gradingTarea, setGradingTarea] = useState<Tarea | null>(null);
 
   const TABS: { key: DetailTab; label: string }[] = [
     { key: 'tablon', label: 'Tablón' },
@@ -78,6 +85,22 @@ export const ClassroomDetailView = ({
     { key: 'personas', label: 'Personas' },
     { key: 'calificaciones', label: 'Calificaciones' },
   ];
+
+  // Cuando se abre una tarea (desde el Tablón o desde Trabajo en clase),
+  // reemplaza TODO el contenido de la clase — no es un modal, es una
+  // pantalla propia con su botón de volver, igual que "Trabajo de los
+  // alumnos" en Google Classroom.
+  if (gradingTarea) {
+    return (
+      <TareaGradingScreen
+        classroomId={classroom.id}
+        tarea={gradingTarea}
+        students={students}
+        onBack={() => setGradingTarea(null)}
+        onTareaUpdated={(updated) => setGradingTarea(updated)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -177,30 +200,45 @@ export const ClassroomDetailView = ({
         {/* ── Tablón ── */}
         {tab === 'tablon' && (
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 items-start">
-            {/* Columna chica: código de la clase */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-1">Código de la clase</h3>
-              <p className="text-xs text-gray-500 mb-3">
-                Compartí el link con tus alumnos — entran con un clic.
-              </p>
-              <button
-                onClick={() => onCopyCode(classroom.code)}
-                title="Copiar link para compartir con tus alumnos"
-                className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100
-                         rounded-lg text-sm font-mono font-bold tracking-widest text-gray-800 transition-colors"
-              >
-                {classroom.code}
-                {copiedCode === classroom.code
-                  ? <IconCheck className="w-4 h-4 text-green-600" />
-                  : <IconCopy className="w-4 h-4 text-gray-400" />}
-              </button>
-              {copiedCode === classroom.code && (
-                <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
-              )}
+            {/* Columna chica: código de la clase + próximas a entregar */}
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-1">Código de la clase</h3>
+                <p className="text-xs text-gray-500 mb-3">
+                  Compartí el link con tus alumnos — entran con un clic.
+                </p>
+                <button
+                  onClick={() => onCopyCode(classroom.code)}
+                  title="Copiar link para compartir con tus alumnos"
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100
+                           rounded-lg text-sm font-mono font-bold tracking-widest text-gray-800 transition-colors"
+                >
+                  {classroom.code}
+                  {copiedCode === classroom.code
+                    ? <IconCheck className="w-4 h-4 text-green-600" />
+                    : <IconCopy className="w-4 h-4 text-gray-400" />}
+                </button>
+                {copiedCode === classroom.code && (
+                  <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
+                )}
+              </div>
+
+              <ProximasEntregasBox classroomId={classroom.id} />
             </div>
 
-            {/* Columna grande: actividades y trivias */}
+            {/* Columna grande: tareas, actividades y trivias */}
             <div className="space-y-4">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Tareas</h3>
+                <TareasFeedSummary
+                  classroomId={classroom.id}
+                  emptyLabel="Todavía no asignaste ninguna tarea."
+                  showStats
+                  totalStudents={students.length}
+                  onOpenTarea={setGradingTarea}
+                />
+              </div>
+
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
                 <h3 className="text-sm font-medium text-gray-900 mb-3">Actividades de esta clase</h3>
                 <VisibleActivitiesSummary classroom={classroom} />
@@ -214,16 +252,19 @@ export const ClassroomDetailView = ({
           </div>
         )}
 
-        {/* ── Trabajo en clase (solapas: Actividades / Trivias / Preguntas) ── */}
+        {/* ── Trabajo en clase (solapas: Actividades / Trivias / Preguntas / Completa Palabras / Infografías / Tareas) ── */}
         {tab === 'trabajo' && (
           <WorkInClassTab
             classroom={classroom}
             teacherId={teacherId}
+            students={students}
             totalActivities={totalActivities}
             onActivitiesChanged={onActivitiesChanged}
             onTriviasChanged={onTriviasChanged}
             onQuestionsChanged={onQuestionsChanged}
             onCompletaPalabrasChanged={onCompletaPalabrasChanged}
+            onInfografiasChanged={onInfografiasChanged}
+            onOpenTarea={setGradingTarea}
           />
         )}
 

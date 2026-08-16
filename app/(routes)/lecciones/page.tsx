@@ -16,8 +16,33 @@ export const metadata: Metadata = {
 		"material educativo",
 		"autocuidado",
 	],
+	openGraph: {
+		type: "website",
+		locale: "es_AR",
+		url: "https://jugar.cresi.com.ar/lecciones",
+		siteName: "CrESI",
+		title: "Lecciones | CrESI",
+		description:
+			"Aprendé sobre Educación Sexual Integral con lecciones interactivas sobre sexualidad, relaciones saludables y autocuidado.",
+		images: [
+			{
+				url: "/illustration-1.jpg",
+				width: 1200,
+				height: 630,
+				alt: "Lecciones CrESI",
+			},
+		],
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Lecciones | CrESI",
+		description:
+			"Aprendé sobre Educación Sexual Integral con lecciones interactivas.",
+		images: ["/illustration-1.jpg"],
+		creator: "@cresi",
+	},
 	alternates: {
-		canonical: "https://cresi.com.ar/lecciones",
+		canonical: "https://jugar.cresi.com.ar/lecciones",
 	},
 	robots: {
 		index: true,

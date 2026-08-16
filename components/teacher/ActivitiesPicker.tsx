@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { IconCheck } from '@tabler/icons-react';
+import React, { useState } from 'react';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
 import { ActivityIcon } from './icons';
 import { SaveIndicator } from './SaveIndicator';
+import { ToggleCard } from './ToggleCard';
+import { useAutosave } from './useAutosave';
 
 const ACTIVITIES_CATALOG = ACTIVITIES;
 
@@ -22,28 +23,13 @@ export const ActivitiesPicker = ({
   const [selected, setSelected] = useState<Set<string>>(
     new Set(classroom.allowedActivities ?? ACTIVITIES_CATALOG.map((a) => a.id))
   );
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { saveState, scheduleSave } = useAutosave();
 
-  // Autoguardado: esperamos un toque a que la persona termine de tocar
-  // varias tarjetas seguidas antes de escribir en Firestore, en vez de
-  // mandar un request por cada click.
-  const scheduleSave = (next: Set<string>) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        setSaveState('saving');
-        const activityIds = Array.from(next);
-        await ClassroomService.updateAllowedActivities(classroom.id, activityIds);
-        onChanged(activityIds);
-        setSaveState('saved');
-        setTimeout(() => setSaveState((s) => (s === 'saved' ? 'idle' : s)), 1500);
-      } catch (err) {
-        console.error(err);
-        setSaveState('error');
-      }
-    }, 600);
-  };
+  const save = (next: Set<string>) => scheduleSave(async () => {
+    const activityIds = Array.from(next);
+    await ClassroomService.updateAllowedActivities(classroom.id, activityIds);
+    onChanged(activityIds);
+  });
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -52,7 +38,7 @@ export const ActivitiesPicker = ({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      scheduleSave(next);
+      save(next);
       return next;
     });
   };
@@ -60,14 +46,14 @@ export const ActivitiesPicker = ({
   const selectAll = () => {
     const next = new Set(ACTIVITIES_CATALOG.map((a) => a.id));
     setSelected(next);
-    scheduleSave(next);
+    save(next);
   };
 
   const selectNone = () => {
     // Dejamos al menos la primera, por la misma razón de arriba.
     const next = new Set([ACTIVITIES_CATALOG[0]?.id].filter(Boolean) as string[]);
     setSelected(next);
-    scheduleSave(next);
+    save(next);
   };
 
   return (
@@ -91,39 +77,17 @@ export const ActivitiesPicker = ({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {ACTIVITIES_CATALOG.map((activity) => {
-          const isOn = selected.has(activity.id);
-          return (
-            <button
-              key={activity.id}
-              type="button"
-              onClick={() => toggle(activity.id)}
-              className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 ${
-                isOn
-                  ? 'border-transparent shadow-sm'
-                  : 'border-gray-100 opacity-50 grayscale hover:opacity-75 hover:grayscale-0'
-              }`}
-              style={isOn ? { borderColor: activity.color, backgroundColor: `${activity.color}0D` } : undefined}
-            >
-              {isOn && (
-                <div
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: activity.color }}
-                >
-                  <IconCheck className="w-3 h-3 text-white" />
-                </div>
-              )}
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-white mb-2"
-                style={{ backgroundColor: activity.color }}
-              >
-                <ActivityIcon iconName={activity.iconName} className="w-5 h-5" />
-              </div>
-              <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 break-words">{activity.title}</p>
-              <p className="text-[10px] text-gray-500 leading-tight">{activity.category}</p>
-            </button>
-          );
-        })}
+        {ACTIVITIES_CATALOG.map((activity) => (
+          <ToggleCard
+            key={activity.id}
+            isOn={selected.has(activity.id)}
+            color={activity.color}
+            icon={<ActivityIcon iconName={activity.iconName} className="w-5 h-5" />}
+            title={activity.title}
+            subtitle={activity.category}
+            onClick={() => toggle(activity.id)}
+          />
+        ))}
       </div>
     </div>
   );

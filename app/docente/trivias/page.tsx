@@ -14,6 +14,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
+import { loadFullQuestionBank } from '@/lib/questionSearch';
 import {
   IconTrash,
   IconPencil,
@@ -173,10 +174,11 @@ export default function CreateCustomTrivia() {
     setQuestionsLoading(true);
     setQuestionsError(false);
     try {
-      const snapshot = await getDocs(collection(db, 'questions'));
-      setQuestions(
-        snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Question[]
-      );
+      // Comparte el caché en memoria de lib/questionSearch — evita volver a
+      // traer las ~1000 preguntas si el buscador del alumno (u otra
+      // pantalla del docente) ya las pidió antes en esta misma sesión.
+      const docs = await loadFullQuestionBank();
+      setQuestions(docs as Question[]);
     } catch {
       setQuestionsError(true);
     } finally {

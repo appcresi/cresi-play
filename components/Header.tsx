@@ -349,10 +349,12 @@ export default function Header(): JSX.Element | null {
                       {profile && (
                         <div className="mb-4 pb-4 border-b border-gray-100">
                           <div className="flex items-center gap-3">
-                            <img
+                            <Image
                               src={avatarSrc}
                               alt={profile.profile.username}
                               onError={handleAvatarError}
+                              width={40}
+                              height={40}
                               className="w-10 h-10 rounded-full object-cover"
                             />
                             <div>
@@ -429,10 +431,12 @@ export default function Header(): JSX.Element | null {
               {({ open, close }) => (
                 <>
                   <Popover.Button className="p-0 rounded-full hover:ring-2 hover:ring-blue-500 transition-all">
-                    <img
+                    <Image
                       src={avatarSrc}
                       alt={profile.profile.username}
                       onError={handleAvatarError}
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full cursor-pointer object-cover"
                     />
                   </Popover.Button>
@@ -449,10 +453,12 @@ export default function Header(): JSX.Element | null {
                     <Popover.Panel className="absolute z-[100] right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                       <div className="p-4">
                         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
-                          <img
+                          <Image
                             src={avatarSrc}
                             alt={profile.profile.username}
                             onError={handleAvatarError}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                           <div>

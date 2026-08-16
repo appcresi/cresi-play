@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { IconLoader, IconCheck, IconClipboardList } from '@tabler/icons-react';
+import React, { useEffect, useState } from 'react';
+import { IconLoader, IconClipboardList } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { colorForTrivia } from '@/lib/triviaColors';
 import { SaveIndicator } from './SaveIndicator';
+import { ToggleCard } from './ToggleCard';
+import { useAutosave } from './useAutosave';
 import type { TeacherTriviaOption } from './types';
 
 // ==================== "Trivias visibles" (inline, autoguardado) ====================
@@ -27,8 +29,7 @@ export const TriviasPicker = ({
   const [trivias, setTrivias] = useState<TeacherTriviaOption[]>([]);
   const [loadingTrivias, setLoadingTrivias] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { saveState, scheduleSave } = useAutosave();
 
   useEffect(() => {
     if (!teacherId) return;
@@ -67,32 +68,21 @@ export const TriviasPicker = ({
     })();
   }, [teacherId, classroom.visibleTrivias]);
 
-  const scheduleSave = (next: Set<string>, total: number) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        setSaveState('saving');
-        // Si están todas tildadas, guardamos null (sin restricción) en vez
-        // de la lista completa — así una trivia nueva que cree después
-        // también aparece acá sin tener que volver a tocar nada.
-        const value = next.size === total ? null : Array.from(next);
-        await ClassroomService.updateVisibleTrivias(classroom.id, value);
-        onChanged(value);
-        setSaveState('saved');
-        setTimeout(() => setSaveState((s) => (s === 'saved' ? 'idle' : s)), 1500);
-      } catch (err) {
-        console.error(err);
-        setSaveState('error');
-      }
-    }, 600);
-  };
+  // Si están todas tildadas, guardamos null (sin restricción) en vez de la
+  // lista completa — así una trivia nueva que cree después también aparece
+  // acá sin tener que volver a tocar nada.
+  const save = (next: Set<string>) => scheduleSave(async () => {
+    const value = next.size === trivias.length ? null : Array.from(next);
+    await ClassroomService.updateVisibleTrivias(classroom.id, value);
+    onChanged(value);
+  });
 
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      scheduleSave(next, trivias.length);
+      save(next);
       return next;
     });
   };
@@ -100,12 +90,12 @@ export const TriviasPicker = ({
   const selectAll = () => {
     const next = new Set(trivias.map((t) => t.id));
     setSelected(next);
-    scheduleSave(next, trivias.length);
+    save(next);
   };
 
   const selectNone = () => {
     setSelected(new Set());
-    scheduleSave(new Set(), trivias.length);
+    save(new Set());
   };
 
   return (
@@ -144,44 +134,17 @@ export const TriviasPicker = ({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {trivias.map((trivia) => {
-              const isOn = selected.has(trivia.id);
-              const color = colorForTrivia(trivia.id);
-              return (
-                <button
-                  key={trivia.id}
-                  type="button"
-                  onClick={() => toggle(trivia.id)}
-                  className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 ${
-                    isOn
-                      ? 'border-transparent shadow-sm'
-                      : 'border-gray-100 opacity-50 grayscale hover:opacity-75 hover:grayscale-0'
-                  }`}
-                  style={isOn ? { borderColor: color, backgroundColor: `${color}0D` } : undefined}
-                >
-                  {isOn && (
-                    <div
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: color }}
-                    >
-                      <IconCheck className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-white mb-2"
-                    style={{ backgroundColor: color }}
-                  >
-                    <IconClipboardList className="w-5 h-5" />
-                  </div>
-                  <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">
-                    {trivia.name}
-                  </p>
-                  <p className="text-[10px] text-gray-500 leading-tight">
-                    {trivia.questionCount} preg.{!trivia.isOwn && ' · CrESI'}
-                  </p>
-                </button>
-              );
-            })}
+            {trivias.map((trivia) => (
+              <ToggleCard
+                key={trivia.id}
+                isOn={selected.has(trivia.id)}
+                color={colorForTrivia(trivia.id)}
+                icon={<IconClipboardList className="w-5 h-5" />}
+                title={trivia.name}
+                subtitle={`${trivia.questionCount} preg.${!trivia.isOwn ? ' · CrESI' : ''}`}
+                onClick={() => toggle(trivia.id)}
+              />
+            ))}
           </div>
         </>
       )}

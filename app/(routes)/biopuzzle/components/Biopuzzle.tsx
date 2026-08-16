@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   IconArrowsMove,
   IconArrowLeft,
@@ -199,10 +200,12 @@ export default function AnatomiaApp() {
                   ref={containerRef}
                 >
                   {/* Imagen del sistema */}
-                  <img
+                  <Image
                     src={currentSystem().imageUrl}
                     alt={currentSystem().name}
-                    className="absolute inset-0 w-full h-full object-contain opacity-80"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 900px"
+                    className="object-contain opacity-80"
                   />
 
                   {/* Zonas de destino */}

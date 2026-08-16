@@ -30,6 +30,9 @@ import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
+import { TareasStudentTab } from '@/components/student/TareasStudentTab';
+import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
+import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
 
 // Mismo patrón que Features.tsx: el catálogo guarda el nombre del ícono
 // como string, acá lo resolvemos a componente.
@@ -192,31 +195,42 @@ const ClassroomDesk = () => {
           {tab === 'novedades' && (
             <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 items-start">
               {/* Columna chica: código de la clase — mismo lugar que en el panel del docente */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                <h3 className="text-sm font-medium text-gray-900 mb-1">Código de tu clase</h3>
-                <p className="text-xs text-gray-500 mb-3">
-                  Para volver a entrar desde otro dispositivo.
-                </p>
-                {classroom?.code && (
-                  <button
-                    onClick={handleCopyCode}
-                    title="Copiar link de tu clase"
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100
-                             rounded-lg text-sm font-mono font-bold tracking-widest text-gray-800 transition-colors"
-                  >
-                    {classroom.code}
-                    {copiedCode
-                      ? <IconCheck className="w-4 h-4 text-green-600" />
-                      : <IconCopy className="w-4 h-4 text-gray-400" />}
-                  </button>
-                )}
-                {copiedCode && (
-                  <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
-                )}
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-1">Código de tu clase</h3>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Para volver a entrar desde otro dispositivo.
+                  </p>
+                  {classroom?.code && (
+                    <button
+                      onClick={handleCopyCode}
+                      title="Copiar link de tu clase"
+                      className="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100
+                               rounded-lg text-sm font-mono font-bold tracking-widest text-gray-800 transition-colors"
+                    >
+                      {classroom.code}
+                      {copiedCode
+                        ? <IconCheck className="w-4 h-4 text-green-600" />
+                        : <IconCopy className="w-4 h-4 text-gray-400" />}
+                    </button>
+                  )}
+                  {copiedCode && (
+                    <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
+                  )}
+                </div>
+
+                {classroom && <ProximasEntregasBox classroomId={classroom.id} />}
               </div>
 
-              {/* Columna grande: resumen + humor */}
+              {/* Columna grande: tareas, resumen y humor */}
               <div className="space-y-4">
+                {classroom && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">Tareas</h3>
+                    <TareasFeedSummary classroomId={classroom.id} emptyLabel="Tu docente todavía no asignó ninguna tarea." />
+                  </div>
+                )}
+
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div>
@@ -266,7 +280,9 @@ const ClassroomDesk = () => {
 
           {/* ── Trabajo en clase ── */}
           {tab === 'trabajo' && (
-            <div>
+            <div className="space-y-5">
+              {classroom && <TareasStudentTab classroomId={classroom.id} studentUid={user?.uid ?? ''} />}
+
               {/* Buscador de actividades (solo si hay varias) */}
               {activities.length > 5 && (
                 <div className="relative mb-5 max-w-sm">

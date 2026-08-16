@@ -19,7 +19,7 @@ export type BodyPart = {
     {
       id: 'general',
       name: 'Sistema Reproductor Masculino',
-      imageUrl: 'imgleccion.jpg',
+      imageUrl: '/imgleccion.jpg',
       parts: [
         { id: '1', name: 'Pene', correctPosition: { x: 150, y: 600 }, placed: false },
         { id: '2', name: 'Testículo', correctPosition: { x: 270, y: 700 }, placed: false },
@@ -34,7 +34,7 @@ export type BodyPart = {
     {
       id: 'digestivo',
       name: 'Sistema Reproductor Femenino',
-      imageUrl: 'imgleccion2.jpg',
+      imageUrl: '/imgleccion2.jpg',
       parts: [
         { id: '1', name: 'Ovario', correctPosition: { x: 630, y: 250 }, placed: false },
         { id: '4', name: 'Trompa Uterina', correctPosition: { x: 230, y: 200 }, placed: false },

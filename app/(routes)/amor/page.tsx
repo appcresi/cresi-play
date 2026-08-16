@@ -19,14 +19,14 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "es_AR",
-		url: "https://cresi.com.ar/amor-sin-violencia",
+		url: "https://jugar.cresi.com.ar/amor",
 		siteName: "CrESI",
 		title: "Amor sin violencia | CrESI",
 		description:
 			"Detecta señales de violencias en tus relaciones de pareja o amistades.",
 		images: [
 			{
-				url: "/og-image-amor.jpg",
+				url: "/illustration-1.jpg",
 				width: 1200,
 				height: 630,
 				alt: "Amor sin violencia CrESI",
@@ -38,11 +38,11 @@ export const metadata: Metadata = {
 		title: "Amor sin violencia | CrESI",
 		description:
 			"Aprendé a detectar señales de violencias en tus relaciones.",
-		images: ["/twitter-image-amor.jpg"],
+		images: ["/illustration-1.jpg"],
 		creator: "@cresi",
 	},
 	alternates: {
-		canonical: "https://cresi.com.ar/amor-sin-violencia",
+		canonical: "https://jugar.cresi.com.ar/amor",
 	},
 	robots: {
 		index: true,

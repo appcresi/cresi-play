@@ -18,14 +18,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_AR",
-    url: "https://cresi.com.ar/infografias",
+    url: "https://jugar.cresi.com.ar/infografias",
     siteName: "CrESI",
     title: "Infografías | CrESI - Educación Sexual Integral",
     description:
       "Infografías educativas gratuitas sobre Educación Sexual Integral. Materiales visuales para docentes y estudiantes.",
     images: [
       {
-        url: "/og-image-infografias.jpg",
+        url: "/illustration-2.jpg",
         width: 1200,
         height: 630,
         alt: "Infografías CrESI",
@@ -37,11 +37,11 @@ export const metadata: Metadata = {
     title: "Infografías | CrESI - Educación Sexual Integral",
     description:
       "Infografías educativas gratuitas sobre ESI, sexualidad y relaciones saludables.",
-    images: ["/twitter-image-infografias.jpg"],
+    images: ["/illustration-2.jpg"],
     creator: "@cresi",
   },
   alternates: {
-    canonical: "https://cresi.com.ar/infografias",
+    canonical: "https://jugar.cresi.com.ar/infografias",
   },
   robots: {
     index: true,

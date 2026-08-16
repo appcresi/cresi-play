@@ -15,6 +15,50 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
 
+// Freno básico contra fuerza bruta: cuenta intentos fallidos por
+// IP + código de clase, en memoria del proceso. Si se supera el máximo
+// dentro de la ventana, se corta antes de tocar Firestore.
+//
+// Es una barrera simple, no a prueba de todo: vive en memoria de ESTE
+// proceso, así que un cold start la reinicia y, si el hosting corre varias
+// instancias en paralelo, cada una lleva su propio contador (un atacante
+// distribuido podría esquivarla). Para algo robusto ante eso haría falta
+// un contador persistente (ej. una colección en Firestore) — se deja así
+// a propósito por ahora, más simple y suficiente para el caso de uso actual.
+const MAX_FAILED_ATTEMPTS = 5;
+const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+
+const failedAttempts = new Map<string, { count: number; windowStart: number }>();
+
+function getClientIp(req: NextRequest): string {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) return forwardedFor.split(',')[0].trim();
+  return req.headers.get('x-real-ip') ?? 'unknown';
+}
+
+function isRateLimited(key: string): boolean {
+  const record = failedAttempts.get(key);
+  if (!record) return false;
+  if (Date.now() - record.windowStart > WINDOW_MS) {
+    failedAttempts.delete(key);
+    return false;
+  }
+  return record.count >= MAX_FAILED_ATTEMPTS;
+}
+
+function registerFailedAttempt(key: string): void {
+  const record = failedAttempts.get(key);
+  if (!record || Date.now() - record.windowStart > WINDOW_MS) {
+    failedAttempts.set(key, { count: 1, windowStart: Date.now() });
+    return;
+  }
+  record.count += 1;
+}
+
+function clearFailedAttempts(key: string): void {
+  failedAttempts.delete(key);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { code, username, password } = await req.json();
@@ -23,12 +67,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'MISSING_FIELDS' }, { status: 400 });
     }
 
-    const app = getAdminApp();
-    const db = getFirestore(app);
-
     const normalizedCode = String(code).trim().toUpperCase();
     const normalizedUsername = String(username).trim().toLowerCase();
     const normalizedPassword = String(password).trim();
+
+    const rateLimitKey = `${getClientIp(req)}:${normalizedCode}`;
+    if (isRateLimited(rateLimitKey)) {
+      return NextResponse.json({ error: 'TOO_MANY_ATTEMPTS' }, { status: 429 });
+    }
+
+    const app = getAdminApp();
+    const db = getFirestore(app);
 
     // 1. Ubicar la clase por su código.
     const classroomsSnap = await db
@@ -38,6 +87,7 @@ export async function POST(req: NextRequest) {
       .get();
 
     if (classroomsSnap.empty) {
+      registerFailedAttempt(rateLimitKey);
       return NextResponse.json({ error: 'CODE_NOT_FOUND' }, { status: 404 });
     }
 
@@ -63,8 +113,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!match) {
+      registerFailedAttempt(rateLimitKey);
       return NextResponse.json({ error: 'INVALID_CREDENTIALS' }, { status: 401 });
     }
+
+    clearFailedAttempts(rateLimitKey);
 
     // 3. Uid estable = id de este registro. Firebase crea el usuario de
     //    Auth automáticamente la primera vez que se usa un token con este uid.

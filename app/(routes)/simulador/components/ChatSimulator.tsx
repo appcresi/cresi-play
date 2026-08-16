@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { IconCircleCheck, IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
@@ -235,9 +236,11 @@ const ChatSimulator = () => {
                 <div key={index} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                   <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2 max-w-md`}>
                     {isUser && userData.profile.character.image ? (
-                      <img
+                      <Image
                         src={userData.profile.character.image}
                         alt="User"
+                        width={32}
+                        height={32}
                         className="w-8 h-8 rounded-full ml-2 object-cover"
                       />
                     ) : (

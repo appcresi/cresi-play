@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { IconLoader, IconCheck, IconBooks } from '@tabler/icons-react';
+import React, { useEffect, useState } from 'react';
+import { IconLoader, IconBooks } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { getActivityById } from '@/lib/activities';
 import { SaveIndicator } from './SaveIndicator';
+import { ToggleCard } from './ToggleCard';
+import { useAutosave } from './useAutosave';
 import type { TeacherCompletaPalabrasOption } from './types';
 
 // Mismo color que ya tiene "Completa Palabras" en el catálogo de actividades.
@@ -30,8 +32,7 @@ export const CompletaPalabrasPicker = ({
   const [lessons, setLessons] = useState<TeacherCompletaPalabrasOption[]>([]);
   const [loadingLessons, setLoadingLessons] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { saveState, scheduleSave } = useAutosave();
 
   useEffect(() => {
     if (!teacherId) return;
@@ -70,32 +71,21 @@ export const CompletaPalabrasPicker = ({
     })();
   }, [teacherId, classroom.visibleCompletaPalabras]);
 
-  const scheduleSave = (next: Set<string>, total: number) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        setSaveState('saving');
-        // Si están todas tildadas, guardamos null (sin restricción) en vez
-        // de la lista completa — así una lección nueva que se cree después
-        // también aparece acá sin tener que volver a tocar nada.
-        const value = next.size === total ? null : Array.from(next);
-        await ClassroomService.updateVisibleCompletaPalabras(classroom.id, value);
-        onChanged(value);
-        setSaveState('saved');
-        setTimeout(() => setSaveState((s) => (s === 'saved' ? 'idle' : s)), 1500);
-      } catch (err) {
-        console.error(err);
-        setSaveState('error');
-      }
-    }, 600);
-  };
+  // Si están todas tildadas, guardamos null (sin restricción) en vez de la
+  // lista completa — así una lección nueva que se cree después también
+  // aparece acá sin tener que volver a tocar nada.
+  const save = (next: Set<string>) => scheduleSave(async () => {
+    const value = next.size === lessons.length ? null : Array.from(next);
+    await ClassroomService.updateVisibleCompletaPalabras(classroom.id, value);
+    onChanged(value);
+  });
 
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      scheduleSave(next, lessons.length);
+      save(next);
       return next;
     });
   };
@@ -103,12 +93,12 @@ export const CompletaPalabrasPicker = ({
   const selectAll = () => {
     const next = new Set(lessons.map((l) => l.id));
     setSelected(next);
-    scheduleSave(next, lessons.length);
+    save(next);
   };
 
   const selectNone = () => {
     setSelected(new Set());
-    scheduleSave(new Set(), lessons.length);
+    save(new Set());
   };
 
   return (
@@ -141,43 +131,17 @@ export const CompletaPalabrasPicker = ({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {lessons.map((lesson) => {
-              const isOn = selected.has(lesson.id);
-              return (
-                <button
-                  key={lesson.id}
-                  type="button"
-                  onClick={() => toggle(lesson.id)}
-                  className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 ${
-                    isOn
-                      ? 'border-transparent shadow-sm'
-                      : 'border-gray-100 opacity-50 grayscale hover:opacity-75 hover:grayscale-0'
-                  }`}
-                  style={isOn ? { borderColor: ACCENT, backgroundColor: `${ACCENT}0D` } : undefined}
-                >
-                  {isOn && (
-                    <div
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: ACCENT }}
-                    >
-                      <IconCheck className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-white mb-2"
-                    style={{ backgroundColor: ACCENT }}
-                  >
-                    <IconBooks className="w-5 h-5" />
-                  </div>
-                  <p className="text-xs font-semibold text-gray-800 leading-tight mb-0.5 line-clamp-2 break-words">
-                    {lesson.title}
-                  </p>
-                  <p className="text-[10px] text-gray-500 leading-tight">
-                    {lesson.leccionesCount} lecc.{!lesson.isOwn && ' · CrESI'}
-                  </p>
-                </button>
-              );
-            })}
+            {lessons.map((lesson) => (
+              <ToggleCard
+                key={lesson.id}
+                isOn={selected.has(lesson.id)}
+                color={ACCENT}
+                icon={<IconBooks className="w-5 h-5" />}
+                title={lesson.title}
+                subtitle={`${lesson.leccionesCount} lecc.${!lesson.isOwn ? ' · CrESI' : ''}`}
+                onClick={() => toggle(lesson.id)}
+              />
+            ))}
           </div>
         </>
       )}

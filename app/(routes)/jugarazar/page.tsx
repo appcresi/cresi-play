@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
@@ -506,10 +507,12 @@ export default function JugarAzar(): JSX.Element {
             </div>
 
             <div className="relative w-72 h-72 sm:w-80 sm:h-80">
-              <img
+              <Image
                 src="/ruleta.png"
                 alt="Ruleta"
-                className="w-full h-full drop-shadow-xl"
+                fill
+                sizes="(max-width: 640px) 288px, 320px"
+                className="drop-shadow-xl"
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transition: isSpinning ? 'transform 3s ease-out' : 'none',
@@ -555,9 +558,11 @@ export default function JugarAzar(): JSX.Element {
                       style={{ borderColor: `${color}30` }}
                     >
                       <div className="relative">
-                        <img
+                        <Image
                           src={`/${getCategorySlug(category)}.png`}
                           alt={category}
+                          width={32}
+                          height={32}
                           className="w-8 h-8"
                         />
                         <div
@@ -590,9 +595,11 @@ export default function JugarAzar(): JSX.Element {
               className="w-28 h-28 rounded-full mx-auto mb-5 flex items-center justify-center"
               style={{ backgroundColor: `${getCategoryColor(selectedCategory)}15` }}
             >
-              <img
+              <Image
                 src={`/${getCategorySlug(selectedCategory)}.png`}
                 alt={selectedCategory}
+                width={64}
+                height={64}
                 className="w-16 h-16"
               />
             </div>
@@ -772,9 +779,11 @@ export default function JugarAzar(): JSX.Element {
                       key={category}
                       className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
                     >
-                      <img
+                      <Image
                         src={`/${getCategorySlug(category)}.png`}
                         alt={category}
+                        width={20}
+                        height={20}
                         className="w-5 h-5"
                       />
                       {category}

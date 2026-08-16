@@ -1,5 +1,6 @@
 "use client"
 import { useState, useRef, useEffect } from 'react';
+import NextImage from 'next/image';
 import {
   IconPalette,
   IconTypography,
@@ -454,11 +455,15 @@ export default function MemeGenerator() {
                       }`}
                       style={selectedMeme?.id === template.id ? { borderColor: ACCENT, backgroundColor: `${ACCENT}0D` } : undefined}
                     >
-                      <img
-                        src={template.url}
-                        alt={template.name}
-                        className="w-full aspect-square object-cover rounded"
-                      />
+                      <div className="relative w-full aspect-square">
+                        <NextImage
+                          src={template.url}
+                          alt={template.name}
+                          fill
+                          sizes="(max-width: 1024px) 25vw, 128px"
+                          className="object-cover rounded"
+                        />
+                      </div>
                       <p className="text-xs text-center mt-1 font-medium text-gray-600 truncate">{template.name}</p>
                     </div>
                   ))}

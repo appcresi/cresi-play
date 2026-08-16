@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { IconKey, IconX } from '@tabler/icons-react';
 import type { ClassroomStudent, PendingStudent } from '@/types/classroom';
 import { formatDate } from './utils';
@@ -104,9 +105,11 @@ export const StudentsGrid = ({
               >
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <img
-                      src={s.character?.image}
-                      alt={s.character?.name}
+                    <Image
+                      src={s.character?.image || '/logocresi.svg'}
+                      alt={s.character?.name ?? ''}
+                      width={24}
+                      height={24}
                       className="w-6 h-6 rounded-full object-cover border border-gray-200"
                     />
                     <span className="font-medium text-gray-800 whitespace-nowrap">{s.username}</span>

@@ -357,6 +357,7 @@ export default function TriviaGame({
       <>
         <Toaster />
         <TriviaReview
+          triviaId={id}
           correctAnswers={getCorrectAnswersCount()}
           triviaName={name}
           triviaLength={items.length}

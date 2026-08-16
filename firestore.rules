@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /classrooms/{classroomId} {
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.profesorId;
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.profesorId;
+
+      match /estudiantes/{estudianteId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == estudianteId ||
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+        );
+        allow write: if request.auth != null && (
+          request.auth.uid == estudianteId ||
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+        );
+      }
+      match /estudiantesPendientes/{pendingId} {
+        allow read: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
+        allow create, delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
+        allow update: if request.auth != null && (
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId ||
+          (resource.data.claimedUid == null && request.resource.data.claimedUid == request.auth.uid)
+        );
+      }
+
+      // Tareas: el docente crea/edita/borra; cualquiera de la clase
+      // (docente o alumno) puede leerlas, para que el alumno vea lo
+      // asignado.
+      match /tareas/{tareaId} {
+        allow read: if request.auth != null;
+        allow create, update, delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
+
+        // Entregas: cada alumno lee/escribe la propia (entrega, edita su
+        // respuesta); el docente lee todas y las califica (la calificación
+        // en sí es un update, así que el docente necesita permiso de
+        // update acá también, no solo el alumno).
+        match /entregas/{studentUid} {
+          allow read: if request.auth != null && (
+            request.auth.uid == studentUid ||
+            request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+          );
+          allow create, update: if request.auth != null && (
+            request.auth.uid == studentUid ||
+            request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+          );
+        }
+      }
+    }
+    match /preguntas/{preguntaId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+    match /questions/{questionId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
+    match /blog_posts/{blogPostId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
+    // Infografías — contenido de diseño, lo sube solo CrESI (no hay
+    // pantalla para que el docente cree las propias, a diferencia de
+    // trivias/completapalabras). Mismo criterio que questions/blog_posts.
+    match /infografias/{infografiaId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
+    match /users/{userId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
+    match /completapalabras/{lessonId} {
+      allow read: if true;
+      allow create: if request.auth != null &&
+        request.resource.data.author == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.author == request.auth.uid;
+    }
+    match /trivia/{triviaId} {
+      allow read: if true;
+      allow create: if request.auth != null &&
+        request.resource.data.author == request.auth.uid;
+      allow update: if (
+        (request.auth != null && (
+          resource.data.author == request.auth.uid ||
+          resource.data.userId == request.auth.uid ||
+          resource.data.user_id == request.auth.uid
+        )) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playCount'])
+      );
+      allow delete: if request.auth != null && (
+        resource.data.author == request.auth.uid ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.user_id == request.auth.uid
+      );
+    }
+  }
+}

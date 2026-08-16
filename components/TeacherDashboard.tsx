@@ -330,6 +330,11 @@ const TeacherDashboard = () => {
               prev.map((c) => (c.id === selectedClassroom.id ? { ...c, visibleCompletaPalabras } : c))
             );
           }}
+          onInfografiasChanged={(restrictedInfografias) => {
+            setClassrooms((prev) =>
+              prev.map((c) => (c.id === selectedClassroom.id ? { ...c, restrictedInfografias } : c))
+            );
+          }}
           onSelectStudent={setProgressStudent}
           onRemoveStudent={(uid) => handleRemoveStudent(selectedClassroom.id, uid)}
           onRemovePending={(pendingId) => handleRemovePending(selectedClassroom.id, pendingId)}

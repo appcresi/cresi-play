@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "ESI | Biopuzzle | CrESI",
   description:
     "Aprendé sobre las partes del cuerpo humano.",
+  alternates: {
+    canonical: "https://jugar.cresi.com.ar/biopuzzle",
+  },
 };
 
 export default function BiopuzzlePage(): JSX.Element {

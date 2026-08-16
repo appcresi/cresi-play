@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     locale: "es_AR",
     images: [
       {
-        url: "https://jugar.cresi.com.ar/og-image.jpg",
+        url: "https://jugar.cresi.com.ar/illustration-1.jpg",
         width: 1200,
         height: 630,
         alt: "Juegos ESI Gratis - CrESI Trivias y Pasapalabras",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     title: "Juegos ESI | Trivias Gratis - CrESI",
     description:
       "Juega trivias y pasapalabras sobre ESI. Aprende Educación Sexual Integral mientras te diviertes con CrESI.",
-    images: ["https://jugar.cresi.com.ar/og-image.jpg"],
+    images: ["https://jugar.cresi.com.ar/illustration-1.jpg"],
     site: "@appcresi",
     creator: "@appcresi",
   },

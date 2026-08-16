@@ -1,38 +1,52 @@
 import React, { useState } from 'react';
-import type { Classroom } from '@/types/classroom';
+import type { Classroom, ClassroomStudent } from '@/types/classroom';
+import type { Tarea } from '@/types/tarea';
 import { ActivitiesPicker } from './ActivitiesPicker';
 import { TriviasPicker } from './TriviasPicker';
 import { QuestionsPicker } from './QuestionsPicker';
 import { CompletaPalabrasPicker } from './CompletaPalabrasPicker';
+import { InfografiasPicker } from './InfografiasPicker';
+import { TareasTab } from './TareasTab';
 
-type WorkSubTab = 'actividades' | 'trivias' | 'preguntas' | 'completapalabras';
+type WorkSubTab = 'actividades' | 'trivias' | 'preguntas' | 'completapalabras' | 'infografias' | 'tareas';
 
 const SUB_TABS: { key: WorkSubTab; label: string }[] = [
   { key: 'actividades', label: 'Actividades' },
   { key: 'trivias', label: 'Trivias' },
   { key: 'preguntas', label: 'Preguntas' },
   { key: 'completapalabras', label: 'Completa Palabras' },
+  { key: 'infografias', label: 'Infografías' },
+  { key: 'tareas', label: 'Tareas' },
 ];
 
 // Antes las 3 (Actividades/Trivias/Preguntas) se mostraban apiladas, una
 // tarjeta debajo de la otra, en "Trabajo en clase". Con las 3 juntas el
 // scroll se hacía largo — ahora son solapas dentro de una sola tarjeta.
+// "Tareas" se agregó acá (no como solapa propia del detalle de la clase)
+// porque conceptualmente es parte de "qué trabajo tienen los alumnos",
+// igual que las demás.
 export const WorkInClassTab = ({
   classroom,
   teacherId,
+  students,
   totalActivities,
   onActivitiesChanged,
   onTriviasChanged,
   onQuestionsChanged,
   onCompletaPalabrasChanged,
+  onInfografiasChanged,
+  onOpenTarea,
 }: {
   classroom: Classroom;
   teacherId: string;
+  students: ClassroomStudent[];
   totalActivities: number;
   onActivitiesChanged: (allowedActivities: string[] | null) => void;
   onTriviasChanged: (visibleTrivias: string[] | null) => void;
   onQuestionsChanged: (restrictedTags: string[] | null, restrictedQuestionIds: string[] | null) => void;
   onCompletaPalabrasChanged: (visibleCompletaPalabras: string[] | null) => void;
+  onInfografiasChanged: (restrictedInfografias: string[] | null) => void;
+  onOpenTarea: (tarea: Tarea) => void;
 }) => {
   const [subTab, setSubTab] = useState<WorkSubTab>('actividades');
 
@@ -70,6 +84,12 @@ export const WorkInClassTab = ({
         )}
         {subTab === 'completapalabras' && (
           <CompletaPalabrasPicker classroom={classroom} teacherId={teacherId} onChanged={onCompletaPalabrasChanged} />
+        )}
+        {subTab === 'infografias' && (
+          <InfografiasPicker classroom={classroom} onChanged={onInfografiasChanged} />
+        )}
+        {subTab === 'tareas' && (
+          <TareasTab classroomId={classroom.id} teacherId={teacherId} students={students} onOpenTarea={onOpenTarea} />
         )}
       </div>
     </div>

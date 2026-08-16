@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import toast from 'react-hot-toast';
 import ImagePopup from "./ImagePopup";
 import FloatingAudioButton from "./FloatingAudioButton";
@@ -340,9 +341,11 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
         <div className="lg:w-80 space-y-4">
           {/* Image */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <img
+            <Image
               src={currentLeccion.imagen}
               alt={`Lección ${currentLessonIndex + 1}`}
+              width={1080}
+              height={1080}
               className="w-full h-auto cursor-pointer hover:opacity-95 transition-opacity"
               onClick={() => openImagePopup(currentLeccion.imagen)}
             />

@@ -47,6 +47,7 @@ const renderCustomizedLabel = ({
 }
 
 interface TriviaReviewProps {
+  triviaId: string
   correctAnswers: number
   triviaName: string
   triviaLength: number
@@ -54,7 +55,7 @@ interface TriviaReviewProps {
 }
 
 
-export default function TriviaReview ({ correctAnswers, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
+export default function TriviaReview ({ triviaId, correctAnswers, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
   const COLORS: Record<string, string> = {
     'Respuestas correctas': '#10B981',
     'Respuestas incorrectas': '#EF4444'
@@ -95,7 +96,7 @@ export default function TriviaReview ({ correctAnswers, triviaName, triviaLength
                 : 'El aprendizaje es un proceso continuo. Sigue practicando y mejorarás.'}
             </p>
 
-            {isCompleted && <CertificatePreparation trivia={triviaName} percentage={completionPercentage} />}
+            {isCompleted && <CertificatePreparation triviaId={triviaId} answeredQuestions={answeredQuestions} />}
 
             <Link
               href="/trivias"
@@ -270,8 +271,8 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
 }
 
 interface CertificatePreparationProps {
-  trivia: string
-  percentage: number
+  triviaId: string
+  answeredQuestions: TriviaAnsweredQuestion[]
 }
 
 function CertificatePreparation (props: CertificatePreparationProps): JSX.Element {
@@ -284,7 +285,13 @@ function CertificatePreparation (props: CertificatePreparationProps): JSX.Elemen
     fetch('/api/certificado', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, trivia: props.trivia, percentage: props.percentage })
+      body: JSON.stringify({
+        name,
+        triviaId: props.triviaId,
+        // El servidor recalcula el % real contra `trivia/{id}` en Firestore
+        // a partir de esto — nunca confía en un porcentaje ya calculado.
+        answeredQuestions: props.answeredQuestions.map((q) => ({ question: q.question, userAnswer: q.userAnswer }))
+      })
     })
       .then(async (response) => {
         await response.json().then((value) => {
