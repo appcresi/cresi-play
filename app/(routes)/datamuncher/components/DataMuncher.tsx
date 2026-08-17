@@ -1,11 +1,13 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { IconHelp, IconInfoCircle } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
 import GameCell from './GameCell';
 import GameOverModal from './GameOverModal';
 import LevelTransitionModal from './LevelTransitionModal';
+import InstructionsModal from './InstructionsModal';
+import QuestionModal from './QuestionModal';
+import AnswerResultModal from './AnswerResultModal';
 import TouchControls from './TouchControls';
 import PurchaseModal from '@/components/PurchaseModal';
 import { Position, Question, Effect, AnswerOption } from '../types/types';
@@ -40,6 +42,14 @@ const DataMuncher = () => {
   const [quizItems, setQuizItems] = useState(INITIAL_QUIZ_POSITIONS);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
+  // Antes había una tarjeta de instrucciones siempre visible arriba del
+  // tablero. Ahora se muestra una sola vez, como modal, antes de arrancar
+  // a jugar — mientras está abierta el juego no debería moverse.
+  const [showInstructions, setShowInstructions] = useState(true);
+  // Se llena al responder (✅/❌) y se limpia al tocar "Aceptar" en el
+  // modal de resultado — mientras está lleno, el juego queda en pausa
+  // igual que con la pregunta, para que se pueda leer sin apuro.
+  const [answerResult, setAnswerResult] = useState<{ correct: boolean; points: number; levelComplete: boolean } | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(LEVELS[0].timeLimit);
   const [answerOptions, setAnswerOptions] = useState<AnswerOption[]>([]);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -137,7 +147,7 @@ const DataMuncher = () => {
   };
 
   useEffect(() => {
-    if (gameOver || showQuestion || levelTransition) return;
+    if (gameOver || showQuestion || levelTransition || showInstructions || answerResult) return;
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 0) {
@@ -149,10 +159,10 @@ const DataMuncher = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [gameOver, showQuestion, levelTransition]);
+  }, [gameOver, showQuestion, levelTransition, showInstructions, answerResult]);
 
   useEffect(() => {
-    if (gameOver || showQuestion || levelTransition) return;
+    if (gameOver || showQuestion || levelTransition || showInstructions || answerResult) return;
 
     const moveInterval = setInterval(() => {
       setGhosts(prevGhosts =>
@@ -174,10 +184,10 @@ const DataMuncher = () => {
     }, LEVELS[currentLevel].ghostSpeed);
 
     return () => clearInterval(moveInterval);
-  }, [gameOver, showQuestion, levelTransition, currentLevel]);
+  }, [gameOver, showQuestion, levelTransition, showInstructions, answerResult, currentLevel]);
 
   const handleMove = (direction: string) => {
-    if (gameOver || showQuestion || levelTransition) return;
+    if (gameOver || showQuestion || levelTransition || showInstructions || answerResult) return;
 
     const newPlayer = { ...player };
     switch (direction) {
@@ -215,7 +225,7 @@ const DataMuncher = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player, gameOver, showQuestion, levelTransition]);
+  }, [player, gameOver, showQuestion, levelTransition, showInstructions, answerResult]);
 
   const checkCollisions = (newPlayer: Position) => {
     if (ghosts.some(ghost => ghost.x === newPlayer.x && ghost.y === newPlayer.y)) {
@@ -234,6 +244,11 @@ const DataMuncher = () => {
       const randomQuestion = LEVELS[currentLevel].questions[Math.floor(Math.random() * LEVELS[currentLevel].questions.length)];
       setQuestionOptions(randomQuestion);
       setQuizItems(prev => prev.filter((_, index) => index !== quizIndex));
+      // Frena el tiempo y el movimiento hasta que se confirme haber leído
+      // la pregunta (ver el modal más abajo) — antes esto quedaba
+      // declarado pero nunca se activaba, así que la pregunta se mostraba
+      // en una tarjeta chica mientras el juego seguía corriendo igual.
+      setShowQuestion(true);
     }
 
     const hitAnswer = answerOptions.find(opt => opt.position.x === newPlayer.x && opt.position.y === newPlayer.y);
@@ -296,21 +311,44 @@ const DataMuncher = () => {
   const handleQuizAnswer = (answer: boolean) => {
     if (!currentQuestion) return;
 
-    if (currentQuestion.answer === answer) {
+    const isCorrect = currentQuestion.answer === answer;
+    // Se calcula acá, no en el modal: `answeredQuestions` recién se
+    // actualiza abajo (y de forma asíncrona), así que hay que decidir con
+    // el valor que va a terminar teniendo, antes de que cambie.
+    const levelComplete = isCorrect && answeredQuestions + 1 >= LEVELS[currentLevel].quizRequired;
+
+    if (isCorrect) {
       setSessionScore(prev => prev + currentQuestion.points);
       setAnsweredQuestions(prev => prev + 1);
-      toast.success(`¡Correcto! +${currentQuestion.points} puntos`);
-
-      if (answeredQuestions + 1 >= LEVELS[currentLevel].quizRequired) {
-        advanceLevel();
-      }
-    } else {
-      toast.error('¡Incorrecto! Inténtalo de nuevo.');
     }
 
+    // Antes esto se avisaba con un toast chico y el juego seguía corriendo
+    // en el momento. Ahora se pausa (mismo mecanismo que la pregunta) y se
+    // muestra en un modal, para que se pueda leer sin que el tiempo o los
+    // fantasmas sigan andando de fondo.
+    setAnswerResult({ correct: isCorrect, points: currentQuestion.points, levelComplete });
     setShowQuestion(false);
     setCurrentQuestion(null);
   };
+
+  const handleAnswerResultAccept = () => {
+    const shouldAdvance = answerResult?.levelComplete ?? false;
+    setAnswerResult(null);
+    if (shouldAdvance) {
+      advanceLevel();
+    }
+  };
+
+  // El modal de correcto/incorrecto no pide click — es solo feedback
+  // rápido, así que se cierra solo a los 2 segundos.
+  useEffect(() => {
+    if (!answerResult) return;
+    const timer = setTimeout(() => {
+      handleAnswerResultAccept();
+    }, 2000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answerResult]);
 
   const advanceLevel = () => {
     if (currentLevel < LEVELS.length - 1) {
@@ -396,37 +434,6 @@ const DataMuncher = () => {
           <div className="w-full mx-auto">
             <div className="aspect-square w-full max-w-[min(100%,600px)] mx-auto">
               <div className="max-w-4xl mx-auto">
-                {currentQuestion ? (
-                  <div className="bg-white rounded-xl shadow-sm border border-pink-light mb-4 p-6">
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
-                        style={{ backgroundColor: ACCENT }}
-                      >
-                        <IconHelp size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-sm font-semibold text-ink mb-1">Pregunta actual</h2>
-                        <p className="text-sm text-ink/70 leading-relaxed">{currentQuestion.question}</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-xl shadow-sm border border-pink-light mb-4 p-6">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-mint-accent flex items-center justify-center text-white shrink-0">
-                        <IconInfoCircle size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-sm font-semibold text-ink mb-1">Instrucciones</h2>
-                        <p className="text-sm text-ink/70 leading-relaxed">
-                          Busca las ❓ y luego dirígete hacia la ✅ si es Verdadera o hacia la ❌ si es Falsa
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="relative">
                   {effect.text && (
                     <div
@@ -507,6 +514,24 @@ const DataMuncher = () => {
               isComplete={currentLevel === LEVELS.length - 1}
             />
           </div>
+        )}
+
+        {showInstructions && (
+          <InstructionsModal onAccept={() => setShowInstructions(false)} />
+        )}
+
+        {showQuestion && currentQuestion && (
+          <QuestionModal
+            question={currentQuestion.question}
+            onAccept={() => setShowQuestion(false)}
+          />
+        )}
+
+        {answerResult && (
+          <AnswerResultModal
+            correct={answerResult.correct}
+            points={answerResult.points}
+          />
         )}
       </div>
     </div>
