@@ -17,6 +17,7 @@ import {
   LEVELS
 } from '../types/constants';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('datamuncher');
@@ -96,6 +97,9 @@ const DataMuncher = () => {
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
+    if (isComplete && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    }
   };
 
   function getInitialDots() {

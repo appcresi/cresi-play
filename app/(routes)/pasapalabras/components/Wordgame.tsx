@@ -14,6 +14,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import FinalReport from './FinalReport';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 // Mismo color que ya tiene "Pasapalabras" en el catálogo (la tarjeta que
@@ -206,12 +207,16 @@ const UnifiedWordGame = () => {
     saveGameData();
 
     const data = UserDataManager.loadUserData();
-    if (!data.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+    const wasAlreadyCompleted = data.progress.completedActivities.includes(ACTIVITY_TITLE);
+    if (!wasAlreadyCompleted) {
       data.progress.completedActivities.push(ACTIVITY_TITLE);
     }
     data.progress.activityScores[ACTIVITY_TITLE] = correctWords.length * 100;
     data.progress.activityTimes[ACTIVITY_TITLE] = new Date().toISOString();
     UserDataManager.saveUserData(data);
+    if (!wasAlreadyCompleted) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    }
 
     setShowFinalReport(true);
   };

@@ -12,6 +12,7 @@ import {
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { stepsData, type Step } from '../data/questions';
 
@@ -143,6 +144,7 @@ export default function ComicPoneloSimulator() {
         current.progress.activityTimes[ACTIVITY_TITLE] = new Date().toISOString();
         UserDataManager.saveUserData(current);
         setUserData(current);
+        trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
       }
     }
   };

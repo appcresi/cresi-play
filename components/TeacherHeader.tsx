@@ -4,14 +4,21 @@ import React, { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Popover, Transition } from '@headlessui/react';
-import { IconSchool, IconLogout, IconChevronDown } from '@tabler/icons-react';
+import { IconSchool, IconLogout, IconChevronDown, IconUserOff } from '@tabler/icons-react';
 import { useAuth } from '@/context/AuthContext';
+import ClassroomService from '@/lib/classroomService';
+import { deleteMyAccount } from '@/lib/accountDeletion';
+import { DeleteAccountModal } from './teacher/DeleteAccountModal';
 
 export default function TeacherHeader(): JSX.Element {
-  const { profile, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [classroomCount, setClassroomCount] = useState(0);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState('');
 
   const username = profile?.profile?.username?.trim() || 'Docente';
   const initial = username.charAt(0).toUpperCase();
@@ -28,6 +35,33 @@ export default function TeacherHeader(): JSX.Element {
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       setIsLoggingOut(false);
+    }
+  };
+
+  const handleOpenDeleteAccount = async () => {
+    setShowDeleteAccount(true);
+    setDeleteAccountError('');
+    if (user) {
+      try {
+        const classrooms = await ClassroomService.getTeacherClassrooms(user.uid);
+        setClassroomCount(classrooms.length);
+      } catch (err) {
+        console.error('❌ Error al contar las clases del docente:', err);
+      }
+    }
+  };
+
+  const handleConfirmDeleteAccount = async () => {
+    if (!user) return;
+    try {
+      setIsDeletingAccount(true);
+      setDeleteAccountError('');
+      await deleteMyAccount(user);
+      router.push('/');
+    } catch (err) {
+      console.error('❌ Error al eliminar la cuenta:', err);
+      setDeleteAccountError('No se pudo eliminar la cuenta. Probá de nuevo en un momento.');
+      setIsDeletingAccount(false);
     }
   };
 
@@ -85,6 +119,14 @@ export default function TeacherHeader(): JSX.Element {
                     <IconLogout className="w-4 h-4" />
                     {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
                   </button>
+                  <button
+                    onClick={() => { close(); handleOpenDeleteAccount(); }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-600
+                             hover:bg-red-50 transition-colors border-t border-pink-light"
+                  >
+                    <IconUserOff className="w-4 h-4" />
+                    Eliminar mi cuenta
+                  </button>
                 </Popover.Panel>
               </Transition>
             </>
@@ -116,6 +158,16 @@ export default function TeacherHeader(): JSX.Element {
           })}
         </div>
       </div>
+
+      {showDeleteAccount && (
+        <DeleteAccountModal
+          classroomCount={classroomCount}
+          isDeleting={isDeletingAccount}
+          error={deleteAccountError}
+          onCancel={() => setShowDeleteAccount(false)}
+          onConfirm={handleConfirmDeleteAccount}
+        />
+      )}
     </header>
   );
 }

@@ -8,6 +8,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '@/lib/firebaseAuth';
 import ClassroomService from '@/lib/classroomService';
 import UserDataSync from '@/lib/userDataSync';
+import { trackEvent } from '@/lib/analytics';
 import { IconLoader, IconArrowLeft, IconEye, IconEyeOff } from '@tabler/icons-react';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
@@ -132,6 +133,7 @@ export default function JoinClassPage() {
       // docente en "Personas"), sin pisar el progreso si ya jugó antes.
       await ClassroomService.upsertClassroomStudent(classroomId, result.user.uid, username, selectedCharacter);
 
+      trackEvent('join_classroom');
       window.dispatchEvent(new Event('cresi-session-updated'));
       router.push('/escritorio');
     } catch (err) {

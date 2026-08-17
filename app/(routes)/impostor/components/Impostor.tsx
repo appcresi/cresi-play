@@ -4,6 +4,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import { IconChevronUp, IconMinus, IconPlus } from '@tabler/icons-react';
 import esiTermsByCategory from '../data/esiTermsByCategory.json';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('impostor');
@@ -241,6 +242,7 @@ export default function ESIImpostor() {
       current.progress.completedActivities.push(ACTIVITY_TITLE);
       UserDataManager.saveUserData(current);
       setUserData(current);
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
   };
 

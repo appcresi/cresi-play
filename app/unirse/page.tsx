@@ -17,6 +17,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebaseAuth';
 import UserDataSync from '@/lib/userDataSync';
+import { trackEvent } from '@/lib/analytics';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
 
@@ -112,6 +113,7 @@ export default function UnirseSinCodigoPage() {
       await signInAnonymously(auth);
       const userData = buildUserData(username, selectedCharacter!);
       localStorage.setItem('cresi_user_data', JSON.stringify(userData));
+      trackEvent('sign_up', { method: 'anonymous', role: 'student' });
       finishLogin();
     } catch (err) {
       console.error('❌ Error:', err);
@@ -150,9 +152,11 @@ export default function UnirseSinCodigoPage() {
         if (usernameChanged || avatarChanged) {
           await UserDataSync.syncCompleteData(existingData);
         }
+        trackEvent('login', { method: 'google', role: 'student' });
       } else {
         const userData = buildUserData(username, selectedCharacter!);
         localStorage.setItem('cresi_user_data', JSON.stringify(userData));
+        trackEvent('sign_up', { method: 'google', role: 'student' });
       }
       finishLogin();
     } catch (err) {

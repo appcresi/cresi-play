@@ -4,6 +4,7 @@ import { IconCalendar, IconMedal, IconTrophy, IconBook, IconStar, IconChartBar, 
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import type { Achievement } from '@/types/user';
 
@@ -248,6 +249,7 @@ const MoodTracker = () => {
         }
       };
       UserDataManager.saveUserData(updatedData);
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
 
     setUserData(updatedData);

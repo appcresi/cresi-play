@@ -12,6 +12,7 @@ import {
 	IconArrowRight,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 interface Feature {
@@ -193,6 +194,9 @@ export default function Lecciones(): JSX.Element {
 		}));
 
 		saveUserData(updatedData);
+		if (isCompleted && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+			trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, lesson: title });
+		}
 	};
 
 	const handleBack = () => {

@@ -6,6 +6,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import { questions } from '../utils/questions';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 // Antes esto era el string suelto 'ChatSimulator' — no coincidía con el
@@ -93,6 +94,9 @@ const ChatSimulator = () => {
     UserDataManager.saveUserData(updatedData);
     setScore(updatedData.game.totalScore);
     setUserData(updatedData);
+    if (isSimulatorComplete && !current.progress.completedActivities.includes(ACTIVITY_ID)) {
+      trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
+    }
   };
 
   const checkAndUnlockAchievements = () => {

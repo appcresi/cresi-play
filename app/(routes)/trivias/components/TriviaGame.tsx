@@ -14,6 +14,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import { IconBrandInstagram, IconMaximize, IconMoon, IconSun, IconRefresh, IconShoppingCart } from '@tabler/icons-react';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('trivias');
@@ -291,7 +292,13 @@ export default function TriviaGame({
 
     saveTriviaStatus(updatedTrivia);
     toast.success('Se guardó tu progreso.');
-  }, [id, calculateCorrectAnswersPercentage]);
+    trackEvent('trivia_completed', {
+      trivia_id: id,
+      trivia_name: name,
+      percentage: actualPercentage,
+      passed: actualPercentage >= 80,
+    });
+  }, [id, name, calculateCorrectAnswersPercentage]);
 
   useEffect(() => {
     if (isFinished) {

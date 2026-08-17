@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import ClassroomService from '@/lib/classroomService';
+import { trackEvent } from '@/lib/analytics';
 import type { Classroom, ClassroomStudent, PendingStudent } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
 import { useAuth } from '@/context/AuthContext';
@@ -137,6 +138,7 @@ const TeacherDashboard = () => {
       setError('');
       const classroom = await ClassroomService.createClassroom(user.uid, newClassName.trim());
       setClassrooms((prev) => [classroom, ...prev]);
+      trackEvent('create_classroom');
       setNewClassName('');
       setCreateModalOpen(false);
     } catch (err) {

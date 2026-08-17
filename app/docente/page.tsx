@@ -5,6 +5,7 @@ import { Fredoka } from 'next/font/google';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebaseAuth';
 import UserDataSync from '@/lib/userDataSync';
+import { trackEvent } from '@/lib/analytics';
 import { useAuth } from '@/context/AuthContext';
 import {
   IconBrandGoogle,
@@ -94,6 +95,7 @@ export default function DocentePage() {
         if (usernameChanged) {
           await UserDataSync.syncCompleteData(existingData);
         }
+        trackEvent('login', { method: 'google', role: 'teacher' });
       } else if (existingData?.profile) {
         // Tenía cuenta pero como alumno: la reconvertimos a docente y
         // pisamos el nombre con el de Google.
@@ -101,9 +103,11 @@ export default function DocentePage() {
         existingData.profile.username = displayName;
         localStorage.setItem('cresi_user_data', JSON.stringify(existingData));
         await UserDataSync.syncCompleteData(existingData);
+        trackEvent('sign_up', { method: 'google', role: 'teacher' });
       } else {
         // Primera vez: perfil de docente nuevo, con el nombre de Google.
         localStorage.setItem('cresi_user_data', JSON.stringify(buildTeacherData(displayName)));
+        trackEvent('sign_up', { method: 'google', role: 'teacher' });
       }
 
       window.dispatchEvent(new Event('cresi-session-updated'));

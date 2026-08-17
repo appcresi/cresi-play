@@ -13,6 +13,7 @@ import {
 } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 interface MemeTemplate {
@@ -98,6 +99,7 @@ export default function MemeGenerator() {
     link.click();
 
     const current = UserDataManager.loadUserData();
+    const wasAlreadyCompleted = current.progress.completedActivities.includes(ACTIVITY_TITLE);
     const updatedData = {
       ...current,
       game: {
@@ -114,7 +116,7 @@ export default function MemeGenerator() {
           ...current.progress.activityTimes,
           [ACTIVITY_TITLE]: new Date().toISOString()
         },
-        completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
+        completedActivities: !wasAlreadyCompleted
           ? [...current.progress.completedActivities, ACTIVITY_TITLE]
           : current.progress.completedActivities
       }
@@ -123,6 +125,9 @@ export default function MemeGenerator() {
     UserDataManager.saveUserData(updatedData);
     setScore(updatedData.game.totalScore);
     setMemesCreated(prev => prev + 1);
+    if (!wasAlreadyCompleted) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

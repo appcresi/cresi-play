@@ -6,6 +6,7 @@ import { IconCircleCheck, IconBriefcase, IconX } from '@tabler/icons-react';
 import { QUESTIONS } from '../lib/questions';
 import { PROFESSIONS } from '../lib/professions';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 interface AreaResult {
@@ -205,6 +206,9 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
     saveUserData(updatedData);
     setShowResults(true);
+    if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    }
 
     toast.success(
       `¡Test completado! +${POINTS_PER_QUESTION * QUESTIONS.length + COMPLETION_BONUS} puntos en total`,

@@ -8,7 +8,15 @@ import { db } from '@/lib/firebaseFirestore'
 // real — cada una puede indexarse y posicionar por separado.
 const FALLBACK_METADATA: Metadata = {
   title: 'Aprendé jugando con nuestras trivias | CrESI',
-  description: 'Jugá a nuestras trivias y aprendé sobre distintos temas con una trivia interactiva y dinámica de preguntas y respuestas.'
+  description: 'Jugá a nuestras trivias y aprendé sobre distintos temas con una trivia interactiva y dinámica de preguntas y respuestas.',
+  // Esto pasa cuando el id no existe (trivia borrada, link roto). Sin
+  // `noindex`, Google terminaba indexando cientos de URLs /trivias/{id}
+  // distintas con este mismo título/descripción genérico — contenido
+  // duplicado, justo lo que el título dinámico por trivia buscaba evitar.
+  robots: {
+    index: false,
+    follow: true,
+  },
 }
 
 export async function generateMetadata ({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

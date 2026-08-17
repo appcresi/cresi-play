@@ -12,6 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 interface WordDragGameProps {
@@ -172,6 +173,9 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
+    if (finishedLesson && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    }
   };
 
   const initializeLevel = (level: number, lessons: Lesson[]) => {

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { IconArrowNarrowLeft } from '@tabler/icons-react';
 import TriviaGame from '../../components/TriviaGame';
 import { getActivityById } from '@/lib/activities';
 
@@ -135,9 +137,20 @@ export default function TriviaPage({ params }: PageProps) {
 
   if (error || !gameData) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
-          <p className="text-red-600 text-sm">{error || 'No se pudo cargar la trivia'}</p>
+      <div className="min-h-screen bg-cream flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center max-w-sm w-full">
+          <p className="text-red-600 text-sm mb-4">{error || 'No se pudo cargar la trivia'}</p>
+          <p className="text-ink/60 text-xs mb-5">
+            El link puede estar roto o la trivia ya no está disponible.
+          </p>
+          <Link
+            href="/trivias"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold"
+            style={{ color: ACCENT }}
+          >
+            <IconArrowNarrowLeft size={16} />
+            Ver todas las trivias
+          </Link>
         </div>
       </div>
     );

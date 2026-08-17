@@ -12,6 +12,7 @@ import {
 import { bodySystems, type BodyPart } from '../data/bodySystems';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('biopuzzle');
@@ -160,7 +161,8 @@ export default function AnatomiaApp() {
       current.progress.activityScores[systemKey] = score;
       current.progress.activityTimes[systemKey] = new Date().toISOString();
 
-      if (!current.progress.completedActivities.includes(ACTIVITY_ID)) {
+      const wasAlreadyCompleted = current.progress.completedActivities.includes(ACTIVITY_ID);
+      if (!wasAlreadyCompleted) {
         current.progress.completedActivities.push(ACTIVITY_ID);
       }
       current.progress.activityScores[ACTIVITY_ID] = Math.max(
@@ -171,6 +173,9 @@ export default function AnatomiaApp() {
 
       UserDataManager.saveUserData(current);
       setUserData(current);
+      if (!wasAlreadyCompleted) {
+        trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
+      }
     } else {
       setLevelCompleted(false);
     }

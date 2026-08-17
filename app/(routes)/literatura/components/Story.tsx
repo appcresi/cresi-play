@@ -15,6 +15,7 @@ import { stories } from '../data/stories';
 import { splitIntoPages } from '../utils/textUtils';
 import type { Story, ReadingProgress } from '../types/types';
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('literatura');
@@ -316,6 +317,9 @@ export default function Story(): JSX.Element {
     };
 
     saveUserData(updatedData);
+    if (isStoryComplete && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, story: storyTitle });
+    }
   };
 
   const handleBack = () => {

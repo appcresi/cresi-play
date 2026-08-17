@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { IconRefresh, IconHeartHandshake } from "@tabler/icons-react";
 import testData from "../data.json";
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('amor');
@@ -82,6 +83,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 		};
 		UserDataManager.saveUserData(updatedData);
 		setHasSavedCompletion(true);
+		trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
 		onCompleted?.(updatedData.game.totalScore);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isFinished]);

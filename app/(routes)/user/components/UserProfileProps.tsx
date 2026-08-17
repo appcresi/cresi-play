@@ -9,6 +9,8 @@ import {
     IconMoodHappy,
     IconEdit,
     IconTrash,
+    IconUserOff,
+    IconLoader,
     IconTarget,
     IconCalendar,
     IconUser,
@@ -26,6 +28,8 @@ import UserDataManager from '@/lib/userDataManager';
 import { ACTIVITIES } from '@/lib/activities';
 import ClassroomService from '@/lib/classroomService';
 import { ActivityIcon } from '@/components/ActivityIcon';
+import { useAuth } from '@/context/AuthContext';
+import { deleteMyAccount } from '@/lib/accountDeletion';
 
 // Los títulos reales del catálogo — se usan para filtrar
 // `completedActivities`, que además de estos títulos también contiene
@@ -48,9 +52,14 @@ const AchievementIcon = ({ iconName, className }: { iconName?: string; className
 
 const UserProfile: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState('');
   // null = sin clase, o sin restricción (se ven las 15). Si tiene clase
   // con restricción, acá quedan solo los IDs habilitados por el docente.
   const [allowedActivityIds, setAllowedActivityIds] = useState<string[] | null>(null);
@@ -122,6 +131,20 @@ const UserProfile: React.FC = () => {
     const resetData = UserDataManager.resetGameData();
     setUserData(resetData);
     setShowResetConfirm(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || deleteConfirmText.trim().toUpperCase() !== 'ELIMINAR') return;
+    try {
+      setIsDeletingAccount(true);
+      setDeleteAccountError('');
+      await deleteMyAccount(user);
+      router.push('/');
+    } catch (err) {
+      console.error('❌ Error al eliminar la cuenta:', err);
+      setDeleteAccountError('No se pudo eliminar la cuenta. Probá de nuevo en un momento.');
+      setIsDeletingAccount(false);
+    }
   };
 
   const handlePurchaseLife = () => {
@@ -542,6 +565,14 @@ const UserProfile: React.FC = () => {
               <IconTrash size={18} />
               Reiniciar progreso
             </button>
+
+            <button
+              onClick={() => setShowDeleteAccountConfirm(true)}
+              className="flex items-center gap-2 px-4 py-3 border border-red-200 text-red-600 hover:bg-red-50 rounded-full font-semibold text-sm transition-all"
+            >
+              <IconUserOff size={18} />
+              Eliminar mi cuenta
+            </button>
           </div>
 
           <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
@@ -595,6 +626,68 @@ const UserProfile: React.FC = () => {
                 >
                   <IconTrash size={17} />
                   Sí, reiniciar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete account confirmation modal — pide escribir "ELIMINAR" a
+          propósito: es más severo que reiniciar progreso (cierra la
+          cuenta, no solo borra el avance) y no se puede deshacer. */}
+      {showDeleteAccountConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-md p-6">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+                <IconAlertTriangle size={28} className="text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 mb-1">¿Eliminar tu cuenta?</h2>
+                <p className="text-gray-500 text-sm">
+                  Se borra tu perfil, tu progreso y tu acceso a cualquier clase de la que
+                  formes parte. Esta acción es <strong>permanente</strong> y no se puede deshacer.
+                </p>
+              </div>
+              <div className="w-full text-left">
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Escribí <span className="font-mono">ELIMINAR</span> para confirmar
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  disabled={isDeletingAccount}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none
+                           focus:ring-2 focus:ring-red-500 text-sm disabled:opacity-50"
+                  placeholder="ELIMINAR"
+                  autoFocus
+                />
+              </div>
+              {deleteAccountError && (
+                <p className="text-red-600 text-xs w-full text-left">{deleteAccountError}</p>
+              )}
+              <div className="flex gap-3 w-full pt-2">
+                <button
+                  onClick={() => {
+                    setShowDeleteAccountConfirm(false);
+                    setDeleteConfirmText('');
+                    setDeleteAccountError('');
+                  }}
+                  disabled={isDeletingAccount}
+                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeletingAccount || deleteConfirmText.trim().toUpperCase() !== 'ELIMINAR'}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700
+                           text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeletingAccount ? <IconLoader size={17} className="animate-spin" /> : <IconUserOff size={17} />}
+                  {isDeletingAccount ? 'Eliminando...' : 'Sí, eliminar'}
                 </button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { IconHeartHandshake, IconRefresh, IconBooks, IconHome } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
+import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('saludmental');
@@ -138,6 +139,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
       };
 
       UserDataManager.saveUserData(finalData);
+      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
       onCompleted?.(finalData.game.totalScore);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
