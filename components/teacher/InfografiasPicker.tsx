@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { IconLoader, IconCheck, IconPhoto } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { getActivityById } from '@/lib/activities';

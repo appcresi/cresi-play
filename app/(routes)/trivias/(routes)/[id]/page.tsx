@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import TriviaGame from '../../components/TriviaGame';
 import { getActivityById } from '@/lib/activities';

@@ -5,7 +5,7 @@ import { Fredoka } from 'next/font/google';
 import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
 import UserDataSync from '@/lib/userDataSync';
 import UserDataManager from '@/lib/userDataManager';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebaseAuth';
 import type { UserData } from '@/types/user';
 
 // Misma tipografía "con personalidad" que la home/onboarding, restringida

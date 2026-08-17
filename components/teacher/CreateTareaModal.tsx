@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { IconX, IconLoader } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import { ACTIVITIES } from '@/lib/activities';
 import type { LinkedActivity, LinkedActivityType, Tarea } from '@/types/tarea';
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { IconLoader, IconClipboardList } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import type { Classroom } from '@/types/classroom';
 import { colorForTrivia } from '@/lib/triviaColors';
 import type { TeacherTriviaOption } from './types';

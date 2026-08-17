@@ -15,7 +15,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebaseAuth';
 import UserDataSync from '@/lib/userDataSync';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';

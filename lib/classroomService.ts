@@ -6,7 +6,7 @@
 //   El docente (profesorId) y el propio alumno pueden escribir su documento.
 // - `classrooms/{id}/estudiantesPendientes/{autoId}`: alumnos agregados manualmente por el
 //   docente (nombre + contraseña) que todavía no iniciaron sesión. Se "reclaman" una sola vez.
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import {
   collection,
   doc,

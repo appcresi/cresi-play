@@ -1,5 +1,6 @@
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth } from './firebaseAuth';
+import { db } from './firebaseFirestore';
 import type { UserData, DashboardConfig, UserRole } from '@/types/user';
 
 export type { UserData, UserRole };

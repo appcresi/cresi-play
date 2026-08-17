@@ -1,6 +1,6 @@
 import { type Metadata } from 'next'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { db } from '@/lib/firebaseFirestore'
 
 // Antes esto era estático: TODAS las trivias (pueden ser cientos)
 // compartían el mismo título/descripción, así que Google las veía como

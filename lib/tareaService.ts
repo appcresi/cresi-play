@@ -20,7 +20,7 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebaseFirestore';
 import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
 
 const TareaService = {

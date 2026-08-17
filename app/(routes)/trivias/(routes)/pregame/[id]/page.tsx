@@ -5,7 +5,7 @@ import Link from 'next/link';
 import QRCode from 'react-qr-code';
 import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare, IconCopy, IconCheck } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { getActivityById } from '@/lib/activities';
 

@@ -1,6 +1,4 @@
 import { initializeApp, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,6 +17,8 @@ try {
   app = initializeApp(firebaseConfig);
 }
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Solo la app base acá — sin `auth` ni `firestore`. Un módulo que solo
+// necesita autenticación (como el layout raíz, montado en TODAS las
+// páginas) no debería arrastrar el SDK entero de Firestore solo por
+// compartir archivo con él. Ver lib/firebaseAuth.ts y lib/firebaseFirestore.ts.
 export default app;

@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   IconSearch,
@@ -310,9 +311,12 @@ const EducationalProgressPanel = () => {
                         style={{ backgroundColor: `${feature.color}15` }}
                       >
                         {feature.image && (
-                          <div
-                            className="absolute inset-0 opacity-20"
-                            style={{ backgroundImage: `url('${feature.image}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                          <Image
+                            src={feature.image}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            className="object-cover opacity-20"
                           />
                         )}
 

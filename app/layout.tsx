@@ -5,8 +5,7 @@ import Script from 'next/script'
 import './globals.css'
 import InactivityGuard from '@/components/InactivityGuard';
 
-import Analytics from '@/components/Analytics'
-import Adsense from '@/components/Adsense'
+import CookieConsent from '@/components/CookieConsent'
 import { AuthProvider } from '@/context/AuthContext'
 
 const monaSans = localFont({
@@ -104,11 +103,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
   return (
     <html lang='es' className={monaSans.className}>
       <head>
-        {/* Preload de imágenes críticas */}
-        <link rel="preload" href="/trivia.svg" as="image" />
-        <link rel="preload" href="/pasapalabras.svg" as="image" />
-        <link rel="preload" href="/simulador.svg" as="image" />
-        
+        {/* Antes había 3 <link rel="preload"> hardcodeados acá — pero esto
+            es el layout raíz, se aplica a TODAS las rutas, no solo a la
+            home (la única página que realmente usa esas 3 imágenes). En
+            cualquier otra ruta (juegos, panel docente, etc.) el navegador
+            gastaba ancho de banda temprano en 3 recursos que nunca se
+            usaban ahí, compitiendo con lo que sí importa en esa página —
+            grave en conexiones lentas. Ahora WelcomeLanding usa next/image
+            con `priority` en esas 3 tarjetas, que genera el preload
+            automáticamente y solo en la página que corresponde. */}
+
         {/* Schema.org - Organization */}
         <Script id="schema-org-organization" type="application/ld+json">
           {JSON.stringify({
@@ -166,8 +170,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
             {children}
           </main>
         </AuthProvider>
-        <Analytics />
-        <Adsense />
+        <CookieConsent />
       </body>
     </html>
   )

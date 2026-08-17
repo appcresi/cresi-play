@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Fredoka } from 'next/font/google';
 import { signInWithCustomToken } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebaseAuth';
 import ClassroomService from '@/lib/classroomService';
 import UserDataSync from '@/lib/userDataSync';
 import { IconLoader, IconArrowLeft, IconEye, IconEyeOff } from '@tabler/icons-react';

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
 import { IconRefresh, IconHome, IconDeviceFloppy } from '@tabler/icons-react';

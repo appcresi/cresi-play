@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Fredoka } from 'next/font/google';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebaseAuth';
 import UserDataSync from '@/lib/userDataSync';
 import { useAuth } from '@/context/AuthContext';
 import {

@@ -1,5 +1,5 @@
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebaseFirestore';
 
 export interface BankQuestion {
   id: string;

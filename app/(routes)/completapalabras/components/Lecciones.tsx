@@ -10,7 +10,7 @@ import {
   IconBabyCarriage
 } from "@tabler/icons-react";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebaseFirestore";
 import WordDragGame, { lessonProgressKey } from "./WordDragGame";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService from '@/lib/classroomService';

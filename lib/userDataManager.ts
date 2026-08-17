@@ -1,6 +1,6 @@
 import UserDataSync from '@/lib/userDataSync';
 import ClassroomService from '@/lib/classroomService';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebaseAuth';
 import type { UserData, MoodRecord, Achievement, UserRole } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES } from '@/lib/activities';
 

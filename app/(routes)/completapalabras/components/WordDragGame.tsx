@@ -7,7 +7,7 @@ import { WordPool } from './WordPool';
 import { GameControls } from './GameControls';
 import { processText, createWordsForLevel } from '../utils/gameUtils';
 import { GameLevel, Word, Blank, Lesson } from './types';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc } from 'firebase/firestore';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';

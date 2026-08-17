@@ -1,5 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Fredoka } from 'next/font/google';
 import {
@@ -243,10 +244,13 @@ const WelcomeLanding = () => {
                 className="h-32 rounded-t-[1.3rem] relative overflow-hidden flex items-center justify-center"
                 style={{ backgroundColor: `${activity.color}20` }}
               >
-                <img
+                <Image
                   src={activity.image}
                   alt=""
-                  className="h-full w-full object-contain scale-[1.35] p-1"
+                  fill
+                  sizes="224px"
+                  priority
+                  className="object-contain scale-[1.35] p-1"
                 />
                 <div
                   className="absolute bottom-2.5 left-2.5 w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md"
