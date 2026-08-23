@@ -101,20 +101,20 @@ export const TriviasPicker = ({
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="text-sm font-medium text-ink">Trivias visibles</h3>
+        <h3 className="text-sm font-medium text-ink dark:text-gray-100">Trivias visibles</h3>
         {!loadingTrivias && trivias.length > 0 && <SaveIndicator state={saveState} />}
       </div>
-      <p className="text-xs text-ink/60 mb-3">
+      <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
         Elegí cuáles de tus trivias pueden jugar los alumnos de esta clase — se guarda solo.
       </p>
 
       {loadingTrivias ? (
-        <div className="flex items-center justify-center py-8 text-ink/40">
+        <div className="flex items-center justify-center py-8 text-ink/40 dark:text-gray-500">
           <IconLoader className="w-5 h-5 animate-spin" />
         </div>
       ) : trivias.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-sm text-ink/60 mb-3">Todavía no creaste ninguna trivia.</p>
+          <p className="text-sm text-ink/60 dark:text-gray-400 mb-3">Todavía no creaste ninguna trivia.</p>
           <a
             href="/docente/trivias"
             className="text-coral-dark hover:underline text-sm font-medium"
@@ -128,7 +128,7 @@ export const TriviasPicker = ({
             <button onClick={selectAll} className="text-coral-dark hover:underline font-medium">
               Marcar todas
             </button>
-            <button onClick={selectNone} className="text-ink/60 hover:underline font-medium">
+            <button onClick={selectNone} className="text-ink/60 dark:text-gray-400 hover:underline font-medium">
               Desmarcar todas
             </button>
           </div>

@@ -164,19 +164,19 @@ export default function BuscadorClient(): JSX.Element {
   const trimmedQuery = query.trim();
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar title="Buscador de Preguntas" score={score} lives={lives} level={1} />
 
       <section className="w-full max-w-4xl mx-auto px-4 pt-24 pb-12">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
           <div className="h-20 md:h-24 relative" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiIC8+PC9zdmc+')] opacity-20"></div>
           </div>
           <div className="px-6 py-6">
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-1">
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
               Buscador de preguntas
             </h1>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               Buscá entre nuestro banco de preguntas sobre ESI — escribí una palabra y encontrá todo lo relacionado. +{POINTS_PER_SEARCH} puntos por cada búsqueda.
             </p>
             {isRestricted && (
@@ -188,13 +188,13 @@ export default function BuscadorClient(): JSX.Element {
         </div>
 
         <div className="relative mb-6">
-          <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por palabra clave..."
-            className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl text-base
+            className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl text-base
                        focus:outline-none focus:ring-2 focus:border-transparent transition-all shadow-sm"
             style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
           />
@@ -209,7 +209,7 @@ export default function BuscadorClient(): JSX.Element {
         {!loading && restrictionsResolved && trimmedQuery.length < MIN_QUERY_LENGTH && (
           <div className="text-center py-16">
             <IconSearch size={40} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               {trimmedQuery.length === 0
                 ? `Escribí una palabra para empezar a buscar entre ${visibleQuestions.length} preguntas.`
                 : `Escribí al menos ${MIN_QUERY_LENGTH} letras para buscar.`}
@@ -219,7 +219,7 @@ export default function BuscadorClient(): JSX.Element {
 
         {!loading && restrictionsResolved && trimmedQuery.length >= MIN_QUERY_LENGTH && (
           <>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {results.length > 0
                 ? `${results.length} resultado${results.length !== 1 ? 's' : ''} para "${trimmedQuery}"`
                 : `No se encontraron resultados para "${trimmedQuery}"`}
@@ -264,7 +264,7 @@ function QuestionResultCard({ question, onCopy, onViewInfo }: QuestionResultCard
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <span
@@ -274,7 +274,7 @@ function QuestionResultCard({ question, onCopy, onViewInfo }: QuestionResultCard
             <IconTag size={12} />
             {question.tag}
           </span>
-          <span className="text-xs text-gray-400">{question.category}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{question.category}</span>
         </div>
 
         <button
@@ -292,11 +292,11 @@ function QuestionResultCard({ question, onCopy, onViewInfo }: QuestionResultCard
         </button>
       </div>
 
-      <p className="text-base font-medium text-gray-900 mb-2">{question.question}</p>
+      <p className="text-base font-medium text-gray-900 dark:text-gray-100 mb-2">{question.question}</p>
 
-      <div className="bg-gray-50 rounded-lg p-3 mb-2">
-        <p className="text-xs font-medium text-gray-500 mb-1">Respuesta</p>
-        <p className="text-sm text-gray-700">{question.answer}</p>
+      <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-3 mb-2">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Respuesta</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300">{question.answer}</p>
       </div>
 
       {question.resume && (
@@ -307,7 +307,7 @@ function QuestionResultCard({ question, onCopy, onViewInfo }: QuestionResultCard
                 onClick={() => {
                   if (!open) onViewInfo();
                 }}
-                className="w-full flex items-center justify-between text-sm font-medium text-gray-500 hover:text-gray-700 py-1.5 transition-colors"
+                className="w-full flex items-center justify-between text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 py-1.5 transition-colors"
               >
                 <span className="flex items-center gap-1.5">
                   <IconInfoCircle size={15} />
@@ -320,7 +320,7 @@ function QuestionResultCard({ question, onCopy, onViewInfo }: QuestionResultCard
                 enterFrom="opacity-0 -translate-y-1"
                 enterTo="opacity-100 translate-y-0"
               >
-                <Disclosure.Panel className="text-sm text-gray-600 leading-relaxed pt-1 pb-1">
+                <Disclosure.Panel className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed pt-1 pb-1">
                   {question.resume}
                 </Disclosure.Panel>
               </Transition>

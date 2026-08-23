@@ -154,10 +154,10 @@ const EducationalProgressPanel = () => {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando tu panel...</p>
+            <p className="text-gray-600 dark:text-gray-400">Cargando tu panel...</p>
           </div>
         </div>
       </>
@@ -167,56 +167,56 @@ const EducationalProgressPanel = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="hidden lg:block lg:col-span-1">
             {/* Stats Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Tu Progreso</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Tu Progreso</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconCircle size={16} className="text-green-600" />
-                    <span className="text-sm text-gray-700">Completadas</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Completadas</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.progress.completedActivities.length}/{effectiveFeatures.length}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.progress.completedActivities.length}/{effectiveFeatures.length}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconTrophy size={16} className="text-yellow-500" />
-                    <span className="text-sm text-gray-700">Puntos</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Puntos</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.totalScore}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.game.totalScore}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconTarget size={16} className="text-blue-600" />
-                    <span className="text-sm text-gray-700">Racha</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Racha</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.streak} días</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.game.streak} días</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <IconHeart size={16} className="text-red-500" />
-                    <span className="text-sm text-gray-700">Vidas</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Vidas</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{userData.game.totalLives}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.game.totalLives}</span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(userData.progress.completedActivities.length / effectiveFeatures.length) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   {Math.round((userData.progress.completedActivities.length / effectiveFeatures.length) * 100)}% completado
                 </p>
               </div>
@@ -224,9 +224,9 @@ const EducationalProgressPanel = () => {
 
             {/* Mood Card */}
             {userData.mood.lastEntry && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-900">Estado de Ánimo</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Estado de Ánimo</h3>
                   <button
                     onClick={() => window.location.href = '/moodtracker'}
                     className="text-blue-600 hover:text-blue-700"
@@ -237,8 +237,8 @@ const EducationalProgressPanel = () => {
                 <div className="flex items-center space-x-2">
                   <IconMoodHappy className="text-blue-500" size={20} />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{userData.mood.lastEntry.label}</p>
-                    <p className="text-xs text-gray-500">Hoy</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.mood.lastEntry.label}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Hoy</p>
                   </div>
                 </div>
               </div>
@@ -252,19 +252,19 @@ const EducationalProgressPanel = () => {
               {/* Buscador */}
               <div className="relative flex-1 max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <IconSearch size={16} className="text-gray-400" />
+                  <IconSearch size={16} className="text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   type="text"
                   placeholder="Buscar actividades..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
                 {searchTerm && (
                   <button
                     onClick={clearSearch}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <IconX size={16} />
                   </button>
@@ -276,7 +276,7 @@ const EducationalProgressPanel = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer bg-white"
+                  className="w-full appearance-none pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer bg-white dark:bg-gray-800 dark:text-gray-100"
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
@@ -285,7 +285,7 @@ const EducationalProgressPanel = () => {
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                  <IconChevronRight size={16} className="text-gray-400 rotate-90" />
+                  <IconChevronRight size={16} className="text-gray-400 dark:text-gray-500 rotate-90" />
                 </div>
               </div>
             </div>
@@ -303,7 +303,7 @@ const EducationalProgressPanel = () => {
                       onClick={(e) => handleActivityClick(feature.title, feature.route, e)}
                       role="button"
                       tabIndex={0}
-                      className="relative bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 group hover:shadow-md cursor-pointer"
+                      className="relative bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 group hover:shadow-md cursor-pointer"
                     >
                       {/* Header */}
                       <div
@@ -355,13 +355,13 @@ const EducationalProgressPanel = () => {
                       {/* Content */}
                       <div className="p-2 md:p-4">
                         <div className="flex items-center justify-between mb-1 md:mb-2">
-                          <h3 className="font-medium text-gray-900 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100 text-xs md:text-sm group-hover:text-blue-700 transition-colors line-clamp-1">
                             {feature.title}
                           </h3>
-                          <IconChevronRight size={14} className="text-gray-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
+                          <IconChevronRight size={14} className="text-gray-400 dark:text-gray-500 group-hover:text-blue-600 transition-colors flex-shrink-0" />
                         </div>
 
-                        <p className="text-[10px] md:text-xs text-gray-600 mb-2 md:mb-3 line-clamp-2">
+                        <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mb-2 md:mb-3 line-clamp-2">
                           {feature.description}
                         </p>
 
@@ -400,10 +400,10 @@ const EducationalProgressPanel = () => {
                 <div className="col-span-full flex flex-col items-center justify-center py-12">
                   <div className="text-center">
                     <IconSearch size={48} className="text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                       No se encontraron actividades
                     </h3>
-                    <p className="text-gray-500 mb-4">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
                       Intentá con otros términos de búsqueda o cambiá la categoría.
                     </p>
                     <button

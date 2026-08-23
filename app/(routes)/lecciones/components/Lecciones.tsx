@@ -338,12 +338,12 @@ export default function Lecciones(): JSX.Element {
 											</div>
 
 											{/* Title */}
-											<h3 className="text-lg font-semibold text-gray-900 mb-2">
+											<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
 												{feature.title}
 											</h3>
 
 											{/* Description */}
-											<p className="text-sm text-gray-500 leading-relaxed mb-4">
+											<p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
 												{feature.description}
 											</p>
 
@@ -372,7 +372,7 @@ export default function Lecciones(): JSX.Element {
 														</span>
 													</div>
 													{/* Progress bar */}
-													<div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+													<div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
 														<div
 															className={`h-full bg-gradient-to-r ${colors.gradient} transition-all duration-500`}
 															style={{ width: `${correctPercentage}%` }}
@@ -434,10 +434,10 @@ export default function Lecciones(): JSX.Element {
 									<IconTrophy className="w-6 h-6 text-white" />
 								</div>
 								<div>
-									<p className="font-semibold text-gray-900">
+									<p className="font-semibold text-gray-900 dark:text-gray-100">
 										Tu progreso general
 									</p>
-									<p className="text-sm text-gray-500">
+									<p className="text-sm text-gray-500 dark:text-gray-400">
 										{
 											features.filter((f) => {
 												const p = getPercentage(f.title);

@@ -77,16 +77,16 @@ export default function LoveTestPage(): JSX.Element {
 					</div>
 				</div>
 
-				<div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
+				<div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 rounded-xl p-5">
 					<div className="flex items-start gap-3">
 						<div className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center shrink-0">
 							<IconHeart className="w-5 h-5 text-white" />
 						</div>
 						<div>
-							<p className="font-semibold text-amber-900 mb-1">
+							<p className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
 								¿Qué vas a lograr?
 							</p>
-							<p className="text-sm text-amber-700">
+							<p className="text-sm text-amber-700 dark:text-amber-300">
 								Identificarás patrones de violencia en tus relaciones y tomarás decisiones informadas sobre tu bienestar
 							</p>
 						</div>
@@ -94,22 +94,22 @@ export default function LoveTestPage(): JSX.Element {
 				</div>
 			</div>
 			{/* Support info */}
-			<div className="mt-8 bg-red-50 border border-red-100 rounded-xl p-6">
+			<div className="mt-8 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900 rounded-xl p-6">
 				<div className="flex items-start gap-3">
 					<div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center shrink-0">
 						<IconHeart className="w-5 h-5 text-white" />
 					</div>
 					<div>
-						<h3 className="font-semibold text-red-900 mb-2">
+						<h3 className="font-semibold text-red-900 dark:text-red-200 mb-2">
 							¿Estás en una relación violenta?
 						</h3>
-						<p className="text-sm text-red-700 mb-3">
+						<p className="text-sm text-red-700 dark:text-red-300 mb-3">
 							{testData.about}
 							Si reconocés que estás en una relación violenta, recordá que no estás sola/o. Existen recursos y profesionales dispuestos a ayudarte.
 						</p>
 						<a
 							href="https://www.cresi.com.ar/contacto"
-							className="text-sm text-red-600 hover:text-red-700 font-medium inline-flex items-center gap-1"
+							className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium inline-flex items-center gap-1"
 						>
 							Contacta con nosotros
 							<IconArrowRight className="w-4 h-4" />

@@ -197,17 +197,17 @@ export default function TatietiGame() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Selector de idioma */}
         <div className="flex justify-end mb-6">
-          <div className="flex gap-2 bg-white rounded-lg shadow-md p-2">
+          <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-md p-2">
             <button
               onClick={() => setLanguage('es')}
               className={`px-4 py-2 rounded font-semibold transition ${
                 language === 'es'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Español
@@ -217,7 +217,7 @@ export default function TatietiGame() {
               className={`px-4 py-2 rounded font-semibold transition ${
                 language === 'en'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               English
@@ -229,8 +229,8 @@ export default function TatietiGame() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Columna principal - Tablero */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">{t.currentGame}</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">{t.currentGame}</h3>
 
               {/* Mensaje de estado */}
               <div className={`rounded-lg p-4 mb-6 text-center font-semibold text-lg ${
@@ -287,27 +287,27 @@ export default function TatietiGame() {
           {/* Columna lateral - Estadísticas */}
           <div className="space-y-6">
             {/* Puntuación */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">{t.scores}</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">{t.scores}</h3>
               
               <div className="space-y-3">
                 <div className="border-l-4 border-green-500 pl-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
                     <img src={CONDOM_IMG} alt="Condom" className="w-8 h-8 rounded" />
-                    <span className="font-semibold text-gray-700">{t.you}</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">{t.you}</span>
                   </div>
                   <p className="text-3xl font-bold text-green-600">{scores.condom}</p>
                 </div>
 
                 <div className="border-l-4 border-yellow-500 pl-4 py-3">
-                  <span className="font-semibold text-gray-700">{t.draws}</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">{t.draws}</span>
                   <p className="text-3xl font-bold text-yellow-600">{scores.draws}</p>
                 </div>
 
                 <div className="border-l-4 border-red-500 pl-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
                     <img src={VIRUS_IMG} alt="Virus" className="w-8 h-8 rounded" />
-                    <span className="font-semibold text-gray-700">{t.virus}</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">{t.virus}</span>
                   </div>
                   <p className="text-3xl font-bold text-red-600">{scores.virus}</p>
                 </div>
@@ -315,19 +315,19 @@ export default function TatietiGame() {
             </div>
 
             {/* Información educativa */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-3">{t.education}</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">{t.education}</h3>
               <div className="bg-blue-50 border-l-4 border-blue-500 pl-4 py-3">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   {t.educationText}
                 </p>
               </div>
             </div>
 
             {/* Instrucciones */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-3">{t.howToPlay}</h3>
-              <ul className="text-sm text-gray-700 space-y-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3">{t.howToPlay}</h3>
+              <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
                 <li className="flex gap-2">
                   <span className="font-bold">1.</span>
                   <span>{t.step1}</span>

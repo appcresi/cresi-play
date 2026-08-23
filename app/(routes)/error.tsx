@@ -18,12 +18,12 @@ export default function ActivityError({
 
   return (
     <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 max-w-md text-center">
-        <div className="w-16 h-16 bg-pink-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-8 max-w-md text-center">
+        <div className="w-16 h-16 bg-pink-light dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">😢</span>
         </div>
-        <h2 className="text-xl font-semibold text-ink mb-2">No pudimos cargar esta actividad</h2>
-        <p className="text-ink/70 mb-6">
+        <h2 className="text-xl font-semibold text-ink dark:text-gray-100 mb-2">No pudimos cargar esta actividad</h2>
+        <p className="text-ink/70 dark:text-gray-400 mb-6">
           Algo falló al mostrar este juego. Podés intentar de nuevo o volver al inicio.
         </p>
         <div className="flex gap-3 justify-center">
@@ -36,7 +36,7 @@ export default function ActivityError({
           </button>
           <a
             href="/"
-            className="px-5 py-2 rounded-full bg-pink-light text-ink/80 font-medium hover:bg-pink transition-colors"
+            className="px-5 py-2 rounded-full bg-pink-light dark:bg-gray-700 text-ink/80 dark:text-gray-300 font-medium hover:bg-pink dark:hover:bg-gray-600 transition-colors"
           >
             Volver al inicio
           </a>

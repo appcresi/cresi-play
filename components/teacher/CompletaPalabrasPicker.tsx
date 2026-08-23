@@ -104,20 +104,20 @@ export const CompletaPalabrasPicker = ({
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="text-sm font-medium text-ink">Completa Palabras visible</h3>
+        <h3 className="text-sm font-medium text-ink dark:text-gray-100">Completa Palabras visible</h3>
         {!loadingLessons && lessons.length > 0 && <SaveIndicator state={saveState} />}
       </div>
-      <p className="text-xs text-ink/60 mb-3">
+      <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
         Elegí qué lecciones (de CrESI y las tuyas propias) pueden ver los alumnos de esta clase — se guarda solo.
       </p>
 
       {loadingLessons ? (
-        <div className="flex items-center justify-center py-8 text-ink/40">
+        <div className="flex items-center justify-center py-8 text-ink/40 dark:text-gray-500">
           <IconLoader className="w-5 h-5 animate-spin" />
         </div>
       ) : lessons.length === 0 ? (
         <div className="text-center py-6">
-          <p className="text-sm text-ink/60">Todavía no hay lecciones disponibles.</p>
+          <p className="text-sm text-ink/60 dark:text-gray-400">Todavía no hay lecciones disponibles.</p>
         </div>
       ) : (
         <>
@@ -125,7 +125,7 @@ export const CompletaPalabrasPicker = ({
             <button onClick={selectAll} className="hover:underline font-medium" style={{ color: ACCENT }}>
               Marcar todas
             </button>
-            <button onClick={selectNone} className="text-ink/60 hover:underline font-medium">
+            <button onClick={selectNone} className="text-ink/60 dark:text-gray-400 hover:underline font-medium">
               Desmarcar todas
             </button>
           </div>

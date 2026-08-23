@@ -222,7 +222,7 @@ const ClassroomDesk = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="w-full bg-pink-light rounded-full h-2">
+                  <div className="w-full bg-pink-light dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all duration-300"
                       style={{ width: `${progressPercent}%`, backgroundColor: bannerColor }}
@@ -279,7 +279,7 @@ const ClassroomDesk = () => {
               )}
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
-                <div className="px-5 py-3 border-b border-pink-light">
+                <div className="px-5 py-3 border-b border-pink-light dark:border-gray-700">
                   <h2 className="text-sm font-semibold text-ink/80 dark:text-gray-300">Actividades de la clase</h2>
                 </div>
 
@@ -288,7 +288,7 @@ const ClassroomDesk = () => {
                     No se encontraron actividades.
                   </div>
                 ) : (
-                  <ul className="divide-y divide-pink-light">
+                  <ul className="divide-y divide-pink-light dark:divide-gray-700">
                     {filteredActivities.map((activity) => {
                       const done = isCompleted(activity.title);
                       const score = getScore(activity.title);
@@ -355,7 +355,7 @@ const ClassroomDesk = () => {
                     <span className="text-sm font-bold">{userData.game.totalScore} pts</span>
                   </div>
                 </div>
-                <div className="w-full bg-pink-light rounded-full h-2 mt-3">
+                <div className="w-full bg-pink-light dark:bg-gray-700 rounded-full h-2 mt-3">
                   <div
                     className="h-2 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%`, backgroundColor: bannerColor }}
@@ -364,7 +364,7 @@ const ClassroomDesk = () => {
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
-                <div className="px-5 py-3 border-b border-pink-light">
+                <div className="px-5 py-3 border-b border-pink-light dark:border-gray-700">
                   <h2 className="text-sm font-semibold text-ink/80 dark:text-gray-300">Actividades completadas</h2>
                 </div>
 
@@ -373,7 +373,7 @@ const ClassroomDesk = () => {
                     Todavía no completaste ninguna actividad — van a aparecer acá apenas termines la primera.
                   </div>
                 ) : (
-                  <ul className="divide-y divide-pink-light">
+                  <ul className="divide-y divide-pink-light dark:divide-gray-700">
                     {completedActivitiesList.map((activity) => (
                       <li key={activity.id} className="flex items-center justify-between px-5 py-4">
                         <div className="flex items-center gap-3 min-w-0">

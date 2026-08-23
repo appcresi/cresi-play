@@ -75,14 +75,14 @@ export const TareasFeedSummary = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-6 text-ink/40">
+      <div className="flex items-center justify-center py-6 text-ink/40 dark:text-gray-500">
         <IconLoader className="w-5 h-5 animate-spin" />
       </div>
     );
   }
 
   if (tareas.length === 0) {
-    return <p className="text-xs text-ink/40">{emptyLabel}</p>;
+    return <p className="text-xs text-ink/40 dark:text-gray-500">{emptyLabel}</p>;
   }
 
   return (
@@ -91,7 +91,7 @@ export const TareasFeedSummary = ({
         const isPastDue = new Date(t.dueDate).getTime() < Date.now();
         const s = stats[t.id];
         return (
-          <li key={t.id} className="p-3 bg-cream rounded-lg border border-pink-light">
+          <li key={t.id} className="p-3 bg-cream dark:bg-gray-900/40 rounded-lg border border-pink-light dark:border-gray-700">
             <div
               className={`flex items-start gap-3 ${onOpenTarea ? 'cursor-pointer' : ''}`}
               onClick={() => onOpenTarea?.(t)}
@@ -102,27 +102,27 @@ export const TareasFeedSummary = ({
                 <IconClipboardList className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-ink truncate">{t.title}</p>
-                <p className="text-xs text-ink/60 line-clamp-1 mt-0.5">{t.consigna}</p>
-                <p className={`text-[11px] mt-1 ${isPastDue ? 'text-red-500' : 'text-ink/40'}`}>
+                <p className="text-sm font-semibold text-ink dark:text-gray-100 truncate">{t.title}</p>
+                <p className="text-xs text-ink/60 dark:text-gray-400 line-clamp-1 mt-0.5">{t.consigna}</p>
+                <p className={`text-[11px] mt-1 ${isPastDue ? 'text-red-500' : 'text-ink/40 dark:text-gray-500'}`}>
                   Entrega: {new Date(t.dueDate).toLocaleDateString('es-AR')} · {t.points} pts
                 </p>
               </div>
             </div>
 
             {showStats && s && (
-              <div className="flex items-center gap-5 mt-3 pt-3 border-t border-pink-light">
+              <div className="flex items-center gap-5 mt-3 pt-3 border-t border-pink-light dark:border-gray-700">
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-ink leading-none">{s.entregadas}</p>
-                  <p className="text-[10px] text-ink/60 mt-1">Entregadas</p>
+                  <p className="text-lg font-semibold text-ink dark:text-gray-100 leading-none">{s.entregadas}</p>
+                  <p className="text-[10px] text-ink/60 dark:text-gray-400 mt-1">Entregadas</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-ink leading-none">{totalStudents}</p>
-                  <p className="text-[10px] text-ink/60 mt-1">Asignadas</p>
+                  <p className="text-lg font-semibold text-ink dark:text-gray-100 leading-none">{totalStudents}</p>
+                  <p className="text-[10px] text-ink/60 dark:text-gray-400 mt-1">Asignadas</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-ink leading-none">{s.evaluadas}</p>
-                  <p className="text-[10px] text-ink/60 mt-1">Evaluadas</p>
+                  <p className="text-lg font-semibold text-ink dark:text-gray-100 leading-none">{s.evaluadas}</p>
+                  <p className="text-[10px] text-ink/60 dark:text-gray-400 mt-1">Evaluadas</p>
                 </div>
               </div>
             )}

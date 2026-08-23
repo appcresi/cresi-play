@@ -110,19 +110,19 @@ export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: str
   const now = Date.now();
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-pink-light overflow-hidden">
-      <div className="px-5 py-3 border-b border-pink-light">
-        <h2 className="text-sm font-semibold text-ink/80">Tareas asignadas</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
+      <div className="px-5 py-3 border-b border-pink-light dark:border-gray-700">
+        <h2 className="text-sm font-semibold text-ink dark:text-gray-100/80 dark:text-gray-300">Tareas asignadas</h2>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-ink/40">
+        <div className="flex items-center justify-center py-12 text-ink/40 dark:text-gray-500">
           <IconLoader className="w-6 h-6 animate-spin" />
         </div>
       ) : tareas.length === 0 ? (
-        <div className="p-8 text-center text-sm text-ink/40">Tu docente todavía no asignó ninguna tarea.</div>
+        <div className="p-8 text-center text-sm text-ink/40 dark:text-gray-500">Tu docente todavía no asignó ninguna tarea.</div>
       ) : (
-        <ul className="divide-y divide-pink-light">
+        <ul className="divide-y divide-pink-light dark:divide-gray-700">
           {tareas.map((t) => {
             const entrega = entregas[t.id];
             const isPastDue = new Date(t.dueDate).getTime() < now;
@@ -142,7 +142,7 @@ export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: str
               );
             } else {
               statusBadge = (
-                <span className={`flex items-center gap-1 text-xs font-medium ${isPastDue ? 'text-red-500' : 'text-ink/40'}`}>
+                <span className={`flex items-center gap-1 text-xs font-medium ${isPastDue ? 'text-red-500' : 'text-ink/40 dark:text-gray-500'}`}>
                   <IconClock className="w-3.5 h-3.5" /> {isPastDue ? 'Vencida' : 'Pendiente'}
                 </span>
               );
@@ -150,16 +150,16 @@ export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: str
 
             return (
               <li key={t.id}>
-                <button onClick={() => setOpenTarea(t)} className="w-full flex items-start gap-3 px-5 py-4 hover:bg-cream transition-colors text-left">
+                <button onClick={() => setOpenTarea(t)} className="w-full flex items-start gap-3 px-5 py-4 hover:bg-cream dark:hover:bg-gray-700 transition-colors text-left">
                   <div className="w-9 h-9 rounded-lg bg-mint text-mint-text flex items-center justify-center shrink-0">
                     <IconClipboardList className="w-4.5 h-4.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-ink">{t.title}</p>
-                    <p className="text-xs text-ink/60 mt-0.5 line-clamp-1">{t.consigna}</p>
+                    <p className="text-sm font-semibold text-ink dark:text-gray-100">{t.title}</p>
+                    <p className="text-xs text-ink/60 dark:text-gray-400 mt-0.5 line-clamp-1">{t.consigna}</p>
                     <div className="flex flex-wrap items-center gap-2 mt-1.5">
                       {statusBadge}
-                      <span className="text-[11px] text-ink/40">
+                      <span className="text-[11px] text-ink/40 dark:text-gray-500">
                         Entrega: {new Date(t.dueDate).toLocaleDateString('es-AR')}
                       </span>
                     </div>
@@ -227,17 +227,17 @@ const TareaDetailModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-pink-light">
-          <h2 className="text-lg font-bold text-ink">{tarea.title}</h2>
-          <button onClick={onClose} className="text-ink/40 hover:text-ink/70">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-pink-light dark:border-gray-700">
+          <h2 className="text-lg font-bold text-ink dark:text-gray-100">{tarea.title}</h2>
+          <button onClick={onClose} className="text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
-          <p className="text-sm text-ink/80 whitespace-pre-wrap">{tarea.consigna}</p>
-          <p className="text-xs text-ink/60">
+          <p className="text-sm text-ink/80 dark:text-gray-300 whitespace-pre-wrap">{tarea.consigna}</p>
+          <p className="text-xs text-ink/60 dark:text-gray-400">
             Entrega: {new Date(tarea.dueDate).toLocaleDateString('es-AR')} · vale {tarea.points} puntos
           </p>
 
@@ -254,27 +254,27 @@ const TareaDetailModal = ({
           )}
 
           {alreadyGraded ? (
-            <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-              <p className="text-sm font-semibold text-green-700 flex items-center gap-1.5">
+            <div className="p-4 bg-green-50 dark:bg-green-950/40 rounded-lg border border-green-100 dark:border-green-900">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-1.5">
                 <IconStar className="w-4 h-4" /> Calificada: {entrega?.grade} / {tarea.points} puntos
               </p>
-              {entrega?.feedback && <p className="text-sm text-green-700 mt-1.5">{entrega.feedback}</p>}
+              {entrega?.feedback && <p className="text-sm text-green-700 dark:text-green-300 mt-1.5">{entrega.feedback}</p>}
             </div>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-semibold text-ink mb-1">Tu respuesta (opcional)</label>
+                <label className="block text-sm font-semibold text-ink dark:text-gray-100 mb-1">Tu respuesta (opcional)</label>
                 <textarea
                   value={responseText}
                   onChange={(e) => setResponseText(e.target.value)}
                   rows={4}
                   placeholder="Escribí tu respuesta acá..."
-                  className="w-full px-3 py-2 border border-pink-light rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+                  className="w-full px-3 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                 />
               </div>
 
               {tarea.linkedActivity.type !== 'libre' && (
-                <label className="flex items-center gap-2 text-sm text-ink/80 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-ink/80 dark:text-gray-300 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={markedDone}

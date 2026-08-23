@@ -465,7 +465,7 @@ const MoodTracker = () => {
                     value={moodNote}
                     onChange={(e) => setMoodNote(e.target.value)}
                     placeholder="¿Qué te hizo sentir así?"
-                    className="w-full p-3 border border-pink-light rounded-xl focus:ring-2 focus:border-transparent resize-none h-24 text-sm"
+                    className="w-full p-3 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:border-transparent resize-none h-24 text-sm"
                     style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                 </div>

@@ -19,13 +19,13 @@ export default function EnterClassCodePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream to-pink flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full border border-ink/8 p-6 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-cream to-pink dark:from-gray-900 dark:to-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-w-sm w-full border border-ink/8 dark:border-gray-700 p-6 text-center">
         <div className="flex items-center justify-center mb-4">
           <Image src="/logocresi.svg" alt="CrESI" width={64} height={64} className="w-16 h-16" />
         </div>
-        <h1 className={`${fredoka.className} text-xl text-ink mb-1`}>¿Tenés un código de clase?</h1>
-        <p className="text-ink/60 text-xs mb-6">Ingresalo para continuar.</p>
+        <h1 className={`${fredoka.className} text-xl text-ink dark:text-gray-100 mb-1`}>¿Tenés un código de clase?</h1>
+        <p className="text-ink/60 dark:text-gray-400 text-xs mb-6">Ingresalo para continuar.</p>
 
         <input
           type="text"
@@ -34,8 +34,8 @@ export default function EnterClassCodePage() {
           onKeyDown={(e) => { if (e.key === 'Enter') handleContinue(); }}
           maxLength={8}
           autoFocus
-          className="w-full px-3 py-2.5 border border-ink/15 rounded-xl focus:outline-none
-                   focus:ring-2 focus:ring-coral bg-white text-ink text-sm tracking-widest
+          className="w-full px-3 py-2.5 border border-ink/15 dark:border-gray-600 rounded-xl focus:outline-none
+                   focus:ring-2 focus:ring-coral bg-white dark:bg-gray-700 text-ink dark:text-gray-100 text-sm tracking-widest
                    text-center font-bold uppercase mb-4"
           placeholder="EJ: A3F9K2"
         />
@@ -49,7 +49,7 @@ export default function EnterClassCodePage() {
           Continuar
         </button>
 
-        <Link href="/unirse" className="flex items-center justify-center gap-1 text-xs text-ink/40 hover:text-ink/70">
+        <Link href="/unirse" className="flex items-center justify-center gap-1 text-xs text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
           <IconArrowLeft className="w-3.5 h-3.5" /> No tengo código
         </Link>
       </div>

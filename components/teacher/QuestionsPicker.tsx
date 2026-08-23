@@ -101,24 +101,24 @@ export const QuestionsPicker = ({
   return (
     <div>
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="text-sm font-medium text-ink flex items-center gap-1.5">
+        <h3 className="text-sm font-medium text-ink dark:text-gray-100 flex items-center gap-1.5">
           <IconTag className="w-4 h-4 text-coral-dark" />
           Preguntas del buscador
         </h3>
         {!loadingQuestions && <SaveIndicator state={saveState} />}
       </div>
-      <p className="text-xs text-ink/60 mb-3">
+      <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
         Tocá una etiqueta para prenderla/apagarla en el buscador de tus alumnos — se guarda
         solo ({visibleTagCount}/{tags.length} etiquetas visibles). Para destildar preguntas
         puntuales dentro de una etiqueta permitida, tocá la flecha para desplegarla.
       </p>
 
       {loadingQuestions ? (
-        <div className="flex items-center justify-center py-8 text-ink/40">
+        <div className="flex items-center justify-center py-8 text-ink/40 dark:text-gray-500">
           <IconLoader className="w-5 h-5 animate-spin" />
         </div>
       ) : tags.length === 0 ? (
-        <p className="text-sm text-ink/60">No se pudo cargar el banco de preguntas.</p>
+        <p className="text-sm text-ink/60 dark:text-gray-400">No se pudo cargar el banco de preguntas.</p>
       ) : (
         <>
           <div className="flex items-center gap-3 mb-3">
@@ -126,13 +126,13 @@ export const QuestionsPicker = ({
               Permitir todas
             </button>
             <div className="relative flex-1 max-w-xs">
-              <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink/40" />
+              <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink/40 dark:text-gray-500" />
               <input
                 type="text"
                 value={tagFilter}
                 onChange={(e) => setTagFilter(e.target.value)}
                 placeholder="Filtrar etiquetas..."
-                className="w-full pl-8 pr-2 py-1.5 text-xs border border-pink-light rounded-lg
+                className="w-full pl-8 pr-2 py-1.5 text-xs border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg
                          focus:outline-none focus:ring-2 focus:ring-coral"
               />
             </div>
@@ -150,7 +150,7 @@ export const QuestionsPicker = ({
                   key={tag}
                   className={`rounded-xl border-2 p-3 transition-all min-w-0 ${
                     isBlocked
-                      ? 'border-pink-light opacity-50 grayscale'
+                      ? 'border-pink-light dark:border-gray-700 opacity-50 grayscale'
                       : 'border-transparent shadow-sm'
                   }`}
                   style={!isBlocked ? { borderColor: QUESTIONS_ACCENT, backgroundColor: `${QUESTIONS_ACCENT}0D` } : undefined}
@@ -172,8 +172,8 @@ export const QuestionsPicker = ({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-ink leading-tight mb-0.5 break-words">{tag}</p>
-                    <p className="text-[10px] text-ink/60 leading-tight">
+                    <p className="text-xs font-semibold text-ink dark:text-gray-100 leading-tight mb-0.5 break-words">{tag}</p>
+                    <p className="text-[10px] text-ink/60 dark:text-gray-400 leading-tight">
                       {questionsForTag.length} pregunta{questionsForTag.length !== 1 ? 's' : ''}
                       {blockedInTag > 0 && !isBlocked && ` · ${blockedInTag} bloqueada${blockedInTag !== 1 ? 's' : ''}`}
                     </p>
@@ -183,7 +183,7 @@ export const QuestionsPicker = ({
                     <button
                       type="button"
                       onClick={() => setExpandedTag(isExpanded ? null : tag)}
-                      className="w-full flex items-center justify-center gap-1 text-[10px] text-ink/60 hover:text-coral-dark mt-2 pt-2 border-t border-pink-light"
+                      className="w-full flex items-center justify-center gap-1 text-[10px] text-ink/60 dark:text-gray-400 hover:text-coral-dark mt-2 pt-2 border-t border-pink-light dark:border-gray-700"
                     >
                       {isExpanded ? 'Ocultar preguntas' : 'Ver preguntas'}
                       <IconChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -191,7 +191,7 @@ export const QuestionsPicker = ({
                   )}
 
                   {isExpanded && !isBlocked && (
-                    <div className="mt-2 pt-2 border-t border-pink-light space-y-1.5 max-h-48 overflow-y-auto">
+                    <div className="mt-2 pt-2 border-t border-pink-light dark:border-gray-700 space-y-1.5 max-h-48 overflow-y-auto">
                       {questionsForTag.map((q) => {
                         const isQuestionBlocked = blockedQuestionIds.has(q.id);
                         return (
@@ -205,7 +205,7 @@ export const QuestionsPicker = ({
                               onChange={() => toggleQuestion(q.id)}
                               className="mt-0.5 shrink-0"
                             />
-                            <span className={isQuestionBlocked ? 'text-ink/40 line-through' : 'text-ink/80'}>
+                            <span className={isQuestionBlocked ? 'text-ink/40 dark:text-gray-500 line-through' : 'text-ink/80 dark:text-gray-300'}>
                               {q.question}
                             </span>
                           </label>

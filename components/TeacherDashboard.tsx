@@ -272,7 +272,7 @@ const TeacherDashboard = () => {
       <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-coral mx-auto mb-3" />
-          <p className="text-sm text-ink/60">Cargando tus clases...</p>
+          <p className="text-sm text-ink/60 dark:text-gray-400">Cargando tus clases...</p>
         </div>
       </div>
     );

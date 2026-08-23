@@ -79,21 +79,21 @@ export const AddStudentsModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <div className="flex items-center justify-between p-5 border-b border-pink-light">
-          <h2 className="text-lg font-bold text-ink">Añadir estudiantes</h2>
-          <button onClick={onClose} className="text-ink/40 hover:text-ink/70">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+        <div className="flex items-center justify-between p-5 border-b border-pink-light dark:border-gray-700">
+          <h2 className="text-lg font-bold text-ink dark:text-gray-100">Añadir estudiantes</h2>
+          <button onClick={onClose} className="text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
             <IconX className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex border-b border-pink-light px-5">
+        <div className="flex border-b border-pink-light dark:border-gray-700 px-5">
           <button
             onClick={() => { setTab('individual'); setError(''); }}
             className={`py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === 'individual'
                 ? 'border-coral text-coral-dark'
-                : 'border-transparent text-ink/60 hover:text-ink/80'
+                : 'border-transparent text-ink/60 dark:text-gray-400 hover:text-ink/80 dark:hover:text-gray-200'
             }`}
           >
             Añadir individualmente
@@ -103,7 +103,7 @@ export const AddStudentsModal = ({
             className={`py-3 px-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === 'masiva'
                 ? 'border-coral text-coral-dark'
-                : 'border-transparent text-ink/60 hover:text-ink/80'
+                : 'border-transparent text-ink/60 dark:text-gray-400 hover:text-ink/80 dark:hover:text-gray-200'
             }`}
           >
             Añadir de forma masiva
@@ -114,8 +114,8 @@ export const AddStudentsModal = ({
           {tab === 'individual' ? (
             <>
               <div>
-                <label className="block text-sm font-bold text-ink mb-1">Estudiante</label>
-                <p className="text-xs text-ink/60 mb-2">
+                <label className="block text-sm font-bold text-ink dark:text-gray-100 mb-1">Estudiante</label>
+                <p className="text-xs text-ink/60 dark:text-gray-400 mb-2">
                   Cómo saber quién es quién en tu clase. Por ejemplo, Maria L. Mínimo 3 caracteres.
                   Admite letras, números y símbolos.
                 </p>
@@ -125,14 +125,14 @@ export const AddStudentsModal = ({
                   onChange={(e) => { setName(e.target.value); setError(''); }}
                   placeholder="Por ejemplo, María L."
                   disabled={saving}
-                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm
+                  className="w-full px-3 py-2.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm
                            focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-ink mb-1">Inicio de sesión de estudiante</label>
-                <p className="text-xs text-ink/60 mb-2">
+                <label className="block text-sm font-bold text-ink dark:text-gray-100 mb-1">Inicio de sesión de estudiante</label>
+                <p className="text-xs text-ink/60 dark:text-gray-400 mb-2">
                   Contraseña única que este estudiante utilizará para iniciar sesión. Mínimo 3 caracteres.
                   Admite letras, números y símbolos.
                 </p>
@@ -142,7 +142,7 @@ export const AddStudentsModal = ({
                   onChange={(e) => { setPassword(e.target.value); setError(''); }}
                   placeholder="Por ejemplo, MarL632"
                   disabled={saving}
-                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm
+                  className="w-full px-3 py-2.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm
                            focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
@@ -153,7 +153,7 @@ export const AddStudentsModal = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
+                  className="px-5 py-2 rounded-full border border-pink-light dark:border-gray-700 text-ink/80 dark:text-gray-300 text-sm font-medium hover:bg-cream dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </button>
@@ -161,7 +161,7 @@ export const AddStudentsModal = ({
                   onClick={handleAddIndividual}
                   disabled={!isValidIndividual || saving}
                   className="px-5 py-2 rounded-full bg-coral text-white text-sm font-medium
-                           hover:bg-coral-dark disabled:bg-pink-light disabled:cursor-not-allowed
+                           hover:bg-coral-dark disabled:bg-pink-light dark:disabled:bg-gray-700 disabled:cursor-not-allowed
                            flex items-center gap-2"
                 >
                   {saving && <IconLoader className="w-4 h-4 animate-spin" />}
@@ -172,8 +172,8 @@ export const AddStudentsModal = ({
           ) : (
             <>
               <div>
-                <label className="block text-sm font-bold text-ink mb-1">Lista de estudiantes</label>
-                <p className="text-xs text-ink/60 mb-2">
+                <label className="block text-sm font-bold text-ink dark:text-gray-100 mb-1">Lista de estudiantes</label>
+                <p className="text-xs text-ink/60 dark:text-gray-400 mb-2">
                   Una línea por estudiante, con el formato: <span className="font-mono">Nombre, contraseña</span>
                 </p>
                 <textarea
@@ -182,7 +182,7 @@ export const AddStudentsModal = ({
                   disabled={savingBulk}
                   rows={6}
                   placeholder={'María L., MarL632\nJuan P., JuaP219'}
-                  className="w-full px-3 py-2.5 border border-pink-light rounded-lg text-sm font-mono
+                  className="w-full px-3 py-2.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm font-mono
                            focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
                 />
               </div>
@@ -206,7 +206,7 @@ export const AddStudentsModal = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2 rounded-full border border-pink-light text-ink/80 text-sm font-medium hover:bg-cream"
+                  className="px-5 py-2 rounded-full border border-pink-light dark:border-gray-700 text-ink/80 dark:text-gray-300 text-sm font-medium hover:bg-cream dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </button>
@@ -214,7 +214,7 @@ export const AddStudentsModal = ({
                   onClick={handleAddBulk}
                   disabled={savingBulk || !bulkText.trim()}
                   className="px-5 py-2 rounded-full bg-coral text-white text-sm font-medium
-                           hover:bg-coral-dark disabled:bg-pink-light disabled:cursor-not-allowed
+                           hover:bg-coral-dark disabled:bg-pink-light dark:disabled:bg-gray-700 disabled:cursor-not-allowed
                            flex items-center gap-2"
                 >
                   {savingBulk && <IconLoader className="w-4 h-4 animate-spin" />}

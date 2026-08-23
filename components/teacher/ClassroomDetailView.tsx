@@ -162,7 +162,7 @@ export const ClassroomDetailView = ({
                 {showClassMenu && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowClassMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-pink-light py-1 z-20">
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-pink-light dark:border-gray-700 py-1 z-20">
                       <button
                         onClick={() => { setShowClassMenu(false); onDeleteClass(); }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -180,14 +180,14 @@ export const ClassroomDetailView = ({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-pink-light bg-white sticky top-0 z-10">
+      <div className="border-b border-pink-light dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 flex gap-6 overflow-x-auto">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
-                tab === t.key ? 'border-coral text-coral-dark' : 'border-transparent text-ink/60 hover:text-ink/80'
+                tab === t.key ? 'border-coral text-coral-dark' : 'border-transparent text-ink/60 dark:text-gray-400 hover:text-ink/80 dark:hover:text-gray-200'
               }`}
             >
               {t.label}
@@ -202,21 +202,21 @@ export const ClassroomDetailView = ({
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 items-start">
             {/* Columna chica: código de la clase + próximas a entregar */}
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-sm border border-pink-light p-4">
-                <h3 className="text-sm font-medium text-ink mb-1">Código de la clase</h3>
-                <p className="text-xs text-ink/60 mb-3">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-4">
+                <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-1">Código de la clase</h3>
+                <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
                   Compartí el link con tus alumnos — entran con un clic.
                 </p>
                 <button
                   onClick={() => onCopyCode(classroom.code)}
                   title="Copiar link para compartir con tus alumnos"
-                  className="flex items-center gap-2 px-3 py-2 bg-cream hover:bg-pink-light
-                           rounded-lg text-sm font-mono font-bold tracking-widest text-ink transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-cream dark:bg-gray-700 hover:bg-pink-light dark:hover:bg-gray-600
+                           rounded-lg text-sm font-mono font-bold tracking-widest text-ink dark:text-gray-100 transition-colors"
                 >
                   {classroom.code}
                   {copiedCode === classroom.code
                     ? <IconCheck className="w-4 h-4 text-green-600" />
-                    : <IconCopy className="w-4 h-4 text-ink/40" />}
+                    : <IconCopy className="w-4 h-4 text-ink/40 dark:text-gray-500" />}
                 </button>
                 {copiedCode === classroom.code && (
                   <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
@@ -228,8 +228,8 @@ export const ClassroomDetailView = ({
 
             {/* Columna grande: tareas, actividades y trivias */}
             <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-sm border border-pink-light p-5">
-                <h3 className="text-sm font-medium text-ink mb-3">Tareas</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5">
+                <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Tareas</h3>
                 <TareasFeedSummary
                   classroomId={classroom.id}
                   emptyLabel="Todavía no asignaste ninguna tarea."
@@ -239,13 +239,13 @@ export const ClassroomDetailView = ({
                 />
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-pink-light p-5">
-                <h3 className="text-sm font-medium text-ink mb-3">Actividades de esta clase</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5">
+                <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Actividades de esta clase</h3>
                 <VisibleActivitiesSummary classroom={classroom} />
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-pink-light p-5">
-                <h3 className="text-sm font-medium text-ink mb-3">Trivias de esta clase</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5">
+                <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Trivias de esta clase</h3>
                 <VisibleTriviasSummary classroom={classroom} teacherId={teacherId} />
               </div>
             </div>
@@ -271,23 +271,23 @@ export const ClassroomDetailView = ({
         {/* ── Personas ── */}
         {tab === 'personas' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow-sm border border-pink-light p-4">
-              <h3 className="text-[11px] font-medium text-ink/60 uppercase mb-2">Profesor</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-4">
+              <h3 className="text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase mb-2">Profesor</h3>
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-mint text-mint-text flex items-center justify-center text-sm font-bold shrink-0">
                   {teacherName.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm font-medium text-ink">{teacherName}</span>
+                <span className="text-sm font-medium text-ink dark:text-gray-100">{teacherName}</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-pink-light overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-pink-light">
-                <h3 className="text-[11px] font-medium text-ink/60 uppercase">Alumnos</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-pink-light dark:border-gray-700">
+                <h3 className="text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase">Alumnos</h3>
                 <button
                   onClick={onOpenAddStudents}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-mint hover:bg-mint-light
-                           text-mint-text rounded-lg text-xs font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-mint dark:bg-gray-700 hover:bg-mint-light dark:hover:bg-gray-600
+                           text-mint-text dark:text-mint-accent rounded-lg text-xs font-medium transition-colors"
                 >
                   <IconUserPlus className="w-4 h-4" />
                   Añadir
@@ -295,9 +295,9 @@ export const ClassroomDetailView = ({
               </div>
 
               {loadingRoster ? (
-                <p className="text-xs text-ink/60 p-4">Cargando alumnos...</p>
+                <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Cargando alumnos...</p>
               ) : students.length === 0 && pending.length === 0 ? (
-                <p className="text-xs text-ink/60 p-4">Todavía no hay alumnos en esta clase.</p>
+                <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Todavía no hay alumnos en esta clase.</p>
               ) : (
                 <StudentsGrid
                   mode="personas"
@@ -317,14 +317,14 @@ export const ClassroomDetailView = ({
 
         {/* ── Calificaciones ── */}
         {tab === 'calificaciones' && (
-          <div className="bg-white rounded-lg shadow-sm border border-pink-light overflow-hidden">
-            <div className="p-4 border-b border-pink-light">
-              <h3 className="text-[11px] font-medium text-ink/60 uppercase">Calificaciones</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
+            <div className="p-4 border-b border-pink-light dark:border-gray-700">
+              <h3 className="text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase">Calificaciones</h3>
             </div>
             {loadingRoster ? (
-              <p className="text-xs text-ink/60 p-4">Cargando...</p>
+              <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Cargando...</p>
             ) : students.length === 0 ? (
-              <p className="text-xs text-ink/60 p-4">
+              <p className="text-xs text-ink/60 dark:text-gray-400 p-4">
                 Todavía no hay alumnos con progreso — van a aparecer acá apenas jueguen algo.
               </p>
             ) : (

@@ -309,7 +309,7 @@ const UserProfile: React.FC = () => {
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actividades completadas</span>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{completedCatalogActivities.length} / {totalVisibleActivities}</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
+                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${programPercentage}%` }}

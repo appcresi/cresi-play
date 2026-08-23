@@ -416,7 +416,7 @@ export default function MemeGenerator() {
             </div>
 
             {/* Main canvas area */}
-            <div className="flex-1 p-4 bg-gray-50 flex items-center justify-center">
+            <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-900/40 flex items-center justify-center">
               <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <canvas
                   ref={canvasRef}
@@ -456,7 +456,7 @@ export default function MemeGenerator() {
                       className={`cursor-pointer rounded-lg p-1 border transition-colors ${
                         selectedMeme?.id === template.id
                           ? ''
-                          : 'border-transparent hover:bg-gray-50'
+                          : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                       style={selectedMeme?.id === template.id ? { borderColor: ACCENT, backgroundColor: `${ACCENT}0D` } : undefined}
                     >

@@ -61,7 +61,7 @@ export const StudentsGrid = ({
   const SortHeader = ({ label, sortableKey }: { label: string; sortableKey: SortKey }) => (
     <th
       onClick={() => toggleSort(sortableKey)}
-      className="text-left text-[11px] font-medium text-ink/60 uppercase px-3 py-2 cursor-pointer
+      className="text-left text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase px-3 py-2 cursor-pointer
                hover:text-coral-dark select-none whitespace-nowrap"
     >
       {label} {sortKey === sortableKey && (sortDir === 'asc' ? '▲' : '▼')}
@@ -74,11 +74,11 @@ export const StudentsGrid = ({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-pink-light">
+          <tr className="border-b border-pink-light dark:border-gray-700">
             <SortHeader label="Alumno" sortableKey="username" />
             {isCalificaciones ? (
               <>
-                <th className="text-left text-[11px] font-medium text-ink/60 uppercase px-3 py-2 whitespace-nowrap">
+                <th className="text-left text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase px-3 py-2 whitespace-nowrap">
                   Progreso
                 </th>
                 <SortHeader label="Completadas" sortableKey="completed" />
@@ -99,7 +99,7 @@ export const StudentsGrid = ({
               <tr
                 key={s.uid}
                 onClick={isCalificaciones ? () => onSelectStudent(s) : undefined}
-                className={`border-b border-pink-light transition-colors ${
+                className={`border-b border-pink-light dark:border-gray-700 transition-colors ${
                   isCalificaciones ? 'hover:bg-cream cursor-pointer' : ''
                 }`}
               >
@@ -112,7 +112,7 @@ export const StudentsGrid = ({
                       height={24}
                       className="w-6 h-6 rounded-full object-cover border border-pink-light"
                     />
-                    <span className="font-medium text-ink whitespace-nowrap">{s.username}</span>
+                    <span className="font-medium text-ink dark:text-gray-100 whitespace-nowrap">{s.username}</span>
                   </div>
                 </td>
 
@@ -120,16 +120,16 @@ export const StudentsGrid = ({
                   <>
                     <td className="px-3 py-2 min-w-[120px]">
                       <div className="flex items-center gap-2">
-                        <div className="w-20 bg-pink-light rounded-full h-1.5">
+                        <div className="w-20 bg-pink-light dark:bg-gray-700 rounded-full h-1.5">
                           <div
                             className="bg-coral h-1.5 rounded-full"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <span className="text-xs text-ink/60">{percentage}%</span>
+                        <span className="text-xs text-ink/60 dark:text-gray-400">{percentage}%</span>
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-ink/80 whitespace-nowrap">
+                    <td className="px-3 py-2 text-ink/80 dark:text-gray-300 whitespace-nowrap">
                       {completed}/{totalActivities}
                     </td>
                     <td className="px-3 py-2 text-yellow-700 font-medium whitespace-nowrap">
@@ -140,7 +140,7 @@ export const StudentsGrid = ({
                     </td>
                   </>
                 ) : (
-                  <td className="px-3 py-2 text-ink/60 whitespace-nowrap text-xs">
+                  <td className="px-3 py-2 text-ink/60 dark:text-gray-400 whitespace-nowrap text-xs">
                     {formatDate(s.progress?.lastActive)}
                   </td>
                 )}
@@ -150,14 +150,14 @@ export const StudentsGrid = ({
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); onManageStudentCredentials(s); }}
-                        className="text-ink/25 hover:text-coral-dark"
+                        className="text-ink/25 dark:text-gray-600 hover:text-coral-dark"
                         title="Ver/cambiar usuario y contraseña"
                       >
                         <IconKey className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); onRemoveStudent(s.uid); }}
-                        className="text-ink/25 hover:text-red-600"
+                        className="text-ink/25 dark:text-gray-600 hover:text-red-600"
                         title="Eliminar alumno"
                       >
                         <IconX className="w-4 h-4" />
@@ -170,9 +170,9 @@ export const StudentsGrid = ({
           })}
 
           {!isCalificaciones && pending.map((p) => (
-            <tr key={p.id} className="border-b border-pink-light bg-amber-50/50">
+            <tr key={p.id} className="border-b border-pink-light dark:border-gray-700 bg-amber-50/50 dark:bg-amber-950/20">
               <td className="px-3 py-2">
-                <span className="font-medium text-ink/60">{p.username}</span>
+                <span className="font-medium text-ink/60 dark:text-gray-400">{p.username}</span>
               </td>
               <td className="px-3 py-2 text-xs text-amber-600">
                 Todavía no inició sesión
@@ -181,14 +181,14 @@ export const StudentsGrid = ({
                 <div className="flex items-center justify-end gap-1">
                   <button
                     onClick={() => onManagePendingCredentials(p)}
-                    className="text-ink/25 hover:text-coral-dark"
+                    className="text-ink/25 dark:text-gray-600 hover:text-coral-dark"
                     title="Ver/cambiar usuario y contraseña"
                   >
                     <IconKey className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onRemovePending(p.id)}
-                    className="text-ink/25 hover:text-red-600"
+                    className="text-ink/25 dark:text-gray-600 hover:text-red-600"
                     title="Eliminar"
                   >
                     <IconX className="w-4 h-4" />

@@ -141,7 +141,7 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Progreso</span>
                 <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{correctPercentage.toFixed(0)}%</span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
                   style={{ width: `${correctPercentage}%` }}

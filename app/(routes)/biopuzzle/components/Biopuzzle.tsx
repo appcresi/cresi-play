@@ -301,7 +301,7 @@ export default function AnatomiaApp() {
                   <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{score} / {bodyParts.length}</span>
                 </div>
 
-                <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mb-3">
                   <div
                     className="h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(score / bodyParts.length) * 100}%`, backgroundColor: ACCENT }}

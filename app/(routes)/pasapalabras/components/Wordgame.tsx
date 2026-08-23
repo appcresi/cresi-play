@@ -414,7 +414,7 @@ const UnifiedWordGame = () => {
               {/* Área de respuesta en el centro */}
               <div className="absolute inset-0 flex flex-col justify-center items-center z-30">
                 {currentWord && (
-                  <div className="flex flex-col items-center gap-3 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-100">
+                  <div className={`flex flex-col items-center gap-3 backdrop-blur-sm rounded-2xl p-4 shadow-xl border ${isNightMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-100'}`}>
                     <input
                       type="text"
                       value={inputValue}
@@ -427,7 +427,7 @@ const UnifiedWordGame = () => {
                         }
                       }}
                       autoFocus
-                      className="w-48 px-4 py-2 text-base text-gray-900 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 transition-all text-center font-medium shadow-sm"
+                      className={`w-48 px-4 py-2 text-base border-2 rounded-xl focus:outline-none focus:ring-2 transition-all text-center font-medium shadow-sm ${isNightMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'}`}
                       style={{ borderColor: `${ACCENT}80` }}
                       placeholder="Respuesta"
                     />

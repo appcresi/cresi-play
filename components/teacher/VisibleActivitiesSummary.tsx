@@ -11,7 +11,7 @@ export const VisibleActivitiesSummary = ({ classroom }: { classroom: Classroom }
     : ACTIVITIES_CATALOG;
 
   if (visible.length === 0) {
-    return <p className="text-xs text-ink/40">Todavía no hay actividades seleccionadas.</p>;
+    return <p className="text-xs text-ink/40 dark:text-gray-500">Todavía no hay actividades seleccionadas.</p>;
   }
 
   return (
@@ -28,8 +28,8 @@ export const VisibleActivitiesSummary = ({ classroom }: { classroom: Classroom }
           >
             <ActivityIcon iconName={activity.iconName} className="w-5 h-5" />
           </div>
-          <p className="text-xs font-semibold text-ink leading-tight mb-0.5 break-words">{activity.title}</p>
-          <p className="text-[10px] text-ink/60 leading-tight">{activity.category}</p>
+          <p className="text-xs font-semibold text-ink dark:text-gray-100 leading-tight mb-0.5 break-words">{activity.title}</p>
+          <p className="text-[10px] text-ink/60 dark:text-gray-400 leading-tight">{activity.category}</p>
         </div>
       ))}
     </div>

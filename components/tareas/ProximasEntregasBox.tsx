@@ -29,16 +29,16 @@ export const ProximasEntregasBox = ({ classroomId }: { classroomId: string }) =>
   if (upcoming === null || upcoming.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-pink-light p-4">
-      <h3 className="text-sm font-medium text-ink mb-3 flex items-center gap-1.5">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-4">
+      <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3 flex items-center gap-1.5">
         <IconClock className="w-4 h-4 text-coral-dark" />
         Próximas a entregar
       </h3>
       <ul className="space-y-2">
         {upcoming.map((t) => (
           <li key={t.id} className="text-xs">
-            <p className="font-medium text-ink truncate">{t.title}</p>
-            <p className="text-ink/60">{new Date(t.dueDate).toLocaleDateString('es-AR')}</p>
+            <p className="font-medium text-ink dark:text-gray-100 truncate">{t.title}</p>
+            <p className="text-ink/60 dark:text-gray-400">{new Date(t.dueDate).toLocaleDateString('es-AR')}</p>
           </li>
         ))}
       </ul>

@@ -48,10 +48,10 @@ export default function DeleteConfirmModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-2xl border border-pink-light w-full max-w-md p-6">
+      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-pink-light dark:border-gray-700 w-full max-w-md p-6">
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1.5 text-ink/40 hover:text-ink/70 hover:bg-pink-light rounded-lg transition"
+          className="absolute top-4 right-4 p-1.5 text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300 hover:bg-pink-light dark:hover:bg-gray-700 rounded-lg transition"
           aria-label="Cerrar"
         >
           <IconX size={18} />
@@ -63,12 +63,12 @@ export default function DeleteConfirmModal({
           </div>
 
           <div>
-            <h2 id="delete-modal-title" className="text-lg font-bold text-ink mb-1">
+            <h2 id="delete-modal-title" className="text-lg font-bold text-ink dark:text-gray-100 mb-1">
               ¿Eliminar trivia?
             </h2>
-            <p className="text-ink/60 text-sm">
+            <p className="text-ink/60 dark:text-gray-400 text-sm">
               Vas a eliminar{' '}
-              <span className="font-semibold text-ink">"{triviaName}"</span>.
+              <span className="font-semibold text-ink dark:text-gray-100">"{triviaName}"</span>.
               Esta acción no se puede deshacer.
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function DeleteConfirmModal({
             <button
               ref={cancelRef}
               onClick={onCancel}
-              className="flex-1 px-4 py-2.5 bg-pink-light hover:bg-pink text-ink/80 font-semibold rounded-lg transition"
+              className="flex-1 px-4 py-2.5 bg-pink-light dark:bg-gray-700 hover:bg-pink dark:hover:bg-gray-600 text-ink/80 dark:text-gray-300 font-semibold rounded-lg transition"
             >
               Cancelar
             </button>

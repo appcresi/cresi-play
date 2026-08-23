@@ -290,7 +290,7 @@ export default function ESIImpostor() {
                 <div className="flex items-center gap-3 justify-center">
                   <button
                     onClick={() => changeNumPlayers(-1)}
-                    className="p-2 rounded-full border-2 hover:bg-gray-50 transition"
+                    className="p-2 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     style={{ borderColor: ACCENT, color: ACCENT }}
                   >
                     <IconMinus size={20} />
@@ -298,7 +298,7 @@ export default function ESIImpostor() {
                   <span className="text-4xl font-bold w-20 text-center" style={{ color: ACCENT }}>{numPlayers}</span>
                   <button
                     onClick={() => changeNumPlayers(1)}
-                    className="p-2 rounded-full border-2 hover:bg-gray-50 transition"
+                    className="p-2 rounded-full border-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     style={{ borderColor: ACCENT, color: ACCENT }}
                   >
                     <IconPlus size={20} />
@@ -407,7 +407,7 @@ export default function ESIImpostor() {
                         >
                           {currentTerm.category}
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-xl max-w-md mx-auto">
+                        <div className="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl max-w-md mx-auto">
                           <p className="text-gray-600 dark:text-gray-400 text-sm italic">{currentTerm.definition}</p>
                         </div>
                       </>
@@ -430,7 +430,7 @@ export default function ESIImpostor() {
 
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-gray-100 rounded-full h-2">
+                  <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all"
                       style={{ width: `${((currentPlayerIndex + 1) / numPlayers) * 100}%`, backgroundColor: ACCENT }}
@@ -453,7 +453,7 @@ export default function ESIImpostor() {
                   <div className="flex gap-3 justify-center mt-6">
                     <button
                       onClick={() => setTimerActive(!timerActive)}
-                      className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-full font-semibold transition text-sm"
+                      className="px-6 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full font-semibold transition text-sm"
                     >
                       {timerActive ? '⏸ Pausar' : '▶ Reanudar'}
                     </button>
@@ -490,7 +490,7 @@ export default function ESIImpostor() {
                   >
                     {currentTerm.category}
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-xl mb-5">
+                  <div className="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl mb-5">
                     <p className="text-gray-600 dark:text-gray-400 text-sm italic">{currentTerm.definition}</p>
                   </div>
                 </div>

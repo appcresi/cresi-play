@@ -5,7 +5,7 @@ import { IconLoader, IconCheck } from '@tabler/icons-react';
 export const SaveIndicator = ({ state }: { state: 'idle' | 'saving' | 'saved' | 'error' }) => {
   if (state === 'saving') {
     return (
-      <span className="flex items-center gap-1 text-xs text-ink/40 shrink-0">
+      <span className="flex items-center gap-1 text-xs text-ink/40 dark:text-gray-500 shrink-0">
         <IconLoader className="w-3.5 h-3.5 animate-spin" /> Guardando...
       </span>
     );

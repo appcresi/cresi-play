@@ -168,34 +168,34 @@ export default function UnirseSinCodigoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF8] to-[#FFE5E5] flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full border border-[#241B37]/8 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFBF8] to-[#FFE5E5] dark:from-gray-900 dark:to-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-w-sm w-full border border-[#241B37]/8 dark:border-gray-700 p-6">
         <div className="flex items-center justify-center mb-4">
           <Image src="/logocresi.svg" alt="CrESI" width={64} height={64} className="w-16 h-16" />
         </div>
-        <h1 className={`${fredoka.className} text-2xl text-[#241B37] text-center mb-1`}>
+        <h1 className={`${fredoka.className} text-2xl text-[#241B37] dark:text-gray-100 text-center mb-1`}>
           ¡Te damos la bienvenida!
         </h1>
-        <p className="text-[#241B37]/60 text-center text-sm mb-6">
+        <p className="text-[#241B37]/60 dark:text-gray-400 text-center text-sm mb-6">
           Personalizá tu perfil y elegí cómo continuar
         </p>
 
         <div className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-[#241B37]/70 mb-1.5">Tu nombre</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 dark:text-gray-400 mb-1.5">Tu nombre</label>
             <input
               type="text"
               value={username}
               onChange={(e) => { setUsername(e.target.value); setError(''); }}
               disabled={!!loading}
-              className="w-full px-3 py-2.5 border border-[#241B37]/15 rounded-xl focus:outline-none
-                       focus:ring-2 focus:ring-[#FF6B6B] bg-white text-[#241B37] placeholder-[#241B37]/30 text-sm"
+              className="w-full px-3 py-2.5 border border-[#241B37]/15 dark:border-gray-600 rounded-xl focus:outline-none
+                       focus:ring-2 focus:ring-[#FF6B6B] bg-white dark:bg-gray-700 text-[#241B37] dark:text-gray-100 placeholder-[#241B37]/30 dark:placeholder-gray-500 text-sm"
               placeholder="Escribe tu nombre"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#241B37]/70 mb-2">Elegí tu avatar</label>
+            <label className="block text-xs font-semibold text-[#241B37]/70 dark:text-gray-400 mb-2">Elegí tu avatar</label>
             <div className="grid grid-cols-3 gap-2">
               {characters.map((character) => (
                 <button
@@ -204,22 +204,22 @@ export default function UnirseSinCodigoPage() {
                   disabled={!!loading}
                   className={`p-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]
                     ${selectedCharacter?.id === character.id
-                      ? 'bg-[#FFE5E5] ring-2 ring-[#FF6B6B]'
-                      : 'bg-cream hover:bg-[#FFE5E5]'}
+                      ? 'bg-[#FFE5E5] dark:bg-gray-700 ring-2 ring-[#FF6B6B]'
+                      : 'bg-cream dark:bg-gray-700 hover:bg-[#FFE5E5] dark:hover:bg-gray-600'}
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="relative w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
                     <Image src={character.image} alt={character.name} fill sizes="120px" className="object-cover" />
                   </div>
-                  <p className="text-center text-xs font-medium text-[#241B37]/70 leading-tight">{character.name}</p>
+                  <p className="text-center text-xs font-medium text-[#241B37]/70 dark:text-gray-400 leading-tight">{character.name}</p>
                 </button>
               ))}
             </div>
           </div>
 
           {error && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-red-600 text-xs">{error}</p>
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl">
+              <p className="text-red-600 dark:text-red-400 text-xs">{error}</p>
             </div>
           )}
 
@@ -238,8 +238,8 @@ export default function UnirseSinCodigoPage() {
             <button
               onClick={handleGoogleSignIn}
               disabled={!!loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border border-[#241B37]/15
-                       hover:bg-cream text-[#241B37] font-bold py-3 px-4 rounded-full transition-colors text-sm
+              className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-[#241B37]/15 dark:border-gray-600
+                       hover:bg-cream dark:hover:bg-gray-600 text-[#241B37] dark:text-gray-100 font-bold py-3 px-4 rounded-full transition-colors text-sm
                        disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading === 'google' ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4 text-[#4285F4]" />}
@@ -247,8 +247,8 @@ export default function UnirseSinCodigoPage() {
             </button>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-[#241B37]/8 text-xs">
-            <Link href="/" className="flex items-center gap-1 text-[#241B37]/40 hover:text-[#241B37]/70">
+          <div className="flex items-center justify-between pt-3 border-t border-[#241B37]/8 dark:border-gray-700 text-xs">
+            <Link href="/" className="flex items-center gap-1 text-[#241B37]/40 dark:text-gray-500 hover:text-[#241B37]/70 dark:hover:text-gray-300">
               <IconArrowLeft className="w-3.5 h-3.5" /> Inicio
             </Link>
             <Link href="/clase" className="font-semibold text-[#2FB8AC] hover:text-[#238F85]">

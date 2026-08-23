@@ -12,8 +12,8 @@ export const Feedback: React.FC<FeedbackProps> = ({ message, isComplete, show })
   return (
     <div className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-300 ${
       isComplete
-        ? 'bg-green-50 border-green-200'
-        : 'bg-amber-50 border-amber-200'
+        ? 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900'
+        : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900'
     }`}>
       <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
         isComplete
@@ -30,8 +30,8 @@ export const Feedback: React.FC<FeedbackProps> = ({ message, isComplete, show })
       <div className="flex-1">
         <p className={`font-medium ${
           isComplete
-            ? 'text-green-800'
-            : 'text-amber-800'
+            ? 'text-green-800 dark:text-green-300'
+            : 'text-amber-800 dark:text-amber-300'
         }`}>
           {message}
         </p>

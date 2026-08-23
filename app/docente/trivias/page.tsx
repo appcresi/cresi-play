@@ -401,8 +401,8 @@ export default function CreateCustomTrivia() {
   if (!user) {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
-          <p className="text-ink/70">Debes estar logueado para crear una trivia personalizada.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-pink-light dark:border-gray-700">
+          <p className="text-ink/70 dark:text-gray-400">Debes estar logueado para crear una trivia personalizada.</p>
         </div>
       </div>
     );
@@ -416,8 +416,8 @@ export default function CreateCustomTrivia() {
   if (role && role !== 'teacher') {
     return (
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
-          <p className="text-ink/70">Esta sección es solo para docentes.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-pink-light dark:border-gray-700">
+          <p className="text-ink/70 dark:text-gray-400">Esta sección es solo para docentes.</p>
         </div>
       </div>
     );
@@ -433,10 +433,10 @@ export default function CreateCustomTrivia() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-ink mb-1">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-ink dark:text-gray-100 mb-1">
                   Mis trivias
                 </h1>
-                <p className="text-sm text-ink/60">
+                <p className="text-sm text-ink/60 dark:text-gray-400">
                   {userTriviaCount} trivia{userTriviaCount !== 1 ? 's' : ''} creada{userTriviaCount !== 1 ? 's' : ''} — se ven en todas tus clases
                 </p>
               </div>
@@ -457,13 +457,13 @@ export default function CreateCustomTrivia() {
 
           {/* Feedback messages */}
           {message && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm flex items-center gap-2">
+            <div className="mb-4 p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg text-green-800 dark:text-green-300 text-sm flex items-center gap-2">
               <IconCheck size={18} />
               {message}
             </div>
           )}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm flex items-center gap-2">
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg text-red-800 dark:text-red-300 text-sm flex items-center gap-2">
               <IconX size={18} />
               {error}
             </div>
@@ -474,12 +474,12 @@ export default function CreateCustomTrivia() {
 
           {/* Error state */}
           {!triviasLoading && triviasError && (
-            <div className="bg-white rounded-lg p-8 text-center border border-pink-light">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-pink-light dark:border-gray-700">
               <IconAlertCircle size={32} className="text-red-400 mx-auto mb-3" />
-              <p className="text-ink/70 mb-4">No se pudieron cargar tus trivias</p>
+              <p className="text-ink/70 dark:text-gray-400 mb-4">No se pudieron cargar tus trivias</p>
               <button
                 onClick={loadUserTrivias}
-                className="flex items-center gap-2 mx-auto px-4 py-2 bg-pink-light hover:bg-pink text-ink/80 rounded-lg transition text-sm font-medium"
+                className="flex items-center gap-2 mx-auto px-4 py-2 bg-pink-light dark:bg-gray-700 hover:bg-pink dark:hover:bg-gray-600 text-ink/80 dark:text-gray-300 rounded-lg transition text-sm font-medium"
               >
                 <IconRefresh size={16} />
                 Reintentar
@@ -489,8 +489,8 @@ export default function CreateCustomTrivia() {
 
           {/* Empty state */}
           {!triviasLoading && !triviasError && userTrivias.length === 0 && (
-            <div className="bg-white rounded-lg p-12 text-center border border-pink-light">
-              <p className="text-ink/60 mb-4 text-lg">Aún no creaste ninguna trivia</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-12 text-center border border-pink-light dark:border-gray-700">
+              <p className="text-ink/60 dark:text-gray-400 mb-4 text-lg">Aún no creaste ninguna trivia</p>
               <button
                 onClick={() => setStep('create')}
                 className="px-5 py-2 bg-coral text-white rounded-full text-sm font-semibold hover:bg-coral-dark transition"
@@ -508,7 +508,7 @@ export default function CreateCustomTrivia() {
                 return (
                 <div
                   key={trivia.id}
-                  className="bg-white rounded-lg p-5 border border-pink-light hover:shadow-md transition"
+                  className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-pink-light dark:border-gray-700 hover:shadow-md transition"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -519,12 +519,12 @@ export default function CreateCustomTrivia() {
                         <IconClipboardList className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-ink mb-0.5 truncate">{trivia.name}</h3>
-                        <p className="text-ink/60 text-sm mb-2 line-clamp-1">
+                        <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-0.5 truncate">{trivia.name}</h3>
+                        <p className="text-ink/60 dark:text-gray-400 text-sm mb-2 line-clamp-1">
                           {trivia.description || 'Sin descripción'}
                         </p>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-block px-2.5 py-0.5 bg-pink-light text-ink/70 text-xs rounded-full">
+                          <span className="inline-block px-2.5 py-0.5 bg-pink-light dark:bg-gray-700 text-ink/70 dark:text-gray-400 text-xs rounded-full">
                             {trivia.questions?.length || 0} preguntas
                           </span>
                           {typeof trivia.playCount === 'number' && (
@@ -552,7 +552,7 @@ export default function CreateCustomTrivia() {
                       <button
                         type="button"
                         onClick={() => setPreviewModal({ open: true, trivia })}
-                        className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-full transition"
+                        className="p-2 text-ink/40 dark:text-gray-500 hover:text-ink/80 dark:hover:text-gray-200 hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition"
                         aria-label={`Ver previa de: ${trivia.name}`}
                         title="Vista previa"
                       >
@@ -566,7 +566,7 @@ export default function CreateCustomTrivia() {
                         className={`p-2 rounded-full transition ${
                           copiedId === trivia.id
                             ? 'text-green-600'
-                            : 'text-ink/40 hover:text-ink/80 hover:bg-pink-light'
+                            : 'text-ink/40 dark:text-gray-500 hover:text-ink/80 dark:hover:text-gray-200 hover:bg-pink-light dark:hover:bg-gray-700'
                         }`}
                         aria-label="Copiar link para compartir"
                         title={copiedId === trivia.id ? 'Copiado' : 'Compartir'}
@@ -578,7 +578,7 @@ export default function CreateCustomTrivia() {
                       <button
                         type="button"
                         onClick={() => setQrModal({ open: true, id: trivia.id, name: trivia.name })}
-                        className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-full transition"
+                        className="p-2 text-ink/40 dark:text-gray-500 hover:text-ink/80 dark:hover:text-gray-200 hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition"
                         aria-label="Generar código QR"
                         title="Código QR"
                       >
@@ -589,7 +589,7 @@ export default function CreateCustomTrivia() {
                       <button
                         type="button"
                         onClick={() => handleDuplicateTrivia(trivia)}
-                        className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-full transition"
+                        className="p-2 text-ink/40 dark:text-gray-500 hover:text-ink/80 dark:hover:text-gray-200 hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition"
                         aria-label="Duplicar trivia"
                         title="Duplicar"
                       >
@@ -600,7 +600,7 @@ export default function CreateCustomTrivia() {
                       <button
                         type="button"
                         onClick={() => handleEditTrivia(trivia)}
-                        className="p-2 text-ink/40 hover:text-coral-dark hover:bg-pink-light rounded-full transition"
+                        className="p-2 text-ink/40 dark:text-gray-500 hover:text-coral-dark hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition"
                         aria-label="Editar trivia"
                         title="Editar"
                       >
@@ -613,7 +613,7 @@ export default function CreateCustomTrivia() {
                         onClick={() =>
                           setDeleteModal({ open: true, id: trivia.id, name: trivia.name })
                         }
-                        className="p-2 text-ink/40 hover:text-red-600 hover:bg-red-50 rounded-full transition"
+                        className="p-2 text-ink/40 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full transition"
                         aria-label="Eliminar trivia"
                         title="Eliminar"
                       >
@@ -637,7 +637,7 @@ export default function CreateCustomTrivia() {
             <h1
               ref={formTitleRef}
               tabIndex={-1}
-              className="text-2xl sm:text-3xl font-semibold text-ink outline-none"
+              className="text-2xl sm:text-3xl font-semibold text-ink dark:text-gray-100 outline-none"
             >
               {editingTriviaId ? 'Editar trivia' : 'Crear nueva trivia'}
             </h1>
@@ -648,7 +648,7 @@ export default function CreateCustomTrivia() {
                 setError('');
                 setMessage('');
               }}
-              className="p-2 text-ink/40 hover:text-ink/80 hover:bg-pink-light rounded-lg transition"
+              className="p-2 text-ink/40 dark:text-gray-500 hover:text-ink/80 dark:hover:text-gray-200 hover:bg-pink-light dark:hover:bg-gray-700 rounded-lg transition"
               aria-label="Volver al listado"
             >
               <IconX size={22} />
@@ -657,10 +657,10 @@ export default function CreateCustomTrivia() {
 
           <form onSubmit={handleCreateTrivia} className="space-y-6">
             {/* Nombre */}
-            <div className="bg-white rounded-lg p-6 border border-pink-light">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-pink-light dark:border-gray-700">
               <label
                 htmlFor="trivia-name"
-                className="block text-sm font-semibold text-ink mb-3"
+                className="block text-sm font-semibold text-ink dark:text-gray-100 mb-3"
               >
                 Nombre de la trivia *
               </label>
@@ -670,18 +670,18 @@ export default function CreateCustomTrivia() {
                 value={triviaName}
                 onChange={(e) => setTriviaName(e.target.value)}
                 placeholder="Ej: Trivia sobre ESI básico"
-                className="w-full px-4 py-2 border border-pink-light rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
+                className="w-full px-4 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
               />
             </div>
 
             {/* Descripción */}
-            <div className="bg-white rounded-lg p-6 border border-pink-light">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-pink-light dark:border-gray-700">
               <label
                 htmlFor="trivia-desc"
-                className="block text-sm font-semibold text-ink mb-3"
+                className="block text-sm font-semibold text-ink dark:text-gray-100 mb-3"
               >
                 Descripción{' '}
-                <span className="font-normal text-ink/40">(opcional)</span>
+                <span className="font-normal text-ink/40 dark:text-gray-500">(opcional)</span>
               </label>
               <textarea
                 id="trivia-desc"
@@ -689,15 +689,15 @@ export default function CreateCustomTrivia() {
                 onChange={(e) => setTriviaDescription(e.target.value)}
                 placeholder="Describe de qué trata tu trivia"
                 rows={3}
-                className="w-full px-4 py-2 border border-pink-light rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
+                className="w-full px-4 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
               />
             </div>
 
             {/* Selección de preguntas */}
-            <div className="bg-white rounded-lg p-6 border border-pink-light">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-pink-light dark:border-gray-700">
               {/* Label + floating counter */}
               <div className="flex items-center justify-between mb-4">
-                <label className="text-sm font-semibold text-ink">
+                <label className="text-sm font-semibold text-ink dark:text-gray-100">
                   Seleccioná preguntas
                 </label>
                 <div
@@ -723,13 +723,13 @@ export default function CreateCustomTrivia() {
 
               {/* Search */}
               <div className="relative mb-3">
-                <IconSearch className="absolute left-3 top-3 text-ink/40" size={18} />
+                <IconSearch className="absolute left-3 top-3 text-ink/40 dark:text-gray-500" size={18} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar preguntas..."
-                  className="w-full pl-10 pr-4 py-2 border border-pink-light rounded-lg focus:outline-none focus:ring-2 focus:ring-coral text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-coral text-sm"
                 />
               </div>
 
@@ -752,7 +752,7 @@ export default function CreateCustomTrivia() {
 
               {/* Questions error */}
               {questionsError && (
-                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg mb-3">
+                <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg mb-3">
                   <IconAlertCircle size={18} className="text-red-500 flex-shrink-0" />
                   <p className="text-red-700 text-sm">No se pudieron cargar las preguntas.</p>
                   <button
@@ -771,11 +771,11 @@ export default function CreateCustomTrivia() {
                 {questionsLoading ? (
                   <div className="animate-pulse space-y-2">
                     {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="h-10 bg-pink-light rounded-lg" />
+                      <div key={i} className="h-10 bg-pink-light dark:bg-gray-700 rounded-lg" />
                     ))}
                   </div>
                 ) : filteredQuestions.length === 0 ? (
-                  <p className="text-center text-ink/40 py-8 text-sm">
+                  <p className="text-center text-ink/40 dark:text-gray-500 py-8 text-sm">
                     No hay preguntas que coincidan con tu búsqueda
                   </p>
                 ) : (
@@ -790,8 +790,8 @@ export default function CreateCustomTrivia() {
                           isSelected
                             ? 'bg-mint border-mint-accent'
                             : isAtMax
-                            ? 'bg-cream border-pink-light opacity-50 cursor-not-allowed'
-                            : 'border-pink-light hover:bg-cream'
+                            ? 'bg-cream dark:bg-gray-700 border-pink-light dark:border-gray-700 opacity-50 cursor-not-allowed'
+                            : 'border-pink-light dark:border-gray-700 hover:bg-cream dark:hover:bg-gray-700'
                         }`}
                       >
                         <label
@@ -806,7 +806,7 @@ export default function CreateCustomTrivia() {
                             disabled={isAtMax}
                             className="w-4 h-4 mt-0.5 rounded accent-coral"
                           />
-                          <span className="text-sm text-ink/80 flex-1">
+                          <span className="text-sm text-ink/80 dark:text-gray-300 flex-1">
                             {question.question}
                           </span>
                         </label>
@@ -819,27 +819,27 @@ export default function CreateCustomTrivia() {
 
             {/* Ordered selection panel */}
             {orderedSelected.length > 0 && (
-              <div className="bg-white rounded-lg p-6 border border-pink-light">
-                <h3 className="text-sm font-semibold text-ink mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-pink-light dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-ink dark:text-gray-100 mb-4">
                   Orden de preguntas seleccionadas
                 </h3>
                 <div className="space-y-2">
                   {orderedSelected.map((q, idx) => (
                     <div
                       key={q.id}
-                      className="flex items-center gap-3 p-3 bg-cream border border-pink-light rounded-lg group"
+                      className="flex items-center gap-3 p-3 bg-cream dark:bg-gray-700 border border-pink-light dark:border-gray-700 rounded-lg group"
                     >
-                      <IconGripVertical size={16} className="text-ink/25 flex-shrink-0" />
-                      <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-ink/40 flex-shrink-0">
+                      <IconGripVertical size={16} className="text-ink/25 dark:text-gray-600 flex-shrink-0" />
+                      <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-ink/40 dark:text-gray-500 flex-shrink-0">
                         {idx + 1}
                       </span>
-                      <p className="text-sm text-ink/80 flex-1 truncate">{q.question}</p>
+                      <p className="text-sm text-ink/80 dark:text-gray-300 flex-1 truncate">{q.question}</p>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
                         <button
                           type="button"
                           onClick={() => handleMoveQuestion(q.id, 'up')}
                           disabled={idx === 0}
-                          className="p-1 text-ink/60 hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed rounded"
+                          className="p-1 text-ink/60 dark:text-gray-400 hover:text-ink dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed rounded"
                           aria-label="Mover arriba"
                         >
                           <IconChevronUp size={16} />
@@ -848,7 +848,7 @@ export default function CreateCustomTrivia() {
                           type="button"
                           onClick={() => handleMoveQuestion(q.id, 'down')}
                           disabled={idx === orderedSelected.length - 1}
-                          className="p-1 text-ink/60 hover:text-ink disabled:opacity-30 disabled:cursor-not-allowed rounded"
+                          className="p-1 text-ink/60 dark:text-gray-400 hover:text-ink dark:hover:text-gray-100 disabled:opacity-30 disabled:cursor-not-allowed rounded"
                           aria-label="Mover abajo"
                         >
                           <IconChevronDown size={16} />
@@ -870,13 +870,13 @@ export default function CreateCustomTrivia() {
 
             {/* Feedback */}
             {message && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm flex items-center gap-2">
+              <div className="p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg text-green-800 dark:text-green-300 text-sm flex items-center gap-2">
                 <IconCheck size={18} />
                 {message}
               </div>
             )}
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm flex items-center gap-2">
+              <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg text-red-800 dark:text-red-300 text-sm flex items-center gap-2">
                 <IconX size={18} />
                 {error}
               </div>
@@ -902,7 +902,7 @@ export default function CreateCustomTrivia() {
                   setEditingTriviaId(null);
                   resetForm();
                 }}
-                className="px-6 py-3 border border-pink-light text-ink/80 rounded-full font-semibold hover:bg-cream transition"
+                className="px-6 py-3 border border-pink-light dark:border-gray-700 text-ink/80 dark:text-gray-300 rounded-full font-semibold hover:bg-cream dark:hover:bg-gray-700 transition"
               >
                 Cancelar
               </button>
