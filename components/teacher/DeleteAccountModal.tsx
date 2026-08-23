@@ -27,12 +27,12 @@ export function DeleteAccountModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-5">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-5">
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
           <IconAlertTriangle size={24} className="text-red-600" />
         </div>
-        <h3 className="font-bold text-ink mb-1">¿Eliminar tu cuenta de docente?</h3>
-        <p className="text-sm text-ink/60 mb-3">
+        <h3 className="font-bold text-ink dark:text-gray-100 mb-1">¿Eliminar tu cuenta de docente?</h3>
+        <p className="text-sm text-ink/60 dark:text-gray-400 mb-3">
           {classroomCount > 0 ? (
             <>
               Tenés <strong>{classroomCount}</strong> {classroomCount === 1 ? 'clase' : 'clases'} creada
@@ -45,7 +45,7 @@ export function DeleteAccountModal({
           )}
         </p>
 
-        <label className="block text-xs font-semibold text-ink/70 mb-1.5">
+        <label className="block text-xs font-semibold text-ink/70 dark:text-gray-400 mb-1.5">
           Escribí <span className="font-mono">ELIMINAR</span> para confirmar
         </label>
         <input
@@ -53,7 +53,7 @@ export function DeleteAccountModal({
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
           disabled={isDeleting}
-          className="w-full px-3 py-2 border border-ink/15 rounded-lg focus:outline-none
+          className="w-full px-3 py-2 border border-ink/15 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none
                    focus:ring-2 focus:ring-red-500 text-sm mb-3 disabled:opacity-50"
           placeholder="ELIMINAR"
           autoFocus
@@ -65,7 +65,7 @@ export function DeleteAccountModal({
           <button
             onClick={onCancel}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm text-ink/70 hover:bg-pink-light rounded-lg disabled:opacity-50"
+            className="px-4 py-2 text-sm text-ink/70 dark:text-gray-400 hover:bg-pink-light dark:hover:bg-gray-700 rounded-lg disabled:opacity-50"
           >
             Cancelar
           </button>

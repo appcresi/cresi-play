@@ -104,10 +104,10 @@ const ClassroomDesk = () => {
     return (
       <>
         <Header />
-        <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coral mx-auto mb-4" />
-            <p className="text-ink/70">Cargando tu aula...</p>
+            <p className="text-ink/70 dark:text-gray-400">Cargando tu aula...</p>
           </div>
         </div>
       </>
@@ -125,7 +125,7 @@ const ClassroomDesk = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-cream">
+      <div className="min-h-screen bg-cream dark:bg-gray-900">
         {/* Banner de la clase */}
         <div className="w-full py-10 px-5" style={{ backgroundColor: bannerColor }}>
           <div className="max-w-5xl mx-auto flex items-center gap-4">
@@ -142,7 +142,7 @@ const ClassroomDesk = () => {
         </div>
 
         {/* Solapas, estilo Classroom */}
-        <div className="border-b border-pink-light bg-white sticky top-0 z-10">
+        <div className="border-b border-pink-light dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10">
           <div className="max-w-5xl mx-auto px-5 flex gap-6 overflow-x-auto">
             {TABS.map((t) => (
               <button
@@ -151,7 +151,7 @@ const ClassroomDesk = () => {
                 className={`py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
                   tab === t.key
                     ? 'border-coral text-coral-dark'
-                    : 'border-transparent text-ink/60 hover:text-ink/80'
+                    : 'border-transparent text-ink/60 dark:text-gray-400 hover:text-ink/80 dark:hover:text-gray-300'
                 }`}
               >
                 {t.label}
@@ -166,22 +166,22 @@ const ClassroomDesk = () => {
             <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 items-start">
               {/* Columna chica: código de la clase — mismo lugar que en el panel del docente */}
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-4">
-                  <h3 className="text-sm font-medium text-ink mb-1">Código de tu clase</h3>
-                  <p className="text-xs text-ink/60 mb-3">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 p-4">
+                  <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-1">Código de tu clase</h3>
+                  <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
                     Para volver a entrar desde otro dispositivo.
                   </p>
                   {classroom?.code && (
                     <button
                       onClick={handleCopyCode}
                       title="Copiar link de tu clase"
-                      className="flex items-center gap-2 px-3 py-2 bg-cream hover:bg-pink-light
-                               rounded-lg text-sm font-mono font-bold tracking-widest text-ink transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 bg-cream dark:bg-gray-700 hover:bg-pink-light dark:hover:bg-gray-600
+                               rounded-lg text-sm font-mono font-bold tracking-widest text-ink dark:text-gray-100 transition-colors"
                     >
                       {classroom.code}
                       {copiedCode
                         ? <IconCheck className="w-4 h-4 text-green-600" />
-                        : <IconCopy className="w-4 h-4 text-ink/40" />}
+                        : <IconCopy className="w-4 h-4 text-ink/40 dark:text-gray-500" />}
                     </button>
                   )}
                   {copiedCode && (
@@ -195,19 +195,19 @@ const ClassroomDesk = () => {
               {/* Columna grande: tareas, resumen y humor */}
               <div className="space-y-4">
                 {classroom && (
-                  <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
-                    <h3 className="text-sm font-medium text-ink mb-3">Tareas</h3>
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 p-5">
+                    <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Tareas</h3>
                     <TareasFeedSummary classroomId={classroom.id} emptyLabel="Tu docente todavía no asignó ninguna tarea." />
                   </div>
                 )}
 
-                <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-ink">
+                      <p className="text-sm font-medium text-ink dark:text-gray-100">
                         Hola, {userData.profile.username} 👋
                       </p>
-                      <p className="text-xs text-ink/60">
+                      <p className="text-xs text-ink/60 dark:text-gray-400">
                         {completedCount}/{activities.length} actividades completadas
                       </p>
                     </div>
@@ -233,15 +233,15 @@ const ClassroomDesk = () => {
                 {userData.mood.lastEntry && (
                   <button
                     onClick={() => (window.location.href = '/moodtracker')}
-                    className="w-full flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-pink-light
+                    className="w-full flex items-center gap-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700
                              px-5 py-4 hover:bg-cream transition-colors text-left"
                   >
                     <IconMoodHappy className="w-5 h-5 text-blue-500 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-ink">Cómo te sentís hoy</p>
-                      <p className="text-xs text-ink/60">Último registro: {userData.mood.lastEntry.label}</p>
+                      <p className="text-sm font-medium text-ink dark:text-gray-100">Cómo te sentís hoy</p>
+                      <p className="text-xs text-ink/60 dark:text-gray-400">Último registro: {userData.mood.lastEntry.label}</p>
                     </div>
-                    <IconChevronRight className="w-4 h-4 text-ink/25" />
+                    <IconChevronRight className="w-4 h-4 text-ink/25 dark:text-gray-600" />
                   </button>
                 )}
               </div>
@@ -257,20 +257,20 @@ const ClassroomDesk = () => {
               {activities.length > 5 && (
                 <div className="relative mb-5 max-w-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <IconSearch size={16} className="text-ink/40" />
+                    <IconSearch size={16} className="text-ink/40 dark:text-gray-500" />
                   </div>
                   <input
                     type="text"
                     placeholder="Buscar en tu aula..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-9 py-2 border border-pink-light rounded-lg text-sm bg-white
+                    className="w-full pl-9 pr-9 py-2 border border-pink-light dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 dark:text-gray-100
                              focus:ring-2 focus:ring-coral focus:border-coral outline-none"
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink/40 hover:text-ink/70"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-400"
                     >
                       <IconX size={16} />
                     </button>
@@ -278,13 +278,13 @@ const ClassroomDesk = () => {
                 </div>
               )}
 
-              <div className="bg-white rounded-2xl shadow-sm border border-pink-light overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3 border-b border-pink-light">
-                  <h2 className="text-sm font-semibold text-ink/80">Actividades de la clase</h2>
+                  <h2 className="text-sm font-semibold text-ink/80 dark:text-gray-300">Actividades de la clase</h2>
                 </div>
 
                 {filteredActivities.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-ink/40">
+                  <div className="p-8 text-center text-sm text-ink/40 dark:text-gray-500">
                     No se encontraron actividades.
                   </div>
                 ) : (
@@ -307,7 +307,7 @@ const ClassroomDesk = () => {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <p className="font-medium text-ink text-sm truncate">{activity.title}</p>
+                                <p className="font-medium text-ink dark:text-gray-100 text-sm truncate">{activity.title}</p>
                                 <span
                                   className="hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
                                   style={{ backgroundColor: `${activity.color}15`, color: activity.color }}
@@ -315,7 +315,7 @@ const ClassroomDesk = () => {
                                   {activity.category}
                                 </span>
                               </div>
-                              <p className="text-xs text-ink/60 truncate mt-0.5">{activity.description}</p>
+                              <p className="text-xs text-ink/60 dark:text-gray-400 truncate mt-0.5">{activity.description}</p>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
@@ -325,9 +325,9 @@ const ClassroomDesk = () => {
                                   <IconCircleCheck className="w-5 h-5" />
                                 </div>
                               ) : (
-                                <span className="text-xs text-ink/40 hidden sm:inline">Empezar</span>
+                                <span className="text-xs text-ink/40 dark:text-gray-500 hidden sm:inline">Empezar</span>
                               )}
-                              <IconChevronRight className="w-4 h-4 text-ink/25" />
+                              <IconChevronRight className="w-4 h-4 text-ink/25 dark:text-gray-600" />
                             </div>
                           </button>
                         </li>
@@ -342,11 +342,11 @@ const ClassroomDesk = () => {
           {/* ── Boletín ── */}
           {tab === 'boletin' && (
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-pink-light p-5">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-ink">Tu progreso general</p>
-                    <p className="text-xs text-ink/60">
+                    <p className="text-sm font-medium text-ink dark:text-gray-100">Tu progreso general</p>
+                    <p className="text-xs text-ink/60 dark:text-gray-400">
                       {completedCount}/{activities.length} actividades completadas
                     </p>
                   </div>
@@ -363,13 +363,13 @@ const ClassroomDesk = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-sm border border-pink-light overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3 border-b border-pink-light">
-                  <h2 className="text-sm font-semibold text-ink/80">Actividades completadas</h2>
+                  <h2 className="text-sm font-semibold text-ink/80 dark:text-gray-300">Actividades completadas</h2>
                 </div>
 
                 {completedActivitiesList.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-ink/40">
+                  <div className="p-8 text-center text-sm text-ink/40 dark:text-gray-500">
                     Todavía no completaste ninguna actividad — van a aparecer acá apenas termines la primera.
                   </div>
                 ) : (
@@ -383,7 +383,7 @@ const ClassroomDesk = () => {
                           >
                             <ActivityIcon iconName={activity.iconName} size={16} />
                           </div>
-                          <p className="text-sm font-medium text-ink truncate">{activity.title}</p>
+                          <p className="text-sm font-medium text-ink dark:text-gray-100 truncate">{activity.title}</p>
                         </div>
                         <span className="text-sm font-bold text-yellow-600 shrink-0">
                           {getScore(activity.title)} pts

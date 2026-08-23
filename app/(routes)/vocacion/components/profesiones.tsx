@@ -272,11 +272,11 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
     return (
       <div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6">
           <div className="px-6 py-4 flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Resultados de tu Test Vocacional</h1>
-              <p className="text-sm text-gray-500 mt-1">Tus áreas de interés</p>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Resultados de tu Test Vocacional</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tus áreas de interés</p>
             </div>
             <button
               onClick={resetTest}
@@ -292,7 +292,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
           {sortedResults.map(([areaKey, area]) => {
             const areaInfo = AREAS[areaKey as keyof typeof AREAS];
             return (
-              <div key={areaKey} className="rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition">
+              <div key={areaKey} className="rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition">
                 <div className={`bg-gradient-to-r ${areaInfo.color} p-4 text-white`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -302,12 +302,12 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                     <div className="text-2xl">{areaInfo.icon}</div>
                   </div>
                 </div>
-                <div className="bg-white p-4">
+                <div className="bg-white dark:bg-gray-800 p-4">
                   <div className="flex items-end justify-between mb-3">
-                    <span className="text-gray-500 font-medium text-xs">Puntuación</span>
-                    <span className="text-2xl font-bold text-gray-800">{area.total}</span>
+                    <span className="text-gray-500 dark:text-gray-400 font-medium text-xs">Puntuación</span>
+                    <span className="text-2xl font-bold text-gray-800 dark:text-gray-200">{area.total}</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full bg-gradient-to-r ${areaInfo.color} transition-all duration-500`}
                       style={{ width: `${(area.total / 16) * 100}%` }}
@@ -324,7 +324,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
             const areaInfo = AREAS[areaKey as keyof typeof AREAS];
             const professions = PROFESSIONS[areaKey] || [];
             return (
-              <div key={`prof-${areaKey}`} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div key={`prof-${areaKey}`} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className={`bg-gradient-to-r ${areaInfo.color} p-6 text-white`}>
                   <h3 className="text-xl font-bold flex items-center gap-3">
                     <IconBriefcase className="w-6 h-6" />
@@ -345,25 +345,25 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                           <button
                             key={`${areaKey}-prof-${index}`}
                             onClick={() => setSelectedProfession({ name: profession.name, areaKey, currentActivityIndex: 0 })}
-                            className="flex flex-col gap-2 p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition border border-gray-200 text-left hover:shadow-sm"
+                            className="flex flex-col gap-2 p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl transition border border-gray-200 dark:border-gray-600 text-left hover:shadow-sm"
                           >
-                            <span className="text-gray-800 font-semibold text-sm">{profession.name}</span>
+                            <span className="text-gray-800 dark:text-gray-200 font-semibold text-sm">{profession.name}</span>
                             {profAnswers.length > 0 && (
                               <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                   <div
                                     className={`h-full bg-gradient-to-r ${areaInfo.color} transition-all`}
                                     style={{ width: `${percentage}%` }}
                                   />
                                 </div>
-                                <span className="text-xs font-bold text-gray-600 min-w-fit">{percentage}%</span>
+                                <span className="text-xs font-bold text-gray-600 dark:text-gray-400 min-w-fit">{percentage}%</span>
                               </div>
                             )}
                           </button>
                         );
                       })
                     ) : (
-                      <p className="text-gray-400 col-span-full">No hay profesiones disponibles</p>
+                      <p className="text-gray-400 dark:text-gray-500 col-span-full">No hay profesiones disponibles</p>
                     )}
                   </div>
                 </div>
@@ -372,12 +372,12 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
           })}
         </div>
 
-        <div className="mt-10 bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <div className="mt-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-2">
             <IconCircleCheck className="w-5 h-5 text-green-600" />
             Próximos Pasos
           </h2>
-          <div className="space-y-4 text-gray-600">
+          <div className="space-y-4 text-gray-600 dark:text-gray-400">
             <p>
               Basado en tus resultados, tu mayor interés está en{' '}
               <span className="font-bold" style={{ color: ACCENT }}>{sortedResults[0]?.[1].name}</span>. Te recomendamos:
@@ -394,7 +394,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
         {selectedProfession && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
               <div className="p-6 text-white flex items-center justify-between" style={{ backgroundColor: ACCENT }}>
                 <div>
                   <p className="text-sm opacity-90">Test de Actividades</p>
@@ -419,7 +419,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                         >
                           Actividad {selectedProfession.currentActivityIndex + 1} de 10
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-8 leading-relaxed">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-8 leading-relaxed">
                           {PROFESSIONS[selectedProfession.areaKey]?.find(p => p.name === selectedProfession.name)?.activities[selectedProfession.currentActivityIndex].description}
                         </h3>
 
@@ -431,9 +431,9 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                               setProfessionAnswers(prev => ({ ...prev, [selectedProfession.name]: newAnswers }));
                               setSelectedProfession(prev => prev ? { ...prev, currentActivityIndex: prev.currentActivityIndex + 1 } : null);
                             }}
-                            className="p-6 border-2 border-gray-200 rounded-xl text-center hover:border-green-500 hover:bg-green-50 transition group"
+                            className="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center hover:border-green-500 hover:bg-green-50 transition group"
                           >
-                            <div className="font-medium text-gray-800 group-hover:text-green-700">
+                            <div className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-green-700">
                               ✓ Me interesa
                             </div>
                           </button>
@@ -445,9 +445,9 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                               setProfessionAnswers(prev => ({ ...prev, [selectedProfession.name]: newAnswers }));
                               setSelectedProfession(prev => prev ? { ...prev, currentActivityIndex: prev.currentActivityIndex + 1 } : null);
                             }}
-                            className="p-6 border-2 border-gray-200 rounded-xl text-center hover:border-red-500 hover:bg-red-50 transition group"
+                            className="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-center hover:border-red-500 hover:bg-red-50 transition group"
                           >
-                            <div className="font-medium text-gray-800 group-hover:text-red-700">
+                            <div className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-red-700">
                               ✗ No me interesa
                             </div>
                           </button>
@@ -458,13 +458,13 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                 ) : (
                   <div className="w-full max-w-md">
                     <div className="rounded-xl p-8 border-2" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
-                      <h3 className="text-lg font-bold text-gray-900 mb-6">¡Test completado!</h3>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">¡Test completado!</h3>
                       <div className="flex items-end justify-center mb-6">
                         <span className="text-5xl font-bold" style={{ color: ACCENT }}>
                           {Math.round(((professionAnswers[selectedProfession.name]?.filter(a => a).length || 0) / 10) * 100)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden mb-6">
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden mb-6">
                         <div
                           className="h-full transition-all duration-500"
                           style={{
@@ -473,10 +473,10 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
                           }}
                         />
                       </div>
-                      <p className="text-gray-600 mb-1 text-sm">
+                      <p className="text-gray-600 dark:text-gray-400 mb-1 text-sm">
                         Tu compatibilidad con <span className="font-bold">{selectedProfession.name}</span>
                       </p>
-                      <p className="text-xs text-gray-400 mb-6">
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">
                         Seleccionaste {professionAnswers[selectedProfession.name]?.filter(a => a).length || 0} de 10 actividades de interés
                       </p>
                       <button
@@ -501,7 +501,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
   return (
     <div className="flex items-center justify-center px-2">
-      <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="p-8">
           <div className="mb-8">
             <div
@@ -510,7 +510,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
             >
               {currentQuestion + 1} / {QUESTIONS.length}
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 leading-relaxed">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-relaxed">
               {question?.text}
             </h2>
           </div>
@@ -518,13 +518,13 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               onClick={() => handleAnswer(true)}
-              className="p-6 border-2 border-gray-200 rounded-xl text-left hover:border-green-500 hover:bg-green-50 transition group"
+              className="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-left hover:border-green-500 hover:bg-green-50 transition group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-green-500 group-hover:bg-green-500 transition flex items-center justify-center">
                   {answers[question?.id] === true && <div className="w-2 h-2 bg-white rounded-full" />}
                 </div>
-                <div className="font-medium text-gray-800 group-hover:text-green-700">
+                <div className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-green-700">
                   Me interesa
                 </div>
               </div>
@@ -532,13 +532,13 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
             <button
               onClick={() => handleAnswer(false)}
-              className="p-6 border-2 border-gray-200 rounded-xl text-left hover:border-red-500 hover:bg-red-50 transition group"
+              className="p-6 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-left hover:border-red-500 hover:bg-red-50 transition group"
             >
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-red-500 group-hover:bg-red-500 transition flex items-center justify-center">
                   {answers[question?.id] === false && <div className="w-2 h-2 bg-white rounded-full" />}
                 </div>
-                <div className="font-medium text-gray-800 group-hover:text-red-700">
+                <div className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-red-700">
                   No me interesa
                 </div>
               </div>
@@ -546,7 +546,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
           </div>
         </div>
 
-        <div className="bg-gray-50 px-8 py-3 text-center text-xs text-gray-400 border-t border-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-900/40 px-8 py-3 text-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-700">
           <p>+{POINTS_PER_QUESTION} puntos por cada pregunta • +{COMPLETION_BONUS} bonus al finalizar • +{POINTS_PER_PROFESSION} por test de profesión</p>
         </div>
       </div>

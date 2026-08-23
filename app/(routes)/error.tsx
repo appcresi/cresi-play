@@ -17,7 +17,7 @@ export default function ActivityError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 max-w-md text-center">
         <div className="w-16 h-16 bg-pink-light rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl">😢</span>

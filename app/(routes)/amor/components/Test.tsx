@@ -100,15 +100,15 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 		const resultText = results[calculateImportance(score)];
 
 		return (
-			<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center mb-8">
+			<div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 text-center mb-8">
 				<div
 					className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
 					style={{ backgroundColor: `${ACCENT}15` }}
 				>
 					<IconHeartHandshake className="w-8 h-8" style={{ color: ACCENT }} />
 				</div>
-				<h2 className="text-xl font-bold text-gray-900 mb-4">Resultado</h2>
-				<p className="text-gray-600 leading-relaxed mb-8 max-w-xl mx-auto">{resultText}</p>
+				<h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Resultado</h2>
+				<p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8 max-w-xl mx-auto">{resultText}</p>
 				<button
 					onClick={resetTest}
 					className="inline-flex items-center gap-2 px-6 py-2.5 text-white rounded-full font-semibold hover:opacity-90 transition-colors"
@@ -122,16 +122,16 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 	}
 
 	return (
-		<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+		<div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 mb-8">
 			{/* Barra de progreso */}
 			<div className="mb-8">
 				<div className="flex items-center justify-between mb-2">
-					<span className="text-sm font-medium text-gray-600">Progreso</span>
-					<span className="text-sm font-medium text-gray-500">
+					<span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progreso</span>
+					<span className="text-sm font-medium text-gray-500 dark:text-gray-400">
 						{actualQuestion + 1} de {questions.length}
 					</span>
 				</div>
-				<div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+				<div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
 					<div
 						className="h-full transition-all duration-500"
 						style={{ width: `${percentage}%`, backgroundColor: ACCENT }}
@@ -140,7 +140,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 			</div>
 
 			<div key={`question-${questions[actualQuestion]}`} className="mb-10 animate-fade-in">
-				<h2 className="text-xl font-semibold text-gray-900 leading-relaxed">
+				<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-relaxed">
 					{questions[actualQuestion]}
 				</h2>
 			</div>
@@ -156,7 +156,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 						key={answer.text}
 						type="button"
 						onClick={() => handleAnswerSubmit(answer.value)}
-						className="p-4 text-center border-2 border-gray-200 rounded-xl font-medium text-gray-800
+						className="p-4 text-center border-2 border-gray-200 dark:border-gray-600 rounded-xl font-medium text-gray-800 dark:text-gray-200
                      transition-all duration-200 hover:shadow-sm focus:outline-none focus:ring-2"
 						style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
 						onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; }}

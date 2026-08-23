@@ -48,7 +48,7 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header card */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
         <div className="h-2" style={{ backgroundColor: ACCENT }}></div>
         <div className="p-6">
           <div className="flex items-center gap-3">
@@ -56,10 +56,10 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
               <IconTrophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 Resultados de la lección
               </h2>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 {lessonName}
               </p>
             </div>
@@ -69,11 +69,11 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Incorrect Questions Section */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
           <div className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <IconAlertCircle className="w-5 h-5 text-red-600" />
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Preguntas para revisar
               </h3>
             </div>
@@ -83,13 +83,13 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
                 {incorrectQuestions.map((question, index) => (
                   <div
                     key={index}
-                    className="bg-red-50 border border-red-200 rounded-xl p-4"
+                    className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl p-4"
                   >
-                    <p className="text-sm font-medium text-gray-900 mb-2">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {question?.question || 'Pregunta sin texto'}
                     </p>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-500">Respuesta correcta:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Respuesta correcta:</span>
                       {question?.correctAnswer ? (
                         <span className="flex items-center gap-1 text-green-600 font-medium">
                           <IconCheck size={16} />
@@ -106,9 +106,9 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+              <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-xl p-6 text-center">
                 <IconCheck className="w-12 h-12 text-green-600 mx-auto mb-3" />
-                <p className="text-green-800 font-medium">
+                <p className="text-green-800 dark:text-green-300 font-medium">
                   ¡Excelente! Respondiste todas las preguntas correctamente.
                 </p>
               </div>
@@ -119,27 +119,27 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
         {/* Chart and Stats Section */}
         <div className="space-y-6">
           {/* Stats card */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="text-center">
                 <p className="text-3xl font-bold" style={{ color: ACCENT }}>{totalQuestions}</p>
-                <p className="text-sm text-gray-500 mt-1">Total</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-green-600">{totalCorrectAnswers}</p>
-                <p className="text-sm text-gray-500 mt-1">Correctas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Correctas</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-red-600">{incorrectAnswers}</p>
-                <p className="text-sm text-gray-500 mt-1">Incorrectas</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Incorrectas</p>
               </div>
             </div>
 
             {/* Progress bar */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-600">Progreso</span>
-                <span className="text-sm font-bold text-gray-900">{correctPercentage.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Progreso</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{correctPercentage.toFixed(0)}%</span>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                 <div
@@ -174,8 +174,8 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
           </div>
 
           {/* Chart card */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Distribución de respuestas
             </h3>
             <div className="h-64">

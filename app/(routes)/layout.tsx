@@ -1,40 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 
-
 // Envuelve TODO lo que está bajo app/(routes)/ — la home ("/") y cada
-// página de juego (trivias, biopuzzle, condon, etc.). Antes cada página
-// no tenía ninguna protección; ahora la tienen todas de una sola vez acá.
+// página de juego (trivias, biopuzzle, condon, etc.) — para que compartan
+// el mismo header.
+//
+// Antes esto también bloqueaba a los docentes y los mandaba de vuelta a
+// /docente (con una única excepción para previsualizar sus propias
+// trivias): "no tenía sentido que terminaran perdidos en BioPuzzle o
+// Condón". Ese bloqueo entraba en conflicto directo con /docente/formacion
+// ("Mi formación"), que manda a los docentes acá a propósito para que
+// jueguen y prueben el contenido antes de asignarlo — con ese bloqueo
+// activo, cualquier clic en esa pestaña los devolvía al panel sin llegar
+// a jugar nunca. Se sacó: ahora un docente puede entrar a cualquier juego
+// igual que un alumno.
 export default function StudentAreaLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { role } = useAuth();
-
-  // Excepción: un docente SÍ puede entrar a jugar/previsualizar sus
-  // propias trivias (botón "Jugar" en /docente/trivias). El resto de los
-  // juegos sigue bloqueado para docentes — no tiene sentido que un
-  // docente termine perdido en BioPuzzle o Condón.
-  const isPlayingTrivia = pathname?.startsWith('/trivias/');
-  const isTeacher = role === 'teacher' && !isPlayingTrivia;
-
-  useEffect(() => {
-    if (isTeacher) {
-      router.replace('/docente');
-    }
-  }, [isTeacher, router]);
-
-  if (isTeacher) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-coral" />
-      </div>
-    );
-  }
-
   return <>
   <Header />
   {children}

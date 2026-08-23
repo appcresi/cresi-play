@@ -420,7 +420,7 @@ const DataMuncher = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream pb-safe">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 pb-safe">
       <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-8">
         <GameStatusBar
           title="DataMuncher"
@@ -430,7 +430,7 @@ const DataMuncher = () => {
           timeLeft={timeRemaining}
         />
 
-        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-2 sm:p-6 mb-3 sm:mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-2 sm:p-6 mb-3 sm:mb-6">
           <div className="w-full mx-auto">
             <div className="aspect-square w-full max-w-[min(100%,600px)] mx-auto">
               <div className="max-w-4xl mx-auto">
@@ -485,7 +485,7 @@ const DataMuncher = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-3 sm:p-6 sticky bottom-2 sm:static">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-3 sm:p-6 sticky bottom-2 sm:static">
           <h3 className="text-sm sm:text-base font-semibold text-ink mb-2 sm:mb-4 hidden sm:block">
             Controles
           </h3>

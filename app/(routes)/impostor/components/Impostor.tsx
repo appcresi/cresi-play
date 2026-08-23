@@ -272,7 +272,7 @@ export default function ESIImpostor() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col">
       <GameStatusBar
         title="CrESI: El Impostor"
         score={score}
@@ -285,8 +285,8 @@ export default function ESIImpostor() {
 
           {gameState === 'setup' && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <h2 className="text-base font-semibold text-gray-900 mb-3">Número de jugadores</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Número de jugadores</h2>
                 <div className="flex items-center gap-3 justify-center">
                   <button
                     onClick={() => changeNumPlayers(-1)}
@@ -306,8 +306,8 @@ export default function ESIImpostor() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <h2 className="text-base font-semibold text-gray-900 mb-4">Seleccioná una categoría</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Seleccioná una categoría</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {Object.keys(esiTermsByCategory).map(cat => {
                     const categoryLabels: {[key: string]: {label: string, color: string, icon: string}} = {
@@ -336,8 +336,8 @@ export default function ESIImpostor() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <h2 className="text-base font-semibold text-gray-900 mb-3">Nombres de los jugadores</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Nombres de los jugadores</h2>
                 <div className="space-y-2 mb-4">
                   {Array(numPlayers).fill(null).map((_, i) => (
                     <input
@@ -346,7 +346,7 @@ export default function ESIImpostor() {
                       value={playerNames[i]}
                       onChange={(e) => updatePlayerName(i, e.target.value)}
                       placeholder={`Jugador ${i + 1}`}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 text-sm"
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 text-sm"
                       style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                     />
                   ))}
@@ -362,8 +362,8 @@ export default function ESIImpostor() {
               </div>
 
               <div className="rounded-xl p-3 text-sm" style={{ backgroundColor: `${ACCENT}0D`, borderLeft: `4px solid ${ACCENT}` }}>
-                <p className="text-gray-600">
-                  <strong className="text-gray-800">¿Cómo funciona?</strong> Elegí una categoría y los nombres de los jugadores. Uno de ellos será el impostor. ¡Descubran quién es!
+                <p className="text-gray-600 dark:text-gray-400">
+                  <strong className="text-gray-800 dark:text-gray-200">¿Cómo funciona?</strong> Elegí una categoría y los nombres de los jugadores. Uno de ellos será el impostor. ¡Descubran quién es!
                 </p>
               </div>
             </div>
@@ -380,12 +380,12 @@ export default function ESIImpostor() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 style={{ transform: `translateY(${translateY}px)` }}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none touch-none overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 min-h-96 flex flex-col items-center justify-center transition-transform duration-300 cursor-grab active:cursor-grabbing select-none touch-none overflow-hidden"
               >
                 {!revealed ? (
                   <div className="text-center space-y-6">
-                    <p className="text-gray-500 text-lg font-medium">{getPlayerDisplayName(currentPlayerIndex)}</p>
-                    <p className="text-4xl font-bold text-gray-800">Deslizá hacia arriba</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">{getPlayerDisplayName(currentPlayerIndex)}</p>
+                    <p className="text-4xl font-bold text-gray-800 dark:text-gray-200">Deslizá hacia arriba</p>
                     <IconChevronUp className="w-10 h-10 mx-auto animate-bounce" style={{ color: ACCENT }} />
                   </div>
                 ) : (
@@ -395,7 +395,7 @@ export default function ESIImpostor() {
                         <p className="text-6xl font-bold text-red-500">?</p>
                         <div>
                           <p className="text-2xl font-bold text-red-600 mb-2">¡Sos el impostor!</p>
-                          <p className="text-gray-500">No conocés la palabra. ¡Descubrila haciendo preguntas!</p>
+                          <p className="text-gray-500 dark:text-gray-400">No conocés la palabra. ¡Descubrila haciendo preguntas!</p>
                         </div>
                       </>
                     ) : (
@@ -408,7 +408,7 @@ export default function ESIImpostor() {
                           {currentTerm.category}
                         </div>
                         <div className="bg-gray-50 p-4 rounded-xl max-w-md mx-auto">
-                          <p className="text-gray-600 text-sm italic">{currentTerm.definition}</p>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm italic">{currentTerm.definition}</p>
                         </div>
                       </>
                     )}
@@ -428,7 +428,7 @@ export default function ESIImpostor() {
                 </button>
               )}
 
-              <div className="bg-white rounded-xl border border-gray-100 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex-1 bg-gray-100 rounded-full h-2">
                     <div
@@ -436,7 +436,7 @@ export default function ESIImpostor() {
                       style={{ width: `${((currentPlayerIndex + 1) / numPlayers) * 100}%`, backgroundColor: ACCENT }}
                     ></div>
                   </div>
-                  <p className="text-gray-500 text-sm font-medium">{currentPlayerIndex + 1}/{numPlayers}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">{currentPlayerIndex + 1}/{numPlayers}</p>
                 </div>
               </div>
             </div>
@@ -444,10 +444,10 @@ export default function ESIImpostor() {
 
           {gameState === 'playing' && currentTerm && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
                 <div className="text-center">
-                  <p className="text-gray-500 font-medium mb-2 text-sm">Tiempo restante</p>
-                  <p className={`text-6xl font-bold font-mono ${timer <= 60 ? 'text-red-600' : 'text-gray-800'}`}>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium mb-2 text-sm">Tiempo restante</p>
+                  <p className={`text-6xl font-bold font-mono ${timer <= 60 ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`}>
                     {formatTime(timer)}
                   </p>
                   <div className="flex gap-3 justify-center mt-6">
@@ -461,9 +461,9 @@ export default function ESIImpostor() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">¡Hora de jugar!</h3>
-                <p className="text-gray-600 text-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">¡Hora de jugar!</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Todos conocen la palabra excepto uno. Hagan preguntas estratégicas para identificar al impostor sin revelar completamente la palabra.
                 </p>
               </div>
@@ -479,10 +479,10 @@ export default function ESIImpostor() {
 
           {gameState === 'reveal' && currentTerm && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-5">Resultado</h2>
-                  <p className="text-gray-500 text-sm mb-2">La palabra era:</p>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-5">Resultado</h2>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">La palabra era:</p>
                   <p className="text-5xl font-bold mb-4" style={{ color: ACCENT }}>{currentTerm.word}</p>
                   <div
                     className="inline-block px-5 py-1.5 rounded-full font-semibold text-sm mb-5"
@@ -491,7 +491,7 @@ export default function ESIImpostor() {
                     {currentTerm.category}
                   </div>
                   <div className="bg-gray-50 p-4 rounded-xl mb-5">
-                    <p className="text-gray-600 text-sm italic">{currentTerm.definition}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm italic">{currentTerm.definition}</p>
                   </div>
                 </div>
 
@@ -508,8 +508,8 @@ export default function ESIImpostor() {
                 </div>
 
                 <div className="rounded-xl p-4 mb-6" style={{ backgroundColor: `${ACCENT}0D`, borderLeft: `4px solid ${ACCENT}` }}>
-                  <p className="text-gray-800 font-medium text-sm mb-1">Información educativa:</p>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-800 dark:text-gray-200 font-medium text-sm mb-1">Información educativa:</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     Este término es fundamental para la ESI porque contribuye a la formación integral de estudiantes en temas de sexualidad, relaciones interpersonales, derechos y valores.
                   </p>
                 </div>
@@ -524,7 +524,7 @@ export default function ESIImpostor() {
                   </button>
                   <button
                     onClick={resetGame}
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-full font-bold transition"
+                    className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 py-3 rounded-full font-bold transition"
                   >
                     Inicio
                   </button>

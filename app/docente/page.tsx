@@ -17,6 +17,7 @@ import {
   IconKey,
 } from '@tabler/icons-react';
 import TeacherDashboard from '@/components/TeacherDashboard';
+import ThemeToggle from '@/components/ThemeToggle';
 import type { UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
 
@@ -131,23 +132,26 @@ export default function DocentePage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
-      <div className="max-w-6xl mx-auto px-4 sm:px-5 py-10 sm:py-16 grid lg:grid-cols-2 gap-12 items-center">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
+      <div className="flex justify-end px-4 sm:px-5 pt-4">
+        <ThemeToggle className="w-9 h-9 hover:bg-ink/5 dark:hover:bg-gray-800" />
+      </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-5 py-6 sm:py-10 grid lg:grid-cols-2 gap-12 items-center">
         {/* Columna izquierda: propuesta de valor */}
         <div>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-ink/40 hover:text-ink/70 mb-6">
+          <Link href="/" className="inline-flex items-center gap-1 text-xs text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300 mb-6">
             <IconArrowLeft className="w-3.5 h-3.5" /> Volver al inicio
           </Link>
 
-          <div className="inline-flex items-center gap-1.5 bg-mint text-mint-text text-xs font-bold px-3 py-1.5 rounded-full mb-5">
+          <div className="inline-flex items-center gap-1.5 bg-mint dark:bg-gray-800 text-mint-text dark:text-mint-accent text-xs font-bold px-3 py-1.5 rounded-full mb-5">
             Para docentes
           </div>
 
-          <h1 className={`${fredoka.className} text-3xl sm:text-4xl leading-[1.1] text-ink mb-4`}>
+          <h1 className={`${fredoka.className} text-3xl sm:text-4xl leading-[1.1] text-ink dark:text-gray-100 mb-4`}>
             Tu aula virtual de Educación Sexual Integral
           </h1>
 
-          <p className="text-base sm:text-lg text-ink/70 leading-relaxed mb-8 max-w-md">
+          <p className="text-base sm:text-lg text-ink/70 dark:text-gray-400 leading-relaxed mb-8 max-w-md">
             Armá tu clase, elegí qué actividades y trivias de ESI ven tus alumnos, y seguí
             su progreso en tiempo real. Gratis, sin instalar nada.
           </p>
@@ -155,12 +159,12 @@ export default function DocentePage() {
           <div className="grid sm:grid-cols-2 gap-4">
             {FEATURES.map((feature) => (
               <div key={feature.title} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-mint text-mint-text flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-mint dark:bg-gray-800 text-mint-text dark:text-mint-accent flex items-center justify-center shrink-0">
                   {feature.icon}
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-ink leading-tight">{feature.title}</p>
-                  <p className="text-xs text-ink/60 leading-relaxed mt-0.5">{feature.text}</p>
+                  <p className="font-bold text-sm text-ink dark:text-gray-100 leading-tight">{feature.title}</p>
+                  <p className="text-xs text-ink/60 dark:text-gray-400 leading-relaxed mt-0.5">{feature.text}</p>
                 </div>
               </div>
             ))}
@@ -168,27 +172,27 @@ export default function DocentePage() {
         </div>
 
         {/* Columna derecha: acceso */}
-        <div className="bg-white rounded-3xl shadow-xl max-w-sm w-full mx-auto border border-ink/8 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl max-w-sm w-full mx-auto border border-ink/8 dark:border-gray-700 p-6">
           <div className="flex items-center justify-center mb-4">
             <img src="/logocresi.svg" alt="CrESI" className="w-16 h-16" />
           </div>
-          <h2 className={`${fredoka.className} text-2xl text-ink text-center mb-1`}>
+          <h2 className={`${fredoka.className} text-2xl text-ink dark:text-gray-100 text-center mb-1`}>
             Acceso para docentes
           </h2>
-          <p className="text-ink/60 text-center text-xs mb-6">
+          <p className="text-ink/60 dark:text-gray-400 text-center text-xs mb-6">
             Ingresá con tu cuenta de Google. Si es tu primera vez, se crea automáticamente.
           </p>
 
           {error && (
-            <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl mb-4">
-              <p className="text-red-600 text-xs">{error}</p>
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl mb-4">
+              <p className="text-red-600 dark:text-red-400 text-xs">{error}</p>
             </div>
           )}
 
           <button
             onClick={handleTeacherGoogleSignIn}
             disabled={signingIn}
-            className="w-full bg-white border border-ink/15 hover:bg-cream text-ink py-3 px-3
+            className="w-full bg-white dark:bg-gray-800 border border-ink/15 dark:border-gray-600 hover:bg-cream dark:hover:bg-gray-700 text-ink dark:text-gray-100 py-3 px-3
                      rounded-full transition-colors font-bold text-sm flex items-center justify-center gap-2
                      disabled:opacity-50 disabled:cursor-not-allowed mb-4"
           >
@@ -196,7 +200,7 @@ export default function DocentePage() {
             Continuar con Google
           </button>
 
-          <Link href="/" className="flex items-center justify-center gap-1 text-xs text-ink/40 hover:text-ink/70">
+          <Link href="/" className="flex items-center justify-center gap-1 text-xs text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
             <IconArrowLeft className="w-3.5 h-3.5" /> ¿Sos alumno o alumna? Volver al inicio
           </Link>
         </div>

@@ -12,10 +12,11 @@ import { DEFAULT_TIME_IN_SECONDS } from '@/utils/constants';
 import TriviaReview from './TriviaReview';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
-import { IconBrandInstagram, IconMaximize, IconMoon, IconSun, IconRefresh, IconShoppingCart } from '@tabler/icons-react';
+import { IconBrandInstagram, IconMaximize, IconRefresh, IconShoppingCart } from '@tabler/icons-react';
 import UserDataManager from '@/lib/userDataManager';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
+import { useTheme } from '@/context/ThemeContext';
 
 const ACTIVITY = getActivityById('trivias');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Trivias';
@@ -123,7 +124,12 @@ export default function TriviaGame({
     () => getSettings()?.time ?? DEFAULT_TIME_IN_SECONDS
   );
   const [answeredQuestions, setAnsweredQuestions] = useState<TriviaAnsweredQuestion[]>([]);
-  const [isNightMode, setIsNightMode] = useState<boolean>(false);
+  // Antes esto era un estado local propio de Trivias, sin persistencia y
+  // desconectado del resto de la plataforma. Ahora sale del mismo
+  // ThemeContext global que usa GameStatusBar — un solo interruptor de modo
+  // noche, no uno por juego.
+  const { theme } = useTheme();
+  const isNightMode = theme === 'dark';
   const [showPurchaseModal, setShowPurchaseModal] = useState<boolean>(false);
   const [isTimerPaused, setIsTimerPaused] = useState<boolean>(false);
   const settings = getSettings();
@@ -499,21 +505,6 @@ export default function TriviaGame({
           title="Pantalla completa"
         >
           <IconMaximize size={24} className={isNightMode ? 'text-white' : 'text-gray-700'} />
-        </button>
-
-        {/* Night Mode Button */}
-        <button
-          onClick={() => setIsNightMode(!isNightMode)}
-          className={`${isNightMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50'} 
-                     p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 
-                     hover:scale-110 border ${isNightMode ? 'border-gray-600' : 'border-gray-200'}`}
-          title={isNightMode ? 'Modo día' : 'Modo noche'}
-        >
-          {isNightMode ? (
-            <IconSun size={24} className="text-yellow-400" />
-          ) : (
-            <IconMoon size={24} className="text-gray-700" />
-          )}
         </button>
       </div>
 

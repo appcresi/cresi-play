@@ -24,7 +24,8 @@
  */
 
 import { config } from 'dotenv';
-import admin from 'firebase-admin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 config({ path: '.env.local' });
 
@@ -35,9 +36,13 @@ if (!FIREBASE_ADMIN_PROJECT_ID || !FIREBASE_ADMIN_CLIENT_EMAIL || !FIREBASE_ADMI
   process.exit(1);
 }
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
+// API modular (`firebase-admin/app`, `firebase-admin/firestore`), no la
+// vieja forma `admin.initializeApp()/admin.apps.length` — desde que se
+// actualizó el paquete a v14, `admin.apps` ya no existe en el default
+// export y ese estilo viejo rompe en silencio.
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
       projectId: FIREBASE_ADMIN_PROJECT_ID,
       clientEmail: FIREBASE_ADMIN_CLIENT_EMAIL,
       privateKey: FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -45,7 +50,7 @@ if (!admin.apps.length) {
   });
 }
 
-const db = admin.firestore();
+const db = getFirestore();
 const APPLY = process.argv.includes('--apply');
 
 // Copiado de app/(routes)/infografias/data.json, con un título generado

@@ -4,8 +4,6 @@ import {
   IconArrowRight,
   IconHelp,
   IconPlayerSkipForward,
-  IconSun,
-  IconMoon,
   IconMaximize,
 } from '@tabler/icons-react';
 import { palabras } from '../utils/words';
@@ -16,6 +14,7 @@ import FinalReport from './FinalReport';
 import UserDataManager from '@/lib/userDataManager';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
+import { useTheme } from '@/context/ThemeContext';
 
 // Mismo color que ya tiene "Pasapalabras" en el catálogo (la tarjeta que
 // ves en tu panel) — así la pantalla del juego se siente la misma cosa
@@ -53,7 +52,12 @@ const UnifiedWordGame = () => {
   const [level, setLevel] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isIncorrect, setIsIncorrect] = useState(false);
-  const [isNightMode, setIsNightMode] = useState(false);
+  // Antes esto era un estado local propio de Pasapalabras, sin persistencia
+  // y desconectado del resto de la plataforma. Ahora sale del mismo
+  // ThemeContext global que usa GameStatusBar — un solo interruptor de modo
+  // noche, no uno por juego.
+  const { theme } = useTheme();
+  const isNightMode = theme === 'dark';
   const [usedWords, setUsedWords] = useState<{ palabra: string; definicion: string }[]>([]);
   const [showFinalReport, setShowFinalReport] = useState(false);
   const [correctWords, setCorrectWords] = useState<{ palabra: string; definicion: string }[]>([]);
@@ -244,10 +248,6 @@ const UnifiedWordGame = () => {
 
   const handleGoBack = () => {
     window.location.href = '/';
-  };
-
-  const toggleNightMode = () => {
-    setIsNightMode((prev) => !prev);
   };
 
   const handleFullscreen = () => {
@@ -486,14 +486,6 @@ const UnifiedWordGame = () => {
           />
         </div>
       )}
-
-      <button
-        onClick={toggleNightMode}
-        className="fixed bottom-6 right-6 p-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 z-50 border border-gray-200 text-gray-600"
-        title={isNightMode ? 'Modo día' : 'Modo noche'}
-      >
-        {isNightMode ? <IconSun size={20} /> : <IconMoon size={20} />}
-      </button>
 
       <button
         onClick={handleFullscreen}

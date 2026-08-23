@@ -22,8 +22,8 @@ export const GameControls: React.FC<GameControlsProps> = ({
   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
     <button
       onClick={onReset}
-      className="w-full sm:w-auto px-6 py-2.5 bg-white text-gray-700 border border-gray-300
-                rounded-full hover:bg-gray-50 transition-colors font-medium shadow-sm
+      className="w-full sm:w-auto px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600
+                rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium shadow-sm
                 flex items-center justify-center gap-2"
     >
       <IconRefresh className="w-4.5 h-4.5" />

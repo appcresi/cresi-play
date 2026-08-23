@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
         // deja indexar. Sus sub-herramientas son privadas (panel logueado).
         '/docente/trivias',
         '/docente/completapalabras',
+        '/docente/formacion',
         '/escritorio',
         '/clase',
         '/clase/',

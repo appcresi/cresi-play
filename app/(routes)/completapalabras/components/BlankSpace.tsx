@@ -57,7 +57,7 @@ const BlankSpace: React.FC<BlankSpaceProps> = ({
             ? isCorrect
               ? 'bg-green-50 border-green-400 text-green-900 cursor-move shadow-sm'
               : 'bg-red-50 border-red-400 text-red-900 cursor-move shadow-sm'
-            : 'border-gray-300 border-dashed text-gray-400 bg-white hover:border-gray-400'
+            : 'border-gray-300 dark:border-gray-600 border-dashed text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500'
         }
       `}
     >

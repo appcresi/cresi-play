@@ -85,10 +85,10 @@ export default function Page({ params }: PageProps) {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-cream">
+      <main className="min-h-screen bg-cream dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
-            <p className="text-ink/70">Cargando trivia...</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-8 text-center">
+            <p className="text-ink/70 dark:text-gray-400">Cargando trivia...</p>
           </div>
         </div>
       </main>
@@ -97,16 +97,16 @@ export default function Page({ params }: PageProps) {
 
   if (error || !data) {
     return (
-      <main className="min-h-screen bg-cream">
+      <main className="min-h-screen bg-cream dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <Link
             href="/trivias"
-            className="inline-flex items-center gap-2 text-ink/70 hover:text-ink mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-ink/70 dark:text-gray-400 hover:text-ink dark:hover:text-gray-100 mb-6 transition-colors"
           >
             <IconArrowNarrowLeft size={20} />
             <span className="text-sm font-medium">Volver a trivias</span>
           </Link>
-          <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-8 text-center">
             <p className="text-red-600">
               {error || 'No se pudo cargar la trivia'}
             </p>
@@ -117,12 +117,12 @@ export default function Page({ params }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-cream">
+    <main className="min-h-screen bg-cream dark:bg-gray-900">
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col">
         {/* Back Button */}
         <Link
           href="/trivias"
-          className="inline-flex items-center gap-1.5 text-ink/70 hover:text-ink mb-3 transition-colors w-fit shrink-0"
+          className="inline-flex items-center gap-1.5 text-ink/70 dark:text-gray-400 hover:text-ink dark:hover:text-gray-100 mb-3 transition-colors w-fit shrink-0"
         >
           <IconArrowNarrowLeft size={18} />
           <span className="text-sm font-medium">Volver a trivias</span>
@@ -146,49 +146,49 @@ export default function Page({ params }: PageProps) {
           {/* Left Column - Info */}
           <div className="lg:col-span-2 flex flex-col gap-3 min-h-0">
             {/* Info Card */}
-            <div className="bg-white rounded-xl shadow-sm border border-pink-light p-4">
-              <h2 className="text-sm font-semibold text-ink mb-3">Información de la Trivia</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-4">
+              <h2 className="text-sm font-semibold text-ink dark:text-gray-100 mb-3">Información de la Trivia</h2>
 
               <div className="grid grid-cols-2 gap-2.5">
-                <div className="flex items-center gap-2.5 p-2.5 bg-cream rounded-lg">
+                <div className="flex items-center gap-2.5 p-2.5 bg-cream dark:bg-gray-900 rounded-lg">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
                     <IconUser size={16} style={{ color: ACCENT }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-ink/60">Autor</p>
-                    <p className="text-xs font-medium text-ink truncate">
+                    <p className="text-[11px] text-ink/60 dark:text-gray-400">Autor</p>
+                    <p className="text-xs font-medium text-ink dark:text-gray-100 truncate">
                       {data.author === 'CRESI' ? 'CrESI' : 'Usuario personalizado'}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 p-2.5 bg-cream rounded-lg">
+                <div className="flex items-center gap-2.5 p-2.5 bg-cream dark:bg-gray-900 rounded-lg">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
                     <IconBolt size={16} style={{ color: ACCENT }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-ink/60">Dificultad</p>
-                    <p className="text-xs font-medium text-ink">Nivel {data.level}</p>
+                    <p className="text-[11px] text-ink/60 dark:text-gray-400">Dificultad</p>
+                    <p className="text-xs font-medium text-ink dark:text-gray-100">Nivel {data.level}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 p-2.5 bg-cream rounded-lg">
+                <div className="flex items-center gap-2.5 p-2.5 bg-cream dark:bg-gray-900 rounded-lg">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
                     <IconListNumbers size={16} style={{ color: ACCENT }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-ink/60">Preguntas</p>
-                    <p className="text-xs font-medium text-ink">{data.questions?.length || 0} preguntas</p>
+                    <p className="text-[11px] text-ink/60 dark:text-gray-400">Preguntas</p>
+                    <p className="text-xs font-medium text-ink dark:text-gray-100">{data.questions?.length || 0} preguntas</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 p-2.5 bg-cream rounded-lg">
+                <div className="flex items-center gap-2.5 p-2.5 bg-cream dark:bg-gray-900 rounded-lg">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${ACCENT}15` }}>
                     <IconCalendar size={16} style={{ color: ACCENT }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-ink/60">Creación</p>
-                    <p className="text-xs font-medium text-ink truncate">
+                    <p className="text-[11px] text-ink/60 dark:text-gray-400">Creación</p>
+                    <p className="text-xs font-medium text-ink dark:text-gray-100 truncate">
                       {new Date(data.created_at).toLocaleDateString('es-AR', {
                         day: '2-digit',
                         month: 'short',
@@ -213,17 +213,17 @@ export default function Page({ params }: PageProps) {
 
           {/* Right Column - QR Code */}
           <div className="lg:col-span-1 min-h-0">
-            <div className="bg-white rounded-xl shadow-sm border border-pink-light p-4 h-full flex flex-col">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-4 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-2">
-                <IconShare size={16} className="text-ink/70" />
-                <h2 className="text-sm font-semibold text-ink">Compartir Trivia</h2>
+                <IconShare size={16} className="text-ink/70 dark:text-gray-400" />
+                <h2 className="text-sm font-semibold text-ink dark:text-gray-100">Compartir Trivia</h2>
               </div>
 
-              <p className="text-xs text-ink/60 mb-3">
+              <p className="text-xs text-ink/60 dark:text-gray-400 mb-3">
                 Escaneá el QR o copiá el link para compartir
               </p>
 
-              <div className="bg-cream p-3 rounded-xl border border-pink-light flex justify-center">
+              <div className="bg-cream dark:bg-gray-900 p-3 rounded-xl border border-pink-light flex justify-center">
                 <QRCode
                   size={130}
                   style={{ height: 'auto', maxWidth: '100%', width: '130px' }}
@@ -260,7 +260,7 @@ export default function Page({ params }: PageProps) {
 
       {/* Settings Button (Fixed) */}
       <div className="fixed bottom-6 right-6 z-50">
-        <div className="bg-white rounded-full shadow-lg border border-pink-light hover:shadow-xl transition-shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-full shadow-lg border border-pink-light dark:border-gray-700 hover:shadow-xl transition-shadow">
           <TriviaSettings />
         </div>
       </div>

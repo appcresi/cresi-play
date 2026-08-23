@@ -216,7 +216,7 @@ const ChatSimulator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar
         title="Simulador de Chat Seguro"
         score={score}
@@ -231,7 +231,7 @@ const ChatSimulator = () => {
       />
 
       <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
           {/* Área de mensajes */}
           <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
             {messages.map((msg, index) => {
@@ -269,32 +269,32 @@ const ChatSimulator = () => {
 
           {/* Área de respuestas */}
           {!isSimulatorComplete ? (
-            <div className="border-t border-gray-100 p-6 bg-gray-50">
-              <p className="text-sm text-gray-500 mb-4">Selecciona tu respuesta:</p>
+            <div className="border-t border-gray-100 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-900/40">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Selecciona tu respuesta:</p>
               <div className="space-y-3">
                 {shuffledAnswers.map((answer, index) => (
                   <button
                     key={index}
                     onClick={() => handleResponse(answer.text)}
-                    className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
+                    className="w-full text-left px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
                   >
                     <div className="flex items-start">
-                      <span className="shrink-0 w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600 mr-3">
+                      <span className="shrink-0 w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center text-xs font-semibold text-gray-600 dark:text-gray-300 mr-3">
                         {String.fromCharCode(65 + index)}
                       </span>
-                      <span className="text-sm text-gray-800">{answer.text}</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">{answer.text}</span>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="border-t border-gray-100 p-6 text-center" style={{ backgroundColor: `${ACCENT}0D` }}>
+            <div className="border-t border-gray-100 dark:border-gray-700 p-6 text-center" style={{ backgroundColor: `${ACCENT}0D` }}>
               <div className="mb-4">
                 <IconCircleCheck className="w-14 h-14 mx-auto" style={{ color: ACCENT }} />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">¡Simulador Completado!</h3>
-              <p className="text-gray-600 mb-2">Puntuación de sesión: {sessionScore} puntos</p>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">¡Simulador Completado!</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-2">Puntuación de sesión: {sessionScore} puntos</p>
               {userData.progress.activityScores[ACTIVITY_ID] > 0 && sessionScore > userData.progress.activityScores[ACTIVITY_ID] && (
                 <p className="text-green-600 font-semibold mb-4">¡Nuevo récord personal! 🎉</p>
               )}
@@ -314,7 +314,7 @@ const ChatSimulator = () => {
       {/* Modal de feedback */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
             <div className="flex items-center justify-center mb-4">
               {modalContent.type === 'success' ? (
                 <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
@@ -326,8 +326,8 @@ const ChatSimulator = () => {
                 </div>
               )}
             </div>
-            <h3 className="text-lg font-bold text-center text-gray-900 mb-1.5">{modalContent.title}</h3>
-            <p className="text-center text-gray-500 text-sm mb-6">{modalContent.text}</p>
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-gray-100 mb-1.5">{modalContent.title}</h3>
+            <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-6">{modalContent.text}</p>
             <button
               onClick={() => setShowModal(false)}
               className="w-full px-4 py-2.5 text-white rounded-full font-semibold hover:opacity-90 transition-colors"

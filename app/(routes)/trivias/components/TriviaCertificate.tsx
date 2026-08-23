@@ -46,12 +46,12 @@ export default function TriviaCertificate (): JSX.Element {
   if (token === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-md text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 max-w-md text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">⚠️</span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Token Inválido</h2>
-          <p className="text-gray-600">No tienes un código válido para acceder a este certificado.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Token Inválido</h2>
+          <p className="text-gray-600 dark:text-gray-400">No tienes un código válido para acceder a este certificado.</p>
         </div>
       </div>
     )
@@ -82,14 +82,14 @@ export default function TriviaCertificate (): JSX.Element {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
                 <IconAward size={28} style={{ color: ACCENT }} />
                 Tu Certificado
               </h1>
-              <p className="text-gray-600 text-sm max-w-2xl">
+              <p className="text-gray-600 dark:text-gray-400 text-sm max-w-2xl">
                 Descargá tu certificado en formato PDF. Podría haber pequeñas diferencias visuales según el dispositivo, pero siempre podrás descargarlo correctamente.
               </p>
             </div>
@@ -108,7 +108,7 @@ export default function TriviaCertificate (): JSX.Element {
         </div>
 
         {/* Certificate Preview */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
           <div ref={targetRef} style={{ width: '1100px', height: '755px', backgroundColor: `${ACCENT}0A`, padding: '48px' }}>
             <div style={{
               width: '100%',

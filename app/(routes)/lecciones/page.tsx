@@ -52,20 +52,20 @@ export const metadata: Metadata = {
 
 export default function LeccionesPage(): JSX.Element {
 	return (
-		<div className="w-full min-h-screen bg-cream">
+		<div className="w-full min-h-screen bg-cream dark:bg-gray-900">
 		<section className="max-w-7xl mx-auto px-4 py-12">
 
 			{/* Lecciones component */}
 			<Lecciones />
 
 			{/* Bottom CTA */}
-			<div className="mt-12 bg-mint border border-mint-light rounded-xl p-6">
+			<div className="mt-12 bg-mint dark:bg-gray-800 border border-mint-light dark:border-gray-700 rounded-xl p-6">
 				<div className="flex flex-col md:flex-row items-center justify-between gap-4">
 					<div>
-						<h3 className="font-semibold text-ink mb-1">
+						<h3 className="font-semibold text-ink dark:text-gray-100 mb-1">
 							¿Terminaste todas las lecciones?
 						</h3>
-						<p className="text-sm text-ink/70">
+						<p className="text-sm text-ink/70 dark:text-gray-400">
 							Seguí practicando con nuestros juegos y trivias interactivas
 						</p>
 					</div>

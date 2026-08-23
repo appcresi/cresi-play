@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ACTIVITIES } from "@/lib/activities";
 import ClassroomService from "@/lib/classroomService";
 import { ActivityIcon } from "@/components/ActivityIcon";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import cresiLogo from "@/public/cresi-logo.webp";
 
@@ -217,7 +218,7 @@ export default function Header(): JSX.Element | null {
   }, {} as Record<string, typeof applications>);
 
   return (
-    <header className="h-16 px-6 w-full fixed top-0 z-50 bg-cream shadow-sm">
+    <header className="h-16 px-6 w-full fixed top-0 z-50 bg-cream dark:bg-gray-900 shadow-sm transition-colors">
       <nav className="flex justify-between items-center h-full max-w-7xl mx-auto">
         {/* Lado izquierdo */}
         <div className="flex items-center gap-4">
@@ -231,11 +232,11 @@ export default function Header(): JSX.Element | null {
             />
 
             <div className="hidden sm:block">
-              <h1 className="text-xl font-medium text-ink group-hover:text-coral transition-colors">
+              <h1 className="text-xl font-medium text-ink dark:text-gray-100 group-hover:text-coral transition-colors">
                 {currentSection}
               </h1>
               {profile && (
-                <p className="text-xs text-ink/60">
+                <p className="text-xs text-ink/60 dark:text-gray-400">
                   Hola, {profile.profile.username}
                 </p>
               )}
@@ -245,12 +246,15 @@ export default function Header(): JSX.Element | null {
 
         {/* Lado derecho */}
         <div className="flex items-center gap-2">
+          {/* Modo noche */}
+          <ThemeToggle className="w-9 h-9 hover:bg-pink-light dark:hover:bg-gray-800" />
+
           {/* Notificaciones */}
           <Popover className="relative">
             {({ open }) => (
               <>
-                <Popover.Button className="p-2 rounded-full hover:bg-pink-light transition-colors relative">
-                  <IconBell className="w-5 h-5 text-ink/70" />
+                <Popover.Button className="p-2 rounded-full hover:bg-pink-light dark:hover:bg-gray-800 transition-colors relative">
+                  <IconBell className="w-5 h-5 text-ink/70 dark:text-gray-400" />
                   {suggestedActivities.length > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-coral rounded-full"></span>
                   )}
@@ -265,16 +269,16 @@ export default function Header(): JSX.Element | null {
                   leaveFrom="transform scale-100 opacity-100"
                   leaveTo="transform scale-95 opacity-0"
                 >
-                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-pink-light overflow-hidden">
+                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-pink-light dark:border-gray-700 overflow-hidden">
                     <div className="p-4 max-h-[calc(100vh-100px)] overflow-y-auto">
-                      <h3 className="text-sm font-medium text-ink mb-3">Notificaciones</h3>
+                      <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Notificaciones</h3>
 
                       {suggestedActivities.length === 0 ? (
                         <div className="text-center py-8">
-                          <div className="w-12 h-12 bg-pink-light rounded-full flex items-center justify-center mx-auto mb-3">
+                          <div className="w-12 h-12 bg-pink-light dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-3">
                             <IconBell className="w-6 h-6 text-coral" />
                           </div>
-                          <p className="text-sm text-ink/60">No hay notificaciones</p>
+                          <p className="text-sm text-ink/60 dark:text-gray-400">No hay notificaciones</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
@@ -282,16 +286,16 @@ export default function Header(): JSX.Element | null {
                             <Link
                               key={index}
                               href={activity.href}
-                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-cream transition-colors w-full text-left"
+                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-cream dark:hover:bg-gray-800 transition-colors w-full text-left"
                             >
-                              <div className="flex-shrink-0 w-10 h-10 bg-mint rounded-lg flex items-center justify-center">
+                              <div className="flex-shrink-0 w-10 h-10 bg-mint dark:bg-gray-700 rounded-lg flex items-center justify-center">
                                 <span className="text-mint-text">{activity.icon}</span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-ink mb-1">
+                                <p className="text-sm font-medium text-ink dark:text-gray-100 mb-1">
                                   {activity.name}
                                 </p>
-                                <p className="text-xs text-ink/60">
+                                <p className="text-xs text-ink/60 dark:text-gray-400">
                                   {activity.reason === 'never_visited'
                                     ? '¡Nueva actividad disponible! Explórala ahora'
                                     : `${getTimeSinceVisit(activity.lastVisit!)} desde tu última visita`
@@ -312,17 +316,17 @@ export default function Header(): JSX.Element | null {
           {/* Configuración */}
           <Link
             href="/user"
-            className="p-2 rounded-full hover:bg-pink-light transition-colors"
+            className="p-2 rounded-full hover:bg-pink-light dark:hover:bg-gray-800 transition-colors"
           >
-            <IconSettings className="w-5 h-5 text-ink/70" />
+            <IconSettings className="w-5 h-5 text-ink/70 dark:text-gray-400" />
           </Link>
 
           {/* Aplicaciones */}
           <Popover className="relative">
             {({ open, close }) => (
               <>
-                <Popover.Button className={`p-2 rounded-full hover:bg-pink-light transition-colors ${open ? 'bg-pink-light' : ''}`}>
-                  <IconApps className="w-5 h-5 text-ink/70" />
+                <Popover.Button className={`p-2 rounded-full hover:bg-pink-light dark:hover:bg-gray-800 transition-colors ${open ? 'bg-pink-light dark:bg-gray-800' : ''}`}>
+                  <IconApps className="w-5 h-5 text-ink/70 dark:text-gray-400" />
                 </Popover.Button>
 
                 <Transition
@@ -334,10 +338,10 @@ export default function Header(): JSX.Element | null {
                   leaveFrom="transform scale-100 opacity-100"
                   leaveTo="transform scale-95 opacity-0"
                 >
-                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white rounded-xl shadow-xl border border-pink-light">
+                  <Popover.Panel className="absolute z-[100] right-0 mt-2 w-80 max-h-[calc(100vh-100px)] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-pink-light dark:border-gray-700">
                     <div className="p-4">
                       {profile && (
-                        <div className="mb-4 pb-4 border-b border-pink-light">
+                        <div className="mb-4 pb-4 border-b border-pink-light dark:border-gray-700">
                           <div className="flex items-center gap-3">
                             <Image
                               src={avatarSrc}
@@ -348,10 +352,10 @@ export default function Header(): JSX.Element | null {
                               className="w-10 h-10 rounded-full object-cover"
                             />
                             <div>
-                              <p className="text-sm font-medium text-ink">
+                              <p className="text-sm font-medium text-ink dark:text-gray-100">
                                 {profile.profile.username}
                               </p>
-                              <p className="text-xs text-ink/60">
+                              <p className="text-xs text-ink/60 dark:text-gray-400">
                                 {profile.game.totalScore} puntos • {profile.game.totalLives} vidas
                               </p>
                             </div>
@@ -359,11 +363,11 @@ export default function Header(): JSX.Element | null {
                         </div>
                       )}
 
-                      <h3 className="text-sm font-medium text-ink/60 mb-3">Aplicaciones CrESI</h3>
+                      <h3 className="text-sm font-medium text-ink/60 dark:text-gray-400 mb-3">Aplicaciones CrESI</h3>
 
                       {Object.entries(categorizedApps).map(([category, apps]) => (
                         <div key={category} className="mb-4 last:mb-0">
-                          <h4 className="text-xs font-medium text-ink/40 uppercase tracking-wide mb-2">
+                          <h4 className="text-xs font-medium text-ink/40 dark:text-gray-500 uppercase tracking-wide mb-2">
                             {category}
                           </h4>
 
@@ -376,10 +380,10 @@ export default function Header(): JSX.Element | null {
                                 <Link
                                   key={application.name}
                                   href={application.href}
-                                  className="flex flex-col items-center p-3 rounded-lg hover:bg-cream transition-colors group relative"
+                                  className="flex flex-col items-center p-3 rounded-lg hover:bg-cream dark:hover:bg-gray-800 transition-colors group relative"
                                   onClick={() => close()}
                                 >
-                                  <div className="w-10 h-10 bg-mint rounded-lg flex items-center justify-center mb-2 group-hover:bg-mint-light transition-colors">
+                                  <div className="w-10 h-10 bg-mint dark:bg-gray-700 rounded-lg flex items-center justify-center mb-2 group-hover:bg-mint-light transition-colors">
                                     <span className="text-mint-text">{application.icon}</span>
                                   </div>
                                   {isCompleted && (
@@ -389,7 +393,7 @@ export default function Header(): JSX.Element | null {
                                       </svg>
                                     </div>
                                   )}
-                                  <span className="text-xs text-center text-ink/80 leading-tight">
+                                  <span className="text-xs text-center text-ink/80 dark:text-gray-300 leading-tight">
                                     {application.name}
                                   </span>
                                 </Link>
@@ -400,7 +404,7 @@ export default function Header(): JSX.Element | null {
                       ))}
                     </div>
 
-                    <div className="border-t border-pink-light p-3">
+                    <div className="border-t border-pink-light dark:border-gray-700 p-3">
                       <Link
                         href="/user"
                         className="w-full text-left text-sm text-coral-dark hover:text-coral font-medium block"
@@ -440,9 +444,9 @@ export default function Header(): JSX.Element | null {
                     leaveFrom="transform scale-100 opacity-100"
                     leaveTo="transform scale-95 opacity-0"
                   >
-                    <Popover.Panel className="absolute z-[100] right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-pink-light overflow-hidden">
+                    <Popover.Panel className="absolute z-[100] right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-pink-light dark:border-gray-700 overflow-hidden">
                       <div className="p-4">
-                        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-pink-light">
+                        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-pink-light dark:border-gray-700">
                           <Image
                             src={avatarSrc}
                             alt={profile.profile.username}
@@ -452,10 +456,10 @@ export default function Header(): JSX.Element | null {
                             className="w-10 h-10 rounded-full object-cover"
                           />
                           <div>
-                            <p className="text-sm font-medium text-ink">
+                            <p className="text-sm font-medium text-ink dark:text-gray-100">
                               {profile.profile.username}
                             </p>
-                            <p className="text-xs text-ink/60">
+                            <p className="text-xs text-ink/60 dark:text-gray-400">
                               {profile.game.totalScore} puntos
                             </p>
                           </div>
@@ -464,22 +468,22 @@ export default function Header(): JSX.Element | null {
                         <div className="space-y-2 mb-4">
                           <Link
                             href="/user"
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-ink/80 rounded-lg hover:bg-cream transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-ink/80 dark:text-gray-300 rounded-lg hover:bg-cream dark:hover:bg-gray-800 transition-colors"
                             onClick={() => close()}
                           >
-                            <IconUser className="w-4 h-4 text-ink/60" />
+                            <IconUser className="w-4 h-4 text-ink/60 dark:text-gray-400" />
                             <span>Ver perfil</span>
                           </Link>
                         </div>
 
-                        <div className="border-t border-pink-light pt-4 mt-4">
+                        <div className="border-t border-pink-light dark:border-gray-700 pt-4 mt-4">
                           <button
                             onClick={() => {
                               close();
                               handleLogout();
                             }}
                             disabled={isLoggingOut}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-coral-dark rounded-lg hover:bg-pink-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-coral-dark rounded-lg hover:bg-pink-light dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <IconLogout className="w-4 h-4" />
                             <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>

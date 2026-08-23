@@ -486,7 +486,7 @@ export default function JugarAzar(): JSX.Element {
   // ============================================
 
   return (
-    <main className="min-h-screen bg-cream pt-20 pb-8">
+    <main className="min-h-screen bg-cream dark:bg-gray-900 pt-20 pb-8">
       <Toaster />
 
       {gameState === 'question' && !isGameOver && (
@@ -502,10 +502,10 @@ export default function JugarAzar(): JSX.Element {
       {/* Spinning State */}
       {gameState === 'spinning' && (
         <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-xl px-8 py-10 flex flex-col items-center gap-6 w-full max-w-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl px-8 py-10 flex flex-col items-center gap-6 w-full max-w-lg">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-ink mb-1">¡Girá la ruleta!</h2>
-              <p className="text-ink/40 text-sm">Te va a tocar una categoría al azar</p>
+              <h2 className="text-2xl font-bold text-ink dark:text-gray-100 mb-1">¡Girá la ruleta!</h2>
+              <p className="text-ink/40 dark:text-gray-500 text-sm">Te va a tocar una categoría al azar</p>
             </div>
 
             <div className="relative w-72 h-72 sm:w-80 sm:h-80">
@@ -547,7 +547,7 @@ export default function JugarAzar(): JSX.Element {
           {/* Completed Categories */}
           {completedCategories.size > 0 && (
             <div className="mt-2 w-full max-w-2xl">
-              <h3 className="text-center text-sm font-semibold text-ink/60 mb-3">
+              <h3 className="text-center text-sm font-semibold text-ink/60 dark:text-gray-400 mb-3">
                 Categorías completadas ({completedCategories.size}/{CATEGORIES.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -556,7 +556,7 @@ export default function JugarAzar(): JSX.Element {
                   return (
                     <div
                       key={category}
-                      className="bg-white border-2 rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 shadow-sm"
+                      className="bg-white dark:bg-gray-800 border-2 rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 shadow-sm"
                       style={{ borderColor: `${color}30` }}
                     >
                       <div className="relative">
@@ -589,8 +589,8 @@ export default function JugarAzar(): JSX.Element {
       {/* Category Selected State */}
       {gameState === 'category-selected' && selectedCategory && (
         <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-xl p-10 text-center max-w-sm w-full">
-            <p className="text-ink/40 text-sm font-medium uppercase tracking-wide mb-5">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-10 text-center max-w-sm w-full">
+            <p className="text-ink/40 dark:text-gray-500 text-sm font-medium uppercase tracking-wide mb-5">
               ¡Categoría seleccionada!
             </p>
             <div
@@ -625,7 +625,7 @@ export default function JugarAzar(): JSX.Element {
                 style={{ backgroundColor: getCategoryColor(selectedCategory), animationDelay: '300ms' }}
               />
             </div>
-            <p className="text-ink/40 text-sm mt-3">Cargando preguntas...</p>
+            <p className="text-ink/40 dark:text-gray-500 text-sm mt-3">Cargando preguntas...</p>
           </div>
         </div>
       )}
@@ -634,13 +634,13 @@ export default function JugarAzar(): JSX.Element {
       {gameState === 'question' && !isGameOver && currentQuestion && (
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Question Card */}
-          <div className="bg-white rounded-lg shadow-sm border border-pink-light p-8 mb-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-8 mb-8 text-center">
             <div className="mb-4">
               <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                 {selectedCategory} · Nivel {currentLevel}
               </span>
             </div>
-            <p className="text-xl md:text-2xl font-medium leading-relaxed text-ink">
+            <p className="text-xl md:text-2xl font-medium leading-relaxed text-ink dark:text-gray-100">
               {currentQuestion.question}
             </p>
           </div>
@@ -708,12 +708,12 @@ export default function JugarAzar(): JSX.Element {
       {/* Game Over State */}
       {isGameOver && (
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-2xl p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">😢</span>
             </div>
             <h2 className="text-3xl font-bold mb-3">Game Over</h2>
-            <p className="text-ink/70 mb-6">
+            <p className="text-ink/70 dark:text-gray-400 mb-6">
               Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?
             </p>
 
@@ -721,10 +721,10 @@ export default function JugarAzar(): JSX.Element {
                 puntaje de esta partida antes de que se pierda. */}
             {!userData && !progressSaved && (
               <div className="bg-mint border border-mint-light rounded-lg p-4 mb-6">
-                <p className="text-ink font-medium mb-1">
+                <p className="text-ink dark:text-gray-100 font-medium mb-1">
                   Ganaste {sessionScore} puntos en esta partida 🎉
                 </p>
-                <p className="text-ink/70 text-sm mb-3">
+                <p className="text-ink/70 dark:text-gray-400 text-sm mb-3">
                   Todavía no tenés una cuenta — si te registrás ahora, guardamos este puntaje.
                 </p>
                 <button
@@ -748,8 +748,8 @@ export default function JugarAzar(): JSX.Element {
               </button>
               <button
                 onClick={handlePlayAgain}
-                className="inline-flex items-center justify-center gap-2 bg-pink-light hover:bg-[#FFD6D6]
-                         text-ink px-6 py-3 rounded-lg transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 bg-pink-light dark:bg-gray-700 hover:bg-[#FFD6D6] dark:hover:bg-gray-600
+                         text-ink dark:text-gray-100 px-6 py-3 rounded-lg transition-colors font-medium"
               >
                 <IconRefresh size={20} />
                 Reiniciar Juego
@@ -762,18 +762,18 @@ export default function JugarAzar(): JSX.Element {
       {/* Finished State */}
       {gameState === 'finished' && (
         <div className="flex flex-col items-center justify-center gap-6 max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-2xl p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 text-center">
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
               <span className="text-5xl">🏆</span>
             </div>
             <h2 className="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600">
               ¡CAMPEÓN!
             </h2>
-            <p className="text-ink/70 text-lg mb-4">
+            <p className="text-ink/70 dark:text-gray-400 text-lg mb-4">
               ¡Completaste todas las categorías!
             </p>
             <div className="mb-6">
-              <p className="text-ink/80 text-sm mb-3">Categorías Completadas:</p>
+              <p className="text-ink/80 dark:text-gray-300 text-sm mb-3">Categorías Completadas:</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
                 {Array.from(completedCategories).map((category) => {
                   return (
@@ -795,7 +795,7 @@ export default function JugarAzar(): JSX.Element {
               </div>
             </div>
             <p className="text-3xl font-bold text-coral-dark mb-2">+{sessionScore} puntos</p>
-            <p className="text-ink/80 mb-8">
+            <p className="text-ink/80 dark:text-gray-300 mb-8">
               Puntuación total: <span className="font-bold text-2xl text-purple-600">{score}</span>
             </p>
 
@@ -830,12 +830,12 @@ export default function JugarAzar(): JSX.Element {
       {/* Cartel al salir sin cuenta: última oportunidad de no perder el puntaje */}
       {showExitSavePrompt && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
             <div className="w-14 h-14 bg-mint rounded-full flex items-center justify-center mx-auto mb-4">
               <IconDeviceFloppy size={26} className="text-mint-text" />
             </div>
-            <h3 className="text-lg font-bold text-ink mb-2">¿Querés guardar tu progreso?</h3>
-            <p className="text-sm text-ink/70 mb-6">
+            <h3 className="text-lg font-bold text-ink dark:text-gray-100 mb-2">¿Querés guardar tu progreso?</h3>
+            <p className="text-sm text-ink/70 dark:text-gray-400 mb-6">
               Llevás {sessionScore} puntos en esta partida. Si salís sin loguearte, se pierden.
             </p>
             <div className="flex flex-col gap-2">
@@ -848,7 +848,7 @@ export default function JugarAzar(): JSX.Element {
               </button>
               <button
                 onClick={handleExitWithoutSaving}
-                className="w-full text-ink/60 hover:text-ink/80 py-2 text-sm"
+                className="w-full text-ink/60 dark:text-gray-400 hover:text-ink/80 dark:hover:text-gray-300 py-2 text-sm"
               >
                 Salir sin guardar
               </button>

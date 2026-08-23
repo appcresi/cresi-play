@@ -7,12 +7,12 @@ const ImagePopup = ({ imageUrl, onClose }: ImagePopupProps) => {
   return (
     <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4" onClick={onClose}>
       <div
-        className="relative bg-white rounded-xl shadow-2xl border border-gray-100 p-3"
+        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 p-3"
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute -top-3 -right-3 bg-white w-9 h-9 rounded-full border border-gray-200 shadow-md
-                   flex items-center justify-center text-gray-600 text-xl font-bold hover:bg-gray-50 transition-colors"
+          className="absolute -top-3 -right-3 bg-white dark:bg-gray-700 w-9 h-9 rounded-full border border-gray-200 dark:border-gray-600 shadow-md
+                   flex items-center justify-center text-gray-600 dark:text-gray-300 text-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
           onClick={onClose}
           aria-label="Cerrar"
         >

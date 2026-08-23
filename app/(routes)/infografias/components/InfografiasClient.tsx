@@ -147,12 +147,12 @@ export default function InfografiasClient(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar title="Infografías" score={score} lives={lives} level={1} />
 
       <section className="w-full max-w-6xl mx-auto px-4 pt-24 pb-16">
         {/* Header */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden mb-6">
           <div className="h-20 md:h-28 relative" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiIC8+PC9zdmc+')] opacity-20"></div>
           </div>
@@ -166,7 +166,7 @@ export default function InfografiasClient(): JSX.Element {
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-semibold text-ink mb-1">Infografías</h1>
-            <p className="text-sm text-gray-500 max-w-2xl">
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
               Material visual educativo, gratuito, para consultar o descargar. +{POINTS_PER_VIEW} puntos por ver una,
               +{POINTS_PER_DOWNLOAD} por descargarla.
             </p>
@@ -175,20 +175,20 @@ export default function InfografiasClient(): JSX.Element {
 
         {/* Search */}
         <div className="relative mb-6">
-          <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <IconSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
           <input
             type="text"
             value={query_}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Buscar infografías por tema..."
-            className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-xl text-base
+            className="w-full pl-12 pr-10 py-3.5 bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xl text-base
                      focus:outline-none focus:ring-2 focus:border-transparent transition-all shadow-sm"
             style={{ "--tw-ring-color": ACCENT } as React.CSSProperties}
           />
           {query_ && (
             <button
               onClick={() => handleSearchChange("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               aria-label="Limpiar búsqueda"
             >
               <IconX size={18} />
@@ -203,7 +203,7 @@ export default function InfografiasClient(): JSX.Element {
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
             <IconFolderOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm font-medium">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
               {trimmedQuery
                 ? `No se encontraron infografías para "${trimmedQuery}"`
                 : "Todavía no hay infografías cargadas."}
@@ -214,7 +214,7 @@ export default function InfografiasClient(): JSX.Element {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {pageItems.map((item) => (
                 <button key={item.id} onClick={() => handleOpen(item)} className="group text-left">
-                  <div className="relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden h-72">
+                  <div className="relative bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden h-72">
                     <Image
                       src={item.cover}
                       alt={`Infografía: ${item.title}`}
@@ -241,7 +241,7 @@ export default function InfografiasClient(): JSX.Element {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  className="p-2 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   aria-label="Página anterior"
                 >
                   <IconChevronLeft size={18} />
@@ -265,7 +265,7 @@ export default function InfografiasClient(): JSX.Element {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  className="p-2 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
                   aria-label="Página siguiente"
                 >
                   <IconChevronRight size={18} />
@@ -273,7 +273,7 @@ export default function InfografiasClient(): JSX.Element {
               </div>
             )}
 
-            <p className="text-center text-xs text-gray-400 pt-3">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500 pt-3">
               Mostrando {(currentPage - 1) * PER_PAGE + 1} a {Math.min(currentPage * PER_PAGE, filtered.length)} de{" "}
               {filtered.length} infografías
             </p>
@@ -284,7 +284,7 @@ export default function InfografiasClient(): JSX.Element {
       {/* Preview modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelected(null)}
               className="absolute top-3 right-3 bg-gray-700 hover:bg-gray-800 text-white p-2 rounded-full transition-colors shadow-md z-10"
@@ -295,7 +295,7 @@ export default function InfografiasClient(): JSX.Element {
 
             <div className="flex flex-col sm:flex-row gap-6 p-6 md:p-8">
               <div className="flex-shrink-0 w-full sm:w-64">
-                <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+                <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
                   <img
                     src={selected.cover}
                     alt={`Vista previa de ${selected.title}`}
@@ -306,8 +306,8 @@ export default function InfografiasClient(): JSX.Element {
 
               <div className="flex flex-col justify-between flex-grow">
                 <div className="space-y-4">
-                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900">{selected.title}</h2>
-                  <p className="text-gray-700 text-sm md:text-base leading-relaxed">{selected.informacion}</p>
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{selected.title}</h2>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">{selected.informacion}</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-6">

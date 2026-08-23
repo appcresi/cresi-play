@@ -105,6 +105,17 @@ service cloud.firestore {
       allow update, delete: if request.auth != null &&
         resource.data.author == request.auth.uid;
     }
+    // Lecciones (contenido de lectura + preguntas V/F) — antes vivían
+    // hardcodeadas en el código. Mismo criterio que completapalabras: el
+    // contenido de CrESI se lee público, y queda preparado para que un
+    // docente cree las propias más adelante (author = su uid).
+    match /lecciones/{leccionId} {
+      allow read: if true;
+      allow create: if request.auth != null &&
+        request.resource.data.author == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.author == request.auth.uid;
+    }
     match /trivia/{triviaId} {
       allow read: if true;
       allow create: if request.auth != null &&

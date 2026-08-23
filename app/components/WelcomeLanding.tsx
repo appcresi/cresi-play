@@ -16,6 +16,7 @@ import {
 } from '@tabler/icons-react';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
 import { ActivityIcon } from '@/components/ActivityIcon';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // Display face con personalidad, usada con restricción (solo títulos grandes).
 // El resto del texto sigue en Mona Sans, que ya usa toda la app.
@@ -117,15 +118,16 @@ const WelcomeLanding = () => {
   }, [reducedMotion]);
 
   return (
-    <div className="min-h-screen bg-[#FFFBF8] text-[#241B37] overflow-x-hidden">
+    <div className="min-h-screen bg-[#FFFBF8] dark:bg-gray-900 text-[#241B37] dark:text-gray-100 overflow-x-hidden transition-colors">
       {/* Barra superior: las 3 formas de entrar, siempre visibles sin scrollear */}
-      <div className="sticky top-0 z-30 backdrop-blur-sm bg-[#FFFBF8]/80 border-b border-[#241B37]/5">
+      <div className="sticky top-0 z-30 backdrop-blur-sm bg-[#FFFBF8]/80 dark:bg-gray-900/80 border-b border-[#241B37]/5 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <img src="/logocresi.svg" alt="CrESI" className="w-8 h-8" />
             <span className={`${fredoka.className} text-lg hidden sm:block`}>CrESI</span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto">
+            <ThemeToggle className="w-9 h-9 shrink-0 hover:bg-[#241B37]/5 dark:hover:bg-gray-800" />
             <Link
               href="/unirse"
               className="shrink-0 flex items-center gap-1.5 text-xs sm:text-sm font-bold px-3 sm:px-4 py-2
@@ -171,7 +173,7 @@ const WelcomeLanding = () => {
             <span className="text-[#FF6B6B]">en un juego.</span>
           </h1>
 
-          <p className="text-lg text-[#241B37]/70 leading-relaxed mb-8 max-w-md">
+          <p className="text-lg text-[#241B37]/70 dark:text-gray-400 leading-relaxed mb-8 max-w-md">
             {ACTIVITIES.length} actividades sobre cuerpo, vínculos, cuidado y derechos.
             Para jugar por tu cuenta, o para llevar a toda tu clase.
           </p>
@@ -207,17 +209,17 @@ const WelcomeLanding = () => {
                 Soy docente
               </Link>
             </div>
-            <span className="text-sm text-[#241B37]/50 font-medium">
+            <span className="text-sm text-[#241B37]/50 dark:text-gray-500 font-medium">
               Sin costo · con o sin cuenta
             </span>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4 max-w-md border-t border-[#241B37]/10 pt-6">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4 max-w-md border-t border-[#241B37]/10 dark:border-gray-800 pt-6">
             {STATS.map((stat) => (
               <div key={stat.label}>
-                <p className={`${fredoka.className} text-2xl text-[#241B37]`}>{stat.value}</p>
-                <p className="text-xs text-[#241B37]/55 font-medium leading-snug">{stat.label}</p>
+                <p className={`${fredoka.className} text-2xl text-[#241B37] dark:text-gray-100`}>{stat.value}</p>
+                <p className="text-xs text-[#241B37]/55 dark:text-gray-400 font-medium leading-snug">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -228,7 +230,7 @@ const WelcomeLanding = () => {
           {HERO_CARDS.map((activity, i) => (
             <div
               key={activity.id}
-              className={`absolute w-56 rounded-3xl shadow-xl border-4 border-white bg-white
+              className={`absolute w-56 rounded-3xl shadow-xl border-4 border-white bg-white text-[#241B37]
                         hover:rotate-0 hover:scale-105 hover:z-20 hover:shadow-2xl
                         transition-all duration-500 cursor-default
                         ${heroMounted ? `${HERO_ROTATIONS[i]} opacity-100` : 'opacity-0 translate-y-16 rotate-0'}`}
@@ -274,7 +276,7 @@ const WelcomeLanding = () => {
           <h2 className={`${fredoka.className} text-2xl sm:text-3xl mb-2`}>
             Elegí cómo entrar
           </h2>
-          <p className="text-[#241B37]/60">
+          <p className="text-[#241B37]/60 dark:text-gray-400">
             Tres caminos distintos — elegí el que te corresponde.
           </p>
         </Reveal>
@@ -284,14 +286,14 @@ const WelcomeLanding = () => {
           <Reveal reducedMotion={reducedMotion} delay={0}>
             <Link
               href="/unirse"
-              className="h-full flex flex-col text-left bg-white rounded-3xl border border-[#241B37]/8 p-6 shadow-sm
+              className="h-full flex flex-col text-left bg-white dark:bg-gray-800 rounded-3xl border border-[#241B37]/8 dark:border-gray-800 p-6 shadow-sm
                        hover:shadow-lg hover:-translate-y-1 transition-all group"
             >
               <div className="w-11 h-11 rounded-2xl bg-[#FFE5E5] text-[#FF6B6B] flex items-center justify-center mb-4">
                 <IconDeviceGamepad2 className="w-5 h-5" />
               </div>
               <h3 className={`${fredoka.className} text-lg mb-2`}>Jugar sin código</h3>
-              <p className="text-sm text-[#241B37]/60 leading-relaxed mb-4 flex-1">
+              <p className="text-sm text-[#241B37]/60 dark:text-gray-400 leading-relaxed mb-4 flex-1">
                 Sos alumno o alumna y querés entrar por tu cuenta — con o sin registrarte.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#FF6B6B]
@@ -305,14 +307,14 @@ const WelcomeLanding = () => {
           <Reveal reducedMotion={reducedMotion} delay={90}>
             <Link
               href="/clase"
-              className="h-full flex flex-col text-left bg-white rounded-3xl border border-[#241B37]/8 p-6 shadow-sm
+              className="h-full flex flex-col text-left bg-white dark:bg-gray-800 rounded-3xl border border-[#241B37]/8 dark:border-gray-800 p-6 shadow-sm
                        hover:shadow-lg hover:-translate-y-1 transition-all group"
             >
               <div className="w-11 h-11 rounded-2xl bg-[#FFF3D6] text-[#E8A400] flex items-center justify-center mb-4">
                 <IconKey className="w-5 h-5" />
               </div>
               <h3 className={`${fredoka.className} text-lg mb-2`}>Tengo un código</h3>
-              <p className="text-sm text-[#241B37]/60 leading-relaxed mb-4 flex-1">
+              <p className="text-sm text-[#241B37]/60 dark:text-gray-400 leading-relaxed mb-4 flex-1">
                 Tu docente te dio un código de clase y un usuario para entrar.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#E8A400]
@@ -326,14 +328,14 @@ const WelcomeLanding = () => {
           <Reveal reducedMotion={reducedMotion} delay={180}>
             <Link
               href="/docente"
-              className="h-full flex flex-col text-left bg-white rounded-3xl border border-[#241B37]/8 p-6 shadow-sm
+              className="h-full flex flex-col text-left bg-white dark:bg-gray-800 rounded-3xl border border-[#241B37]/8 dark:border-gray-800 p-6 shadow-sm
                        hover:shadow-lg hover:-translate-y-1 transition-all group"
             >
               <div className="w-11 h-11 rounded-2xl bg-[#E6F7F5] text-[#2FB8AC] flex items-center justify-center mb-4">
                 <IconChalkboard className="w-5 h-5" />
               </div>
               <h3 className={`${fredoka.className} text-lg mb-2`}>Docente</h3>
-              <p className="text-sm text-[#241B37]/60 leading-relaxed mb-4 flex-1">
+              <p className="text-sm text-[#241B37]/60 dark:text-gray-400 leading-relaxed mb-4 flex-1">
                 Creá tu clase, sumá alumnos y elegí qué actividades pueden ver.
               </p>
               <span className="inline-flex items-center gap-1.5 text-sm font-bold text-[#2FB8AC]
@@ -352,7 +354,7 @@ const WelcomeLanding = () => {
             { icon: <IconChartBar className="w-4 h-4" />, text: 'Progreso de cada alumno, en vivo' },
           ].map((f, i) => (
             <Reveal reducedMotion={reducedMotion} delay={i * 100} key={f.text}>
-              <div className="flex items-center gap-2.5 text-xs font-medium text-[#241B37]/55 px-1">
+              <div className="flex items-center gap-2.5 text-xs font-medium text-[#241B37]/55 dark:text-gray-400 px-1">
                 <span className="text-[#2FB8AC] shrink-0">{f.icon}</span>
                 {f.text}
               </div>
@@ -362,13 +364,13 @@ const WelcomeLanding = () => {
       </section>
 
       {/* ============ TODAS LAS ACTIVIDADES ============ */}
-      <section className="bg-[#FFF3EE] py-20">
+      <section className="bg-[#FFF3EE] dark:bg-gray-800/40 py-20">
         <div className="max-w-6xl mx-auto px-5">
           <Reveal reducedMotion={reducedMotion} className="text-center mb-10">
             <h2 className={`${fredoka.className} text-2xl sm:text-3xl mb-2`}>
               Explorá todo lo que hay adentro
             </h2>
-            <p className="text-[#241B37]/60">
+            <p className="text-[#241B37]/60 dark:text-gray-400">
               Cada actividad trabaja un tema distinto — de seguridad en redes a salud mental.
             </p>
           </Reveal>
@@ -378,7 +380,7 @@ const WelcomeLanding = () => {
               <Reveal reducedMotion={reducedMotion} delay={(i % 5) * 70} key={activity.id}>
                 <Link
                   href="#elegir"
-                  className="w-full block text-left bg-white rounded-2xl border border-[#241B37]/6 p-4
+                  className="w-full block text-left bg-white dark:bg-gray-800 rounded-2xl border border-[#241B37]/6 dark:border-gray-800 p-4
                            hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   <div
@@ -388,7 +390,7 @@ const WelcomeLanding = () => {
                     <ActivityIcon iconName={activity.iconName} size={16} />
                   </div>
                   <p className="font-bold text-sm leading-tight mb-1">{activity.title}</p>
-                  <p className="text-[11px] text-[#241B37]/45 font-medium">{activity.category}</p>
+                  <p className="text-[11px] text-[#241B37]/45 dark:text-gray-500 font-medium">{activity.category}</p>
                 </Link>
               </Reveal>
             ))}

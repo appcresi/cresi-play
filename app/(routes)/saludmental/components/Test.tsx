@@ -157,22 +157,22 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
     const totalEarned = POINTS_PER_QUESTION * questions.length + COMPLETION_BONUS;
 
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 mb-8 text-center">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
           style={{ backgroundColor: `${ACCENT}15` }}
         >
           <IconHeartHandshake className="w-8 h-8" style={{ color: ACCENT }} />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Resultado</h2>
-        <p className="text-gray-600 leading-relaxed mb-6 max-w-xl mx-auto">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Resultado</h2>
+        <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6 max-w-xl mx-auto">
           {results[calculateImportance(testScore)]}
         </p>
 
         <div className="rounded-xl p-4 mb-8 max-w-xs mx-auto" style={{ backgroundColor: `${ACCENT}0D` }}>
           <p className="font-semibold text-sm mb-1" style={{ color: ACCENT }}>¡Puntos ganados!</p>
-          <p className="text-xs text-gray-500">+{POINTS_PER_QUESTION * questions.length} por responder preguntas</p>
-          <p className="text-xs text-gray-500">+{COMPLETION_BONUS} por completar el test</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">+{POINTS_PER_QUESTION * questions.length} por responder preguntas</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">+{COMPLETION_BONUS} por completar el test</p>
           <p className="font-semibold text-sm mt-1" style={{ color: ACCENT }}>Total: +{totalEarned} puntos</p>
         </div>
 
@@ -187,14 +187,14 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
           </button>
           <a
             href="/literatura"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <IconBooks className="w-4.5 h-4.5" />
             Ir a Literatura
           </a>
           <a
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <IconHome className="w-4.5 h-4.5" />
             Volver al inicio
@@ -205,13 +205,13 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8 mb-8">
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-600">Progreso</span>
-          <span className="text-sm font-medium text-gray-600">{Math.round(percentage)}%</span>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Progreso</span>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{Math.round(percentage)}%</span>
         </div>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className="h-full transition-all duration-300"
             style={{ width: `${percentage}%`, backgroundColor: ACCENT }}
@@ -230,20 +230,20 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
             </span>
           </div>
           <div>
-            <p className="text-xs text-gray-400">Pregunta {actualQuestion + 1} de {questions.length}</p>
-            <p className="text-sm text-gray-500">Progreso del cuestionario</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Pregunta {actualQuestion + 1} de {questions.length}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Progreso del cuestionario</p>
           </div>
         </div>
 
         <div className="mb-8 p-6 rounded-xl border" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
-          <p className="text-lg text-gray-800 font-medium leading-relaxed">
+          <p className="text-lg text-gray-800 dark:text-gray-100 font-medium leading-relaxed">
             {questions[actualQuestion]}
           </p>
         </div>
       </div>
 
       <div className="space-y-3">
-        <p className="text-sm font-medium text-gray-600 mb-4">¿Cuál es tu respuesta?</p>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">¿Cuál es tu respuesta?</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { text: 'No', value: 1 as 1, color: 'bg-green-50 border-green-200 hover:bg-green-100' },

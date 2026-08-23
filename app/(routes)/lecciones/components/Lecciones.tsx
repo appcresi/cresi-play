@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebaseFirestore";
 import LessonPage from "./lesson";
 import GameStatusBar from '@/components/GameStatusBar';
 import {
@@ -10,10 +12,12 @@ import {
 	IconTrophy,
 	IconCheck,
 	IconArrowRight,
+	IconSparkles,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
+import type { Lesson } from './types';
 
 interface Feature {
 	title: string;
@@ -27,41 +31,58 @@ const ACTIVITY = getActivityById('lecciones');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Lecciones';
 const ACCENT = ACTIVITY?.color ?? '#1976D2';
 
-const features: Feature[] = [
-	{
-		title: "Pubertad",
-		description:
-			"En esta lección aprenderás sobre los principales cambios que ocurren al inicio de la pubertad.",
+// Las lecciones en sí (texto, preguntas) ahora viven en Firestore — esto
+// es solo la "vidriera" visual (ícono, color, dificultad) por título, ya
+// que ese tipo de metadata no tiene sentido guardarla en la base. Si
+// aparece un título que no está acá (una lección nueva, o creada por un
+// docente en el futuro), cae en DEFAULT_META en vez de romper.
+const LESSON_META: Record<string, { description: string; icon: JSX.Element; color: string; difficulty: string }> = {
+	"Pubertad": {
+		description: "En esta lección aprenderás sobre los principales cambios que ocurren al inicio de la pubertad.",
 		icon: <IconBook size={24} />,
 		color: "blue",
 		difficulty: "Básico",
 	},
-	{
-		title: "Sexualidad",
-		description:
-			"¿La sexualidad es solo lo biológico? Aprendé más sobre la diferencia entre sexo, género, orientación sexual.",
+	"Sexualidad": {
+		description: "¿La sexualidad es solo lo biológico? Aprendé más sobre la diferencia entre sexo, género, orientación sexual.",
 		icon: <IconPresentation size={24} />,
 		color: "purple",
 		difficulty: "Intermedio",
 	},
-	{
-		title: "Planificación Familiar",
-		description:
-			"¿Querés formar una familia? ¿Sabés cómo cuidarte y con qué? Aprendé más sobre métodos anticonceptivos.",
+	"Planificación Familiar": {
+		description: "¿Querés formar una familia? ¿Sabés cómo cuidarte y con qué? Aprendé más sobre métodos anticonceptivos.",
 		icon: <IconHeart size={24} />,
 		color: "pink",
 		difficulty: "Avanzado",
 	},
-];
+	"Placer Sexual": {
+		description: "¿Qué es el placer y por qué es normal sentir curiosidad? Aprendé sobre zonas erógenas, masturbación y pornografía.",
+		icon: <IconSparkles size={24} />,
+		color: "purple",
+		difficulty: "Intermedio",
+	},
+	"Mi Primera Vez": {
+		description: "Dudas, tiempos, consentimiento y cuidados a tener en cuenta antes de la primera relación sexual.",
+		icon: <IconHeart size={24} />,
+		color: "pink",
+		difficulty: "Avanzado",
+	},
+};
+
+const DEFAULT_META = {
+	description: "Aprendé más sobre este tema con esta lección interactiva.",
+	icon: <IconBook size={24} />,
+	color: "blue",
+	difficulty: "Básico",
+};
 
 const POINTS_PER_CORRECT_ANSWER = 100;
 const POINTS_PER_LEVEL_COMPLETION = 100;
 
 export default function Lecciones(): JSX.Element {
 	const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
-	const [correctPercentages, setCorrectPercentages] = useState<
-		Record<string, number | null>
-	>({});
+	const [lessons, setLessons] = useState<Lesson[]>([]);
+	const [loadingLessons, setLoadingLessons] = useState(true);
 	const [userData, setUserData] = useState(UserDataManager.getDefaultUserData());
 	const [score, setScore] = useState(0);
 	const [lives, setLives] = useState(3);
@@ -73,24 +94,44 @@ export default function Lecciones(): JSX.Element {
 		loadUserData();
 	}, []);
 
+	// Antes el contenido de las lecciones (texto + preguntas) vivía
+	// hardcodeado en app/(routes)/lecciones/data/lessons.ts. Ahora sale de
+	// Firestore, mismo patrón que ya usan trivias y completapalabras —
+	// lectura pública, filtrada por autor CrESI (un docente podrá crear
+	// las propias más adelante, sin tocar este componente).
+	useEffect(() => {
+		const fetchLessons = async () => {
+			try {
+				const snap = await getDocs(query(collection(db, 'lecciones'), where('author', '==', 'CRESI')));
+				const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Lesson));
+				setLessons(data);
+			} catch (err) {
+				console.error('❌ Error cargando lecciones desde Firestore:', err);
+			} finally {
+				setLoadingLessons(false);
+			}
+		};
+		fetchLessons();
+	}, []);
+
 	const loadUserData = () => {
 		const data = UserDataManager.loadUserData();
 		setUserData(data);
 		setScore(data.game.totalScore);
 		setLives(data.game.totalLives);
 		UserDataManager.visitActivity(ACTIVITY_TITLE);
+	};
 
-		// Antes esto leía una clave suelta en localStorage (el nombre de la
-		// lección, ej. "Pubertad") que también usa Completapalabras para SUS
-		// lecciones — dos actividades distintas leyendo/escribiendo la misma
-		// clave global. El progreso de cada lección ya vive, correctamente
-		// aislado, en `progress.lessonProgress`; ahora leemos solo de ahí.
-		const percentages: Record<string, number | null> = {};
-		features.forEach((feature) => {
-			const entry = data.progress.lessonProgress?.[feature.title];
-			percentages[feature.title] = entry ? entry.percentage : null;
-		});
-		setCorrectPercentages(percentages);
+	// Antes esto leía una clave suelta en localStorage (el nombre de la
+	// lección, ej. "Pubertad") que también usa Completapalabras para SUS
+	// lecciones — dos actividades distintas leyendo/escribiendo la misma
+	// clave global. El progreso de cada lección vive, correctamente
+	// aislado, en `progress.lessonProgress` — se deriva directo de
+	// `userData` en vez de duplicarlo en un estado aparte que había que
+	// mantener sincronizado a mano.
+	const getPercentage = (title: string): number | null => {
+		const entry = userData.progress.lessonProgress?.[title];
+		return entry ? entry.percentage : null;
 	};
 
 	const saveUserData = (updatedData: typeof userData) => {
@@ -188,11 +229,6 @@ export default function Lecciones(): JSX.Element {
 			}
 		};
 
-		setCorrectPercentages(prev => ({
-			...prev,
-			[title]: percentage
-		}));
-
 		saveUserData(updatedData);
 		if (isCompleted && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
 			trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, lesson: title });
@@ -234,13 +270,23 @@ export default function Lecciones(): JSX.Element {
 		return colors[color as keyof typeof colors] || colors.blue;
 	};
 
+	const features: Feature[] = lessons.map((lesson) => ({
+		title: lesson.title,
+		...(LESSON_META[lesson.title] ?? DEFAULT_META),
+	}));
+
+	const selectedLesson = selectedFeature
+		? lessons.find((lesson) => lesson.title === selectedFeature) ?? null
+		: null;
+
 	return (
-		<section className="min-h-screen bg-cream">
+		<section className="min-h-screen bg-cream dark:bg-gray-900">
 			<GameStatusBar
 				title="Lecciones"
 				score={score}
 				lives={lives}
 				level={selectedFeature ? currentLessonLevel : 1}
+				activityName={selectedFeature ?? undefined}
 				{...(selectedFeature && {
 					currentQuestion: correctAnswersCount,
 					totalQuestions: totalAnswersCount || 1
@@ -248,18 +294,27 @@ export default function Lecciones(): JSX.Element {
 			/>
 
 			<div className="py-8 px-4 pt-24">
-				{!selectedFeature ? (
+				{loadingLessons ? (
+					<div className="flex items-center justify-center py-24">
+						<div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: ACCENT }} />
+					</div>
+				) : !selectedFeature ? (
 					<div className="max-w-7xl mx-auto">
+						{features.length === 0 && (
+							<p className="text-center text-ink/60 text-sm py-12">
+								Todavía no hay lecciones disponibles. Volvé a intentarlo más tarde.
+							</p>
+						)}
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 							{features.map((feature) => {
-								const correctPercentage = correctPercentages[feature.title];
+								const correctPercentage = getPercentage(feature.title);
 								const isCompleted = correctPercentage && correctPercentage > 65;
 								const colors = getColorClasses(feature.color);
 
 								return (
 									<div
 										key={feature.title}
-										className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden group relative"
+										className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden group relative"
 									>
 										{/* Top color bar */}
 										<div className={`h-2 bg-gradient-to-r ${colors.gradient}`}></div>
@@ -354,10 +409,10 @@ export default function Lecciones(): JSX.Element {
 							})}
 						</div>
 					</div>
-				) : (
+				) : selectedLesson ? (
 					<div className="max-w-7xl mx-auto">
 						<LessonPage
-							title={selectedFeature}
+							lesson={selectedLesson}
 							onBack={handleBack}
 							onLessonComplete={handleLessonComplete}
 							onAnswerCorrect={handleAnswerCorrect}
@@ -366,10 +421,12 @@ export default function Lecciones(): JSX.Element {
 							onLessonLevelUpdate={handleLessonLevelUpdate}
 						/>
 					</div>
+				) : (
+					<p className="text-center text-ink/60 text-sm py-12">Lección no encontrada.</p>
 				)}
 
 				{/* Summary statistics */}
-				{!selectedFeature && Object.keys(correctPercentages).length > 0 && (
+				{!selectedFeature && features.length > 0 && (
 					<div className="max-w-7xl mx-auto mt-8 rounded-xl border p-6" style={{ backgroundColor: `${ACCENT}0A`, borderColor: `${ACCENT}30` }}>
 						<div className="flex flex-col md:flex-row items-center justify-between gap-4">
 							<div className="flex items-center gap-3">
@@ -382,11 +439,10 @@ export default function Lecciones(): JSX.Element {
 									</p>
 									<p className="text-sm text-gray-500">
 										{
-											features.filter(
-												(f) =>
-													correctPercentages[f.title] &&
-													correctPercentages[f.title]! > 65
-											).length
+											features.filter((f) => {
+												const p = getPercentage(f.title);
+												return p !== null && p > 65;
+											}).length
 										}{" "}
 										de {features.length} lecciones completadas
 									</p>
@@ -395,8 +451,8 @@ export default function Lecciones(): JSX.Element {
 
 							<div className="flex gap-2">
 								{features.map((feature) => {
-									const percentage = correctPercentages[feature.title];
-									const isCompleted = percentage && percentage > 65;
+									const percentage = getPercentage(feature.title);
+									const isCompleted = percentage !== null && percentage > 65;
 									return (
 										<div
 											key={feature.title}

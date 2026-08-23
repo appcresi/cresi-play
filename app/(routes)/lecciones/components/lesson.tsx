@@ -5,14 +5,14 @@ import toast from 'react-hot-toast';
 import ImagePopup from "./ImagePopup";
 import FloatingAudioButton from "./FloatingAudioButton";
 import ResultsComponent from "./ResultsComponent";
-import { Question } from "./types";
+import AnswerResultModal from "./AnswerResultModal";
+import { Question, Lesson } from "./types";
 import { IconCheck, IconX, IconArrowRight, IconNotes, IconTrash, IconEdit, IconPlus } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import type { LessonNote } from '@/types/user';
-import { lessons } from '../data/lessons';
 
 type LessonPageProps = {
-  title: string;
+  lesson: Lesson;
   onBack: () => void;
   onLessonComplete?: (title: string, percentage: number, correctAnswersCount: number, levelsCompleted: number) => void;
   onAnswerCorrect?: () => void;
@@ -22,7 +22,14 @@ type LessonPageProps = {
   onNoteCreated?: () => void;
 };
 
-export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCorrect, onLevelComplete, onCorrectAnswersUpdate, onLessonLevelUpdate, onNoteCreated }: LessonPageProps) {
+// Antes esto recibía solo el `title` y buscaba la lección en un array
+// importado estáticamente (`../data/lessons`). Ahora el contenido vive en
+// Firestore y ya se trajo en el componente padre (Lecciones.tsx) — acá se
+// recibe el objeto completo directamente, sin volver a buscarlo ni pedirlo.
+const POINTS_PER_CORRECT_ANSWER = 100;
+
+export default function LessonPage({ lesson: currentLesson, onBack, onLessonComplete, onAnswerCorrect, onLevelComplete, onCorrectAnswersUpdate, onLessonLevelUpdate, onNoteCreated }: LessonPageProps) {
+  const title = currentLesson.title;
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -37,8 +44,7 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-
-  const currentLesson = lessons.find((lesson) => lesson.title === title);
+  const [answerResult, setAnswerResult] = useState<{ correct: boolean } | null>(null);
 
   // Cargar las notas de ESTA lección desde la cuenta del alumno. Antes
   // vivían solo en memoria (useState sin persistir a ningún lado) — se
@@ -47,10 +53,6 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
     const data = UserDataManager.loadUserData();
     setNotes((data.notes || []).filter((n) => n.lessonTitle === title));
   }, [title]);
-
-  if (!currentLesson) {
-    return <div>Lección no encontrada</div>;
-  }
 
   const currentLeccion = currentLesson.lecciones[currentLessonIndex];
   const currentQuestion = currentLeccion.questions[currentQuestionIndex];
@@ -86,28 +88,39 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
     };
     setAllQuestions(prev => [...prev, currentQuestionWithAnswer]);
 
-    if (answer === currentQuestion.correctAnswer) {
-      toast.success('¡Genial! Respuesta correcta, +100 puntos', { duration: 1200 });
+    const isCorrect = answer === currentQuestion.correctAnswer;
+    if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
 
       if (onAnswerCorrect) {
         onAnswerCorrect();
       }
-    } else {
-      toast.error('¡Respuesta incorrecta!', { duration: 1200 });
     }
 
     const newTotalAnswered = allQuestions.length + 1;
     if (onCorrectAnswersUpdate) {
-      onCorrectAnswersUpdate(answer === currentQuestion.correctAnswer ? correctAnswers + 1 : correctAnswers, newTotalAnswered);
+      onCorrectAnswersUpdate(isCorrect ? correctAnswers + 1 : correctAnswers, newTotalAnswered);
     }
 
-    if (currentQuestionIndex < currentLeccion.questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    } else {
-      setQuestionsFinished(true);
-    }
+    setAnswerResult({ correct: isCorrect });
   };
+
+  // El alert de correcto/incorrecto se cierra solo — recién ahí se avanza
+  // a la siguiente pregunta (o se marca el nivel como terminado), así el
+  // alumno alcanza a leer el resultado antes de que cambie la pantalla.
+  useEffect(() => {
+    if (!answerResult) return;
+    const timer = setTimeout(() => {
+      setAnswerResult(null);
+      if (currentQuestionIndex < currentLeccion.questions.length - 1) {
+        setCurrentQuestionIndex((prev) => prev + 1);
+      } else {
+        setQuestionsFinished(true);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answerResult]);
 
   /**
    * Las notas ahora se guardan de verdad, en la cuenta del alumno (antes
@@ -240,18 +253,22 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
         <ImagePopup imageUrl={selectedImage} onClose={closeImagePopup} />
       )}
 
+      {answerResult && (
+        <AnswerResultModal correct={answerResult.correct} points={POINTS_PER_CORRECT_ANSWER} />
+      )}
+
       {/* Note Modal */}
       {showNoteModal && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
               {editingNoteId ? "Editar nota" : "Nueva nota"}
             </h3>
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               placeholder="Escribe un punto importante que quieras recordar..."
-              className="w-full h-32 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full h-32 p-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
             <div className="flex gap-3 mt-4">
               <button
@@ -260,7 +277,7 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
                   setNoteText("");
                   setEditingNoteId(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancelar
               </button>
@@ -285,7 +302,7 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
                 ? "bg-green-500 text-white"
                 : index === currentLessonIndex
                 ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-600"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
             }`}
           >
             {index < currentLessonIndex ? (
@@ -300,18 +317,18 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Main content */}
         <div className="flex-1">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <div className="prose max-w-none text-gray-700 leading-relaxed">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+            <div className="prose max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
               {displayedWords.join(" ")}
             </div>
 
             {showQuestions && !questionsFinished && (
               <div className="mt-8 space-y-4">
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                  <p className="text-sm font-medium text-blue-900 mb-2">
+                <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-xl p-4">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
                     Pregunta {currentQuestionIndex + 1} de {currentLeccion.questions.length}
                   </p>
-                  <p className="text-base text-gray-900">
+                  <p className="text-base text-gray-900 dark:text-gray-100">
                     {currentQuestion.question}
                   </p>
                 </div>
@@ -339,17 +356,20 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
 
         {/* Sidebar */}
         <div className="lg:w-80 space-y-4">
-          {/* Image */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <Image
-              src={currentLeccion.imagen}
-              alt={`Lección ${currentLessonIndex + 1}`}
-              width={1080}
-              height={1080}
-              className="w-full h-auto cursor-pointer hover:opacity-95 transition-opacity"
-              onClick={() => openImagePopup(currentLeccion.imagen)}
-            />
-          </div>
+          {/* Image — no todas las lecciones tienen una (las nuevas, sin
+              imágenes propias todavía, no la traen) */}
+          {currentLeccion.imagen && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+              <Image
+                src={currentLeccion.imagen}
+                alt={`Lección ${currentLessonIndex + 1}`}
+                width={1080}
+                height={1080}
+                className="w-full h-auto cursor-pointer hover:opacity-95 transition-opacity"
+                onClick={() => openImagePopup(currentLeccion.imagen!)}
+              />
+            </div>
+          )}
 
           {/* Next button */}
           {questionsFinished && (
@@ -366,12 +386,12 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
             </button>
           )}
           {/* Notes section */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="border-b border-gray-100 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+            <div className="border-b border-gray-100 dark:border-gray-700 p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <IconNotes size={20} className="text-amber-600" />
-                  <h3 className="font-semibold text-gray-900">Mis notas ({notes.length})</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Mis notas ({notes.length})</h3>
                 </div>
               </div>
               <button
@@ -380,7 +400,7 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
                   setEditingNoteId(null);
                   setShowNoteModal(true);
                 }}
-                className="w-full px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium rounded-full transition-colors flex items-center justify-center gap-2 border border-amber-200"
+                className="w-full px-4 py-2 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-medium rounded-full transition-colors flex items-center justify-center gap-2 border border-amber-200 dark:border-amber-900"
               >
                 <IconPlus size={18} />
                 <span>Nueva nota</span>
@@ -390,7 +410,7 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
             {/* Notes list */}
             <div className="p-4 max-h-64 overflow-y-auto">
               {notes.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">
+                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
                   No tenés notas de esta lección todavía. ¡Agregá una!
                 </p>
               ) : (
@@ -398,12 +418,12 @@ export default function LessonPage({ title, onBack, onLessonComplete, onAnswerCo
                   {notes.map((note) => (
                     <div
                       key={note.id}
-                      className="p-3 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+                      className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-xl hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900">{note.text}</p>
-                          <p className="text-xs text-gray-500 mt-2">
+                          <p className="text-sm text-gray-900 dark:text-gray-100">{note.text}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             Nivel {note.level}
                           </p>
                         </div>

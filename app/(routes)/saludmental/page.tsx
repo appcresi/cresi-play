@@ -53,7 +53,7 @@ const ACCENT = "#388E3C";
 
 export default function MentalHealthTestPage(): JSX.Element {
 	return (
-		<div className="w-full min-h-screen bg-cream">
+		<div className="w-full min-h-screen bg-cream dark:bg-gray-900">
 		<section className="max-w-7xl mx-auto px-4 pt-24 pb-12">
 
 			{/* Test component */}
@@ -70,23 +70,23 @@ export default function MentalHealthTestPage(): JSX.Element {
 							<p className="font-semibold mb-1" style={{ color: ACCENT }}>
 								¿Por qué es importante?
 							</p>
-							<p className="text-sm text-ink/70">
+							<p className="text-sm text-ink/70 dark:text-gray-400">
 								Cuidar de tu salud mental es fundamental para prevenir problemas más graves como depresión o aislamiento social
 							</p>
 						</div>
 					</div>
 				</div>
 
-				<div className="bg-teal-50 border border-teal-100 rounded-xl p-5">
+				<div className="bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900 rounded-xl p-5">
 					<div className="flex items-start gap-3">
 						<div className="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center shrink-0">
 							<IconHeart className="w-5 h-5 text-white" />
 						</div>
 						<div>
-							<p className="font-semibold text-teal-900 mb-1">
+							<p className="font-semibold text-teal-900 dark:text-teal-200 mb-1">
 								¿Qué vas a lograr?
 							</p>
-							<p className="text-sm text-teal-700">
+							<p className="text-sm text-teal-700 dark:text-teal-300">
 								Reflexionarás sobre tu bienestar y tomarás decisiones informadas sobre buscar ayuda si es necesario
 							</p>
 						</div>
@@ -95,22 +95,22 @@ export default function MentalHealthTestPage(): JSX.Element {
 			</div>
 
 			{/* Support info */}
-			<div className="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-6">
+			<div className="mt-8 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-xl p-6">
 				<div className="flex items-start gap-3">
 					<div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
 						<IconHeart className="w-5 h-5 text-white" />
 					</div>
 					<div>
-						<h3 className="font-semibold text-blue-900 mb-2">
+						<h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
 							¿Necesitás apoyo?
 						</h3>
-						<p className="text-sm text-blue-700 mb-3">
+						<p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
 							Este test está dirigido principalmente a adolescentes y jóvenes, y tiene como objetivo evaluar el estado de su salud mental a partir de una serie de preguntas prácticas. Al finalizar, podrás determinar si estás en buen estado emocional o si, por el contrario, podrías estar experimentando niveles de estrés, ansiedad u otros desafíos mentales que podrían requerir apoyo emocional.
 							Si después de realizar el test sentís que necesitás hablar con alguien, no dudes en contactar a un profesional de la salud mental o comunicarte con nosotros.
 						</p>
 						<a
 							href="/contacto"
-							className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+							className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1"
 						>
 							Contacta con nosotros
 							<IconArrowRight className="w-4 h-4" />

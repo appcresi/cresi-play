@@ -61,8 +61,8 @@ export default function TriviaSettings(): JSX.Element {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden 
-                                      bg-white rounded-xl shadow-xl border border-gray-100
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden
+                                      bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700
                                       transition-all">
                   {/* Header */}
                   <div className="px-6 py-4" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
@@ -87,16 +87,16 @@ export default function TriviaSettings(): JSX.Element {
                     {/* Time selection */}
                     <div className="mb-6">
                       <label className="flex flex-col gap-3">
-                        <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                           <IconClock size={18} style={{ color: ACCENT }} />
                           Tiempo por pregunta
                         </span>
                         <select
                           value={selectedTime}
                           onChange={(e) => handleChangeSettings({ time: Number(e.target.value) })}
-                          className="w-full px-4 py-3 text-base bg-white border border-gray-300 rounded-xl
+                          className="w-full px-4 py-3 text-base bg-white dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl
                                    focus:outline-none focus:ring-2 focus:border-transparent
-                                   transition-all cursor-pointer hover:border-gray-400"
+                                   transition-all cursor-pointer hover:border-gray-400 dark:hover:border-gray-500"
                           style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                         >
                           {[15, 30, 45, 60, 90, 120].map((time) => (
@@ -107,7 +107,7 @@ export default function TriviaSettings(): JSX.Element {
                         </select>
                       </label>
 
-                      <p className="mt-3 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/40 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                         💡 Este tiempo se aplicará a todas las preguntas de la trivia
                       </p>
                     </div>
@@ -121,7 +121,7 @@ export default function TriviaSettings(): JSX.Element {
                   </div>
 
                   {/* Footer */}
-                  <div className="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-100">
+                  <div className="bg-gray-50 dark:bg-gray-900/40 px-6 py-4 flex justify-end border-t border-gray-100 dark:border-gray-700">
                     <button
                       type="button"
                       onClick={() => setIsOpen(false)}

@@ -7,6 +7,7 @@ import InactivityGuard from '@/components/InactivityGuard';
 
 import CookieConsent from '@/components/CookieConsent'
 import { AuthProvider } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
 
 const monaSans = localFont({
   src: './fonts/Mona-Sans.woff2',
@@ -101,8 +102,28 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
   return (
-    <html lang='es' className={monaSans.className}>
+    <html lang='es' className={monaSans.className} suppressHydrationWarning>
       <head>
+        {/* Aplica la clase `dark` al <html> ANTES del primer paint, leyendo
+            la preferencia guardada — sin esto, una preferencia oscura
+            causaría un flash de tema claro al cargar cada página (el
+            ThemeProvider recién puede leer localStorage después de
+            hidratar). Script inline y sincrónico a propósito: un
+            next/script se puede diferir y llegar tarde para este propósito. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  if (localStorage.getItem('cresi_theme') === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+
         {/* Antes había 3 <link rel="preload"> hardcodeados acá — pero esto
             es el layout raíz, se aplica a TODAS las rutas, no solo a la
             home (la única página que realmente usa esas 3 imágenes). En
@@ -163,14 +184,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
           })}
         </Script>
       </head>
-      <body className='bg-[#f3f4f6]'>
-        <AuthProvider>
-          <main>
-            <InactivityGuard />
-            {children}
-          </main>
-        </AuthProvider>
-        <CookieConsent />
+      <body className='bg-[#f3f4f6] dark:bg-gray-900 transition-colors'>
+        <ThemeProvider>
+          <AuthProvider>
+            <main>
+              <InactivityGuard />
+              {children}
+            </main>
+          </AuthProvider>
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   )

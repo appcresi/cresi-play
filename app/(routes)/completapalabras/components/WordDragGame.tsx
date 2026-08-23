@@ -416,10 +416,10 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
 
   if (loadError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
+      <div className="flex items-center justify-center min-h-screen bg-cream dark:bg-gray-900">
         <div className="text-center max-w-sm">
           <IconX className="w-10 h-10 text-red-400 mx-auto mb-3" />
-          <p className="text-gray-600">No se pudo cargar esta lección. Puede que ya no exista.</p>
+          <p className="text-gray-600 dark:text-gray-400">No se pudo cargar esta lección. Puede que ya no exista.</p>
         </div>
       </div>
     );
@@ -427,20 +427,20 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
 
   if (!isClient || !currentLessonData) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
+      <div className="flex items-center justify-center min-h-screen bg-cream dark:bg-gray-900">
         <div className="text-center">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
             style={{ borderColor: ACCENT }}
           />
-          <p className="text-gray-500">Cargando...</p>
+          <p className="text-gray-500 dark:text-gray-400">Cargando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream py-8 px-4">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 py-8 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <GameStatusBar
@@ -452,13 +452,13 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
         </div>
 
         {isGameOver ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <IconX className="w-8 h-8 text-red-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Game Over!</h2>
-              <p className="text-gray-500 mb-8">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">¡Game Over!</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-8">Te has quedado sin vidas. ¿Quieres comprar una vida extra para continuar?</p>
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={() => setShowPurchaseModal(true)}
@@ -469,7 +469,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
                 </button>
                 <button
                   onClick={resetGame}
-                  className="px-6 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors font-semibold"
+                  className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-semibold"
                 >
                   Reiniciar Juego
                 </button>
@@ -479,7 +479,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
         ) : (
           <div className="space-y-4">
             {showFeedback && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4">
                 <Feedback
                   message={feedbackMessage}
                   isComplete={isLevelComplete}
@@ -488,7 +488,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
               </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">
               <TextDisplay
                 textParts={textParts}
                 blanks={blanks}
@@ -503,7 +503,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
               />
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <WordPool
                 words={words}
                 onDragStart={handleDragStart}
@@ -517,7 +517,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
               />
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <GameControls
                 onReset={resetGame}
                 onCheck={checkAnswers}

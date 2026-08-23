@@ -173,7 +173,7 @@ const UserProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header Banner */}
       <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 h-40 overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -192,7 +192,7 @@ const UserProfile: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10 pb-10">
         {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 overflow-hidden">
           <div className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               {/* Avatar */}
@@ -209,20 +209,20 @@ const UserProfile: React.FC = () => {
                   </div>
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-gray-200 border-4 border-white shadow-lg flex items-center justify-center">
-                    <IconUser size={40} className="text-gray-400" />
+                    <IconUser size={40} className="text-gray-400 dark:text-gray-500" />
                   </div>
                 )}
               </div>
 
               {/* Profile Info */}
               <div className="flex-grow">
-                <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   {userData.profile.username || 'Estudiante'}
                 </h1>
-                <p className="text-base text-gray-500 mb-3">
+                <p className="text-base text-gray-500 dark:text-gray-400 mb-3">
                   {userData.profile.character.name || 'Sin personaje seleccionado'}
                 </p>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <IconCalendar size={16} />
                     Miembro desde {formatDate(userData.profile.createdAt)}
@@ -238,7 +238,7 @@ const UserProfile: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleUpdateMood}
-                  className="px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors text-sm font-semibold border border-gray-300 hover:border-indigo-300"
+                  className="px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-full transition-colors text-sm font-semibold border border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-700"
                 >
                   Actualizar estado
                 </button>
@@ -250,8 +250,8 @@ const UserProfile: React.FC = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {/* Game Stats Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconTrophy size={20} className="text-amber-500" />
               Estadísticas de juego
             </h3>
@@ -262,11 +262,11 @@ const UserProfile: React.FC = () => {
                     <IconHeart size={20} className="text-red-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Vidas</p>
-                    <p className="text-xs text-gray-500">Disponibles</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Vidas</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Disponibles</p>
                   </div>
                 </div>
-                <span className="text-2xl font-semibold text-gray-900">{userData.game.totalLives}</span>
+                <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{userData.game.totalLives}</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -275,11 +275,11 @@ const UserProfile: React.FC = () => {
                     <IconTrophy size={20} className="text-amber-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Puntos</p>
-                    <p className="text-xs text-gray-500">Total acumulado</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Puntos</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Total acumulado</p>
                   </div>
                 </div>
-                <span className="text-2xl font-semibold text-gray-900">{userData.game.totalScore}</span>
+                <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{userData.game.totalScore}</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -288,26 +288,26 @@ const UserProfile: React.FC = () => {
                     <IconTarget size={20} className="text-indigo-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Racha</p>
-                    <p className="text-xs text-gray-500">Días consecutivos</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Racha</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Días consecutivos</p>
                   </div>
                 </div>
-                <span className="text-2xl font-semibold text-gray-900">{userData.game.streak}</span>
+                <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{userData.game.streak}</span>
               </div>
             </div>
           </div>
 
           {/* Progress Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconEdit size={20} className="text-green-500" />
               Progreso académico
             </h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Actividades completadas</span>
-                  <span className="text-sm text-gray-500">{completedCatalogActivities.length} / {totalVisibleActivities}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Actividades completadas</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{completedCatalogActivities.length} / {totalVisibleActivities}</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
@@ -315,21 +315,21 @@ const UserProfile: React.FC = () => {
                     style={{ width: `${programPercentage}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {programPercentage}% del programa
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Promedio por actividad</span>
-                  <span className="text-lg font-semibold text-gray-900">{averageScore}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Promedio por actividad</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">{averageScore}</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Logros desbloqueados</span>
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Logros desbloqueados</span>
+                <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {unlockedAchievements.length}
                 </span>
               </div>
@@ -337,31 +337,31 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Mood & Activity Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconMoodHappy size={20} className="text-purple-500" />
               Estado y actividad
             </h3>
             <div className="space-y-4">
-              <div className="p-4 bg-purple-50 rounded-xl">
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/40 rounded-xl">
                 <div className="flex items-center gap-3 mb-2">
                   <IconMoodHappy size={24} className="text-purple-500" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Estado actual</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Estado actual</p>
                     <p className="text-lg font-semibold text-purple-700">
                       {userData.mood.lastEntry?.label || 'Sin registro'}
                     </p>
                   </div>
                 </div>
                 {userData.mood.lastEntry && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     Registrado {new Date(userData.mood.lastEntry.date).toLocaleDateString('es-ES')}
                   </p>
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Registros de humor: {userData.mood.history.length}
                 </p>
               </div>
@@ -373,8 +373,8 @@ const UserProfile: React.FC = () => {
             saber cuáles. Ahora se ve la lista completa, marcando qué
             actividades ya completaste (incluye Amor Sin Violencia y
             Salud Mental Test, que antes no aparecían en ningún lado). */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-          <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
             <IconTarget size={20} className="text-indigo-500" />
             Actividades ({completedCatalogActivities.length}/{totalVisibleActivities})
           </h3>
@@ -387,7 +387,7 @@ const UserProfile: React.FC = () => {
                   className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-colors ${
                     isDone
                       ? 'border-transparent'
-                      : 'bg-gray-50 border-gray-100'
+                      : 'bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-700'
                   }`}
                   style={isDone ? { backgroundColor: `${activity.color}0D`, borderColor: `${activity.color}30` } : undefined}
                 >
@@ -402,7 +402,7 @@ const UserProfile: React.FC = () => {
                   >
                     <ActivityIcon iconName={activity.iconName} size={18} />
                   </div>
-                  <p className={`text-xs font-medium leading-tight ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>
+                  <p className={`text-xs font-medium leading-tight ${isDone ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>
                     {activity.title}
                   </p>
                 </div>
@@ -415,22 +415,22 @@ const UserProfile: React.FC = () => {
             se mostraban en ningún lado del perfil */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Lecciones */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconBook size={20} className="text-blue-500" />
               Lecciones
             </h3>
             {lessonEntries.length === 0 ? (
-              <p className="text-sm text-gray-400">Todavía no empezaste ninguna lección.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Todavía no empezaste ninguna lección.</p>
             ) : (
               <div className="space-y-3">
                 {lessonEntries.map(([title, entry]) => (
                   <div key={title}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-700">{title}</span>
-                      <span className="text-xs text-gray-500">{entry.percentage}%</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{title}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{entry.percentage}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
                       <div
                         className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                         style={{ width: `${entry.percentage}%` }}
@@ -443,22 +443,22 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Cuentos (Literatura) */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconBooks size={20} className="text-orange-500" />
               Cuentos leídos
             </h3>
             {storyEntries.length === 0 ? (
-              <p className="text-sm text-gray-400">Todavía no empezaste ningún cuento.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Todavía no empezaste ningún cuento.</p>
             ) : (
               <div className="space-y-3">
                 {storyEntries.map(([title, entry]) => (
                   <div key={title}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-700 truncate pr-2">{title}</span>
-                      <span className="text-xs text-gray-500 shrink-0">{entry.percentage}%</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate pr-2">{title}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">{entry.percentage}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
                       <div
                         className="bg-orange-500 h-1.5 rounded-full transition-all duration-300"
                         style={{ width: `${entry.percentage}%` }}
@@ -471,22 +471,22 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Test vocacional */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconBriefcase size={20} className="text-green-600" />
               Test vocacional
             </h3>
             {topVocationalAreas.length === 0 ? (
-              <p className="text-sm text-gray-400">Todavía no hiciste el test vocacional.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Todavía no hiciste el test vocacional.</p>
             ) : (
               <div className="space-y-2">
-                <p className="text-xs text-gray-500 mb-2">Tus áreas de mayor interés:</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Tus áreas de mayor interés:</p>
                 {topVocationalAreas.map((area, i) => (
-                  <div key={area.name} className="flex items-center justify-between p-2.5 bg-green-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-800">
+                  <div key={area.name} className="flex items-center justify-between p-2.5 bg-green-50 dark:bg-green-950/40 rounded-lg">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                       {i === 0 ? '🥇' : '🥈'} {area.name}
                     </span>
-                    <span className="text-xs font-semibold text-green-700">{area.total} pts</span>
+                    <span className="text-xs font-semibold text-green-700 dark:text-green-400">{area.total} pts</span>
                   </div>
                 ))}
               </div>
@@ -494,22 +494,22 @@ const UserProfile: React.FC = () => {
           </div>
 
           {/* Notas */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconNotes size={20} className="text-amber-600" />
               Mis notas
             </h3>
             {userData.notes.length === 0 ? (
-              <p className="text-sm text-gray-400">Todavía no escribiste ninguna nota en las lecciones.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Todavía no escribiste ninguna nota en las lecciones.</p>
             ) : (
               <div className="space-y-2">
-                <p className="text-xs text-gray-500 mb-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                   {userData.notes.length} nota{userData.notes.length !== 1 ? 's' : ''} en total
                 </p>
                 {userData.notes.slice(-3).reverse().map((note) => (
-                  <div key={note.id} className="p-2.5 bg-amber-50 rounded-lg">
-                    <p className="text-xs text-gray-700 line-clamp-2">{note.text}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">{note.lessonTitle}</p>
+                  <div key={note.id} className="p-2.5 bg-amber-50 dark:bg-amber-950/40 rounded-lg">
+                    <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">{note.text}</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{note.lessonTitle}</p>
                   </div>
                 ))}
               </div>
@@ -519,20 +519,20 @@ const UserProfile: React.FC = () => {
 
         {/* Achievements */}
         {unlockedAchievements.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
               <IconMedal size={20} className="text-yellow-500" />
               Logros desbloqueados
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {unlockedAchievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                <div key={achievement.id} className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-950/40 rounded-lg border border-yellow-100 dark:border-yellow-900">
                   <AchievementIcon iconName={achievement.iconName} className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{achievement.name}</p>
-                    <p className="text-xs text-gray-500">{achievement.description}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{achievement.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{achievement.description}</p>
                     {achievement.date && (
-                      <p className="text-[11px] text-gray-400 mt-1">{formatDate(achievement.date)}</p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{formatDate(achievement.date)}</p>
                     )}
                   </div>
                 </div>
@@ -542,15 +542,15 @@ const UserProfile: React.FC = () => {
         )}
 
         {/* Actions Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Acciones rápidas</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">Acciones rápidas</h3>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setIsPurchaseModalOpen(true)}
               disabled={userData.game.totalLives >= 3 || userData.game.totalScore < 200}
               className={`flex items-center gap-2 px-4 py-3 rounded-full font-semibold text-sm transition-all ${
                 userData.game.totalLives >= 3 || userData.game.totalScore < 200
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                   : 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
               }`}
             >
@@ -560,7 +560,7 @@ const UserProfile: React.FC = () => {
 
             <button
               onClick={() => setShowResetConfirm(true)}
-              className="flex items-center gap-2 px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full font-semibold text-sm transition-all"
+              className="flex items-center gap-2 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full font-semibold text-sm transition-all"
             >
               <IconTrash size={18} />
               Reiniciar progreso
@@ -575,7 +575,7 @@ const UserProfile: React.FC = () => {
             </button>
           </div>
 
-          <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+          <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-900">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
@@ -602,21 +602,21 @@ const UserProfile: React.FC = () => {
       {/* Reset confirmation modal — antes era un Swal.fire nativo */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-full max-w-md p-6">
             <div className="flex flex-col items-center text-center gap-4">
               <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
                 <IconAlertTriangle size={28} className="text-red-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1">¿Reiniciar progreso?</h2>
-                <p className="text-gray-500 text-sm">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">¿Reiniciar progreso?</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Se borrará todo tu progreso de juegos, actividades, estados de ánimo, logros, lecciones, cuentos y notas. Tu perfil se mantiene intacto. Esta acción no se puede deshacer.
                 </p>
               </div>
               <div className="flex gap-3 w-full pt-2">
                 <button
                   onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition"
+                  className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition"
                 >
                   Cancelar
                 </button>
@@ -638,20 +638,20 @@ const UserProfile: React.FC = () => {
           cuenta, no solo borra el avance) y no se puede deshacer. */}
       {showDeleteAccountConfirm && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-md p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-full max-w-md p-6">
             <div className="flex flex-col items-center text-center gap-4">
               <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
                 <IconAlertTriangle size={28} className="text-red-600" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1">¿Eliminar tu cuenta?</h2>
-                <p className="text-gray-500 text-sm">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">¿Eliminar tu cuenta?</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Se borra tu perfil, tu progreso y tu acceso a cualquier clase de la que
                   formes parte. Esta acción es <strong>permanente</strong> y no se puede deshacer.
                 </p>
               </div>
               <div className="w-full text-left">
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">
                   Escribí <span className="font-mono">ELIMINAR</span> para confirmar
                 </label>
                 <input
@@ -659,7 +659,7 @@ const UserProfile: React.FC = () => {
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   disabled={isDeletingAccount}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none
                            focus:ring-2 focus:ring-red-500 text-sm disabled:opacity-50"
                   placeholder="ELIMINAR"
                   autoFocus
@@ -676,7 +676,7 @@ const UserProfile: React.FC = () => {
                     setDeleteAccountError('');
                   }}
                   disabled={isDeletingAccount}
-                  className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition disabled:opacity-50"
                 >
                   Cancelar
                 </button>

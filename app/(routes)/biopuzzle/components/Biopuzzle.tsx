@@ -183,7 +183,7 @@ export default function AnatomiaApp() {
   }, [score, bodyParts.length, currentSystem]);
 
   return (
-    <div className="h-screen bg-cream overflow-hidden flex flex-col">
+    <div className="h-screen bg-cream dark:bg-gray-900 overflow-hidden flex flex-col">
       <GameStatusBar
         title="BioPuzzle"
         score={userData.game.totalScore}
@@ -198,7 +198,7 @@ export default function AnatomiaApp() {
           <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-3">
             {/* Game Board */}
             <div className="lg:col-span-2 min-h-0">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3">
                 <div
                   className="relative w-full h-96 lg:h-[500px] rounded-lg border-2 border-dashed border-gray-200 overflow-hidden"
                   style={{ backgroundColor: `${ACCENT}0A` }}
@@ -267,24 +267,24 @@ export default function AnatomiaApp() {
             {/* Side Panel */}
             <div className="min-h-0 flex flex-col gap-3 overflow-y-auto">
               {/* Selector de sistema */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 shrink-0">
                 <div className="flex items-center justify-between gap-2">
                   <button
                     onClick={goToPreviousSystem}
-                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+                    className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shrink-0"
                     title="Sistema anterior"
                   >
                     <IconArrowLeft size={18} />
                   </button>
 
                   <div className="text-center min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 leading-tight truncate">{currentSystem().name}</p>
-                    <p className="text-[11px] text-gray-400">Sistema {currentSystemIndex + 1} de {bodySystems.length}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate">{currentSystem().name}</p>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500">Sistema {currentSystemIndex + 1} de {bodySystems.length}</p>
                   </div>
 
                   <button
                     onClick={goToNextSystem}
-                    className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors shrink-0"
+                    className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shrink-0"
                     title="Siguiente sistema"
                   >
                     <IconArrowRight size={18} />
@@ -293,12 +293,12 @@ export default function AnatomiaApp() {
               </div>
 
               {/* Progress Card */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2.5">Progreso</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 shrink-0">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2.5">Progreso</h3>
 
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs text-gray-500">Completado</span>
-                  <span className="text-xs font-medium text-gray-900">{score} / {bodyParts.length}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Completado</span>
+                  <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{score} / {bodyParts.length}</span>
                 </div>
 
                 <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
@@ -321,8 +321,8 @@ export default function AnatomiaApp() {
               </div>
 
               {/* Body Parts Card */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex-1 min-h-0 flex flex-col">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2.5 shrink-0">Partes disponibles</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 flex-1 min-h-0 flex flex-col">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2.5 shrink-0">Partes disponibles</h3>
 
                 <div className="space-y-1.5 overflow-y-auto">
                   {bodyParts.map(part => (
@@ -366,17 +366,17 @@ export default function AnatomiaApp() {
       {/* Completion Modal */}
       {levelCompleted && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-md w-full p-8">
             <div className="text-center">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <IconCheck size={28} className="text-green-600" />
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 ¡Sistema completado!
               </h3>
 
-              <p className="text-gray-500 text-sm mb-6">
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
                 Has identificado correctamente todas las partes del {currentSystem().name}
               </p>
 
@@ -403,7 +403,7 @@ export default function AnatomiaApp() {
 
                 <button
                   onClick={resetCurrentGame}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-full font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Repetir
                 </button>

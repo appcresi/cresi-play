@@ -11,7 +11,7 @@ type LevelTransitionModalProps = {
 const LevelTransitionModal = ({ currentLevel }: LevelTransitionModalProps) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-md w-full overflow-hidden">
         {/* Barra superior verde */}
         <div className="h-2 bg-gradient-to-r from-green-500 to-green-600"></div>
 
@@ -28,12 +28,12 @@ const LevelTransitionModal = ({ currentLevel }: LevelTransitionModalProps) => {
           </h2>
 
           {/* Mensaje */}
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
             Excelente trabajo. Preparándote para el siguiente desafío...
           </p>
 
           {/* Indicador de carga */}
-          <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
             <div
               className="h-full rounded-full animate-pulse"
               style={{ width: '70%', backgroundColor: ACCENT }}

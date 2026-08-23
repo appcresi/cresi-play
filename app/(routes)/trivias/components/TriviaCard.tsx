@@ -28,7 +28,7 @@ export function TriviaCard(index: TriviaIndexFields): JSX.Element {
   return (
     <article className="relative h-full">
       <Link href={`/trivias/pregame/${index.id}`}>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group h-full flex flex-col">
 
           {/* Header Banner */}
           <div className="relative">
@@ -69,22 +69,22 @@ export function TriviaCard(index: TriviaIndexFields): JSX.Element {
           {/* Content */}
           <div className="p-4 flex-1 flex flex-col">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-gray-900 text-sm">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                 {index.name}
               </h3>
-              <IconChevronRight size={16} className="text-gray-400 group-hover:text-gray-600 transition-colors shrink-0" />
+              <IconChevronRight size={16} className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors shrink-0" />
             </div>
 
             {/* Score Display */}
-            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-3">
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-3 border border-gray-100 dark:border-gray-700 mb-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-600">Mejor intento</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Mejor intento</span>
                 <div className="flex items-center gap-1">
-                  <IconStar size={16} className={percentage > 0 ? 'text-yellow-500' : 'text-gray-300'} />
+                  <IconStar size={16} className={percentage > 0 ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'} />
                   <span className={`text-lg font-bold ${
                     percentage >= 80 ? 'text-green-600' :
                     percentage >= 50 ? 'text-blue-600' :
-                    'text-gray-600'
+                    'text-gray-600 dark:text-gray-300'
                   }`}>
                     {percentage}%
                   </span>

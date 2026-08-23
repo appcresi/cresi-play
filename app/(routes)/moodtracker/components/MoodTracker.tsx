@@ -273,7 +273,7 @@ const MoodTracker = () => {
   const stats = calculateStats();
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar
         title="Mood Tracker"
         score={userData.game.totalScore}
@@ -296,27 +296,27 @@ const MoodTracker = () => {
             {stats && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6 border-t-4" style={{ borderTopColor: ACCENT }}>
-                    <p className="text-ink/60 text-sm font-medium">Entradas Totales</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6 border-t-4" style={{ borderTopColor: ACCENT }}>
+                    <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Entradas Totales</p>
                     <p className="text-3xl font-bold mt-2" style={{ color: ACCENT }}>{stats.totalEntries}</p>
                   </div>
-                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-pink-light p-6 border-t-4 border-t-green-500">
-                    <p className="text-ink/60 text-sm font-medium">Racha Actual</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-x border-b border-pink-light dark:border-gray-700 p-6 border-t-4 border-t-green-500">
+                    <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Racha Actual</p>
                     <p className="text-3xl font-bold text-green-600 mt-2">{userData.game.streak} días</p>
                   </div>
-                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-pink-light p-6 border-t-4 border-t-purple-500">
-                    <p className="text-ink/60 text-sm font-medium">Intensidad Promedio</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-x border-b border-pink-light dark:border-gray-700 p-6 border-t-4 border-t-purple-500">
+                    <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Intensidad Promedio</p>
                     <p className="text-3xl font-bold text-purple-600 mt-2">{stats.avgIntensity}</p>
                   </div>
-                  <div className="bg-white rounded-xl shadow-sm border-x border-b border-pink-light p-6 border-t-4 border-t-orange-500">
-                    <p className="text-ink/60 text-sm font-medium">Emoción Más Común</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-x border-b border-pink-light dark:border-gray-700 p-6 border-t-4 border-t-orange-500">
+                    <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Emoción Más Común</p>
                     <p className="text-lg font-bold text-orange-600 mt-2">{stats.mostCommonMood}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                  <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6">
-                    <h3 className="text-base font-semibold text-ink mb-4">Distribución de Emociones</h3>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6">
+                    <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-4">Distribución de Emociones</h3>
                     <div className="flex justify-center">
                       <PieChart width={250} height={250}>
                         <Pie
@@ -340,8 +340,8 @@ const MoodTracker = () => {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6">
-                    <h3 className="text-base font-semibold text-ink mb-4">Tu Aventura Emocional</h3>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6">
+                    <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-4">Tu Aventura Emocional</h3>
                     <div className="h-64 w-full">
                       <ResponsiveContainer>
                         <LineChart data={chartData}>
@@ -357,8 +357,8 @@ const MoodTracker = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6">
-                  <h3 className="text-base font-semibold text-ink mb-4">Logros Desbloqueados</h3>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6">
+                  <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-4">Logros Desbloqueados</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {userData.achievements.map((achievement) => (
                       <div
@@ -366,21 +366,21 @@ const MoodTracker = () => {
                         className={`p-4 rounded-xl border-l-4 ${
                           achievement.unlocked
                             ? 'bg-gold-light border-gold-accent'
-                            : 'bg-white border-ink/15'
+                            : 'bg-white dark:bg-gray-700 border-ink/15 dark:border-gray-600'
                         }`}
                       >
                         <div className="flex items-start gap-3">
                           <AchievementIcon
                             iconName={achievement.iconName || ''}
                             className={`w-6 h-6 shrink-0 ${
-                              achievement.unlocked ? 'text-gold-accent' : 'text-ink/30'
+                              achievement.unlocked ? 'text-gold-accent' : 'text-ink/30 dark:text-gray-600'
                             }`}
                           />
                           <div>
-                            <h4 className="font-bold text-ink">{achievement.name}</h4>
-                            <p className="text-sm text-ink/60">{achievement.description}</p>
+                            <h4 className="font-bold text-ink dark:text-gray-100">{achievement.name}</h4>
+                            <p className="text-sm text-ink/60 dark:text-gray-400">{achievement.description}</p>
                             {achievement.unlocked && achievement.date && (
-                              <p className="text-xs text-ink/40 mt-1">
+                              <p className="text-xs text-ink/40 dark:text-gray-500 mt-1">
                                 Desbloqueado: {new Date(achievement.date).toLocaleDateString()}
                               </p>
                             )}
@@ -396,7 +396,7 @@ const MoodTracker = () => {
         ) : (
           <>
             <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-3 text-ink/80">
+              <div className="flex items-center gap-3 text-ink/80 dark:text-gray-300">
                 <IconCalendar className="w-5 h-5" style={{ color: ACCENT }} />
                 <span className="font-medium">Racha actual: <span className="font-bold" style={{ color: ACCENT }}>{userData.game.streak} días</span></span>
               </div>
@@ -410,8 +410,8 @@ const MoodTracker = () => {
               </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6 mb-8">
-              <h2 className="text-lg font-bold text-ink mb-6">¿Cómo te sentís hoy?</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6 mb-8">
+              <h2 className="text-lg font-bold text-ink dark:text-gray-100 mb-6">¿Cómo te sentís hoy?</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 gap-3">
                 {moods.map((mood) => (
                   <button
@@ -425,15 +425,15 @@ const MoodTracker = () => {
                     style={selectedMood?.label === mood.label ? ({ '--tw-ring-color': ACCENT } as React.CSSProperties) : undefined}
                   >
                     <MoodIcon mood={mood} />
-                    <span className="mt-2 text-xs font-medium text-ink/80 text-center">{mood.label}</span>
+                    <span className="mt-2 text-xs font-medium text-ink/80 dark:text-gray-300 text-center">{mood.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {selectedMood && (
-              <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6 mb-8">
-                <h3 className="text-base font-semibold text-ink mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6 mb-8">
+                <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-4">
                   ¿Cuál es la intensidad de tu emoción?
                 </h3>
 
@@ -447,18 +447,18 @@ const MoodTracker = () => {
                       onChange={(e) => setIntensityRating(parseInt(e.target.value))}
                       className="flex-1 h-2 bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full appearance-none cursor-pointer"
                     />
-                    <span className="text-xl font-bold text-ink bg-pink-light px-3 py-1 rounded-full min-w-fit">
+                    <span className="text-xl font-bold text-ink dark:text-gray-100 bg-pink-light dark:bg-gray-700 px-3 py-1 rounded-full min-w-fit">
                       {intensityRating}/10
                     </span>
                   </div>
-                  <div className="flex justify-between text-xs text-ink/40 mt-2">
+                  <div className="flex justify-between text-xs text-ink/40 dark:text-gray-500 mt-2">
                     <span>Muy bajo</span>
                     <span>Muy alto</span>
                   </div>
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-semibold text-ink/80 mb-2">
+                  <label className="block text-sm font-semibold text-ink/80 dark:text-gray-300 mb-2">
                     Agregar una nota (opcional)
                   </label>
                   <textarea
@@ -481,21 +481,21 @@ const MoodTracker = () => {
             )}
 
             {userData.mood.history.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-pink-light p-6">
-                <h3 className="text-base font-semibold text-ink mb-4">Historial Reciente</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-6">
+                <h3 className="text-base font-semibold text-ink dark:text-gray-100 mb-4">Historial Reciente</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {userData.mood.history.slice().reverse().map((entry, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-cream rounded-xl border-l-4" style={{ borderColor: ACCENT }}>
+                    <div key={idx} className="flex items-center justify-between p-3 bg-cream dark:bg-gray-900 rounded-xl border-l-4" style={{ borderColor: ACCENT }}>
                       <div className="flex items-center gap-3">
                         <MoodIcon mood={moods.find(m => m.value === entry.mood) || moods[0]} />
                         <div>
-                          <p className="font-medium text-ink">{entry.label}</p>
-                          <p className="text-sm text-ink/60">{new Date(entry.date).toLocaleDateString()}</p>
+                          <p className="font-medium text-ink dark:text-gray-100">{entry.label}</p>
+                          <p className="text-sm text-ink/60 dark:text-gray-400">{new Date(entry.date).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-ink/70">Intensidad: {entry.intensity}/10</p>
-                        {entry.note && <p className="text-xs text-ink/40 max-w-xs truncate">{entry.note}</p>}
+                        <p className="text-sm font-bold text-ink/70 dark:text-gray-400">Intensidad: {entry.intensity}/10</p>
+                        {entry.note && <p className="text-xs text-ink/40 dark:text-gray-500 max-w-xs truncate">{entry.note}</p>}
                       </div>
                     </div>
                   ))}

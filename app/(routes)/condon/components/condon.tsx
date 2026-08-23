@@ -182,7 +182,7 @@ export default function ComicPoneloSimulator() {
 
   if (completed) {
     return (
-      <div className="min-h-screen bg-cream">
+      <div className="min-h-screen bg-cream dark:bg-gray-900">
         <GameStatusBar
           key={gameKey}
           title="Ponelo Bien"
@@ -194,36 +194,36 @@ export default function ComicPoneloSimulator() {
         />
 
         <main className="max-w-4xl mx-auto px-6 py-12">
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 p-8">
             <div className="flex items-center justify-center mb-6">
               <IconTrophy className="w-14 h-14 text-yellow-500" />
             </div>
 
-            <h2 className="text-3xl font-bold text-center text-gray-900 mb-3">
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100 mb-3">
               ¡Misión cumplida!
             </h2>
 
-            <p className="text-center text-lg text-gray-600 mb-8">
+            <p className="text-center text-lg text-gray-600 dark:text-gray-400 mb-8">
               {getScoreMessage()}
             </p>
 
             <div className="rounded-xl border-l-4 p-6 mb-6" style={{ backgroundColor: `${ACCENT}0D`, borderColor: ACCENT }}>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Tu puntuación</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Tu puntuación</h3>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold" style={{ color: ACCENT }}>{score}</span>
-                <span className="text-gray-500">puntos</span>
+                <span className="text-gray-500 dark:text-gray-400">puntos</span>
               </div>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                 {Math.round((score / (steps.length * POINTS_PER_CORRECT)) * 100)}% de respuestas correctas
               </p>
             </div>
 
-            <div className="bg-amber-50 border-l-4 border-amber-400 rounded-xl p-6 mb-8">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-400 dark:border-amber-700 rounded-xl p-6 mb-8">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
                 <IconAlertTriangle className="w-4.5 h-4.5 text-amber-600" />
                 Recordatorios importantes
               </h3>
-              <ul className="space-y-2 text-sm text-gray-600">
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 {[
                   'Usar preservativo en toda relación sexual',
                   'Verificar fecha de vencimiento',
@@ -259,7 +259,7 @@ export default function ComicPoneloSimulator() {
   const selectedOptionData = selectedOption !== null ? currentStepData.options[selectedOption] : null;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar
         key={gameKey}
         title="Ponelo Bien"
@@ -279,7 +279,7 @@ export default function ComicPoneloSimulator() {
       />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="p-6 text-white" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold flex items-center gap-2">
@@ -300,7 +300,7 @@ export default function ComicPoneloSimulator() {
 
           <div className="p-8">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {currentStepData.question}
               </h3>
             </div>
@@ -319,14 +319,14 @@ export default function ComicPoneloSimulator() {
                       : showFeedback
                         ? option.correct
                           ? 'border-green-400 bg-green-50'
-                          : 'border-gray-200 bg-gray-50'
+                          : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700'
                         : lives === 0
-                          ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
-                          : 'border-gray-200 bg-white hover:bg-gray-50 cursor-pointer'
+                          ? 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 opacity-50 cursor-not-allowed'
+                          : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
                   }`}
                 >
                   <span className="text-2xl shrink-0">{option.emoji}</span>
-                  <span className="text-gray-800 font-medium flex-1 text-sm">{option.text}</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium flex-1 text-sm">{option.text}</span>
                   {showFeedback && selectedOption === index && (
                     <div className="shrink-0">
                       {option.correct ? (

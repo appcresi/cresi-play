@@ -179,13 +179,13 @@ export default function Trivias(): JSX.Element {
   const indexesByLevel = organizeIndexesByLevel(indexes);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar title="Trivias" score={score} lives={lives} level={1} activityName={ACTIVITY_TITLE} />
 
       <section className="w-full max-w-6xl mx-auto px-4 pt-24 pb-16">
         {/* Header — mismo patrón que /infografias: banner con degradé de
             marca + eyebrow + título, en vez del título suelto de antes. */}
-        <div className="bg-white rounded-xl border border-pink-light shadow-sm overflow-hidden mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-pink-light dark:border-gray-700 shadow-sm overflow-hidden mb-6">
           <div className="h-20 md:h-28 relative" style={{ background: `linear-gradient(to right, ${ACCENT}, ${ACCENT}CC)` }}>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiIC8+PC9zdmc+')] opacity-20" />
           </div>
@@ -199,10 +199,10 @@ export default function Trivias(): JSX.Element {
                   Poné a prueba lo que sabés
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-semibold text-ink mb-1">
+              <h1 className="text-2xl md:text-3xl font-semibold text-ink dark:text-gray-100 mb-1">
                 {classroomId ? 'Trivias de tu clase' : 'Trivias'}
               </h1>
-              <p className="text-sm text-ink/60 max-w-2xl">
+              <p className="text-sm text-ink/60 dark:text-gray-400 max-w-2xl">
                 {classroomId
                   ? 'Las trivias que tu docente habilitó para esta clase.'
                   : 'Elegí un nivel y jugá — cada trivia suma puntos a tu perfil.'}
@@ -236,7 +236,7 @@ export default function Trivias(): JSX.Element {
 
         {/* Barra de búsqueda desplegable (solo sin clase) */}
         {showSearch && !classroomId && (
-          <div className="bg-white rounded-xl border border-pink-light shadow-sm p-6 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-pink-light dark:border-gray-700 shadow-sm p-6 mb-6">
             <TriviaSearch indexes={indexes} />
           </div>
         )}
@@ -246,7 +246,7 @@ export default function Trivias(): JSX.Element {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: ACCENT }} />
           </div>
         ) : error ? (
-          <div className="bg-white rounded-xl border border-pink-light shadow-sm p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-pink-light dark:border-gray-700 shadow-sm p-6 text-center">
             <p className="text-red-600 text-sm font-medium">{error}</p>
           </div>
         ) : classroomId ? (
@@ -256,7 +256,7 @@ export default function Trivias(): JSX.Element {
             />
           ) : (
             <div className="text-center py-16">
-              <p className="text-ink/60 text-sm font-medium">
+              <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">
                 Todavía no hay trivias disponibles para tu clase.
               </p>
             </div>

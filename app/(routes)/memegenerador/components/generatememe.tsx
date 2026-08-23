@@ -271,17 +271,17 @@ export default function MemeGenerator() {
   }, [topText, bottomText, selectedMeme, activeText]);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900">
       <GameStatusBar title="Meme Creator" score={score} lives={lives} />
 
       <div className="container mx-auto p-2 sm:p-4 pt-24">
-        <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm rounded-xl overflow-hidden">
           {/* Toolbar */}
-          <div className="border-b border-gray-100 p-3 flex flex-wrap gap-2 items-center bg-gray-50">
-            <div className="flex gap-2 border-r border-gray-200 pr-4">
+          <div className="border-b border-gray-100 dark:border-gray-700 p-3 flex flex-wrap gap-2 items-center bg-gray-50 dark:bg-gray-900/40">
+            <div className="flex gap-2 border-r border-gray-200 dark:border-gray-700 pr-4">
               <button
                 onClick={() => setSelectedTool('text')}
-                className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`p-2 rounded-lg transition-colors ${selectedTool === 'text' ? 'text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 style={selectedTool === 'text' ? { backgroundColor: ACCENT } : undefined}
                 title="Herramienta de texto"
               >
@@ -289,7 +289,7 @@ export default function MemeGenerator() {
               </button>
               <button
                 onClick={() => setSelectedTool('move')}
-                className={`p-2 rounded-lg transition-colors ${selectedTool === 'move' ? 'text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`p-2 rounded-lg transition-colors ${selectedTool === 'move' ? 'text-white' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                 style={selectedTool === 'move' ? { backgroundColor: ACCENT } : undefined}
                 title="Herramienta de mover"
               >
@@ -297,8 +297,8 @@ export default function MemeGenerator() {
               </button>
             </div>
 
-            <div className="flex gap-2 border-r border-gray-200 pr-4 items-center">
-              <IconPalette size={20} className="text-gray-400 shrink-0" />
+            <div className="flex gap-2 border-r border-gray-200 dark:border-gray-700 pr-4 items-center">
+              <IconPalette size={20} className="text-gray-400 dark:text-gray-500 shrink-0" />
               <div className="flex items-center gap-1">
                 {colorOptions.map((color) => {
                   const currentColor = activeText === 'top' ? topText.color : bottomText.color;
@@ -333,7 +333,7 @@ export default function MemeGenerator() {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <IconPhoto size={16} />
                 <span className="hidden sm:inline">Abrir</span>
@@ -341,7 +341,7 @@ export default function MemeGenerator() {
               {!showTemplates && (
                 <button
                   onClick={() => setShowTemplates(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <span>Templates</span>
                   <IconChevronLeft size={16} />
@@ -362,26 +362,26 @@ export default function MemeGenerator() {
           {/* Main workspace */}
           <div className="flex flex-col lg:flex-row min-h-[400px] lg:min-h-[600px]">
             {/* Left sidebar - Properties */}
-            <div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-gray-100 p-4 space-y-4 bg-white">
+            <div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-700 p-4 space-y-4 bg-white dark:bg-gray-800">
               <div className="grid lg:grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Nombre de archivo</label>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">Nombre de archivo</label>
                   <input
                     type="text"
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Texto superior</label>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">Texto superior</label>
                   <input
                     type="text"
                     value={topText.content}
                     onChange={(e) => setTopText(prev => ({ ...prev, content: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                   <input
@@ -395,12 +395,12 @@ export default function MemeGenerator() {
                 </div>
 
                 <div className="lg:mt-4">
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">Texto inferior</label>
+                  <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">Texto inferior</label>
                   <input
                     type="text"
                     value={bottomText.content}
                     onChange={(e) => setBottomText(prev => ({ ...prev, content: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm mb-2 focus:outline-none focus:ring-2"
                     style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
                   />
                   <input
@@ -417,7 +417,7 @@ export default function MemeGenerator() {
 
             {/* Main canvas area */}
             <div className="flex-1 p-4 bg-gray-50 flex items-center justify-center">
-              <div className="relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <canvas
                   ref={canvasRef}
                   width={500}
@@ -433,12 +433,12 @@ export default function MemeGenerator() {
 
             {/* Right sidebar - Templates */}
             {showTemplates && (
-              <div className="w-full lg:w-64 border-t lg:border-t-0 lg:border-l border-gray-100 p-4 bg-white">
+              <div className="w-full lg:w-64 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 text-sm">Templates</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Templates</h3>
                   <button
                     onClick={() => setShowTemplates(false)}
-                    className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                     aria-label="Cerrar templates"
                     title="Cerrar"
                   >
@@ -469,7 +469,7 @@ export default function MemeGenerator() {
                           className="object-cover rounded"
                         />
                       </div>
-                      <p className="text-xs text-center mt-1 font-medium text-gray-600 truncate">{template.name}</p>
+                      <p className="text-xs text-center mt-1 font-medium text-gray-600 dark:text-gray-300 truncate">{template.name}</p>
                     </div>
                   ))}
                 </div>
@@ -484,7 +484,7 @@ export default function MemeGenerator() {
                     >
                       <IconChevronLeft size={16} />
                     </button>
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                       {currentPage + 1} / {totalPages}
                     </span>
                     <button

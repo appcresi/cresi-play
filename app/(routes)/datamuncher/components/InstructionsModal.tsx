@@ -11,7 +11,7 @@ type InstructionsModalProps = {
 const InstructionsModal = ({ onAccept }: InstructionsModalProps) => {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 max-w-md w-full overflow-hidden">
         <div className="h-2" style={{ backgroundColor: ACCENT }} />
 
         <div className="p-8 text-center">
@@ -22,9 +22,9 @@ const InstructionsModal = ({ onAccept }: InstructionsModalProps) => {
             <IconInfoCircle className="w-9 h-9" style={{ color: ACCENT }} />
           </div>
 
-          <h2 className="text-xl font-bold text-gray-900 mb-2">¿Cómo se juega?</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">¿Cómo se juega?</h2>
 
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
             Buscá las ❓ del tablero. Cuando choques con una, va a aparecer una pregunta —
             después dirigite hacia la ✅ si la afirmación es verdadera, o hacia la ❌ si es
             falsa. Evitá a los enemigos y sumá puntos comiendo los puntitos del camino.

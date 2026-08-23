@@ -123,13 +123,13 @@ export default function TriviaPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center">
+      <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-8 text-center">
           <div
             className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4"
             style={{ borderColor: ACCENT }}
           />
-          <p className="text-ink/60 text-sm">Cargando trivia...</p>
+          <p className="text-ink/60 dark:text-gray-400 text-sm">Cargando trivia...</p>
         </div>
       </div>
     );
@@ -137,10 +137,10 @@ export default function TriviaPage({ params }: PageProps) {
 
   if (error || !gameData) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-sm border border-pink-light p-8 text-center max-w-sm w-full">
+      <div className="min-h-screen bg-cream dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-pink-light dark:border-gray-700 p-8 text-center max-w-sm w-full">
           <p className="text-red-600 text-sm mb-4">{error || 'No se pudo cargar la trivia'}</p>
-          <p className="text-ink/60 text-xs mb-5">
+          <p className="text-ink/60 dark:text-gray-400 text-xs mb-5">
             El link puede estar roto o la trivia ya no está disponible.
           </p>
           <Link

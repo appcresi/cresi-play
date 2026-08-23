@@ -25,7 +25,7 @@ export default function TriviaGrid({
   return (
     <section>
       <Tab.Group>
-        <Tab.List className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-4">
+        <Tab.List className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
           {Object.keys(indexesByLevel).map((level) => {
             const numericLevel = Number(level);
             const color = LEVEL_COLORS[numericLevel] ?? '#2563EB';
@@ -38,7 +38,7 @@ export default function TriviaGrid({
                       'px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200',
                       {
                         'text-white shadow-sm': selected,
-                        'bg-gray-100 text-gray-700 hover:bg-gray-200': !selected,
+                        'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600': !selected,
                       }
                     )}
                     style={selected ? { backgroundColor: color } : undefined}

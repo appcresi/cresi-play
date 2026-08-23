@@ -54,7 +54,7 @@ const ACCENT = "#F57C00";
 
 export default function LoveTestPage(): JSX.Element {
 	return (
-		<div className="w-full min-h-screen bg-cream">
+		<div className="w-full min-h-screen bg-cream dark:bg-gray-900">
 		<section className="max-w-7xl mx-auto px-4 pt-24 pb-12">
 
 			{/* Test component */}
@@ -70,7 +70,7 @@ export default function LoveTestPage(): JSX.Element {
 							<p className="font-semibold mb-1" style={{ color: ACCENT }}>
 								¿Por qué es importante?
 							</p>
-							<p className="text-sm text-ink/70">
+							<p className="text-sm text-ink/70 dark:text-gray-400">
 								Detectar señales de violencia es fundamental para construir relaciones saludables y seguras basadas en el respeto
 							</p>
 						</div>

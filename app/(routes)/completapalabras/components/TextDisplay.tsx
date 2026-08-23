@@ -32,12 +32,12 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
     {/* Encabezado de la sección */}
     <div className="mb-4 flex items-center gap-2">
       <div className="w-1 h-6 rounded-full" style={{ backgroundColor: accentColor }}></div>
-      <h3 className="text-base font-semibold text-gray-800">Completa el texto</h3>
+      <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Completa el texto</h3>
     </div>
 
     {/* Contenedor del texto */}
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 hover:border-gray-300 transition-colors">
-      <div className="text-base leading-relaxed text-gray-800">
+    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
+      <div className="text-base leading-relaxed text-gray-800 dark:text-gray-200">
         {textParts.map((part, index) => (
           <React.Fragment key={index}>
             <span className="select-text">{part}</span>
@@ -59,7 +59,7 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
     </div>
 
     {/* Instrucción sutil */}
-    <div className="mt-3 flex items-center gap-2 text-sm text-gray-400">
+    <div className="mt-3 flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
       <IconInfoCircle className="w-4 h-4 shrink-0" />
       <span>Arrastra las palabras a los espacios en blanco</span>
     </div>
