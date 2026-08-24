@@ -36,7 +36,7 @@ export type BodyPart = {
       name: 'Sistema Reproductor Femenino',
       imageUrl: '/imgleccion2.jpg',
       parts: [
-        { id: '1', name: 'Ovario', correctPosition: { x: 630, y: 250 }, placed: false },
+        { id: '1', name: 'Ovario', correctPosition: { x: 590, y: 350 }, placed: false },
         { id: '4', name: 'Trompa Uterina', correctPosition: { x: 230, y: 200 }, placed: false },
         { id: '5', name: 'Útero', correctPosition: { x: 385, y: 300 }, placed: false },
         { id: '6', name: 'Endometrio', correctPosition: { x: 385, y: 360 }, placed: false },
