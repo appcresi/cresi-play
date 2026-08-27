@@ -171,6 +171,16 @@ export const ACTIVITIES: ActivityDefinition[] = [
     iconName: "IconSearch",
   },
   {
+    id: "lenguajesdelamor",
+    title: "Lenguajes del Amor",
+    description: "Descubrí cuál es tu lenguaje del amor: cómo te gusta dar y recibir cariño de tu familia, amigos o pareja.",
+    route: "/lenguajesdelamor",
+    color: "#EC407A",
+    image: "/completa.png",
+    category: "Ejercicios",
+    iconName: "IconHeartHandshake",
+  },
+  {
     id: "infografias",
     title: "Infografías",
     description: "Material visual educativo sobre salud, sexualidad y relaciones saludables, para consultar y descargar.",

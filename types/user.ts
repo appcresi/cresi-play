@@ -72,6 +72,11 @@ export interface UserProgress {
     results?: Record<string, { name: string; questions: number[]; total: number }>;
     professionAnswers?: Record<string, boolean[]>;
   };
+  /** Progreso del test de Lenguajes del Amor (respuesta elegida por pregunta y puntaje por lenguaje). */
+  loveLanguagesTest?: {
+    answers: Record<number, string>;
+    results?: Record<string, number>;
+  };
 }
 
 export interface UserGame {

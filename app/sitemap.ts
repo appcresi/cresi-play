@@ -19,6 +19,7 @@ const GAME_ROUTES = [
   'memegenerador',
   'moodtracker',
   'amor',
+  'lenguajesdelamor',
   'vocacion',
   'saludmental',
   'infografias',
