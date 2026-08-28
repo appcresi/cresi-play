@@ -63,6 +63,12 @@ const ChatSimulator = () => {
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const revealIntervalRef = useRef<ReturnType<typeof setInterval>>();
   const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  // Referencia al final del área de mensajes, para hacer scroll automático
+  // cada vez que se suma contenido (mensaje nuevo, indicador de "escribiendo",
+  // o texto que se va revelando palabra por palabra) — sin esto, la
+  // conversación crece hacia abajo y hay que scrollear manualmente para ver
+  // lo último, al revés de un chat real.
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadUserData();
@@ -73,6 +79,10 @@ const ChatSimulator = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, botPhase, liveText]);
 
   useEffect(() => {
     if (hasLoaded && messages.length === 0 && !currentNode) {
@@ -410,6 +420,7 @@ const ChatSimulator = () => {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Área de respuestas */}
