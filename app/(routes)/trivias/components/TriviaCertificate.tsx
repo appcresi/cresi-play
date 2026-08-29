@@ -110,185 +110,201 @@ export default function TriviaCertificate (): JSX.Element {
 
         {/* Certificate Preview */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
-          <div ref={targetRef} style={{ width: '1100px', height: '755px', backgroundColor: `${ACCENT}0A`, padding: '48px' }}>
+          {/* Todo lo de acá adentro se captura tal cual con html2canvas para
+              el PDF — por eso todo va con `style` inline en vez de clases de
+              Tailwind (que html2canvas no siempre resuelve bien), y por eso
+              el logo es un <img> de toda la vida en vez de next/image (evita
+              el proxy /_next/image, que complica la captura). */}
+          <div ref={targetRef} style={{ width: '1100px', height: '755px', background: `linear-gradient(135deg, ${ACCENT}12, ${ACCENT}05)`, padding: '32px', fontFamily: 'inherit' }}>
+            {/* Marco doble — borde grueso de color + borde fino separado,
+                look clásico de diploma en vez del recuadro simple de antes. */}
             <div style={{
               width: '100%',
               height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
               backgroundColor: 'white',
               border: `3px solid ${ACCENT}`,
-              borderRadius: '8px',
-              padding: '40px'
+              borderRadius: '12px',
+              padding: '10px'
             }}>
-              {/* Header Badge */}
-              <div style={{ marginBottom: '32px' }}>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  backgroundColor: ACCENT,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: '40px', color: 'white' }}>🏆</span>
-                </div>
-              </div>
-
-              {/* Title */}
-              <h1 style={{
-                fontSize: '36px',
-                fontWeight: 'bold',
-                color: '#1f2937',
-                marginBottom: '8px',
-                textAlign: 'center'
-              }}>
-                Certificado de Completación
-              </h1>
-
-              <div style={{
-                width: '100px',
-                height: '4px',
-                backgroundColor: ACCENT,
-                borderRadius: '2px',
-                marginBottom: '32px'
-              }}></div>
-
-              {/* Subtitle */}
-              <h2 style={{
-                fontSize: '16px',
-                color: '#6b7280',
-                marginBottom: '32px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                textAlign: 'center'
-              }}>
-                Se extiende esta certificación a
-              </h2>
-
-              {/* Name */}
-              <div style={{
-                backgroundColor: `${ACCENT}10`,
-                border: `3px solid ${ACCENT}`,
-                borderRadius: '8px',
-                padding: '24px 48px',
-                marginBottom: '32px'
-              }}>
-                <p style={{
-                  fontSize: '48px',
-                  fontWeight: 'bold',
-                  color: ACCENT,
-                  margin: 0,
-                  textAlign: 'center'
-                }}>
-                  {data?.name.toLocaleUpperCase()}
-                </p>
-              </div>
-
-              {/* Description */}
-              <div style={{ maxWidth: '700px', textAlign: 'center', marginBottom: '32px' }}>
-                <p style={{
-                  fontSize: '18px',
-                  color: '#374151',
-                  lineHeight: '1.75',
-                  margin: 0
-                }}>
-                  Por haber completado exitosamente la trivia <span style={{ fontWeight: 'bold', color: ACCENT }}>&quot;{data?.trivia}&quot;</span>,
-                  demostrando un <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{data?.percentage}%</span> de respuestas correctas.
-                </p>
-              </div>
-
-              {/* Aval institucional — solo si la trivia tiene una
-                  organización externa asociada. */}
-              {data?.endorsedBy && (
-                <div style={{ maxWidth: '700px', textAlign: 'center', marginBottom: '32px' }}>
-                  <p style={{
-                    fontSize: '13px',
-                    color: '#059669',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    margin: 0
-                  }}>
-                    Avalada por {data.endorsedBy}
-                  </p>
-                </div>
-              )}
-
-              {/* Date */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: '#6b7280',
-                marginBottom: '48px'
-              }}>
-                <span>📅</span>
-                <p style={{ fontSize: '14px', margin: 0 }}>{date}</p>
-              </div>
-
-              {/* Signatures */}
               <div style={{
                 width: '100%',
+                height: '100%',
+                border: `1px solid ${ACCENT}55`,
+                borderRadius: '8px',
+                padding: '36px 56px',
                 display: 'flex',
-                justifyContent: 'center',
-                gap: '96px',
-                marginTop: 'auto'
+                flexDirection: 'column'
               }}>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px',
-                    margin: 0
-                  }}>
-                    Andrés Obregón
-                  </p>
-                  <div style={{
-                    width: '192px',
-                    height: '2px',
-                    backgroundColor: '#9ca3af',
-                    margin: '12px 0 8px 0'
-                  }} />
+                {/* Header: logo + nombre de la plataforma bien visible */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/cresi-logo.webp" alt="CrESI" style={{ height: '48px', marginBottom: '14px' }} />
                   <p style={{
                     fontSize: '12px',
-                    color: '#6b7280',
+                    fontWeight: 600,
+                    color: ACCENT,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    margin: 0
+                    letterSpacing: '0.15em',
+                    margin: '0 0 10px 0'
                   }}>
-                    CEO
+                    Plataforma de Educación Sexual Integral
                   </p>
+                  <h1 style={{
+                    fontSize: '30px',
+                    fontWeight: 'bold',
+                    color: '#1f2937',
+                    margin: '0 0 10px 0',
+                    textAlign: 'center'
+                  }}>
+                    Certificado de Finalización
+                  </h1>
+                  <div style={{
+                    width: '80px',
+                    height: '4px',
+                    backgroundColor: ACCENT,
+                    borderRadius: '2px'
+                  }} />
                 </div>
 
-                <div style={{ textAlign: 'center' }}>
+                {/* Cuerpo: nombre + descripción, centrado en el espacio
+                    restante para que el layout no se apriete ni se estire
+                    según cuánto texto tenga cada trivia. */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <p style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    marginBottom: '12px',
-                    margin: 0
-                  }}>
-                    Gladys Cabral
-                  </p>
-                  <div style={{
-                    width: '192px',
-                    height: '2px',
-                    backgroundColor: '#9ca3af',
-                    margin: '12px 0 8px 0'
-                  }} />
-                  <p style={{
-                    fontSize: '12px',
+                    fontSize: '14px',
                     color: '#6b7280',
+                    margin: '0 0 14px 0',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    margin: 0
+                    letterSpacing: '0.08em',
+                    textAlign: 'center'
                   }}>
-                    CTO
+                    Se certifica que
                   </p>
+
+                  <div style={{
+                    backgroundColor: `${ACCENT}10`,
+                    border: `3px solid ${ACCENT}`,
+                    borderRadius: '8px',
+                    padding: '18px 44px',
+                    marginBottom: '22px'
+                  }}>
+                    <p style={{
+                      fontSize: '40px',
+                      fontWeight: 'bold',
+                      color: ACCENT,
+                      margin: 0,
+                      textAlign: 'center'
+                    }}>
+                      {data?.name.toLocaleUpperCase()}
+                    </p>
+                  </div>
+
+                  <div style={{ maxWidth: '720px', textAlign: 'center' }}>
+                    <p style={{
+                      fontSize: '17px',
+                      color: '#374151',
+                      lineHeight: '1.7',
+                      margin: 0
+                    }}>
+                      completó exitosamente la trivia <span style={{ fontWeight: 'bold', color: ACCENT }}>&quot;{data?.trivia}&quot;</span> en{' '}
+                      <span style={{ fontWeight: 'bold' }}>CrESI</span>, demostrando un{' '}
+                      <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{data?.percentage}%</span> de respuestas correctas.
+                    </p>
+
+                    {data?.endorsedBy && (
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#059669',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        margin: '12px 0 0 0'
+                      }}>
+                        Avalada por {data.endorsedBy}
+                      </p>
+                    )}
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#6b7280',
+                    marginTop: '20px'
+                  }}>
+                    <span>📅</span>
+                    <p style={{ fontSize: '13px', margin: 0 }}>{date}</p>
+                  </div>
+                </div>
+
+                {/* Pie: marca CrESI a la izquierda + firmas a la derecha, en
+                    vez de firmas centradas solas — así "CrESI" queda escrito
+                    en el certificado incluso si alguien no lee el cuerpo. */}
+                <div style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'space-between',
+                  borderTop: `1px solid ${ACCENT}30`,
+                  paddingTop: '18px'
+                }}>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#1f2937', margin: 0 }}>CrESI</p>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', margin: '2px 0 0 0' }}>cresi.com.ar</p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '72px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        margin: 0
+                      }}>
+                        Andrés Obregón
+                      </p>
+                      <div style={{
+                        width: '160px',
+                        height: '2px',
+                        backgroundColor: '#9ca3af',
+                        margin: '10px 0 6px 0'
+                      }} />
+                      <p style={{
+                        fontSize: '11px',
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        margin: 0
+                      }}>
+                        CEO
+                      </p>
+                    </div>
+
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        margin: 0
+                      }}>
+                        Gladys Cabral
+                      </p>
+                      <div style={{
+                        width: '160px',
+                        height: '2px',
+                        backgroundColor: '#9ca3af',
+                        margin: '10px 0 6px 0'
+                      }} />
+                      <p style={{
+                        fontSize: '11px',
+                        color: '#6b7280',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        margin: 0
+                      }}>
+                        CTO
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
