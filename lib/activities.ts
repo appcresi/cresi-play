@@ -11,6 +11,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Evaluación",
     iconName: "IconCards",
     priority: true,
+    ageCycles: ["secundario"],
   },
   {
     id: "pasapalabras",
@@ -22,6 +23,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Ejercicios",
     iconName: "IconAB2",
     priority: true,
+    ageCycles: ["secundario"],
   },
   {
     id: "simulador",
@@ -33,6 +35,9 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Seguridad",
     iconName: "IconShieldCheck",
     priority: true,
+    // Prevención de grooming: los lineamientos de ESI ya recomiendan
+    // trabajar esto desde el segundo ciclo primario, no solo secundaria.
+    ageCycles: ["primario-2", "secundario"],
   },
   {
     id: "completa",
@@ -43,6 +48,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/completa.png",
     category: "Ejercicios",
     iconName: "IconTypography",
+    ageCycles: ["secundario"],
   },
   {
     id: "datamuncher",
@@ -53,6 +59,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/datamuncher.png",
     category: "Juegos Educativos",
     iconName: "IconPacman",
+    ageCycles: ["secundario"],
   },
   {
     id: "moodtracker",
@@ -63,6 +70,9 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/moodtracker.png",
     category: "Bienestar",
     iconName: "IconMoodPuzzled",
+    // Alfabetización emocional: contenido base típico de primaria, no
+    // exclusivo de secundaria.
+    ageCycles: ["primario-2", "secundario"],
   },
   {
     id: "meme",
@@ -73,6 +83,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/meme.png",
     category: "Creatividad",
     iconName: "IconMoodTongueWink2",
+    ageCycles: ["secundario"],
   },
   {
     id: "literatura",
@@ -83,6 +94,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/literatura.png",
     category: "Lectura",
     iconName: "IconBook",
+    ageCycles: ["secundario"],
   },
   {
     id: "biopuzzle",
@@ -94,6 +106,9 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Lectura",
     iconName: "IconPuzzle",
     iconSize: 24,
+    // A pedido explícito: queda en secundaria por ahora — si un docente
+    // quiere usarlo en primaria, es su criterio, no un default nuestro.
+    ageCycles: ["secundario"],
   },
   {
     id: "condon",
@@ -105,6 +120,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Lectura",
     iconName: "IconShield",
     iconSize: 24,
+    ageCycles: ["secundario"],
   },
   {
     id: "lecciones",
@@ -116,6 +132,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Lectura",
     iconName: "IconNotebook",
     priority: true,
+    ageCycles: ["secundario"],
   },
   {
     id: "saludmental",
@@ -127,6 +144,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Ejercicios",
     iconName: "IconBrain",
     priority: true,
+    ageCycles: ["primario-2", "secundario"],
   },
   {
     id: "vocacion",
@@ -138,6 +156,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Ejercicios",
     iconName: "IconBriefcase",
     priority: true,
+    ageCycles: ["secundario"],
   },
   {
     id: "amor",
@@ -148,6 +167,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/completa.png",
     category: "Ejercicios",
     iconName: "IconHeart",
+    ageCycles: ["secundario"],
   },
   {
     id: "impostor",
@@ -159,6 +179,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     category: "Juegos Educativos",
     iconName: "IconMask",
     iconSize: 24,
+    ageCycles: ["secundario"],
   },
   {
     id: "buscador",
@@ -169,6 +190,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/trivia.png",
     category: "Evaluación",
     iconName: "IconSearch",
+    ageCycles: ["secundario"],
   },
   {
     id: "lenguajesdelamor",
@@ -179,6 +201,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/completa.png",
     category: "Ejercicios",
     iconName: "IconHeartHandshake",
+    ageCycles: ["primario-2", "secundario"],
   },
   {
     id: "infografias",
@@ -189,6 +212,7 @@ export const ACTIVITIES: ActivityDefinition[] = [
     image: "/trivia.png",
     category: "Lectura",
     iconName: "IconPhoto",
+    ageCycles: ["secundario"],
   },
 ];
 

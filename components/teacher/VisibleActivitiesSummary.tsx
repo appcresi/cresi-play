@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Classroom } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
+import { formatAgeCycles } from '@/types/activity';
 import { ActivityIcon } from './icons';
 
 const ACTIVITIES_CATALOG = ACTIVITIES;
@@ -30,6 +31,9 @@ export const VisibleActivitiesSummary = ({ classroom }: { classroom: Classroom }
           </div>
           <p className="text-xs font-semibold text-ink dark:text-gray-100 leading-tight mb-0.5 break-words">{activity.title}</p>
           <p className="text-[10px] text-ink/60 dark:text-gray-400 leading-tight">{activity.category}</p>
+          <span className="inline-block mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-ink/5 dark:bg-gray-700 text-ink/70 dark:text-gray-300">
+            {formatAgeCycles(activity.ageCycles)}
+          </span>
         </div>
       ))}
     </div>

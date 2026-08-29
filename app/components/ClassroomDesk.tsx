@@ -18,6 +18,7 @@ import ClassroomService, { Classroom } from '@/lib/classroomService';
 import { useAuth } from '@/context/AuthContext';
 import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
+import { formatAgeCycles } from '@/types/activity';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 import { ActivityIcon } from '@/components/ActivityIcon';
@@ -313,6 +314,9 @@ const ClassroomDesk = () => {
                                   style={{ backgroundColor: `${activity.color}15`, color: activity.color }}
                                 >
                                   {activity.category}
+                                </span>
+                                <span className="hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                                  {formatAgeCycles(activity.ageCycles)}
                                 </span>
                               </div>
                               <p className="text-xs text-ink/60 dark:text-gray-400 truncate mt-0.5">{activity.description}</p>

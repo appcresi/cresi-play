@@ -8,9 +8,11 @@ import {
   IconTrophyOff,
   IconBook,
   IconBooks,
-  IconSearch
+  IconSearch,
+  IconCircleCheck
 } from "@tabler/icons-react";
 import GameStatusBar from '@/components/GameStatusBar';
+import CertificateRequestForm from '@/components/CertificateRequestForm';
 import { stories } from '../data/stories';
 import { splitIntoPages } from '../utils/textUtils';
 import type { Story, ReadingProgress } from '../types/types';
@@ -192,6 +194,26 @@ function StoryReader({ selectedTitle, onBack, storyProgress, onPageRead }: Story
           {storyPages[currentPage]}
         </p>
       </div>
+
+      {/* Cuento terminado — no hay preguntas de comprensión en literatura
+          (a diferencia de trivias/lecciones), así que esto no aparecía
+          nunca antes: llegar a la última página solo dejaba el botón
+          "Siguiente" deshabilitado, sin ningún cierre. */}
+      {currentPage === storyPages.length - 1 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <IconCircleCheck size={22} style={{ color: ACCENT }} />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              ¡Terminaste de leer &quot;{currentStory.title.replace(/\*\*/g, '')}&quot;!
+            </h3>
+          </div>
+          <CertificateRequestForm
+            accent={ACCENT}
+            ctaLabel="Obtén tu certificado de lectura"
+            buildPayload={(name) => ({ name, kind: 'cuento', storyTitle: currentStory.title })}
+          />
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4">
         <div className="flex justify-between items-center">

@@ -4,14 +4,21 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Question } from "./types";
 import { IconRefresh, IconTrophy, IconAlertCircle, IconCheck, IconX } from '@tabler/icons-react';
 import { getActivityById } from '@/lib/activities';
+import CertificateRequestForm from '@/components/CertificateRequestForm';
 
 const ACCENT = getActivityById('lecciones')?.color ?? '#1976D2';
+
+// Mismo umbral que ya usa Lecciones.tsx para marcar una lección como
+// "completada" (percentage > 65) — el certificado solo se ofrece ahí, no
+// antes.
+const COMPLETION_THRESHOLD = 65;
 
 type ResultsComponentProps = {
   questions: Question[];
   totalCorrectAnswers: number;
   onRestart: () => void;
   lessonName: string;
+  lessonId: string;
 };
 
 const ResultsComponent: React.FC<ResultsComponentProps> = ({
@@ -19,6 +26,7 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
   totalCorrectAnswers = 0,
   onRestart,
   lessonName = "",
+  lessonId,
 }) => {
   const safeQuestions = questions || [];
   const totalQuestions = safeQuestions.length;
@@ -171,6 +179,25 @@ const ResultsComponent: React.FC<ResultsComponentProps> = ({
                   : 'Revisá el contenido y volvé a intentarlo.'}
               </p>
             </div>
+
+            {/* Certificado — solo si llegó al umbral de "completada", igual
+                que el resto de la app (Lecciones.tsx usa el mismo > 65). */}
+            {correctPercentage > COMPLETION_THRESHOLD && (
+              <div className="mt-4">
+                <CertificateRequestForm
+                  accent={ACCENT}
+                  buildPayload={(name) => ({
+                    name,
+                    kind: 'leccion',
+                    lessonId,
+                    // El servidor recalcula el % real contra `lecciones/{id}`
+                    // en Firestore a partir de esto — nunca confía en un
+                    // porcentaje ya calculado acá.
+                    answeredQuestions: questions.map((q) => ({ question: q.question, userAnswer: q.userAnswer }))
+                  })}
+                />
+              </div>
+            )}
           </div>
 
           {/* Chart card */}

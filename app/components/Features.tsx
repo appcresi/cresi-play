@@ -19,6 +19,7 @@ import ClassroomService from '@/lib/classroomService';
 import { useAuth } from '@/context/AuthContext';
 import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
+import { formatAgeCycles } from '@/types/activity';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 import { ActivityIcon } from '@/components/ActivityIcon';
@@ -365,7 +366,7 @@ const EducationalProgressPanel = () => {
                           {feature.description}
                         </p>
 
-                        <div className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1 mb-1.5 md:mb-2 flex-wrap">
                           <span
                             className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate"
                             style={{
@@ -375,23 +376,26 @@ const EducationalProgressPanel = () => {
                           >
                             {feature.category}
                           </span>
-
-                          {isCompleted && (
-                            <div className="flex items-center space-x-1 md:space-x-2">
-                              {activityScore > 0 && (
-                                <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
-                                  {activityScore} pts
-                                </span>
-                              )}
-                              <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
-                                Completado
-                              </span>
-                              <span className="text-[10px] text-green-600 font-medium sm:hidden">
-                                ✓
-                              </span>
-                            </div>
-                          )}
+                          <span className="inline-block px-1.5 py-0.5 md:px-2 md:py-1 text-[10px] md:text-xs font-medium rounded-full truncate bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                            {formatAgeCycles(feature.ageCycles)}
+                          </span>
                         </div>
+
+                        {isCompleted && (
+                          <div className="flex items-center space-x-1 md:space-x-2">
+                            {activityScore > 0 && (
+                              <span className="text-[10px] md:text-xs text-yellow-600 font-medium">
+                                {activityScore} pts
+                              </span>
+                            )}
+                            <span className="text-[10px] md:text-xs text-green-600 font-medium hidden sm:inline">
+                              Completado
+                            </span>
+                            <span className="text-[10px] text-green-600 font-medium sm:hidden">
+                              ✓
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </article>
                   );

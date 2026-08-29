@@ -15,6 +15,7 @@ import {
   IconPlayerPlay,
 } from '@tabler/icons-react';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
+import { formatAgeCycles } from '@/types/activity';
 import { ActivityIcon } from '@/components/ActivityIcon';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -391,6 +392,7 @@ const WelcomeLanding = () => {
                   </div>
                   <p className="font-bold text-sm leading-tight mb-1">{activity.title}</p>
                   <p className="text-[11px] text-[#241B37]/45 dark:text-gray-500 font-medium">{activity.category}</p>
+                  <p className="text-[10px] text-[#241B37]/35 dark:text-gray-600 mt-0.5">{formatAgeCycles(activity.ageCycles)}</p>
                 </Link>
               </Reveal>
             ))}

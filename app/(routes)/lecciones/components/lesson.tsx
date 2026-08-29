@@ -243,6 +243,7 @@ export default function LessonPage({ lesson: currentLesson, onBack, onLessonComp
         totalCorrectAnswers={correctAnswers}
         onRestart={handleRestart}
         lessonName={currentLesson.title}
+        lessonId={currentLesson.id}
       />
     );
   }

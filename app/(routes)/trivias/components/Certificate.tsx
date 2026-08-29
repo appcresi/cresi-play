@@ -12,14 +12,44 @@ import html2pdf from 'html2pdf.js'
 
 const ACCENT = getActivityById('trivias')?.color ?? '#1976D2'
 
+// Certificado compartido entre trivias, lecciones y cuentos — `kind` decide
+// el título y el cuerpo del texto; `percentage` solo existe para trivia y
+// leccion (cuento es solo lectura, no hay nada que puntuar).
 interface CertificateData {
   name: string
-  trivia: string
-  percentage: number
+  kind: 'trivia' | 'leccion' | 'cuento'
+  title: string
+  percentage?: number
   endorsedBy?: string
 }
 
-export default function TriviaCertificate (): JSX.Element {
+function getCertificateCopy (data: CertificateData): { heading: string, body: JSX.Element } {
+  if (data.kind === 'cuento') {
+    return {
+      heading: 'Certificado de Lectura',
+      body: (
+        <>
+          completó la lectura del cuento <span style={{ fontWeight: 'bold', color: ACCENT }}>&quot;{data.title}&quot;</span> en{' '}
+          <span style={{ fontWeight: 'bold' }}>CrESI</span>.
+        </>
+      )
+    }
+  }
+
+  const activityWord = data.kind === 'leccion' ? 'la lección' : 'la trivia'
+  return {
+    heading: 'Certificado de Finalización',
+    body: (
+      <>
+        completó exitosamente {activityWord} <span style={{ fontWeight: 'bold', color: ACCENT }}>&quot;{data.title}&quot;</span> en{' '}
+        <span style={{ fontWeight: 'bold' }}>CrESI</span>, demostrando un{' '}
+        <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{data.percentage}%</span> de respuestas correctas.
+      </>
+    )
+  }
+}
+
+export default function Certificate (): JSX.Element {
   const [data, setData] = useState<CertificateData>()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
@@ -58,7 +88,7 @@ export default function TriviaCertificate (): JSX.Element {
     )
   }
 
-  const filename = typeof data !== 'undefined' ? data.name.replace(' ', '').toLowerCase().concat('-', data.trivia, '-cresi.pdf') : 'certificado-cresi.pdf'
+  const filename = typeof data !== 'undefined' ? data.name.replace(' ', '').toLowerCase().concat('-', data.title, '-cresi.pdf') : 'certificado-cresi.pdf'
 
   const handleDownloadPDF = () => {
     if (targetRef.current && html2pdf) {
@@ -78,6 +108,7 @@ export default function TriviaCertificate (): JSX.Element {
   }
 
   const date = format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: esLocale })
+  const copy = data ? getCertificateCopy(data) : undefined
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -98,7 +129,7 @@ export default function TriviaCertificate (): JSX.Element {
             <button
               type='button'
               onClick={handleDownloadPDF}
-              className='inline-flex items-center gap-2 px-6 py-3 text-white rounded-full 
+              className='inline-flex items-center gap-2 px-6 py-3 text-white rounded-full
                        font-semibold hover:opacity-90 transition-colors shadow-sm'
               style={{ backgroundColor: ACCENT }}
             >
@@ -156,7 +187,7 @@ export default function TriviaCertificate (): JSX.Element {
                     margin: '0 0 10px 0',
                     textAlign: 'center'
                   }}>
-                    Certificado de Finalización
+                    {copy?.heading ?? 'Certificado de Finalización'}
                   </h1>
                   <div style={{
                     width: '80px',
@@ -206,9 +237,7 @@ export default function TriviaCertificate (): JSX.Element {
                       lineHeight: '1.7',
                       margin: 0
                     }}>
-                      completó exitosamente la trivia <span style={{ fontWeight: 'bold', color: ACCENT }}>&quot;{data?.trivia}&quot;</span> en{' '}
-                      <span style={{ fontWeight: 'bold' }}>CrESI</span>, demostrando un{' '}
-                      <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{data?.percentage}%</span> de respuestas correctas.
+                      {copy?.body}
                     </p>
 
                     {data?.endorsedBy && (

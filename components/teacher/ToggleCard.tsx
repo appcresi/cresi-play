@@ -13,6 +13,7 @@ export const ToggleCard = ({
   icon,
   title,
   subtitle,
+  badge,
   onClick,
 }: {
   isOn: boolean;
@@ -20,6 +21,10 @@ export const ToggleCard = ({
   icon: React.ReactNode;
   title: string;
   subtitle: string;
+  /** Etiqueta opcional (por ahora, el ciclo/edad al que está pensada la
+   *  sección) — solo la pasa ActivitiesPicker, los demás pickers no la
+   *  necesitan. */
+  badge?: string;
   onClick: () => void;
 }) => (
   <button
@@ -50,5 +55,10 @@ export const ToggleCard = ({
       {title}
     </p>
     <p className="text-[10px] text-ink/60 dark:text-gray-400 leading-tight">{subtitle}</p>
+    {badge && (
+      <span className="inline-block mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-ink/5 dark:bg-gray-700 text-ink/70 dark:text-gray-300">
+        {badge}
+      </span>
+    )}
   </button>
 );

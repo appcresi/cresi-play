@@ -1,17 +1,17 @@
 import { type Metadata } from 'next'
-import TriviaCertificate from '../../components/TriviaCertificate'
+import Certificate from '../../components/Certificate'
 
 // Deshabilita el pre-renderamiento estático porque html2pdf solo funciona en el cliente
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Certificado de aprobación | CrESI',
-  description: 'Descarga aquí tu certificado de aprobación de la trivia de CrESI',
+  title: 'Certificado | CrESI',
+  description: 'Descarga aquí tu certificado de CrESI (trivia, lección o cuento completado)',
   robots: 'noindex'
 }
 
-export default function Certificate (): JSX.Element {
+export default function CertificatePage (): JSX.Element {
   return (
-    <TriviaCertificate />
+    <Certificate />
   )
 }

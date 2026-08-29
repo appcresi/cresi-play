@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ClassroomService from '@/lib/classroomService';
 import type { Classroom } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
+import { formatAgeCycles } from '@/types/activity';
 import { ActivityIcon } from './icons';
 import { SaveIndicator } from './SaveIndicator';
 import { ToggleCard } from './ToggleCard';
@@ -85,6 +86,7 @@ export const ActivitiesPicker = ({
             icon={<ActivityIcon iconName={activity.iconName} className="w-5 h-5" />}
             title={activity.title}
             subtitle={activity.category}
+            badge={formatAgeCycles(activity.ageCycles)}
             onClick={() => toggle(activity.id)}
           />
         ))}

@@ -1,12 +1,11 @@
 import { type TriviaAnsweredQuestion } from '@/types/trivia'
 import { Disclosure, Transition } from '@headlessui/react'
-import { IconArrowLeft, IconArrowRight, IconChevronDown, IconExternalLink, IconTrophy, IconCircleCheck, IconCircleX, IconInfoCircle } from '@tabler/icons-react'
+import { IconArrowLeft, IconChevronDown, IconExternalLink, IconTrophy, IconCircleCheck, IconCircleX, IconInfoCircle } from '@tabler/icons-react'
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { useState } from 'react'
 import { COMPLETION_PERCENTAGE } from '@/utils/constants'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getActivityById } from '@/lib/activities'
+import CertificateRequestForm from '@/components/CertificateRequestForm'
 
 const ACCENT = getActivityById('trivias')?.color ?? '#1976D2'
 
@@ -96,7 +95,22 @@ export default function TriviaReview ({ triviaId, correctAnswers, triviaName, tr
                 : 'El aprendizaje es un proceso continuo. Sigue practicando y mejorarás.'}
             </p>
 
-            {isCompleted && <CertificatePreparation triviaId={triviaId} answeredQuestions={answeredQuestions} />}
+            {isCompleted && (
+              <div className="mb-6">
+                <CertificateRequestForm
+                  accent={ACCENT}
+                  buildPayload={(name) => ({
+                    name,
+                    kind: 'trivia',
+                    triviaId,
+                    // El servidor recalcula el % real contra `trivia/{id}`
+                    // en Firestore a partir de esto — nunca confía en un
+                    // porcentaje ya calculado.
+                    answeredQuestions: answeredQuestions.map((q) => ({ question: q.question, userAnswer: q.userAnswer }))
+                  })}
+                />
+              </div>
+            )}
 
             <Link
               href="/trivias"
@@ -266,68 +280,6 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
           )}
         </Disclosure>
       </div>
-    </div>
-  )
-}
-
-interface CertificatePreparationProps {
-  triviaId: string
-  answeredQuestions: TriviaAnsweredQuestion[]
-}
-
-function CertificatePreparation (props: CertificatePreparationProps): JSX.Element {
-  const [name, setName] = useState<string>()
-  const router = useRouter()
-
-  const handleName = (e: React.ChangeEvent<HTMLInputElement>): void => { setName(e.target.value.trim()) }
-
-  const handlePrepareCertificate = (): void => {
-    fetch('/api/certificado', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        triviaId: props.triviaId,
-        // El servidor recalcula el % real contra `trivia/{id}` en Firestore
-        // a partir de esto — nunca confía en un porcentaje ya calculado.
-        answeredQuestions: props.answeredQuestions.map((q) => ({ question: q.question, userAnswer: q.userAnswer }))
-      })
-    })
-      .then(async (response) => {
-        await response.json().then((value) => {
-          router.push(`/trivias/certificado?token=${String(value.token)}`)
-        })
-      })
-      .catch((error) => { console.error(error) })
-  }
-
-  return (
-    <div className="mb-6 p-4 rounded-xl border" style={{ backgroundColor: `${ACCENT}0D`, borderColor: `${ACCENT}30` }}>
-      <label className="flex flex-col gap-3">
-        <span className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
-          <IconTrophy size={18} style={{ color: ACCENT }} />
-          Obtén tu certificado de finalización
-        </span>
-
-        <input
-          onChange={handleName}
-          className="px-4 py-2 bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg border border-gray-300 dark:border-gray-600 text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-          style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
-          placeholder="Ingresa tu nombre completo"
-        />
-      </label>
-
-      {(typeof name !== 'undefined' && name.length > 0) && (
-        <button
-          type="button"
-          onClick={handlePrepareCertificate}
-          className="mt-3 px-5 py-2 flex items-center gap-2 font-semibold text-sm rounded-full text-white hover:opacity-90 transition-colors"
-          style={{ backgroundColor: ACCENT }}
-        >
-          Descargar certificado
-          <IconArrowRight size={18} />
-        </button>
-      )}
     </div>
   )
 }
