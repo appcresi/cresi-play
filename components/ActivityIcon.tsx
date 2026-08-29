@@ -18,6 +18,7 @@ import {
   IconMask,
   IconSearch,
   IconPhoto,
+  IconTrafficLights,
 } from '@tabler/icons-react';
 
 // Única fuente de verdad para resolver el `iconName` (string) de cada
@@ -46,6 +47,7 @@ export const ICON_MAP: Record<string, React.ComponentType<{ size?: number; class
   IconMask,
   IconSearch,
   IconPhoto,
+  IconTrafficLights,
 };
 
 export const ActivityIcon = ({

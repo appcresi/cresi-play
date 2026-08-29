@@ -214,6 +214,20 @@ export const ACTIVITIES: ActivityDefinition[] = [
     iconName: "IconPhoto",
     ageCycles: ["secundario"],
   },
+  {
+    id: "semaforo",
+    title: "Semáforo del Cuidado",
+    description: "Leé cada situación y elegí el semáforo: 🟢 está bien, 🟡 tengo dudas o 🔴 necesito pedir ayuda.",
+    route: "/semaforo",
+    color: "#FBC02D",
+    image: "/trivia.png",
+    category: "Seguridad",
+    iconName: "IconTrafficLights",
+    // Primera sección pensada específicamente para primaria (segundo
+    // ciclo) — no es una actividad de secundaria que también sirva para
+    // primaria, como las anteriores; es al revés.
+    ageCycles: ["primario-2"],
+  },
 ];
 
 /** Solo los ids, en el mismo orden — para defaults de visibilidad/orden del dashboard. */
