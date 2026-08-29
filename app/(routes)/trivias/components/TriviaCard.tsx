@@ -10,7 +10,8 @@ import {
   IconBolt,
   IconStar,
   IconCircle,
-  IconChevronRight
+  IconChevronRight,
+  IconShieldCheck
 } from '@tabler/icons-react';
 
 export function TriviaCard(index: TriviaIndexFields): JSX.Element {
@@ -74,6 +75,13 @@ export function TriviaCard(index: TriviaIndexFields): JSX.Element {
               </h3>
               <IconChevronRight size={16} className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors shrink-0" />
             </div>
+
+            {index.endorsedBy && (
+              <div className="flex items-center gap-1 mb-2 text-[11px] text-emerald-700 dark:text-emerald-400">
+                <IconShieldCheck size={13} className="shrink-0" />
+                <span className="truncate">Avalada por {index.endorsedBy}</span>
+              </div>
+            )}
 
             {/* Score Display */}
             <div className="bg-gray-50 dark:bg-gray-900/40 rounded-lg p-3 border border-gray-100 dark:border-gray-700 mb-3">

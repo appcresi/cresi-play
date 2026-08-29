@@ -28,16 +28,18 @@ interface TriviaIndexFields {
   id: string;
   name: string;
   level: number;
+  endorsedBy?: string;
 }
 
 interface ClassroomTrivia {
   id: string;
   name: string;
+  endorsedBy?: string;
 }
 
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {
-  const { id, name, level } = trivia;
-  return { id, name, level };
+  const { id, name, level, endorsedBy } = trivia;
+  return { id, name, level, endorsedBy };
 }
 
 function organizeIndexesByLevel(
@@ -91,7 +93,7 @@ async function getClassroomTrivias(
 
     const mapDoc = (doc: any): ClassroomTrivia => {
       const data = doc.data();
-      return { id: data.id || doc.id, name: data.name };
+      return { id: data.id || doc.id, name: data.name, endorsedBy: data.endorsedBy };
     };
 
     const combined = [...ownSnap.docs.map(mapDoc), ...cresiSnap.docs.map(mapDoc)];
@@ -252,7 +254,7 @@ export default function Trivias(): JSX.Element {
         ) : classroomId ? (
           classroomTrivias && classroomTrivias.length > 0 ? (
             <TriviaGrid
-              indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1 })) }}
+              indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1, endorsedBy: t.endorsedBy })) }}
             />
           ) : (
             <div className="text-center py-16">

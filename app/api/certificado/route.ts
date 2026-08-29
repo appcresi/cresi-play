@@ -50,7 +50,7 @@ export async function POST (request: NextRequest): Promise<NextResponse<unknown>
     return NextResponse.json({ error: 'TRIVIA_NOT_FOUND' }, { status: 404 })
   }
 
-  const trivia = triviaSnap.data() as { name: string, questions: Array<{ question: string, answer: string }> }
+  const trivia = triviaSnap.data() as { name: string, questions: Array<{ question: string, answer: string }>, endorsedBy?: string }
   const totalQuestions = trivia.questions.length
 
   const correctAnswerByQuestion = new Map(trivia.questions.map((q) => [q.question, q.answer]))
@@ -75,7 +75,8 @@ export async function POST (request: NextRequest): Promise<NextResponse<unknown>
   const jwt = signJwt({
     name: name.trim().slice(0, 100),
     trivia: trivia.name,
-    percentage
+    percentage,
+    ...(trivia.endorsedBy ? { endorsedBy: trivia.endorsedBy } : {})
   })
 
   return NextResponse.json({

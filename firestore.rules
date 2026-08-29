@@ -151,7 +151,11 @@ service cloud.firestore {
             request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
           ))
         )) ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playCount'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playCount']) ||
+        // Estadística de "en qué se equivocan más" (questionStats): la
+        // escribe cualquiera que esté jugando, logueado o anónimo, igual
+        // que playCount arriba — no es un dato sensible ni explotable.
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['questionStats'])
       );
       allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||

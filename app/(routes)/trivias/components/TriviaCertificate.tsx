@@ -16,6 +16,7 @@ interface CertificateData {
   name: string
   trivia: string
   percentage: number
+  endorsedBy?: string
 }
 
 export default function TriviaCertificate (): JSX.Element {
@@ -199,6 +200,22 @@ export default function TriviaCertificate (): JSX.Element {
                   demostrando un <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>{data?.percentage}%</span> de respuestas correctas.
                 </p>
               </div>
+
+              {/* Aval institucional — solo si la trivia tiene una
+                  organización externa asociada. */}
+              {data?.endorsedBy && (
+                <div style={{ maxWidth: '700px', textAlign: 'center', marginBottom: '32px' }}>
+                  <p style={{
+                    fontSize: '13px',
+                    color: '#059669',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    margin: 0
+                  }}>
+                    Avalada por {data.endorsedBy}
+                  </p>
+                </div>
+              )}
 
               {/* Date */}
               <div style={{

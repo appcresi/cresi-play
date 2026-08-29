@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
-import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare, IconCopy, IconCheck } from '@tabler/icons-react';
+import { IconArrowNarrowLeft, IconArrowNarrowRight, IconUser, IconCalendar, IconListNumbers, IconBolt, IconShare, IconCopy, IconCheck, IconShieldCheck } from '@tabler/icons-react';
 import TriviaSettings from '../../../components/TriviaSettings';
 import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc } from 'firebase/firestore';
@@ -19,6 +19,7 @@ interface Trivia {
   questions: any[];
   created_at: string;
   description?: string;
+  endorsedBy?: string;
 }
 
 interface PageProps {
@@ -140,6 +141,17 @@ export default function Page({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* Aval institucional — solo se muestra si la trivia tiene una
+            organización externa asociada (por ahora, las de látex). */}
+        {data.endorsedBy && (
+          <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 mb-3 shrink-0 border bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800">
+            <IconShieldCheck size={20} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <p className="text-sm text-emerald-800 dark:text-emerald-300">
+              Avalada por <span className="font-semibold">{data.endorsedBy}</span>
+            </p>
+          </div>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">

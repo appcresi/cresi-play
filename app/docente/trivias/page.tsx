@@ -70,6 +70,7 @@ interface UserTrivia {
   description?: string;
   questions?: TriviaQuestion[];
   playCount?: number;
+  endorsedBy?: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -134,6 +135,7 @@ export default function CreateCustomTrivia() {
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
   const [triviaName, setTriviaName] = useState('');
   const [triviaDescription, setTriviaDescription] = useState('');
+  const [triviaEndorsedBy, setTriviaEndorsedBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTriviaId, setEditingTriviaId] = useState<string | null>(null);
 
@@ -273,6 +275,7 @@ export default function CreateCustomTrivia() {
         await updateDoc(doc(db, 'trivia', editingTriviaId), {
           name: triviaName,
           description: triviaDescription || '',
+          endorsedBy: triviaEndorsedBy.trim() || null,
           questions: selectedQuestions,
           updated_at: new Date().toISOString(),
         });
@@ -284,6 +287,7 @@ export default function CreateCustomTrivia() {
           id: uuid,
           name: triviaName,
           description: triviaDescription || '',
+          endorsedBy: triviaEndorsedBy.trim() || null,
           questions: selectedQuestions,
           author: user.uid,
           created_at: new Date().toISOString(),
@@ -309,6 +313,7 @@ export default function CreateCustomTrivia() {
   const resetForm = () => {
     setTriviaName('');
     setTriviaDescription('');
+    setTriviaEndorsedBy('');
     setSelectedQuestionIds([]);
     setSearchQuery('');
     setError('');
@@ -332,6 +337,7 @@ export default function CreateCustomTrivia() {
   const handleEditTrivia = (trivia: UserTrivia) => {
     setTriviaName(trivia.name);
     setTriviaDescription(trivia.description || '');
+    setTriviaEndorsedBy(trivia.endorsedBy || '');
     if (trivia.questions) {
       const ids = questions
         .filter((q) => trivia.questions?.some((tq) => tq.question === q.question))
@@ -691,6 +697,28 @@ export default function CreateCustomTrivia() {
                 rows={3}
                 className="w-full px-4 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
               />
+            </div>
+
+            {/* Aval institucional */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-pink-light dark:border-gray-700">
+              <label
+                htmlFor="trivia-endorsed-by"
+                className="block text-sm font-semibold text-ink dark:text-gray-100 mb-3"
+              >
+                Avalada por{' '}
+                <span className="font-normal text-ink/40 dark:text-gray-500">(opcional)</span>
+              </label>
+              <input
+                id="trivia-endorsed-by"
+                type="text"
+                value={triviaEndorsedBy}
+                onChange={(e) => setTriviaEndorsedBy(e.target.value)}
+                placeholder="Ej: Asociación Argentina de Alergia al Látex"
+                className="w-full px-4 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-coral"
+              />
+              <p className="text-xs text-ink/50 dark:text-gray-500 mt-2">
+                Si esta trivia fue revisada junto a otra organización, mostramos su nombre en la trivia y en el certificado.
+              </p>
             </div>
 
             {/* Selección de preguntas */}

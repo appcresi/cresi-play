@@ -17,6 +17,8 @@ import UserDataManager from '@/lib/userDataManager';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
+import { db } from '@/lib/firebaseFirestore';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 
 const ACTIVITY = getActivityById('trivias');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Trivias';
@@ -186,11 +188,25 @@ export default function TriviaGame({
     }
   }, [currentQuestion, handleTimeLeft, items.length, isGameOver]);
 
+  // Estadística simple de "en qué se equivocan más" — un contador por
+  // pregunta (según su posición en `questions` al momento de jugarla), sin
+  // recalcular nada server-side: a diferencia del % del certificado, a
+  // nadie le sirve falsear esto, así que confiar en el cliente es
+  // suficiente. Se ve en el panel admin al editar la trivia.
+  const recordQuestionStat = useCallback((questionIndex: number, isCorrect: boolean) => {
+    const triviaRef = doc(db, 'trivia', id);
+    updateDoc(triviaRef, {
+      [`questionStats.${questionIndex}.shown`]: increment(1),
+      [`questionStats.${questionIndex}.wrong`]: increment(isCorrect ? 0 : 1),
+    }).catch((err) => console.error('Error al registrar estadística de pregunta:', err));
+  }, [id]);
+
   const handleTimeOut = useCallback(() => {
     if (isTimerPaused) return;
 
     setIsTimerPaused(true);
     toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
+    recordQuestionStat(currentQuestion, false);
 
     setLives(prevLives => {
       const newLives = prevLives - 1;
@@ -217,7 +233,7 @@ export default function TriviaGame({
         handleContinue();
       }
     }, 2000);
-  }, [answeredQuestions, currentQuestion, handleContinue, isTimerPaused, items, lives]);
+  }, [answeredQuestions, currentQuestion, handleContinue, isTimerPaused, items, lives, recordQuestionStat]);
 
   const handleAnswer = useCallback(
     (answer: string) => {
@@ -227,6 +243,7 @@ export default function TriviaGame({
       setCorrectIndex(items[currentQuestion].question.answer);
 
       const isCorrect = answer === items[currentQuestion].question.answer;
+      recordQuestionStat(currentQuestion, isCorrect);
 
       if (isCorrect) {
         const newScore = score + CORRECT_ANSWER_POINTS;
@@ -268,7 +285,7 @@ export default function TriviaGame({
         },
       ]);
     },
-    [currentQuestion, answeredQuestions, handleContinue, sessionScore, score, isGameOver, items]
+    [currentQuestion, answeredQuestions, handleContinue, sessionScore, score, isGameOver, items, recordQuestionStat]
   );
 
   const getCorrectAnswersCount = useCallback(() => {
