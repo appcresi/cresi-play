@@ -166,5 +166,34 @@ service cloud.firestore {
         ))
       );
     }
+
+    // Nube de Palabras (estilo Mentimeter): el/la docente crea la sala
+    // logueado/a, pero los alumnos que mandan palabras NO tienen cuenta —
+    // entran solo con el código, desde el celular. Por eso `words` no
+    // valida quién escribe (no hay identidad que chequear) sino la FORMA
+    // del dato: texto corto y contador positivo. No hay incentivo real
+    // para falsear esto, mismo criterio que playCount/questionStats en
+    // trivia de arriba.
+    match /wordclouds/{code} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.teacherId;
+      allow update: if request.auth != null && request.auth.uid == resource.data.teacherId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.teacherId;
+
+      match /words/{wordId} {
+        allow read: if true;
+        allow create, update: if request.resource.data.keys().hasOnly(['text', 'count', 'updatedAt']) &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 30 &&
+          request.resource.data.count is int &&
+          request.resource.data.count > 0 &&
+          request.resource.data.count <= 100000;
+        // Solo el/la docente dueño/a de la sala puede borrar una palabra
+        // (por ejemplo, si alguien manda algo inapropiado).
+        allow delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/wordclouds/$(code)).data.teacherId;
+      }
+    }
   }
 }

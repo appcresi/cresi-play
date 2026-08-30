@@ -70,6 +70,7 @@ export default function TeacherHeader(): JSX.Element {
     { href: '/docente', label: 'Mis clases' },
     { href: '/docente/trivias', label: 'Mis trivias' },
     { href: '/docente/completapalabras', label: 'Completa Palabras' },
+    { href: '/docente/nube-de-palabras', label: 'Nube de Palabras' },
     { href: '/docente/formacion', label: 'Mi formación' },
   ];
 
