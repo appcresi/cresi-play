@@ -11,19 +11,27 @@ export type LinkedActivityType =
   | 'buscador'
   | 'infografia'
   | 'completapalabras'
+  | 'biopuzzle'
+  | 'nube'
   | 'actividad'
   | 'libre'; // sin actividad ligada — solo la consigna de texto
 
 export interface LinkedActivity {
   type: LinkedActivityType;
-  /** ID de la trivia/infografía/lección puntual, o el id del catálogo
-   *  (lib/activities.ts) si type === 'actividad'. No aplica para
+  /** ID de la trivia/infografía/lección/sistema de BioPuzzle puntual, código
+   *  de la sesión de Nube de Palabras, o el id del catálogo
+   *  (lib/activities.ts) si type === 'actividad'. Para 'biopuzzle', puede
+   *  quedar vacío ("cualquier sistema, elige el alumno"). No aplica para
    *  'buscador' (no hay un ítem puntual) ni 'libre'. */
   id?: string;
   /** Nombre para mostrar, guardado en el momento de crear la tarea para
    *  no tener que volver a consultar la trivia/infografía cada vez que
    *  se muestra la tarea. */
   label?: string;
+  /** @deprecated Reemplazado por `id` directamente para type ===
+   *  'biopuzzle'. Se mantiene solo para no romper tareas viejas creadas
+   *  cuando BioPuzzle vivía anidado dentro de type === 'actividad'. */
+  subId?: string;
 }
 
 export interface Tarea {
@@ -34,6 +42,8 @@ export interface Tarea {
   points: number;
   dueDate: string; // ISO
   createdAt: string;
+  /** Se actualiza en cada edición — para mostrar "última modificación". */
+  updatedAt?: string;
   createdBy: string; // uid del docente
 }
 

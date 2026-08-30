@@ -36,6 +36,8 @@ export const WorkInClassTab = ({
   onCompletaPalabrasChanged,
   onInfografiasChanged,
   onOpenTarea,
+  onCreateTarea,
+  onEditTarea,
 }: {
   classroom: Classroom;
   teacherId: string;
@@ -47,6 +49,8 @@ export const WorkInClassTab = ({
   onCompletaPalabrasChanged: (visibleCompletaPalabras: string[] | null) => void;
   onInfografiasChanged: (restrictedInfografias: string[] | null) => void;
   onOpenTarea: (tarea: Tarea) => void;
+  onCreateTarea: () => void;
+  onEditTarea: (tarea: Tarea) => void;
 }) => {
   const [subTab, setSubTab] = useState<WorkSubTab>('actividades');
 
@@ -89,7 +93,13 @@ export const WorkInClassTab = ({
           <InfografiasPicker classroom={classroom} onChanged={onInfografiasChanged} />
         )}
         {subTab === 'tareas' && (
-          <TareasTab classroomId={classroom.id} teacherId={teacherId} students={students} onOpenTarea={onOpenTarea} />
+          <TareasTab
+            classroomId={classroom.id}
+            students={students}
+            onOpenTarea={onOpenTarea}
+            onCreateTarea={onCreateTarea}
+            onEditTarea={onEditTarea}
+          />
         )}
       </div>
     </div>

@@ -6,9 +6,10 @@ import {
   IconClock,
   IconStar,
   IconPencil,
-  IconX,
+  IconClipboardList,
 } from '@tabler/icons-react';
 import TareaService from '@/lib/tareaService';
+import { LinkedActivityAttachment } from '@/components/tareas/LinkedActivityPreview';
 import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
 
@@ -20,8 +21,13 @@ const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   buscador: 'Buscador de Preguntas',
   infografia: 'Infografía',
   completapalabras: 'Completa Palabras',
+  biopuzzle: 'BioPuzzle',
+  nube: 'Nube de Palabras',
   actividad: 'Actividad del catálogo',
 };
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 
 /**
  * Pantalla completa (no modal) para ver/editar la consigna y calificar
@@ -33,19 +39,21 @@ export const TareaGradingScreen = ({
   classroomId,
   tarea,
   students,
+  teacherName,
   onBack,
   onTareaUpdated,
 }: {
   classroomId: string;
   tarea: Tarea;
   students: ClassroomStudent[];
+  teacherName: string;
   onBack: () => void;
   onTareaUpdated: (updated: Tarea) => void;
 }) => {
-  const [subTab, setSubTab] = useState<GradingSubTab>('trabajo');
+  const [subTab, setSubTab] = useState<GradingSubTab>('instrucciones');
   const [entregas, setEntregas] = useState<Record<string, Entrega>>({});
   const [loadingEntregas, setLoadingEntregas] = useState(true);
-  const [expandedUid, setExpandedUid] = useState<string | null>(null);
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [gradeDraft, setGradeDraft] = useState('');
   const [feedbackDraft, setFeedbackDraft] = useState('');
   const [savingGrade, setSavingGrade] = useState(false);
@@ -82,12 +90,8 @@ export const TareaGradingScreen = ({
   const entregadas = Object.keys(entregas).length;
   const evaluadas = Object.values(entregas).filter((e) => e.status === 'calificada').length;
 
-  const openStudent = (uid: string) => {
-    if (expandedUid === uid) {
-      setExpandedUid(null);
-      return;
-    }
-    setExpandedUid(uid);
+  const selectStudent = (uid: string) => {
+    setSelectedUid(uid);
     const entrega = entregas[uid];
     setGradeDraft(entrega?.grade !== undefined ? String(entrega.grade) : '');
     setFeedbackDraft(entrega?.feedback ?? '');
@@ -103,7 +107,6 @@ export const TareaGradingScreen = ({
         feedback: feedbackDraft.trim() || undefined,
       });
       await loadEntregas();
-      setExpandedUid(null);
     } catch (err) {
       console.error('Error calificando:', err);
     } finally {
@@ -131,6 +134,32 @@ export const TareaGradingScreen = ({
   };
 
   const sortedStudents = [...students].sort((a, b) => a.username.localeCompare(b.username));
+
+  // Agrupado por estado, mismo criterio que "Trabajo de los alumnos" en
+  // Classroom: primero lo que falta calificar, para que el docente no
+  // tenga que buscarlo entre todos los alumnos.
+  const paraCalificar = sortedStudents.filter((s) => entregas[s.uid]?.status === 'entregada');
+  const calificadas = sortedStudents.filter((s) => entregas[s.uid]?.status === 'calificada');
+  const sinEntregar = sortedStudents.filter((s) => !entregas[s.uid]);
+  const groups: { key: string; label: string; students: ClassroomStudent[] }[] = [
+    { key: 'para-calificar', label: 'Para calificar', students: paraCalificar },
+    { key: 'calificadas', label: 'Calificadas', students: calificadas },
+    { key: 'sin-entregar', label: 'Sin entregar', students: sinEntregar },
+  ];
+
+  // Al terminar de cargar, seleccionamos a alguien por default (prioridad a
+  // quien falta calificar) — así el panel de la derecha no arranca vacío,
+  // igual que Classroom abre directo en el primer alumno de la lista.
+  useEffect(() => {
+    if (loadingEntregas || selectedUid || sortedStudents.length === 0) return;
+    const first = paraCalificar[0] ?? calificadas[0] ?? sinEntregar[0];
+    if (first) selectStudent(first.uid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingEntregas]);
+
+  const selectedStudent = sortedStudents.find((s) => s.uid === selectedUid) ?? null;
+  const selectedEntrega = selectedUid ? entregas[selectedUid] : undefined;
+  const isLate = (entrega: Entrega) => new Date(entrega.submittedAt).getTime() > new Date(tarea.dueDate).getTime();
 
   return (
     <div>
@@ -170,20 +199,45 @@ export const TareaGradingScreen = ({
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* ── Instrucciones ── */}
         {subTab === 'instrucciones' && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5 max-w-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5 sm:p-6 max-w-3xl">
             {!editingConsigna ? (
               <>
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h2 className="text-base font-semibold text-ink dark:text-gray-100">{tarea.title}</h2>
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-pink-light dark:bg-gray-700 flex items-center justify-center shrink-0">
+                      <IconClipboardList className="w-5 h-5 text-ink/60 dark:text-gray-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-xl font-semibold text-ink dark:text-gray-100 leading-tight">{tarea.title}</h2>
+                      <p className="text-xs text-ink/50 dark:text-gray-400 mt-1.5">
+                        {teacherName} · {formatDate(tarea.createdAt)}
+                        {tarea.updatedAt &&
+                          Math.abs(new Date(tarea.updatedAt).getTime() - new Date(tarea.createdAt).getTime()) > 60_000 &&
+                          ` (Última modificación: ${formatDate(tarea.updatedAt)})`}
+                      </p>
+                      <p className="text-xs text-ink/50 dark:text-gray-400 mt-1">
+                        Tareas · {tarea.points} puntos | Fecha de entrega: {formatDate(tarea.dueDate)}
+                      </p>
+                    </div>
+                  </div>
                   <button
                     onClick={() => setEditingConsigna(true)}
-                    className="flex items-center gap-1.5 text-xs font-medium text-coral-dark hover:text-coral shrink-0"
+                    title="Editar"
+                    className="p-2 text-ink/40 dark:text-gray-500 hover:text-coral-dark hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition shrink-0"
                   >
-                    <IconPencil className="w-3.5 h-3.5" />
-                    Editar
+                    <IconPencil className="w-4 h-4" />
                   </button>
                 </div>
-                <p className="text-sm text-ink/80 dark:text-gray-300 whitespace-pre-wrap">{tarea.consigna}</p>
+
+                <hr className="border-pink-light dark:border-gray-700 mb-4" />
+
+                {tarea.consigna && (
+                  <p className="text-sm text-ink/80 dark:text-gray-300 whitespace-pre-wrap mb-4">{tarea.consigna}</p>
+                )}
+
+                {tarea.linkedActivity.type !== 'libre' && (
+                  <LinkedActivityAttachment linked={tarea.linkedActivity} classroomId={classroomId} />
+                )}
               </>
             ) : (
               <div className="space-y-3">
@@ -265,122 +319,148 @@ export const TareaGradingScreen = ({
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
-              {loadingEntregas ? (
-                <div className="flex items-center justify-center py-12 text-ink/40 dark:text-gray-500">
-                  <IconLoader className="w-6 h-6 animate-spin" />
-                </div>
-              ) : sortedStudents.length === 0 ? (
-                <p className="text-sm text-ink/40 dark:text-gray-500 text-center py-12">Todavía no hay alumnos en esta clase.</p>
-              ) : (
-                <ul className="divide-y divide-pink-light dark:divide-gray-700">
-                  {sortedStudents.map((s) => {
-                    const entrega = entregas[s.uid];
-                    const isExpanded = expandedUid === s.uid;
-
-                    let statusBadge: React.ReactNode;
-                    if (!entrega) {
-                      statusBadge = (
-                        <span className="flex items-center gap-1 text-xs text-ink/40 dark:text-gray-500">
-                          <IconClock className="w-3.5 h-3.5" /> Sin entregar
-                        </span>
-                      );
-                    } else if (entrega.status === 'calificada') {
-                      statusBadge = (
-                        <span className="flex items-center gap-1 text-xs font-medium text-green-600">
-                          <IconStar className="w-3.5 h-3.5" /> {entrega.grade} / {tarea.points}
-                        </span>
-                      );
-                    } else {
-                      statusBadge = (
-                        <span className="flex items-center gap-1 text-xs font-medium text-coral-dark">
-                          <IconCheck className="w-3.5 h-3.5" /> Entregada, sin calificar
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <li key={s.uid}>
-                        <button
-                          onClick={() => entrega && openStudent(s.uid)}
-                          disabled={!entrega}
-                          className={`w-full flex items-center justify-between px-5 py-3.5 text-left ${
-                            entrega ? 'hover:bg-cream' : 'cursor-default'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <img
-                              src={s.character?.image}
-                              alt={s.character?.name}
-                              className="w-8 h-8 rounded-full object-cover border border-pink-light dark:border-gray-700"
-                            />
-                            <span className="text-sm font-medium text-ink dark:text-gray-100">{s.username}</span>
+            {loadingEntregas ? (
+              <div className="flex items-center justify-center py-12 text-ink/40 dark:text-gray-500">
+                <IconLoader className="w-6 h-6 animate-spin" />
+              </div>
+            ) : sortedStudents.length === 0 ? (
+              <p className="text-sm text-ink/40 dark:text-gray-500 text-center py-12">Todavía no hay alumnos en esta clase.</p>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 items-start">
+                {/* Lista agrupada por estado */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
+                  {groups.map(
+                    (group) =>
+                      group.students.length > 0 && (
+                        <div key={group.key}>
+                          <div className="px-4 py-2 bg-cream dark:bg-gray-900/40 text-[11px] font-semibold text-ink/60 dark:text-gray-400 uppercase tracking-wide">
+                            {group.label} · {group.students.length}
                           </div>
-                          {statusBadge}
-                        </button>
+                          <ul className="divide-y divide-pink-light dark:divide-gray-700">
+                            {group.students.map((s) => {
+                              const entrega = entregas[s.uid];
+                              const isSelected = selectedUid === s.uid;
 
-                        {isExpanded && entrega && (
-                          <div className="px-5 pb-4 bg-cream">
-                            <p className="text-xs text-ink/60 dark:text-gray-400 mb-1">
-                              Entregó el {new Date(entrega.submittedAt).toLocaleString('es-AR')}
-                              {entrega.manuallyMarkedDone && ' · marcó la actividad como hecha'}
-                            </p>
-                            {entrega.responseText && (
-                              <div className="bg-white dark:bg-gray-900/40 rounded-lg border border-pink-light dark:border-gray-700 p-3 text-sm text-ink/80 dark:text-gray-300 mb-3 whitespace-pre-wrap">
-                                {entrega.responseText}
-                              </div>
-                            )}
+                              let statusText: React.ReactNode;
+                              if (!entrega) {
+                                statusText = <span className="text-xs text-ink/40 dark:text-gray-500">—</span>;
+                              } else if (entrega.status === 'calificada') {
+                                statusText = (
+                                  <span className="flex items-center gap-1 text-xs font-medium text-green-600">
+                                    <IconStar className="w-3.5 h-3.5" /> {entrega.grade}/{tarea.points}
+                                  </span>
+                                );
+                              } else {
+                                statusText = (
+                                  <span className="flex items-center gap-1 text-xs font-medium text-coral-dark">
+                                    <IconCheck className="w-3.5 h-3.5" /> Sin calificar
+                                  </span>
+                                );
+                              }
 
-                            <div className="flex gap-2 items-start">
-                              <div className="w-24">
-                                <label className="block text-[11px] font-medium text-ink/70 dark:text-gray-400 mb-1">Nota</label>
-                                <div className="flex items-center gap-1">
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    max={tarea.points}
-                                    value={gradeDraft}
-                                    onChange={(e) => setGradeDraft(e.target.value)}
-                                    className="w-full px-2 py-1.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm"
-                                  />
-                                  <span className="text-xs text-ink/40 dark:text-gray-500 shrink-0">/{tarea.points}</span>
-                                </div>
-                              </div>
-                              <div className="flex-1">
-                                <label className="block text-[11px] font-medium text-ink/70 dark:text-gray-400 mb-1">Comentario (opcional)</label>
+                              return (
+                                <li key={s.uid}>
+                                  <button
+                                    onClick={() => selectStudent(s.uid)}
+                                    className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-left border-l-4 transition-colors ${
+                                      isSelected
+                                        ? 'border-coral bg-cream dark:bg-gray-700'
+                                        : 'border-transparent hover:bg-cream dark:hover:bg-gray-700'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <img
+                                        src={s.character?.image}
+                                        alt={s.character?.name}
+                                        className="w-8 h-8 rounded-full object-cover border border-pink-light dark:border-gray-700 shrink-0"
+                                      />
+                                      <span className="text-sm font-medium text-ink dark:text-gray-100 truncate">{s.username}</span>
+                                    </div>
+                                    <span className="shrink-0">{statusText}</span>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      )
+                  )}
+                </div>
+
+                {/* Detalle del alumno seleccionado */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5 lg:sticky lg:top-24">
+                  {!selectedStudent ? (
+                    <p className="text-sm text-ink/40 dark:text-gray-500 text-center py-8">
+                      Elegí un alumno de la lista para ver su entrega.
+                    </p>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 mb-1">
+                        <img
+                          src={selectedStudent.character?.image}
+                          alt={selectedStudent.character?.name}
+                          className="w-10 h-10 rounded-full object-cover border border-pink-light dark:border-gray-700 shrink-0"
+                        />
+                        <h3 className="text-base font-semibold text-ink dark:text-gray-100">{selectedStudent.username}</h3>
+                      </div>
+
+                      {!selectedEntrega ? (
+                        <p className="text-sm text-ink/50 dark:text-gray-400 mt-3">Todavía no entregó esta tarea.</p>
+                      ) : (
+                        <>
+                          <p className="text-xs text-ink/60 dark:text-gray-400 mt-1 mb-4">
+                            Entregó el {new Date(selectedEntrega.submittedAt).toLocaleString('es-AR')}
+                            {isLate(selectedEntrega) ? ' · con retraso' : ' · a tiempo'}
+                            {selectedEntrega.manuallyMarkedDone && ' · marcó la actividad como hecha'}
+                          </p>
+
+                          {selectedEntrega.responseText && (
+                            <div className="bg-cream dark:bg-gray-900/40 rounded-lg border border-pink-light dark:border-gray-700 p-3 text-sm text-ink/80 dark:text-gray-300 mb-4 whitespace-pre-wrap">
+                              {selectedEntrega.responseText}
+                            </div>
+                          )}
+
+                          <div className="flex gap-3 items-start">
+                            <div className="w-28">
+                              <label className="block text-[11px] font-medium text-ink/70 dark:text-gray-400 mb-1">Nota</label>
+                              <div className="flex items-center gap-1">
                                 <input
-                                  type="text"
-                                  value={feedbackDraft}
-                                  onChange={(e) => setFeedbackDraft(e.target.value)}
-                                  placeholder="Devolución para el alumno..."
+                                  type="number"
+                                  min={0}
+                                  max={tarea.points}
+                                  value={gradeDraft}
+                                  onChange={(e) => setGradeDraft(e.target.value)}
                                   className="w-full px-2 py-1.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm"
                                 />
+                                <span className="text-xs text-ink/40 dark:text-gray-500 shrink-0">/{tarea.points}</span>
                               </div>
                             </div>
-                            <div className="flex gap-2 mt-2">
-                              <button
-                                onClick={() => handleSaveGrade(s.uid)}
-                                disabled={savingGrade || gradeDraft === ''}
-                                className="px-4 py-1.5 bg-coral text-white text-xs font-semibold rounded-full hover:bg-coral-dark disabled:opacity-50"
-                              >
-                                Guardar calificación
-                              </button>
-                              <button
-                                onClick={() => setExpandedUid(null)}
-                                className="px-3 py-1.5 text-ink/60 dark:text-gray-400 text-xs font-medium rounded-full hover:bg-pink-light dark:hover:bg-gray-700 flex items-center gap-1"
-                              >
-                                <IconX className="w-3.5 h-3.5" />
-                                Cerrar
-                              </button>
+                            <div className="flex-1">
+                              <label className="block text-[11px] font-medium text-ink/70 dark:text-gray-400 mb-1">Comentario (opcional)</label>
+                              <input
+                                type="text"
+                                value={feedbackDraft}
+                                onChange={(e) => setFeedbackDraft(e.target.value)}
+                                placeholder="Devolución para el alumno..."
+                                className="w-full px-2 py-1.5 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm"
+                              />
                             </div>
                           </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+                          <button
+                            onClick={() => handleSaveGrade(selectedStudent.uid)}
+                            disabled={savingGrade || gradeDraft === ''}
+                            className="mt-3 px-5 py-2 bg-coral text-white text-sm font-semibold rounded-full hover:bg-coral-dark disabled:opacity-50 flex items-center gap-1.5"
+                          >
+                            {savingGrade && <IconLoader className="w-3.5 h-3.5 animate-spin" />}
+                            {selectedEntrega.status === 'calificada' ? 'Actualizar calificación' : 'Guardar calificación'}
+                          </button>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

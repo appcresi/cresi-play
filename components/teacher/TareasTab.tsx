@@ -3,7 +3,6 @@ import { IconPlus, IconClipboardList, IconTrash, IconPencil, IconLoader } from '
 import TareaService from '@/lib/tareaService';
 import type { Tarea, LinkedActivity } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
-import { CreateTareaModal } from './CreateTareaModal';
 
 const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   libre: 'Sin actividad ligada',
@@ -11,25 +10,28 @@ const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   buscador: 'Buscador de Preguntas',
   infografia: 'Infografía',
   completapalabras: 'Completa Palabras',
+  biopuzzle: 'BioPuzzle',
+  nube: 'Nube de Palabras',
   actividad: 'Actividad del catálogo',
 };
 
 export const TareasTab = ({
   classroomId,
-  teacherId,
   students,
   onOpenTarea,
+  onCreateTarea,
+  onEditTarea,
 }: {
   classroomId: string;
-  teacherId: string;
   students: ClassroomStudent[];
   /** Navega a la pantalla completa de calificación (vive en ClassroomDetailView). */
   onOpenTarea: (tarea: Tarea) => void;
+  /** Navega a la pantalla completa de creación/edición (vive en ClassroomDetailView). */
+  onCreateTarea: () => void;
+  onEditTarea: (tarea: Tarea) => void;
 }) => {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingTarea, setEditingTarea] = useState<Tarea | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Tarea | null>(null);
 
   const loadTareas = async () => {
@@ -48,19 +50,6 @@ export const TareasTab = ({
     loadTareas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomId]);
-
-  const handleCreate = async (data: Parameters<typeof TareaService.createTarea>[2]) => {
-    await TareaService.createTarea(classroomId, teacherId, data);
-    setShowCreateModal(false);
-    await loadTareas();
-  };
-
-  const handleEdit = async (data: Parameters<typeof TareaService.createTarea>[2]) => {
-    if (!editingTarea) return;
-    await TareaService.updateTarea(classroomId, editingTarea.id, data);
-    setEditingTarea(null);
-    await loadTareas();
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -84,7 +73,7 @@ export const TareasTab = ({
           <p className="text-xs text-ink/60 dark:text-gray-400 mt-0.5">Asigná consignas, ligadas o no a una actividad, con fecha de entrega y puntos.</p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={onCreateTarea}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-mint hover:bg-mint-light text-mint-text rounded-full text-xs font-medium transition-colors shrink-0"
         >
           <IconPlus className="w-4 h-4" />
@@ -125,7 +114,7 @@ export const TareasTab = ({
 
                 <div className="flex items-center gap-1 shrink-0">
                   <button
-                    onClick={() => setEditingTarea(tarea)}
+                    onClick={() => onEditTarea(tarea)}
                     className="p-1.5 text-ink/40 dark:text-gray-500 hover:text-coral-dark hover:bg-pink-light dark:hover:bg-gray-700 rounded-full transition"
                     aria-label="Editar tarea"
                   >
@@ -143,19 +132,6 @@ export const TareasTab = ({
             </li>
           ))}
         </ul>
-      )}
-
-      {showCreateModal && (
-        <CreateTareaModal teacherId={teacherId} onClose={() => setShowCreateModal(false)} onSave={handleCreate} />
-      )}
-
-      {editingTarea && (
-        <CreateTareaModal
-          teacherId={teacherId}
-          existing={editingTarea}
-          onClose={() => setEditingTarea(null)}
-          onSave={handleEdit}
-        />
       )}
 
       {deleteTarget && (

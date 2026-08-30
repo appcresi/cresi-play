@@ -42,12 +42,17 @@ interface TriviaGameProps {
   id: string;
   name: string;
   items: Array<{ question: TriviaQuestion; options: string[] }>;
+  /** false para uso embebido dentro de una tarea (ver TriviaInline.tsx en
+   *  components/tareas): sin GameStatusBar fijo ni layout de página
+   *  completa. El resto del juego (vidas, puntos, review final) es igual. */
+  showChrome?: boolean;
 }
 
 export default function TriviaGame({
   id,
   name,
   items,
+  showChrome = true,
 }: TriviaGameProps): JSX.Element {
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
@@ -392,25 +397,35 @@ export default function TriviaGame({
           triviaName={name}
           triviaLength={items.length}
           answeredQuestions={answeredQuestions}
+          showChrome={showChrome}
         />
       </>
     );
   }
 
   return (
-    <main className={`min-h-screen ${
+    <main className={showChrome ? `min-h-screen ${
       isNightMode ? 'bg-gray-900 text-white' : 'bg-cream'
-    } transition-colors duration-300 pt-20`}>
+    } transition-colors duration-300 pt-20` : (isNightMode ? 'text-white' : '')}>
 
-      <GameStatusBar
-        title={name}
-        score={score}
-        lives={lives}
-        level={currentQuestion + 1}
-        timeLeft={timeLeft}
-        currentQuestion={currentQuestion + 1}
-        totalQuestions={items.length}
-      />
+      {showChrome && (
+        <GameStatusBar
+          title={name}
+          score={score}
+          lives={lives}
+          level={currentQuestion + 1}
+          timeLeft={timeLeft}
+          currentQuestion={currentQuestion + 1}
+          totalQuestions={items.length}
+        />
+      )}
+
+      {!showChrome && (
+        <p className="text-sm text-ink/60 dark:text-gray-400 mb-3">
+          Pregunta {currentQuestion + 1} de {items.length} · {lives} {lives === 1 ? 'vida' : 'vidas'}
+          {typeof timeLeft === 'number' && ` · ${timeLeft}s`}
+        </p>
+      )}
 
       {isGameOver ? (
         <div className="max-w-2xl mx-auto px-4 py-8">

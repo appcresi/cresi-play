@@ -21,6 +21,10 @@ interface WordDragGameProps {
    *  hardcodeado; ahora el contenido vive en Firestore (CrESI o docentes),
    *  así que hace falta el ID para poder traer el documento correcto. */
   lessonId: string;
+  /** false para uso embebido dentro de una tarea (ver
+   *  CompletaPalabrasInline.tsx en components/tareas): sin GameStatusBar
+   *  fijo ni layout de página completa. */
+  showChrome?: boolean;
 }
 
 // El catálogo llama a esta actividad "Completa Palabras" en general — pero
@@ -47,7 +51,7 @@ export function lessonProgressKey(lessonTitle: string): string {
   return `${ACTIVITY_TITLE}-${lessonTitle}`;
 }
 
-const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
+const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
@@ -416,7 +420,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
 
   if (loadError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream dark:bg-gray-900">
+      <div className={`flex items-center justify-center ${showChrome ? 'min-h-screen' : 'py-12'} bg-cream dark:bg-gray-900`}>
         <div className="text-center max-w-sm">
           <IconX className="w-10 h-10 text-red-400 mx-auto mb-3" />
           <p className="text-gray-600 dark:text-gray-400">No se pudo cargar esta lección. Puede que ya no exista.</p>
@@ -427,7 +431,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
 
   if (!isClient || !currentLessonData) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream dark:bg-gray-900">
+      <div className={`flex items-center justify-center ${showChrome ? 'min-h-screen' : 'py-12'} bg-cream dark:bg-gray-900`}>
         <div className="text-center">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
@@ -440,16 +444,22 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId }) => {
   }
 
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
-          <GameStatusBar
-            title={currentLessonData.title}
-            score={score}
-            lives={lives}
-            level={currentLevel + 1}
-          />
-        </div>
+    <div className={showChrome ? 'min-h-screen bg-cream dark:bg-gray-900 py-8 px-4' : ''}>
+      <div className={showChrome ? 'max-w-5xl mx-auto' : ''}>
+        {showChrome ? (
+          <div className="mb-6">
+            <GameStatusBar
+              title={currentLessonData.title}
+              score={score}
+              lives={lives}
+              level={currentLevel + 1}
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-ink/60 dark:text-gray-400 mb-3">
+            {currentLessonData.title} · Nivel {currentLevel + 1} de {currentLessonData.lecciones.length} · {lives} {lives === 1 ? 'vida' : 'vidas'}
+          </p>
+        )}
 
         {isGameOver ? (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-8">

@@ -37,7 +37,9 @@ const TareaService = {
       dueDate: data.dueDate,
       createdBy: teacherId,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
+    const now = new Date().toISOString();
     return {
       id: ref.id,
       title: data.title,
@@ -46,7 +48,8 @@ const TareaService = {
       points: data.points,
       dueDate: data.dueDate,
       createdBy: teacherId,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
   },
 
@@ -64,6 +67,7 @@ const TareaService = {
           dueDate: data.dueDate,
           createdBy: data.createdBy,
           createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+          updatedAt: data.updatedAt?.toDate?.()?.toISOString?.(),
         } as Tarea;
       })
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
@@ -82,6 +86,7 @@ const TareaService = {
       dueDate: data.dueDate,
       createdBy: data.createdBy,
       createdAt: data.createdAt?.toDate?.()?.toISOString?.() ?? new Date().toISOString(),
+      updatedAt: data.updatedAt?.toDate?.()?.toISOString?.(),
     };
   },
 
@@ -90,7 +95,7 @@ const TareaService = {
     tareaId: string,
     data: Partial<{ title: string; consigna: string; linkedActivity: LinkedActivity; points: number; dueDate: string }>
   ): Promise<void> {
-    await updateDoc(doc(db, 'classrooms', classroomId, 'tareas', tareaId), data);
+    await updateDoc(doc(db, 'classrooms', classroomId, 'tareas', tareaId), { ...data, updatedAt: serverTimestamp() });
   },
 
   async deleteTarea(classroomId: string, tareaId: string): Promise<void> {

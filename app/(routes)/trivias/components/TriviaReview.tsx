@@ -51,10 +51,14 @@ interface TriviaReviewProps {
   triviaName: string
   triviaLength: number
   answeredQuestions: TriviaAnsweredQuestion[]
+  /** false para uso embebido dentro de una tarea — sin el layout de
+   *  página completa ni el link "Volver al menú" (no aplica, el alumno
+   *  no vino desde el catálogo de trivias). */
+  showChrome?: boolean
 }
 
 
-export default function TriviaReview ({ triviaId, correctAnswers, triviaName, triviaLength, answeredQuestions }: TriviaReviewProps): JSX.Element {
+export default function TriviaReview ({ triviaId, correctAnswers, triviaName, triviaLength, answeredQuestions, showChrome = true }: TriviaReviewProps): JSX.Element {
   const COLORS: Record<string, string> = {
     'Respuestas correctas': '#10B981',
     'Respuestas incorrectas': '#EF4444'
@@ -70,8 +74,8 @@ export default function TriviaReview ({ triviaId, correctAnswers, triviaName, tr
   const isCompleted = isTriviaCompleted(correctAnswers, triviaLength)
 
   return (
-    <section className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-6xl mx-auto">
+    <section className={showChrome ? 'min-h-screen bg-gray-50 dark:bg-gray-900 p-6' : ''}>
+      <div className={showChrome ? 'max-w-6xl mx-auto' : ''}>
         {/* Header Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Results Card */}
@@ -112,14 +116,16 @@ export default function TriviaReview ({ triviaId, correctAnswers, triviaName, tr
               </div>
             )}
 
-            <Link
-              href="/trivias"
-              className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-colors"
-              style={{ backgroundColor: ACCENT }}
-            >
-              <IconArrowLeft size={20} />
-              Volver al menú
-            </Link>
+            {showChrome && (
+              <Link
+                href="/trivias"
+                className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold hover:opacity-90 transition-colors"
+                style={{ backgroundColor: ACCENT }}
+              >
+                <IconArrowLeft size={20} />
+                Volver al menú
+              </Link>
+            )}
           </div>
 
           {/* Score Card */}

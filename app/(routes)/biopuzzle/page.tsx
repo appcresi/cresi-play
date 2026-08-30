@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Biopuzzle from "./components/Biopuzzle";
 
 export const metadata: Metadata = {
@@ -11,5 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default function BiopuzzlePage(): JSX.Element {
-  return <Biopuzzle />;
+  return (
+    <Suspense>
+      <Biopuzzle />
+    </Suspense>
+  );
 }

@@ -1,54 +1,24 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import {
-  IconClipboardList,
-  IconClock,
-  IconCheck,
-  IconStar,
-  IconExternalLink,
-  IconLoader,
-  IconX,
-} from '@tabler/icons-react';
+import { IconClipboardList, IconClock, IconCheck, IconStar, IconLoader } from '@tabler/icons-react';
 import TareaService from '@/lib/tareaService';
 import UserDataManager from '@/lib/userDataManager';
-import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
+import type { Tarea, Entrega } from '@/types/tarea';
 
-const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
-  libre: '',
-  trivia: 'Jugar la trivia',
-  buscador: 'Ir al Buscador de Preguntas',
-  infografia: 'Ver la infografía',
-  completapalabras: 'Ir a Completa Palabras',
-  actividad: 'Ir a la actividad',
-};
-
-/** A dónde mandar al alumno para hacer la actividad ligada — cuando hay
- *  una ruta directa (trivia, actividad del catálogo), deep-link preciso;
- *  para las demás, a la sección general (no hay una URL por ítem). */
-function linkedActivityHref(linked: LinkedActivity): string | null {
-  switch (linked.type) {
-    case 'trivia':
-      return linked.id ? `/trivias/pregame/${linked.id}` : '/trivias';
-    case 'buscador':
-      return '/buscador';
-    case 'infografia':
-      return '/infografias';
-    case 'completapalabras':
-      return '/lecciones';
-    case 'actividad':
-      return linked.id ? `/${linked.id}` : null;
-    default:
-      return null;
-  }
-}
-
-export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: string; studentUid: string }) => {
+export const TareasStudentTab = ({
+  classroomId,
+  studentUid,
+  onOpenTarea,
+}: {
+  classroomId: string;
+  studentUid: string;
+  /** Navega a la pantalla completa de detalle/entrega (vive en ClassroomDesk). */
+  onOpenTarea: (tarea: Tarea) => void;
+}) => {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [entregas, setEntregas] = useState<Record<string, Entrega | null>>({});
   const [loading, setLoading] = useState(true);
-  const [openTarea, setOpenTarea] = useState<Tarea | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -150,7 +120,7 @@ export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: str
 
             return (
               <li key={t.id}>
-                <button onClick={() => setOpenTarea(t)} className="w-full flex items-start gap-3 px-5 py-4 hover:bg-cream dark:hover:bg-gray-700 transition-colors text-left">
+                <button onClick={() => onOpenTarea(t)} className="w-full flex items-start gap-3 px-5 py-4 hover:bg-cream dark:hover:bg-gray-700 transition-colors text-left">
                   <div className="w-9 h-9 rounded-lg bg-mint text-mint-text flex items-center justify-center shrink-0">
                     <IconClipboardList className="w-4.5 h-4.5" />
                   </div>
@@ -170,133 +140,6 @@ export const TareasStudentTab = ({ classroomId, studentUid }: { classroomId: str
           })}
         </ul>
       )}
-
-      {openTarea && (
-        <TareaDetailModal
-          classroomId={classroomId}
-          studentUid={studentUid}
-          tarea={openTarea}
-          entrega={entregas[openTarea.id] ?? null}
-          onClose={() => setOpenTarea(null)}
-          onSubmitted={() => {
-            setOpenTarea(null);
-            load();
-          }}
-        />
-      )}
-    </div>
-  );
-};
-
-const TareaDetailModal = ({
-  classroomId,
-  studentUid,
-  tarea,
-  entrega,
-  onClose,
-  onSubmitted,
-}: {
-  classroomId: string;
-  studentUid: string;
-  tarea: Tarea;
-  entrega: Entrega | null;
-  onClose: () => void;
-  onSubmitted: () => void;
-}) => {
-  const [responseText, setResponseText] = useState(entrega?.responseText ?? '');
-  const [markedDone, setMarkedDone] = useState(entrega?.manuallyMarkedDone ?? false);
-  const [saving, setSaving] = useState(false);
-
-  const href = linkedActivityHref(tarea.linkedActivity);
-  const alreadyGraded = entrega?.status === 'calificada';
-
-  const handleSubmit = async () => {
-    try {
-      setSaving(true);
-      await TareaService.submitEntrega(classroomId, tarea.id, studentUid, {
-        responseText: responseText.trim() || undefined,
-        manuallyMarkedDone: markedDone,
-      });
-      onSubmitted();
-    } catch (err) {
-      console.error('Error entregando la tarea:', err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-pink-light dark:border-gray-700">
-          <h2 className="text-lg font-bold text-ink dark:text-gray-100">{tarea.title}</h2>
-          <button onClick={onClose} className="text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
-            <IconX className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-4">
-          <p className="text-sm text-ink/80 dark:text-gray-300 whitespace-pre-wrap">{tarea.consigna}</p>
-          <p className="text-xs text-ink/60 dark:text-gray-400">
-            Entrega: {new Date(tarea.dueDate).toLocaleDateString('es-AR')} · vale {tarea.points} puntos
-          </p>
-
-          {href && (
-            <Link
-              href={href}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
-            >
-              {LINKED_TYPE_LABELS[tarea.linkedActivity.type]}
-              {tarea.linkedActivity.label ? `: ${tarea.linkedActivity.label}` : ''}
-              <IconExternalLink className="w-4 h-4" />
-            </Link>
-          )}
-
-          {alreadyGraded ? (
-            <div className="p-4 bg-green-50 dark:bg-green-950/40 rounded-lg border border-green-100 dark:border-green-900">
-              <p className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-1.5">
-                <IconStar className="w-4 h-4" /> Calificada: {entrega?.grade} / {tarea.points} puntos
-              </p>
-              {entrega?.feedback && <p className="text-sm text-green-700 dark:text-green-300 mt-1.5">{entrega.feedback}</p>}
-            </div>
-          ) : (
-            <>
-              <div>
-                <label className="block text-sm font-semibold text-ink dark:text-gray-100 mb-1">Tu respuesta (opcional)</label>
-                <textarea
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  rows={4}
-                  placeholder="Escribí tu respuesta acá..."
-                  className="w-full px-3 py-2 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-coral"
-                />
-              </div>
-
-              {tarea.linkedActivity.type !== 'libre' && (
-                <label className="flex items-center gap-2 text-sm text-ink/80 dark:text-gray-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={markedDone}
-                    onChange={(e) => setMarkedDone(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  Ya hice la actividad de arriba
-                </label>
-              )}
-
-              <button
-                onClick={handleSubmit}
-                disabled={saving}
-                className="w-full px-5 py-2.5 bg-coral text-white rounded-full text-sm font-semibold hover:bg-coral-dark disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving && <IconLoader className="w-4 h-4 animate-spin" />}
-                {entrega ? 'Actualizar entrega' : 'Entregar'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

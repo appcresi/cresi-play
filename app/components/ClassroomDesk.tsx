@@ -12,6 +12,7 @@ import {
   IconMoodHappy,
   IconCopy,
   IconCheck,
+  IconStar,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService, { Classroom } from '@/lib/classroomService';
@@ -23,8 +24,11 @@ import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 import { ActivityIcon } from '@/components/ActivityIcon';
 import { TareasStudentTab } from '@/components/student/TareasStudentTab';
+import { TareaViewScreen } from '@/components/student/TareaViewScreen';
 import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
+import TareaService from '@/lib/tareaService';
+import type { Tarea, Entrega } from '@/types/tarea';
 
 // Color del botón flotante del buscador — mismo indigo que usamos en
 // /buscador y en la pestaña "Preguntas" del docente.
@@ -41,6 +45,8 @@ const ClassroomDesk = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tab, setTab] = useState<DeskTab>('novedades');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [viewingTarea, setViewingTarea] = useState<Tarea | null>(null);
+  const [gradedTareas, setGradedTareas] = useState<{ tarea: Tarea; entrega: Entrega }[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -60,6 +66,28 @@ const ClassroomDesk = () => {
       setLoading(false);
     })();
   }, [user]);
+
+  // Tareas ya calificadas por el docente, para el Boletín — antes esta
+  // solapa solo mostraba el progreso de actividades sueltas y nunca las
+  // notas de tareas, así que una tarea corregida nunca aparecía acá.
+  useEffect(() => {
+    if (!classroom || !user?.uid) return;
+    (async () => {
+      try {
+        const list = await TareaService.getTareasForClassroom(classroom.id);
+        const entries = await Promise.all(
+          list.map(async (t) => [t, await TareaService.getEntregaForStudent(classroom.id, t.id, user.uid)] as const)
+        );
+        const graded = entries
+          .filter((entry): entry is [Tarea, Entrega] => entry[1]?.status === 'calificada')
+          .map(([tarea, entrega]) => ({ tarea, entrega }))
+          .sort((a, b) => (b.entrega.gradedAt ?? '').localeCompare(a.entrega.gradedAt ?? ''));
+        setGradedTareas(graded);
+      } catch (err) {
+        console.error('Error cargando tareas calificadas:', err);
+      }
+    })();
+  }, [classroom, user?.uid]);
 
   // Actividades que el docente habilitó para esta clase. Si por algún
   // motivo todavía no cargó la clase, no mostramos nada (mejor que mostrar
@@ -110,6 +138,26 @@ const ClassroomDesk = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coral mx-auto mb-4" />
             <p className="text-ink/70 dark:text-gray-400">Cargando tu aula...</p>
           </div>
+        </div>
+      </>
+    );
+  }
+
+  // Ver el detalle de una tarea tampoco es un modal — reemplaza el
+  // contenido del aula (banner y solapas incluidos), igual que el editor
+  // de tareas del lado del docente, con su propio botón de volver.
+  if (viewingTarea && classroom) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-cream dark:bg-gray-900">
+          <TareaViewScreen
+            classroomId={classroom.id}
+            studentUid={user?.uid ?? ''}
+            tarea={viewingTarea}
+            onBack={() => setViewingTarea(null)}
+            onSubmitted={() => setViewingTarea(null)}
+          />
         </div>
       </>
     );
@@ -198,7 +246,11 @@ const ClassroomDesk = () => {
                 {classroom && (
                   <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 p-5">
                     <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Tareas</h3>
-                    <TareasFeedSummary classroomId={classroom.id} emptyLabel="Tu docente todavía no asignó ninguna tarea." />
+                    <TareasFeedSummary
+                      classroomId={classroom.id}
+                      emptyLabel="Tu docente todavía no asignó ninguna tarea."
+                      onOpenTarea={setViewingTarea}
+                    />
                   </div>
                 )}
 
@@ -252,7 +304,13 @@ const ClassroomDesk = () => {
           {/* ── Trabajo en clase ── */}
           {tab === 'trabajo' && (
             <div className="space-y-5">
-              {classroom && <TareasStudentTab classroomId={classroom.id} studentUid={user?.uid ?? ''} />}
+              {classroom && (
+                <TareasStudentTab
+                  classroomId={classroom.id}
+                  studentUid={user?.uid ?? ''}
+                  onOpenTarea={setViewingTarea}
+                />
+              )}
 
               {/* Buscador de actividades (solo si hay varias) */}
               {activities.length > 5 && (
@@ -366,6 +424,42 @@ const ClassroomDesk = () => {
                   />
                 </div>
               </div>
+
+              {classroom && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-pink-light dark:border-gray-700">
+                    <h2 className="text-sm font-semibold text-ink/80 dark:text-gray-300">Tareas calificadas</h2>
+                  </div>
+
+                  {gradedTareas.length === 0 ? (
+                    <div className="p-8 text-center text-sm text-ink/40 dark:text-gray-500">
+                      Todavía no tenés ninguna tarea calificada.
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-pink-light dark:divide-gray-700">
+                      {gradedTareas.map(({ tarea, entrega }) => (
+                        <li key={tarea.id}>
+                          <button
+                            onClick={() => setViewingTarea(tarea)}
+                            className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-cream dark:hover:bg-gray-700 transition-colors text-left"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-ink dark:text-gray-100 truncate">{tarea.title}</p>
+                              {entrega.feedback && (
+                                <p className="text-xs text-ink/60 dark:text-gray-400 truncate mt-0.5">{entrega.feedback}</p>
+                              )}
+                            </div>
+                            <span className="flex items-center gap-1.5 text-sm font-bold text-green-600 shrink-0">
+                              <IconStar className="w-4 h-4" />
+                              {entrega.grade} / {tarea.points}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-3 border-b border-pink-light dark:border-gray-700">

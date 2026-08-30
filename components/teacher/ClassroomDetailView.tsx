@@ -7,9 +7,12 @@ import { VisibleActivitiesSummary } from './VisibleActivitiesSummary';
 import { VisibleTriviasSummary } from './VisibleTriviasSummary';
 import { WorkInClassTab } from './WorkInClassTab';
 import { StudentsGrid } from './StudentsGrid';
+import { TareasGradebook } from './TareasGradebook';
 import { TareaGradingScreen } from './TareaGradingScreen';
+import { CreateTareaScreen } from './CreateTareaScreen';
 import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
+import TareaService from '@/lib/tareaService';
 
 export const ClassroomDetailView = ({
   classroom,
@@ -78,6 +81,8 @@ export const ClassroomDetailView = ({
 }) => {
   const [showClassMenu, setShowClassMenu] = useState(false);
   const [gradingTarea, setGradingTarea] = useState<Tarea | null>(null);
+  // null = cerrado, undefined = creando una nueva, Tarea = editando esa.
+  const [taskEditor, setTaskEditor] = useState<Tarea | 'new' | null>(null);
 
   const TABS: { key: DetailTab; label: string }[] = [
     { key: 'tablon', label: 'Tablón' },
@@ -96,8 +101,30 @@ export const ClassroomDetailView = ({
         classroomId={classroom.id}
         tarea={gradingTarea}
         students={students}
+        teacherName={teacherName}
         onBack={() => setGradingTarea(null)}
         onTareaUpdated={(updated) => setGradingTarea(updated)}
+      />
+    );
+  }
+
+  // Crear/editar una tarea tampoco es un modal — reemplaza el contenido
+  // de la clase igual que la pantalla de calificación de arriba, así al
+  // volver la solapa "Tareas" se remonta y trae la lista actualizada sola.
+  if (taskEditor) {
+    return (
+      <CreateTareaScreen
+        classroomName={classroom.name}
+        teacherId={teacherId}
+        existing={taskEditor === 'new' ? undefined : taskEditor}
+        onBack={() => setTaskEditor(null)}
+        onSave={async (data) => {
+          if (taskEditor === 'new') {
+            await TareaService.createTarea(classroom.id, teacherId, data);
+          } else {
+            await TareaService.updateTarea(classroom.id, taskEditor.id, data);
+          }
+        }}
       />
     );
   }
@@ -265,6 +292,8 @@ export const ClassroomDetailView = ({
             onCompletaPalabrasChanged={onCompletaPalabrasChanged}
             onInfografiasChanged={onInfografiasChanged}
             onOpenTarea={setGradingTarea}
+            onCreateTarea={() => setTaskEditor('new')}
+            onEditTarea={setTaskEditor}
           />
         )}
 
@@ -300,11 +329,8 @@ export const ClassroomDetailView = ({
                 <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Todavía no hay alumnos en esta clase.</p>
               ) : (
                 <StudentsGrid
-                  mode="personas"
                   students={students}
                   pending={pending}
-                  totalActivities={totalActivities}
-                  onSelectStudent={onSelectStudent}
                   onRemoveStudent={onRemoveStudent}
                   onRemovePending={onRemovePending}
                   onManageStudentCredentials={onManageStudentCredentials}
@@ -319,25 +345,19 @@ export const ClassroomDetailView = ({
         {tab === 'calificaciones' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 overflow-hidden">
             <div className="p-4 border-b border-pink-light dark:border-gray-700">
-              <h3 className="text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase">Calificaciones</h3>
+              <h3 className="text-[11px] font-medium text-ink/60 dark:text-gray-400 uppercase">Cuaderno de calificaciones</h3>
             </div>
             {loadingRoster ? (
               <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Cargando...</p>
             ) : students.length === 0 ? (
-              <p className="text-xs text-ink/60 dark:text-gray-400 p-4">
-                Todavía no hay alumnos con progreso — van a aparecer acá apenas jueguen algo.
-              </p>
+              <p className="text-xs text-ink/60 dark:text-gray-400 p-4">Todavía no hay alumnos en esta clase.</p>
             ) : (
-              <StudentsGrid
-                mode="calificaciones"
+              <TareasGradebook
+                classroomId={classroom.id}
                 students={students}
-                pending={pending}
                 totalActivities={totalActivities}
+                onOpenTarea={setGradingTarea}
                 onSelectStudent={onSelectStudent}
-                onRemoveStudent={onRemoveStudent}
-                onRemovePending={onRemovePending}
-                onManageStudentCredentials={onManageStudentCredentials}
-                onManagePendingCredentials={onManagePendingCredentials}
               />
             )}
           </div>
