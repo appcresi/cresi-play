@@ -337,6 +337,11 @@ const TeacherDashboard = () => {
               prev.map((c) => (c.id === selectedClassroom.id ? { ...c, restrictedInfografias } : c))
             );
           }}
+          onAllowGoogleSignInChanged={(allowGoogleSignIn) => {
+            setClassrooms((prev) =>
+              prev.map((c) => (c.id === selectedClassroom.id ? { ...c, allowGoogleSignIn } : c))
+            );
+          }}
           onSelectStudent={setProgressStudent}
           onRemoveStudent={(uid) => handleRemoveStudent(selectedClassroom.id, uid)}
           onRemovePending={(pendingId) => handleRemovePending(selectedClassroom.id, pendingId)}

@@ -29,6 +29,12 @@ export interface Classroom {
   restrictedInfografias: string[] | null;
   /** Color de banner asignado al crear la clase (estilo Google Classroom). */
   color: string;
+  /** Si está en true, además de código+usuario/contraseña, un alumno puede
+   *  unirse a esta clase con su propia cuenta de Google. Apagado por
+   *  default: entrar con una cuenta de Gmail real (en vez del usuario
+   *  pseudónimo que asigna el docente) es una decisión que el docente
+   *  tiene que tomar a propósito, sobre todo para primaria. */
+  allowGoogleSignIn: boolean;
 }
 
 export interface StudentProgress {

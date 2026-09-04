@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IconPencil, IconCheck, IconX, IconLoader, IconDotsVertical, IconCopy, IconUserPlus, IconTrash } from '@tabler/icons-react';
+import { IconPencil, IconCheck, IconX, IconLoader, IconDotsVertical, IconCopy, IconUserPlus, IconTrash, IconBrandGoogle } from '@tabler/icons-react';
 import type { Classroom, ClassroomStudent, PendingStudent } from '@/types/classroom';
 import type { Tarea } from '@/types/tarea';
 import type { DetailTab } from './types';
@@ -13,6 +13,7 @@ import { CreateTareaScreen } from './CreateTareaScreen';
 import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
 import TareaService from '@/lib/tareaService';
+import ClassroomService from '@/lib/classroomService';
 
 export const ClassroomDetailView = ({
   classroom,
@@ -39,6 +40,7 @@ export const ClassroomDetailView = ({
   onQuestionsChanged,
   onCompletaPalabrasChanged,
   onInfografiasChanged,
+  onAllowGoogleSignInChanged,
   onSelectStudent,
   onRemoveStudent,
   onRemovePending,
@@ -71,6 +73,7 @@ export const ClassroomDetailView = ({
   onQuestionsChanged: (restrictedTags: string[] | null, restrictedQuestionIds: string[] | null) => void;
   onCompletaPalabrasChanged: (visibleCompletaPalabras: string[] | null) => void;
   onInfografiasChanged: (restrictedInfografias: string[] | null) => void;
+  onAllowGoogleSignInChanged: (allow: boolean) => void;
   onSelectStudent: (s: ClassroomStudent) => void;
   onRemoveStudent: (uid: string) => void;
   onManageStudentCredentials: (s: ClassroomStudent) => void;
@@ -80,6 +83,7 @@ export const ClassroomDetailView = ({
   totalActivities: number;
 }) => {
   const [showClassMenu, setShowClassMenu] = useState(false);
+  const [savingGoogleSignIn, setSavingGoogleSignIn] = useState(false);
   const [gradingTarea, setGradingTarea] = useState<Tarea | null>(null);
   // null = cerrado, undefined = creando una nueva, Tarea = editando esa.
   const [taskEditor, setTaskEditor] = useState<Tarea | 'new' | null>(null);
@@ -128,6 +132,19 @@ export const ClassroomDetailView = ({
       />
     );
   }
+
+  const handleToggleGoogleSignIn = async () => {
+    const next = !classroom.allowGoogleSignIn;
+    setSavingGoogleSignIn(true);
+    try {
+      await ClassroomService.updateAllowGoogleSignIn(classroom.id, next);
+      onAllowGoogleSignInChanged(next);
+    } catch (err) {
+      console.error('Error actualizando el ingreso con Google:', err);
+    } finally {
+      setSavingGoogleSignIn(false);
+    }
+  };
 
   return (
     <div>
@@ -248,6 +265,39 @@ export const ClassroomDetailView = ({
                 {copiedCode === classroom.code && (
                   <p className="text-[11px] text-green-600 mt-1.5">Link copiado ✓</p>
                 )}
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-4">
+                <div className="flex items-start gap-2.5 mb-3">
+                  <IconBrandGoogle className="w-4 h-4 text-[#4285F4] mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-medium text-ink dark:text-gray-100">Ingreso con Google</h3>
+                    <p className="text-xs text-ink/60 dark:text-gray-400 mt-0.5">
+                      Además del usuario y contraseña, dejar que se unan con su propia cuenta de Gmail.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-ink/70 dark:text-gray-400">
+                    {classroom.allowGoogleSignIn ? 'Habilitado' : 'Deshabilitado'}
+                  </span>
+                  <button
+                    onClick={handleToggleGoogleSignIn}
+                    disabled={savingGoogleSignIn}
+                    role="switch"
+                    aria-checked={classroom.allowGoogleSignIn}
+                    className={`relative w-10 h-6 rounded-full shrink-0 transition-colors disabled:opacity-50 ${
+                      classroom.allowGoogleSignIn ? 'bg-coral' : 'bg-pink-light dark:bg-gray-600'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                        classroom.allowGoogleSignIn ? 'translate-x-[16px]' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <ProximasEntregasBox classroomId={classroom.id} />

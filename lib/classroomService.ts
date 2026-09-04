@@ -81,6 +81,7 @@ const ClassroomService = {
       restrictedTags: null,
       restrictedQuestionIds: null,
       restrictedInfografias: null,
+      allowGoogleSignIn: false,
       color,
       createdAt: serverTimestamp(),
     });
@@ -99,6 +100,7 @@ const ClassroomService = {
       restrictedTags: null,
       restrictedQuestionIds: null,
       restrictedInfografias: null,
+      allowGoogleSignIn: false,
       color,
     };
   },
@@ -148,6 +150,7 @@ const ClassroomService = {
       restrictedTags: data.restrictedTags ?? null,
       restrictedQuestionIds: data.restrictedQuestionIds ?? null,
       restrictedInfografias: data.restrictedInfografias ?? null,
+      allowGoogleSignIn: data.allowGoogleSignIn ?? false,
       color: data.color ?? fallbackColorFor(snap.id),
     };
   },
@@ -210,6 +213,20 @@ const ClassroomService = {
   },
 
   /**
+   * Prende/apaga que los alumnos de esta clase puedan unirse con su propia
+   * cuenta de Google (alternativa al usuario/contraseña que asigna el
+   * docente) — ver `upsertClassroomStudent` y app/clase/[codigo]/page.tsx.
+   * Es un control solo de UX del lado del alumno, no una regla de
+   * seguridad de Firestore: quien ya tiene el código de la clase de todos
+   * modos podría unirse con usuario/contraseña, así que no hay nada
+   * sensible detrás de este interruptor — mismo criterio que
+   * MAX_SESSIONS_PER_TEACHER en wordCloudService.ts.
+   */
+  async updateAllowGoogleSignIn(classroomId: string, allow: boolean): Promise<void> {
+    await updateDoc(doc(db, 'classrooms', classroomId), { allowGoogleSignIn: allow });
+  },
+
+  /**
    * Elimina la clase junto con sus alumnos (reclamados y pendientes).
    * Requiere que el docente tenga permiso de escritura sobre `estudiantes`
    * (ver regla actualizada) para poder limpiar la subcolección.
@@ -259,6 +276,7 @@ const ClassroomService = {
           restrictedTags: data.restrictedTags ?? null,
           restrictedQuestionIds: data.restrictedQuestionIds ?? null,
           restrictedInfografias: data.restrictedInfografias ?? null,
+          allowGoogleSignIn: data.allowGoogleSignIn ?? false,
           color: data.color ?? fallbackColorFor(d.id),
         };
       })
