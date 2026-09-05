@@ -79,7 +79,36 @@ export function TriviaCard(index: TriviaIndexFields): JSX.Element {
             {index.endorsedBy && (
               <div className="flex items-center gap-1 mb-2 text-[11px] text-emerald-700 dark:text-emerald-400">
                 <IconShieldCheck size={13} className="shrink-0" />
-                <span className="truncate">Avalada por {index.endorsedBy}</span>
+                <span className="truncate">
+                  Avalada por{' '}
+                  {index.endorsedByUrl ? (
+                    // No es un <a> anidado dentro del <Link> de la tarjeta
+                    // a propósito (HTML no permite anchors anidados) — se
+                    // navega manualmente y se corta la propagación para
+                    // que no dispare también el link de la tarjeta.
+                    <span
+                      role="link"
+                      tabIndex={0}
+                      className="underline hover:text-emerald-900 dark:hover:text-emerald-300 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(index.endorsedByUrl, '_blank', 'noopener,noreferrer');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open(index.endorsedByUrl, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
+                    >
+                      {index.endorsedBy}
+                    </span>
+                  ) : (
+                    index.endorsedBy
+                  )}
+                </span>
               </div>
             )}
 

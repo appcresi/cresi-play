@@ -29,17 +29,19 @@ interface TriviaIndexFields {
   name: string;
   level: number;
   endorsedBy?: string;
+  endorsedByUrl?: string;
 }
 
 interface ClassroomTrivia {
   id: string;
   name: string;
   endorsedBy?: string;
+  endorsedByUrl?: string;
 }
 
 function getOnlyIndexFields(trivia: Trivia): TriviaIndexFields {
-  const { id, name, level, endorsedBy } = trivia;
-  return { id, name, level, endorsedBy };
+  const { id, name, level, endorsedBy, endorsedByUrl } = trivia;
+  return { id, name, level, endorsedBy, endorsedByUrl };
 }
 
 function organizeIndexesByLevel(
@@ -93,7 +95,7 @@ async function getClassroomTrivias(
 
     const mapDoc = (doc: any): ClassroomTrivia => {
       const data = doc.data();
-      return { id: data.id || doc.id, name: data.name, endorsedBy: data.endorsedBy };
+      return { id: data.id || doc.id, name: data.name, endorsedBy: data.endorsedBy, endorsedByUrl: data.endorsedByUrl };
     };
 
     const combined = [...ownSnap.docs.map(mapDoc), ...cresiSnap.docs.map(mapDoc)];
@@ -254,7 +256,7 @@ export default function Trivias(): JSX.Element {
         ) : classroomId ? (
           classroomTrivias && classroomTrivias.length > 0 ? (
             <TriviaGrid
-              indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1, endorsedBy: t.endorsedBy })) }}
+              indexesByLevel={{ 1: classroomTrivias.map((t) => ({ id: t.id, name: t.name, level: 1, endorsedBy: t.endorsedBy, endorsedByUrl: t.endorsedByUrl })) }}
             />
           ) : (
             <div className="text-center py-16">

@@ -20,6 +20,7 @@ interface Trivia {
   created_at: string;
   description?: string;
   endorsedBy?: string;
+  endorsedByUrl?: string;
 }
 
 interface PageProps {
@@ -143,12 +144,26 @@ export default function Page({ params }: PageProps) {
         </div>
 
         {/* Aval institucional — solo se muestra si la trivia tiene una
-            organización externa asociada (por ahora, las de látex). */}
+            organización externa asociada (por ahora, las de látex). Si
+            además hay un link cargado, el nombre lleva a la página oficial
+            de la entidad. */}
         {data.endorsedBy && (
           <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 mb-3 shrink-0 border bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800">
             <IconShieldCheck size={20} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
             <p className="text-sm text-emerald-800 dark:text-emerald-300">
-              Avalada por <span className="font-semibold">{data.endorsedBy}</span>
+              Avalada por{' '}
+              {data.endorsedByUrl ? (
+                <a
+                  href={data.endorsedByUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold underline hover:text-emerald-900 dark:hover:text-emerald-200"
+                >
+                  {data.endorsedBy}
+                </a>
+              ) : (
+                <span className="font-semibold">{data.endorsedBy}</span>
+              )}
             </p>
           </div>
         )}

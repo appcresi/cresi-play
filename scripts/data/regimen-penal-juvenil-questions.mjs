@@ -1,0 +1,198 @@
+// Datos compartidos entre add-regimen-penal-juvenil-trivia.mjs y
+// add-regimen-penal-juvenil-questions.mjs, para no duplicar las 32
+// preguntas en dos scripts.
+
+export const questions = [
+  {
+    question: '¿Desde qué edad se aplica el Régimen Penal Juvenil establecido por la Ley 27.801?',
+    answer: 'Desde los 14 años',
+    options: { first: 'Desde los 12 años', second: 'Desde los 16 años', third: 'Desde los 18 años' },
+    resume: 'La Ley 27.801 establece un régimen penal específico para adolescentes desde los 14 años hasta las cero horas del día en que cumplen 18 años, cuando son imputados por un delito.',
+  },
+  {
+    question: '¿Hasta qué momento se aplica el Régimen Penal Juvenil establecido por la Ley 27.801?',
+    answer: 'Hasta las cero horas del día en que la persona cumple 18 años',
+    options: { first: 'Hasta que termina la escuela secundaria', second: 'Hasta cumplir 21 años', third: 'Hasta que el juez decide finalizar el régimen' },
+    resume: 'La ley establece que el régimen se aplica desde los 14 años hasta las cero horas del día en que la persona cumple 18 años. La edad relevante es la que tenía al momento de cometer el hecho.',
+  },
+  {
+    question: '¿Qué ocurre si una persona menor de 14 años es señalada como autora de un delito?',
+    answer: 'No puede recibir las sanciones previstas por la Ley 27.801',
+    options: { first: 'Recibe automáticamente una pena reducida', second: 'Es juzgada bajo las mismas reglas que una persona adulta', third: 'Debe cumplir una pena de prisión de hasta cinco años' },
+    resume: 'La Ley 27.801 establece que las personas inimputables no pueden recibir las sanciones previstas en este régimen. Sin embargo, la investigación sobre el hecho puede continuar para determinar qué ocurrió y la posible intervención de otras personas.',
+  },
+  {
+    question: '¿Qué finalidad tiene principalmente el Régimen de Responsabilidad Penal Juvenil?',
+    answer: 'Promover la responsabilidad, educación, resocialización e integración social',
+    options: { first: 'Aplicar penas más severas que a los adultos', second: 'Evitar que cualquier adolescente tenga contacto con la Justicia', third: 'Priorizar exclusivamente el castigo por encima de la educación' },
+    resume: 'La ley establece que el régimen busca fomentar en el adolescente el sentido de responsabilidad por sus actos y promover su educación, resocialización e integración social.',
+  },
+  {
+    question: '¿Desde cuándo debe contar con asistencia legal un adolescente imputado?',
+    answer: 'Desde el inicio del procedimiento',
+    options: { first: 'Desde el momento de la sentencia', second: 'Solo si llega a juicio oral', third: 'Cuando cumple 16 años' },
+    resume: 'La ley garantiza al adolescente asistencia legal eficaz e idónea desde el inicio del procedimiento, junto con el derecho a conocer la acusación y ejercer su defensa.',
+  },
+  {
+    question: '¿Qué derecho tiene un adolescente frente a una acusación penal respecto de declarar sobre los hechos?',
+    answer: 'Tiene derecho constitucional a guardar silencio',
+    options: { first: 'Debe responder obligatoriamente todas las preguntas', second: 'Solo puede negarse a declarar con autorización de sus padres', third: 'Debe declarar antes de poder acceder a un defensor' },
+    resume: 'Entre las garantías reconocidas por la ley se encuentra el derecho constitucional a guardar silencio y el derecho de defensa en juicio.',
+  },
+  {
+    question: '¿En qué momento la autoridad judicial debe informar a los padres o responsables parentales sobre la actuación y los actos procesales?',
+    answer: 'Al formularse la imputación',
+    options: { first: 'Cuando termina el juicio', second: 'Solo si el adolescente es condenado', third: 'Después de cumplir una eventual pena' },
+    resume: 'El artículo 5, inciso l), establece expresamente que al formularse la imputación la autoridad judicial competente debe comunicar su actuación y los actos procesales desarrollados a los padres o responsables parentales, e informar en ese momento el hecho atribuido.',
+  },
+  {
+    question: '¿Puede publicarse el nombre o una fotografía que permita identificar a un adolescente imputado?',
+    answer: 'No, salvo que el adolescente renuncie expresamente a ese derecho en los términos de la ley',
+    options: { first: 'Sí, siempre que el delito sea grave', second: 'Sí, cuando un medio de comunicación lo considere de interés público', third: 'Sí, si la familia de la víctima lo solicita' },
+    resume: 'El proceso penal juvenil tiene carácter reservado. La ley prohíbe publicar nombres, sobrenombres, filiación, residencia, fotografías u otros datos que permitan identificar al adolescente imputado, con la excepción prevista expresamente por la propia norma.',
+  },
+  {
+    question: '¿Qué debe ocurrir si resulta indispensable privar de la libertad a un adolescente durante el proceso?',
+    answer: 'Debe ser alojado en dependencias especialmente acondicionadas y con personal idóneo',
+    options: { first: 'Debe permanecer necesariamente en una comisaría común', second: 'Puede ser alojado junto con personas adultas', third: 'Debe permanecer en su domicilio en todos los casos' },
+    resume: 'La ley establece que, cuando el encierro resulte indispensable, el adolescente debe ser alojado en dependencias especialmente acondicionadas y bajo la dirección de personal idóneo.',
+  },
+  {
+    question: '¿Puede un adolescente privado de libertad ser alojado junto con personas adultas?',
+    answer: 'No, la ley prohíbe ese alojamiento conjunto',
+    options: { first: 'Sí, cuando el delito sea grave', second: 'Sí, durante los primeros días de detención', third: 'Sí, si el adolescente tiene más de 16 años' },
+    resume: 'La Ley 27.801 establece expresamente que los adolescentes no deben ser alojados junto con personas mayores de edad privadas de libertad.',
+  },
+  {
+    question: '¿Cuál es el plazo máximo de las penas privativas de la libertad para adolescentes?',
+    answer: '15 años',
+    options: { first: '10 años', second: '20 años', third: 'La misma duración prevista para una persona adulta' },
+    resume: 'La ley establece un máximo de 15 años para las penas privativas de la libertad aplicables a adolescentes, incluso cuando la escala penal correspondiente al delito sea superior.',
+  },
+  {
+    question: '¿Qué tipo de penas privativas de la libertad perpetuas están prohibidas para adolescentes?',
+    answer: 'La reclusión perpetua y la prisión perpetua',
+    options: { first: 'Solo la prisión perpetua', second: 'Solo la reclusión perpetua', third: 'Únicamente las penas superiores a 20 años' },
+    resume: 'La Ley 27.801 prohíbe expresamente imponer a adolescentes penas privativas de la libertad de reclusión perpetua o prisión perpetua.',
+  },
+  {
+    question: 'Cuando la pena prevista para el delito es de hasta 3 años de prisión y se cumplen las demás condiciones legales, ¿qué establece la ley?',
+    answer: 'La pena de prisión debe ser reemplazada por una de las penas previstas para el régimen juvenil',
+    options: { first: 'La prisión preventiva se vuelve obligatoria', second: 'El caso debe cerrarse automáticamente sin ninguna consecuencia', third: 'La pena debe convertirse necesariamente en prisión perpetua' },
+    resume: 'El artículo 11 establece que, cuando la pena prevista sea de hasta tres años y se cumplan las demás condiciones del Código Penal, la prisión debe reemplazarse por alguna de las penas alternativas previstas por la ley.',
+  },
+  {
+    question: '¿Qué puede ocurrir cuando la pena prevista supera los 3 años y llega hasta un máximo de 10 años?',
+    answer: 'El tribunal puede reemplazar la pena privativa de libertad si se cumplen determinadas condiciones',
+    options: { first: 'El reemplazo es siempre obligatorio', second: 'Nunca puede reemplazarse la privación de libertad', third: 'La pena se transforma automáticamente en una multa' },
+    resume: 'Para determinados delitos con penas superiores a 3 y hasta 10 años, el tribunal puede reemplazar la pena privativa de libertad si se cumplen las condiciones previstas por el artículo 11, entre ellas determinadas características del hecho y la ausencia de antecedentes procesales relevantes.',
+  },
+  {
+    question: '¿Cuál de estas puede ser una pena alternativa prevista por la Ley 27.801?',
+    answer: 'Prestación de servicios a la comunidad',
+    options: { first: 'Prisión perpetua', second: 'Destierro del país', third: 'Suspensión definitiva de todos los derechos civiles' },
+    resume: 'Entre las penas previstas se encuentran la amonestación, la prohibición de contacto o aproximación, determinadas restricciones, servicios a la comunidad, monitoreo electrónico y reparación integral del daño, entre otras.',
+  },
+  {
+    question: '¿Qué significa la prestación de servicios a la comunidad dentro del régimen?',
+    answer: 'Realizar tareas de interés social en entidades habilitadas',
+    options: { first: 'Realizar trabajos para empresas privadas con fines comerciales', second: 'Cumplir tareas exclusivamente dentro de una comisaría', third: 'Realizar cualquier trabajo sin tener en cuenta la edad' },
+    resume: 'La prestación de servicios a la comunidad comprende tareas de interés social en entidades de asistencia, públicas o privadas sin fines de lucro, respetando las normas laborales aplicables a menores de 18 años.',
+  },
+  {
+    question: '¿Qué debe tener en cuenta el juez al elegir y graduar una pena para un adolescente?',
+    answer: 'Entre otros aspectos, la gravedad del daño, la edad y las condenas previas',
+    options: { first: 'Únicamente la opinión de los medios de comunicación', second: 'Solo la situación económica de la familia', third: 'Exclusivamente la voluntad de la víctima' },
+    resume: 'La ley indica que la elección y graduación de la pena deben orientarse por las finalidades del régimen y considerar, entre otras circunstancias, la gravedad del daño, la edad y las condenas previas.',
+  },
+  {
+    question: '¿Qué ocurre si un adolescente incumple injustificadamente una pena alternativa impuesta como condena?',
+    answer: 'El juez debe sustituirla por otra pena más severa prevista por la ley',
+    options: { first: 'La pena desaparece automáticamente', second: 'Se convierte siempre en una multa', third: 'No puede modificarse bajo ninguna circunstancia' },
+    resume: 'El artículo 21 establece que ante el incumplimiento injustificado de una pena alternativa, el juez debe sustituirla por otra pena más severa de las previstas en el régimen.',
+  },
+  {
+    question: '¿Qué finalidad deben tener las medidas aplicadas durante una privación de libertad?',
+    answer: 'Favorecer la educación, formación, resocialización y reinserción social',
+    options: { first: 'Aumentar el aislamiento social', second: 'Reemplazar la educación por actividades exclusivamente disciplinarias', third: 'Limitar el contacto con toda persona ajena al instituto' },
+    resume: 'La ley establece que la detención debe orientarse a la educación, formación, resocialización y reinserción social, respetando la dignidad humana.',
+  },
+  {
+    question: '¿Qué derecho tiene un adolescente privado de libertad respecto de la educación?',
+    answer: 'Tiene derecho a recibir formación y capacitación para favorecer su futura inserción social y laboral',
+    options: { first: 'Solo puede estudiar si obtiene una autorización especial', second: 'La educación queda suspendida mientras dure la detención', third: 'Solo puede acceder a educación si no tiene condena' },
+    resume: 'La ley contempla la educación y la capacitación laboral como componentes del régimen. Además, las medidas disciplinarias no pueden interrumpir los estudios obligatorios.',
+  },
+  {
+    question: '¿Qué asistencia debe garantizarse a un adolescente privado de libertad?',
+    answer: 'Atención médica y psicológica especializada en adolescentes',
+    options: { first: 'Únicamente atención de emergencia', second: 'Solo atención médica cuando lo solicite la familia', third: 'Exclusivamente atención psicológica después de la condena' },
+    resume: 'El artículo 31 establece que debe garantizarse el acceso a asistencia médica y psicológica a cargo de profesionales especializados en adolescentes.',
+  },
+  {
+    question: '¿Qué función cumple el supervisor especializado previsto por la ley?',
+    answer: 'Realizar el seguimiento, asistencia y control del adolescente',
+    options: { first: 'Reemplazar al juez en sus decisiones', second: 'Actuar exclusivamente como agente policial', third: 'Representar automáticamente a la víctima' },
+    resume: 'El juez debe designar un supervisor especializado para realizar el seguimiento, asistencia y control del adolescente. Entre sus funciones están las entrevistas periódicas y la elaboración de informes.',
+  },
+  {
+    question: '¿Qué formación debe tener el supervisor especializado?',
+    answer: 'Conocimientos y formación académica en áreas como educación, pedagogía, psicología, adicciones o trabajo social',
+    options: { first: 'Exclusivamente formación policial', second: 'Solamente estudios de derecho penal', third: 'Únicamente experiencia deportiva' },
+    resume: 'La ley establece que el supervisor debe contar con conocimientos y formación académica en áreas vinculadas con la educación, la adolescencia, la salud y el trabajo social.',
+  },
+  {
+    question: '¿Qué principio se aplica cuando existen dudas sobre la responsabilidad penal del adolescente?',
+    answer: 'Debe tenerse especialmente en cuenta el principio in dubio pro reo',
+    options: { first: 'Siempre debe suponerse la responsabilidad', second: 'Las dudas deben resolverse automáticamente a favor de la acusación', third: 'Las dudas no tienen ninguna relevancia durante el proceso' },
+    resume: 'La ley establece que, al resolver sobre la responsabilidad penal, el juez debe tener especial consideración del principio in dubio pro reo y de la interpretación pro minoris.',
+  },
+  {
+    question: '¿Qué ocurre si el proceso penal contra un adolescente se demora injustificadamente?',
+    answer: 'La demora puede generar responsabilidad por falta grave para los funcionarios correspondientes',
+    options: { first: 'El proceso continúa sin ninguna consecuencia', second: 'El adolescente pierde automáticamente su derecho de defensa', third: 'La causa se transforma automáticamente en una sanción administrativa' },
+    resume: 'La ley reconoce el derecho a ser juzgado en un plazo razonable. La dilación injustificada puede generar responsabilidad por falta grave para el magistrado interviniente y, según el régimen aplicable, también para el fiscal.',
+  },
+  {
+    question: '¿En qué situaciones pueden fundarse las medidas de coerción aplicadas durante el proceso penal juvenil?',
+    answer: 'En un peligro real de fuga o de obstaculización de la investigación',
+    options: { first: 'En la gravedad mediática del caso', second: 'En la opinión de los vecinos', third: 'En la falta de antecedentes escolares' },
+    resume: 'La Ley 27.801 establece que las medidas de coerción solo pueden fundarse en un peligro real de fuga o de obstaculización de la investigación, conforme a las reglas procesales aplicables.',
+  },
+  {
+    question: '¿Puede la prisión preventiva de un adolescente prolongarse indefinidamente?',
+    answer: 'No, está sujeta al límite establecido por la Ley 24.390',
+    options: { first: 'Sí, hasta que termine todo el proceso sin límite temporal', second: 'Sí, si el delito investigado es grave', third: 'Solo puede durar hasta 30 días' },
+    resume: 'La Ley 27.801 establece que el plazo de prisión preventiva no puede superar el límite previsto por el artículo 1 de la Ley 24.390, conforme a sus modificaciones.',
+  },
+  {
+    question: '¿Qué es el criterio de oportunidad previsto para determinados casos?',
+    answer: 'La posibilidad de que el fiscal prescinda total o parcialmente de ejercer la acción penal cuando se cumplen los requisitos legales',
+    options: { first: 'La obligación de llevar todos los casos a juicio', second: 'Una forma de aumentar automáticamente la pena', third: 'Un mecanismo exclusivo para personas mayores de edad' },
+    resume: 'El artículo 41 permite al fiscal prescindir total o parcialmente de la acción penal en determinados casos, entre ellos delitos con pena máxima de hasta seis años, siempre que se cumplan las demás condiciones previstas por la ley.',
+  },
+  {
+    question: '¿Qué condición debe cumplirse para que pueda realizarse una mediación penal juvenil?',
+    answer: 'La víctima debe prestar su consentimiento',
+    options: { first: 'El consentimiento de la víctima nunca es necesario', second: 'Solo el adolescente puede decidirla', third: 'El juez puede imponerla aunque la víctima se oponga' },
+    resume: 'La mediación penal juvenil es voluntaria, confidencial, imparcial e informal. La ley establece que el consentimiento de la víctima es una condición necesaria para que pueda realizarse.',
+  },
+  {
+    question: '¿Hasta qué momento del proceso puede solicitarse una mediación penal juvenil?',
+    answer: 'En cualquier etapa anterior al dictado de la sentencia, si se cumplen los requisitos legales',
+    options: { first: 'Solo durante las primeras 24 horas', second: 'Únicamente después de la sentencia', third: 'Solo antes de que se formule la imputación' },
+    resume: 'El artículo 42 permite solicitar la mediación en cualquier etapa del proceso anterior al dictado de la sentencia, siempre que se cumplan los requisitos establecidos por la ley.',
+  },
+  {
+    question: '¿Qué ocurre si el adolescente cumple con las obligaciones asumidas durante el plazo establecido en la suspensión del proceso a prueba?',
+    answer: 'Se extingue la acción penal',
+    options: { first: 'Se duplica automáticamente la pena', second: 'Debe comenzar otro juicio por el mismo hecho', third: 'La suspensión se transforma automáticamente en prisión' },
+    resume: "El artículo 45 establece textualmente que 'si el adolescente imputado cumpliera con las obligaciones asumidas durante el plazo establecido, se extinguirá la acción penal a su respecto'. El artículo 43 fija las condiciones para acceder a esta suspensión (pena mínima de hasta 3 años, imposibilidad de mediación, solicitud del imputado y conformidad del Ministerio Público Fiscal).",
+  },
+  {
+    question: '¿Qué establece la Ley 27.801 respecto de la responsabilidad civil de los progenitores?',
+    answer: 'Los progenitores son civilmente responsables conforme al Código Civil y Comercial',
+    options: { first: 'Los progenitores nunca pueden tener responsabilidad civil', second: 'La responsabilidad civil corresponde siempre al Estado', third: 'La responsabilidad civil depende exclusivamente de que el adolescente sea condenado penalmente' },
+    resume: 'La Ley 27.801 establece que los progenitores de niños, niñas y adolescentes sometidos a proceso penal serán civilmente responsables por los ilícitos cometidos por sus hijos, de acuerdo con las reglas del Código Civil y Comercial.',
+  },
+];

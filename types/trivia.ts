@@ -11,6 +11,9 @@ export interface Trivia {
    *  ejemplo, "Asociación Argentina de Alergia al Látex" para las trivias
    *  de látex. Opcional: la mayoría de las trivias no tienen una. */
   endorsedBy?: string
+  /** Link a la página oficial de la organización de `endorsedBy` — el
+   *  nombre se muestra como link clickeable cuando está presente. */
+  endorsedByUrl?: string
   /** Cuántas veces se mostró/erró cada pregunta, indexado por la posición
    *  de esa pregunta dentro de `questions` al momento de jugarla (como
    *  string porque así lo requiere Firestore para un path de map anidado).
@@ -53,4 +56,5 @@ export interface TriviaIndexFields {
   name: string
   level?: number
   endorsedBy?: string
+  endorsedByUrl?: string
 }
