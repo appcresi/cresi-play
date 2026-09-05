@@ -239,6 +239,11 @@ service cloud.firestore {
           request.resource.data.pointsEarned is int &&
           request.resource.data.pointsEarned >= 0 &&
           request.resource.data.pointsEarned <= 1000;
+        // Sin esto, LiveTriviaService.deleteSession() no puede borrar las
+        // respuestas de una partida jugada (siempre tiene al menos una) y
+        // "Borrar partida" falla en silencio para toda partida ya usada.
+        allow delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/livetrivias/$(code)).data.teacherId;
       }
     }
   }

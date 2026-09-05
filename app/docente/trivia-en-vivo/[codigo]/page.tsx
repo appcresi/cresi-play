@@ -44,17 +44,31 @@ export default function TriviaEnVivoHostPage(): JSX.Element {
     };
   }, [code]);
 
+  const isOwner = !!user && !!session && user.uid === session.teacherId;
+
+  // Respuestas de la pregunta ACTUAL — a propósito solo depende de
+  // `currentQuestionIndex`, no de `phase`: tienen que seguir disponibles
+  // al pasar de "pregunta" a "revelar" (para la barra de resultados) y a
+  // "ranking", para la MISMA pregunta. Antes se reseteaban a [] apenas se
+  // salía de la fase "pregunta", así que la barra de revelar siempre
+  // mostraba 0 respuestas.
   useEffect(() => {
-    if (!code || !session || session.phase !== 'question') {
+    if (!code || !session) {
       setAnswers([]);
       return;
     }
+    setAnswers([]); // limpia mientras llega el primer snapshot de la nueva pregunta
     const unsub = LiveTriviaService.subscribeToAnswersForQuestion(code, session.currentQuestionIndex, setAnswers);
     return unsub;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code, session?.phase, session?.currentQuestionIndex]);
+  }, [code, session?.currentQuestionIndex]);
 
-  // Cuenta regresiva + auto-revelar cuando se acaba el tiempo.
+  // Cuenta regresiva + auto-revelar cuando se acaba el tiempo. Solo el/la
+  // docente dueño/a de la sala puede escribir `phase` (ver
+  // firestore.rules), así que si por algún motivo esta pantalla se abre
+  // sin esa sesión (por ejemplo, la autenticación todavía no resolvió al
+  // cargar la página), el intento de revelar falla — antes eso dejaba
+  // `revealedRef` trabado en `true` para siempre y la partida quedaba
+  // congelada sin aviso; ahora, si falla, se reintenta en el próximo tick.
   useEffect(() => {
     if (!session || session.phase !== 'question' || !session.questionStartedAt) return;
     revealedRef.current = false;
@@ -63,18 +77,18 @@ export default function TriviaEnVivoHostPage(): JSX.Element {
       const elapsed = (Date.now() - new Date(session.questionStartedAt as string).getTime()) / 1000;
       const left = Math.max(0, Math.ceil(QUESTION_DURATION_SECONDS - elapsed));
       setRemaining(left);
-      if (left <= 0 && !revealedRef.current) {
+      if (left <= 0 && !revealedRef.current && isOwner) {
         revealedRef.current = true;
-        LiveTriviaService.revealAnswer(code).catch(() => {});
+        LiveTriviaService.revealAnswer(code).catch(() => {
+          revealedRef.current = false;
+        });
       }
     };
 
     tick();
     const interval = setInterval(tick, 250);
     return () => clearInterval(interval);
-  }, [code, session?.phase, session?.currentQuestionIndex, session?.questionStartedAt]);
-
-  const isOwner = !!user && !!session && user.uid === session.teacherId;
+  }, [code, session?.phase, session?.currentQuestionIndex, session?.questionStartedAt, isOwner]);
   const joinLink = `https://jugar.cresi.com.ar/vivo/${code}`;
 
   const currentQuestion = session ? session.questions[session.currentQuestionIndex] : null;

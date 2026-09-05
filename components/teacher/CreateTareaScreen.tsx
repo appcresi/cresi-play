@@ -207,6 +207,12 @@ export const CreateTareaScreen = ({
       setError('Elegí cuál trivia/infografía/lección/actividad querés asignar.');
       return;
     }
+    // Sin actividad ligada, la consigna es lo único que le va a decir al
+    // alumno qué tiene que hacer — sin esto la tarea le llega vacía.
+    if (linkedType === 'libre' && !consigna.trim()) {
+      setError('Escribí las instrucciones, o ligá la tarea a una actividad.');
+      return;
+    }
 
     const selectedLabel = itemOptions.find((o) => o.id === linkedId)?.label;
 

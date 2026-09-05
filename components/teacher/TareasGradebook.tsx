@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { IconLoader } from '@tabler/icons-react';
-import TareaService from '@/lib/tareaService';
+import TareaService, { isEntregaLate } from '@/lib/tareaService';
 import type { Tarea, Entrega } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
 
@@ -60,8 +60,7 @@ export const TareasGradebook = ({
     })();
   }, [classroomId]);
 
-  const isLate = (tarea: Tarea, entrega: Entrega) =>
-    new Date(entrega.submittedAt).getTime() > new Date(tarea.dueDate).getTime();
+  const isLate = isEntregaLate;
 
   // % general de un alumno: promedio de (nota/puntos) entre las tareas que
   // ya le calificaron — las que todavía no se corrigieron no cuentan ni a

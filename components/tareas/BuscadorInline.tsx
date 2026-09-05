@@ -51,6 +51,7 @@ export const BuscadorInline = ({
   const commitTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const copiedIds = useRef<Set<string>>(new Set());
   const infoViewedIds = useRef<Set<string>>(new Set());
+  const completedRef = useRef(false);
 
   useEffect(() => {
     loadQuestionBank()
@@ -74,9 +75,15 @@ export const BuscadorInline = ({
   }, [classroomId]);
 
   // Independiente de `awardPoints`: avisa apenas hay una búsqueda válida,
-  // sin esperar el debounce de puntos (que es solo para no puntuar cada tecla).
+  // sin esperar el debounce de puntos (que es solo para no puntuar cada
+  // tecla). `completedRef` asegura que se dispare una sola vez — sin esto,
+  // se llamaba a `onComplete` de nuevo en cada tecla mientras la búsqueda
+  // se mantenía por encima del largo mínimo.
   useEffect(() => {
-    if (query.trim().length >= MIN_QUERY_LENGTH) onComplete?.();
+    if (!completedRef.current && query.trim().length >= MIN_QUERY_LENGTH) {
+      completedRef.current = true;
+      onComplete?.();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 

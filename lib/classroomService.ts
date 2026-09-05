@@ -21,6 +21,7 @@ import {
   limit,
   serverTimestamp,
 } from 'firebase/firestore';
+import { generateUniqueJoinCode } from '@/lib/joinCode';
 import type { Character } from '@/types/user';
 import type { Classroom, StudentProgress, ClassroomStudent, PendingStudent } from '@/types/classroom';
 
@@ -44,17 +45,6 @@ function fallbackColorFor(id: string): string {
   return CLASSROOM_COLORS[sum % CLASSROOM_COLORS.length];
 }
 
-// Evitamos caracteres confusos: 0/O, 1/I
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function generateCode(length = 6): string {
-  let code = '';
-  for (let i = 0; i < length; i++) {
-    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
-  }
-  return code;
-}
-
 async function codeExists(code: string): Promise<boolean> {
   const q = query(collection(db, 'classrooms'), where('code', '==', code), limit(1));
   const snap = await getDocs(q);
@@ -65,10 +55,7 @@ const ClassroomService = {
   // ---------- Clase ----------
 
   async createClassroom(teacherId: string, name: string): Promise<Classroom> {
-    let code = generateCode();
-    for (let attempt = 0; attempt < 5 && (await codeExists(code)); attempt++) {
-      code = generateCode();
-    }
+    const code = await generateUniqueJoinCode(codeExists, 6);
     const color = pickClassroomColor();
 
     const classroomRef = await addDoc(collection(db, 'classrooms'), {

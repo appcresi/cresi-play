@@ -54,7 +54,14 @@ export default function JugarTriviaEnVivoPage(): JSX.Element {
       return;
     }
     setMyAnswer(undefined);
-    LiveTriviaService.getMyAnswerForQuestion(code, playerId, session.currentQuestionIndex).then(setMyAnswer);
+    // Si esta lectura falla (ej. un corte de red), asumimos "todavía no
+    // respondida" en vez de dejar al alumno colgado en "Cargando
+    // pregunta..." para siempre — si en realidad ya había respondido, el
+    // intento de volver a mandar la respuesta lo bloquea la regla de
+    // Firestore igual (el id del documento ya existe).
+    LiveTriviaService.getMyAnswerForQuestion(code, playerId, session.currentQuestionIndex)
+      .then(setMyAnswer)
+      .catch(() => setMyAnswer(null));
   }, [code, playerId, session?.currentQuestionIndex]);
 
   useEffect(() => {

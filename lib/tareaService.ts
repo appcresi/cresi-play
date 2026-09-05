@@ -23,6 +23,13 @@ import {
 import { db } from './firebaseFirestore';
 import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
 
+/** Si una entrega llegó después de la fecha de entrega de la tarea —
+ *  compartido entre la vista de calificar y el cuaderno de calificaciones
+ *  para que el criterio de "con retraso" no pueda divergir entre los dos. */
+export function isEntregaLate(tarea: Tarea, entrega: Entrega): boolean {
+  return new Date(entrega.submittedAt).getTime() > new Date(tarea.dueDate).getTime();
+}
+
 const TareaService = {
   async createTarea(
     classroomId: string,

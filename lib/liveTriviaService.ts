@@ -23,6 +23,8 @@ import {
   increment,
   type Unsubscribe,
 } from 'firebase/firestore';
+import { generateUniqueJoinCode } from '@/lib/joinCode';
+import { sortArrayRandomly } from '@/utils/helpers';
 import type { LiveTriviaSession, LiveTriviaPlayer, LiveTriviaAnswer, LiveTriviaQuestion } from '@/types/liveTrivia';
 import type { TriviaQuestion } from '@/types/trivia';
 
@@ -34,35 +36,16 @@ export const QUESTION_DURATION_SECONDS = 20;
 const MAX_POINTS_PER_QUESTION = 1000;
 const MIN_POINTS_PER_QUESTION = 500;
 
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function generateCode(length = 5): string {
-  let code = '';
-  for (let i = 0; i < length; i++) {
-    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
-  }
-  return code;
-}
-
 async function codeExists(code: string): Promise<boolean> {
   const snap = await getDoc(doc(db, 'livetrivias', code));
   return snap.exists();
-}
-
-function shuffle<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
 }
 
 // Mezcla las opciones UNA sola vez, al crear la partida — todos los
 // jugadores ven el mismo orden durante toda la partida.
 function buildLiveQuestions(questions: TriviaQuestion[]): LiveTriviaQuestion[] {
   return questions.map((q) => {
-    const options = shuffle([q.options.first, q.options.second, q.options.third, q.answer]);
+    const options = sortArrayRandomly([q.options.first, q.options.second, q.options.third, q.answer]);
     return {
       question: q.question,
       options,
@@ -87,10 +70,7 @@ const LiveTriviaService = {
     const triviaData = triviaSnap.data() as { name: string; questions: TriviaQuestion[] };
     if (!triviaData.questions || triviaData.questions.length === 0) throw new Error('TRIVIA_EMPTY');
 
-    let code = generateCode();
-    for (let attempt = 0; attempt < 5 && (await codeExists(code)); attempt++) {
-      code = generateCode();
-    }
+    const code = await generateUniqueJoinCode(codeExists, 5);
 
     const session: LiveTriviaSession = {
       code,

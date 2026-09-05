@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebaseFirestore';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import TriviaGame from '@/app/(routes)/trivias/components/TriviaGame';
+import { sortArrayRandomly } from '@/utils/helpers';
 import type { TriviaQuestion } from '@/types/trivia';
 
 interface Trivia {
@@ -16,15 +17,6 @@ interface TriviaGameData {
   id: string;
   name: string;
   items: Array<{ question: TriviaQuestion; options: string[] }>;
-}
-
-function sortArrayRandomly<T>(array: T[]): T[] {
-  const sorted = [...array];
-  for (let i = sorted.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
-  }
-  return sorted;
 }
 
 /**

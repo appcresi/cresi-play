@@ -7,6 +7,7 @@ import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { IconArrowNarrowLeft } from '@tabler/icons-react';
 import TriviaGame from '../../components/TriviaGame';
 import { getActivityById } from '@/lib/activities';
+import { sortArrayRandomly } from '@/utils/helpers';
 
 const ACCENT = getActivityById('trivias')?.color ?? '#1976D2';
 
@@ -31,15 +32,6 @@ interface TriviaGameProps {
   id: string;
   name: string;
   items: Array<{ question: Question; options: string[] }>;
-}
-
-function sortArrayRandomly<T>(array: T[]): T[] {
-  const sorted = [...array];
-  for (let i = sorted.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
-  }
-  return sorted;
 }
 
 interface PageProps {

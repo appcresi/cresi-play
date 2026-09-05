@@ -11,7 +11,7 @@ import type { WordCloudSession } from '@/types/wordcloud';
 const ACCENT = '#00897B';
 
 export default function NubeDePalabrasPage(): JSX.Element {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   const [title, setTitle] = useState('');
@@ -76,17 +76,6 @@ export default function NubeDePalabrasPage(): JSX.Element {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-pink-light dark:border-gray-700">
           <p className="text-ink/70 dark:text-gray-400">Debes estar logueado para crear una nube de palabras.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const role = profile?.profile?.role;
-  if (role && role !== 'teacher') {
-    return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-pink-light dark:border-gray-700">
-          <p className="text-ink/70 dark:text-gray-400">Esta sección es solo para docentes.</p>
         </div>
       </div>
     );

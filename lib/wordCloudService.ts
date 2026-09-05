@@ -25,6 +25,7 @@ import {
   increment,
   type Unsubscribe,
 } from 'firebase/firestore';
+import { generateUniqueJoinCode } from '@/lib/joinCode';
 import type { WordCloudSession, WordCloudEntry } from '@/types/wordcloud';
 
 // Tope por docente — se valida del lado del cliente en la pantalla de
@@ -34,18 +35,6 @@ import type { WordCloudSession, WordCloudEntry } from '@/types/wordcloud';
 // nubes viejas), no un control de seguridad. Nada grave si alguien lo
 // esquiva a mano.
 export const MAX_SESSIONS_PER_TEACHER = 5;
-
-// Evitamos caracteres confusos: 0/O, 1/I — mismo alfabeto que usa
-// classroomService.ts para los códigos de clase.
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function generateCode(length = 5): string {
-  let code = '';
-  for (let i = 0; i < length; i++) {
-    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
-  }
-  return code;
-}
 
 async function codeExists(code: string): Promise<boolean> {
   const snap = await getDoc(doc(db, 'wordclouds', code));
@@ -68,10 +57,7 @@ function normalize(rawText: string): string {
 
 const WordCloudService = {
   async createSession(teacherId: string, title: string): Promise<WordCloudSession> {
-    let code = generateCode();
-    for (let attempt = 0; attempt < 5 && (await codeExists(code)); attempt++) {
-      code = generateCode();
-    }
+    const code = await generateUniqueJoinCode(codeExists, 5);
 
     const session: WordCloudSession = {
       code,

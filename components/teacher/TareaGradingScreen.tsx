@@ -8,7 +8,7 @@ import {
   IconPencil,
   IconClipboardList,
 } from '@tabler/icons-react';
-import TareaService from '@/lib/tareaService';
+import TareaService, { isEntregaLate } from '@/lib/tareaService';
 import { LinkedActivityAttachment } from '@/components/tareas/LinkedActivityPreview';
 import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
@@ -159,7 +159,7 @@ export const TareaGradingScreen = ({
 
   const selectedStudent = sortedStudents.find((s) => s.uid === selectedUid) ?? null;
   const selectedEntrega = selectedUid ? entregas[selectedUid] : undefined;
-  const isLate = (entrega: Entrega) => new Date(entrega.submittedAt).getTime() > new Date(tarea.dueDate).getTime();
+  const isLate = (entrega: Entrega) => isEntregaLate(tarea, entrega);
 
   return (
     <div>
