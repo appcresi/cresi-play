@@ -33,23 +33,21 @@ export const TareasGradebook = ({
     (async () => {
       setLoading(true);
       try {
-        const list = await TareaService.getTareasForClassroom(classroomId);
+        const [list, allEntregas] = await Promise.all([
+          TareaService.getTareasForClassroom(classroomId),
+          // Una sola lectura para TODA la clase (collectionGroup por
+          // classroomId) en vez de una consulta por tarea — antes, una
+          // clase con 20 tareas costaba 20 lecturas separadas cada vez
+          // que se abría este cuaderno.
+          TareaService.getAllEntregasForClassroom(classroomId),
+        ]);
         const sorted = [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
         setTareas(sorted);
 
-        const entries = await Promise.all(
-          sorted.map(async (t) => {
-            const entregas = await TareaService.getEntregasForTarea(classroomId, t.id);
-            const map: Record<string, Entrega> = {};
-            entregas.forEach((e) => {
-              map[e.studentUid] = e;
-            });
-            return [t.id, map] as const;
-          })
-        );
         const byTarea: Record<string, Record<string, Entrega>> = {};
-        entries.forEach(([id, map]) => {
-          byTarea[id] = map;
+        allEntregas.forEach((e) => {
+          if (!e.tareaId) return; // entrega vieja, sin migrar todavía
+          (byTarea[e.tareaId] ??= {})[e.studentUid] = e;
         });
         setEntregasByTarea(byTarea);
       } catch (err) {

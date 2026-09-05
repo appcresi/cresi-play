@@ -62,4 +62,15 @@ export interface Entrega {
   grade?: number;
   feedback?: string;
   gradedAt?: string;
+  /** Denormalizados a propósito (el documento ya vive bajo
+   *  classrooms/{classroomId}/tareas/{tareaId}/entregas/{studentUid}, así
+   *  que técnicamente son redundantes con la ruta) — sirven para poder
+   *  hacer una consulta `collectionGroup('entregas')` filtrada por
+   *  `classroomId` y traer TODAS las entregas de una clase en una sola
+   *  lectura, en vez de una consulta por cada tarea (ver
+   *  TareaService.getAllEntregasForClassroom). Las entregas creadas antes
+   *  de este campo no lo tienen hasta correr
+   *  scripts/backfill-entregas-classroomid.mjs. */
+  classroomId?: string;
+  tareaId?: string;
 }

@@ -11,6 +11,7 @@
 
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -18,6 +19,8 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  query,
+  where,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebaseFirestore';
@@ -120,6 +123,21 @@ const TareaService = {
     return snap.docs.map((d) => ({ studentUid: d.id, ...(d.data() as any) } as Entrega));
   },
 
+  /**
+   * TODAS las entregas de una clase, de cualquier tarea, en UNA sola
+   * lectura — usa una consulta `collectionGroup` filtrada por
+   * `classroomId` en vez de una consulta por cada tarea (ver el cuaderno
+   * de calificaciones, TareasGradebook.tsx). Requiere el índice de
+   * collectionGroup en `classroomId` (ver comentario en firestore.rules) y
+   * que la entrega tenga ese campo — las creadas antes de agregarlo
+   * necesitan correr scripts/backfill-entregas-classroomid.mjs primero.
+   */
+  async getAllEntregasForClassroom(classroomId: string): Promise<Entrega[]> {
+    const q = query(collectionGroup(db, 'entregas'), where('classroomId', '==', classroomId));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ studentUid: d.id, ...(d.data() as any) } as Entrega));
+  },
+
   async getEntregaForStudent(classroomId: string, tareaId: string, studentUid: string): Promise<Entrega | null> {
     const snap = await getDoc(doc(db, 'classrooms', classroomId, 'tareas', tareaId, 'entregas', studentUid));
     if (!snap.exists()) return null;
@@ -141,6 +159,10 @@ const TareaService = {
         submittedAt: new Date().toISOString(),
         responseText: data.responseText ?? null,
         manuallyMarkedDone: data.manuallyMarkedDone ?? false,
+        // Denormalizados para poder consultar por collectionGroup — ver
+        // Entrega.classroomId en types/tarea.ts.
+        classroomId,
+        tareaId,
       },
       { merge: true }
     );

@@ -51,6 +51,27 @@ service cloud.firestore {
         }
       }
     }
+
+    // Cuaderno de calificaciones (TareasGradebook.tsx): una consulta
+    // `collectionGroup('entregas')` filtrada por `classroomId` trae TODAS
+    // las entregas de una clase en una sola lectura, en vez de una
+    // consulta por cada tarea. La regla anidada de arriba
+    // (classrooms/{id}/tareas/{id}/entregas/{uid}) ya autoriza cada
+    // entrega por su ruta específica, pero una consulta `collectionGroup`
+    // necesita ADEMÁS su propia regla con el comodín recursivo
+    // `{path=**}` — Firestore no la deriva de la regla anidada.
+    // `resource.data.classroomId` es el campo que denormaliza
+    // TareaService.submitEntrega — las entregas creadas antes de agregar
+    // ese campo no lo tienen, así que el `where` de la consulta ya las
+    // descarta antes de llegar a evaluar esta regla (no hay que
+    // contemplarlas acá).
+    match /{path=**}/entregas/{entregaId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == entregaId ||
+        request.auth.uid == get(/databases/$(database)/documents/classrooms/$(resource.data.classroomId)).data.profesorId
+      );
+    }
+
     match /preguntas/{preguntaId} {
       allow read: if request.auth != null;
       allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
