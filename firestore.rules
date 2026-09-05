@@ -195,5 +195,51 @@ service cloud.firestore {
           request.auth.uid == get(/databases/$(database)/documents/wordclouds/$(code)).data.teacherId;
       }
     }
+
+    // Trivia en vivo (estilo Kahoot): mismo criterio "sala con código, sin
+    // login" que Nube de Palabras arriba — jugadores y respuestas se
+    // validan por FORMA del dato, no por identidad. El puntaje lo calcula
+    // el propio cliente que responde (si acertó + qué tan rápido); no hay
+    // nada que ganar falseándolo en una trivia de clase, mismo argumento
+    // que playCount/questionStats/wordclouds.
+    match /livetrivias/{code} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.teacherId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.teacherId;
+
+      match /players/{playerId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasOnly(['name', 'score', 'joinedAt']) &&
+          request.resource.data.name is string &&
+          request.resource.data.name.size() > 0 &&
+          request.resource.data.name.size() <= 30 &&
+          request.resource.data.score == 0;
+        // Nombre/fecha de ingreso quedan fijos una vez creado — lo único
+        // que se puede tocar después es el puntaje, que el propio alumno
+        // suma con `increment()` al responder cada pregunta.
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score']) &&
+          request.resource.data.score is int;
+        // Solo el/la docente dueño/a de la sala puede sacar a un jugador.
+        allow delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/livetrivias/$(code)).data.teacherId;
+      }
+
+      match /answers/{answerId} {
+        allow read: if true;
+        // Solo `create`, nunca `update`: el id del documento es
+        // "{playerId}_{questionIndex}", así que un segundo intento sobre
+        // la misma pregunta pisa un doc que YA existe — eso cae bajo
+        // `update`, que no está permitido, así que la respuesta queda
+        // fija en cuanto se manda una vez.
+        allow create: if request.resource.data.keys().hasOnly(['playerId', 'questionIndex', 'optionIndex', 'correct', 'pointsEarned', 'answeredAt']) &&
+          request.resource.data.playerId is string &&
+          request.resource.data.questionIndex is int &&
+          request.resource.data.optionIndex is int &&
+          request.resource.data.correct is bool &&
+          request.resource.data.pointsEarned is int &&
+          request.resource.data.pointsEarned >= 0 &&
+          request.resource.data.pointsEarned <= 1000;
+      }
+    }
   }
 }
