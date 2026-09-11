@@ -13,6 +13,7 @@ import {
   IconPuzzle,
   IconCloud,
   IconApps,
+  IconFileDownload,
   IconCheck,
   IconChevronLeft,
   IconChevronRight,
@@ -24,7 +25,10 @@ import { bodySystems } from '@/app/(routes)/biopuzzle/data/bodySystems';
 import { colorForTrivia } from '@/lib/triviaColors';
 import { ToggleCard } from '@/components/teacher/ToggleCard';
 import WordCloudService from '@/lib/wordCloudService';
+import ResourceService from '@/lib/resourceService';
 import type { LinkedActivity, LinkedActivityType, Tarea } from '@/types/tarea';
+
+const RECURSO_ACCENT = '#B9800A';
 
 const COMPLETA_ACCENT = getActivityById('completa')?.color ?? '#7B1FA2';
 const NUBE_ACCENT = '#00897B';
@@ -40,6 +44,8 @@ interface ItemOption {
   isOwn?: boolean;
   /** Solo para Nube de Palabras — si la sesión ya no acepta palabras. */
   active?: boolean;
+  /** Solo para Recursos — "Gratis" o el precio, para la minicard. */
+  meta?: string;
 }
 
 interface AttachOption {
@@ -62,9 +68,10 @@ const ATTACH_OPTIONS: AttachOption[] = [
   { type: 'completapalabras', label: 'Completa Palabras', icon: IconTypography },
   { type: 'nube', label: 'Nube de Palabras', icon: IconCloud },
   { type: 'actividad', label: 'Actividad del catálogo', icon: IconApps },
+  { type: 'recurso', label: 'Recurso', icon: IconFileDownload },
 ];
 
-const TYPES_WITH_ITEM: LinkedActivityType[] = ['trivia', 'infografia', 'biopuzzle', 'completapalabras', 'nube', 'actividad'];
+const TYPES_WITH_ITEM: LinkedActivityType[] = ['trivia', 'infografia', 'biopuzzle', 'completapalabras', 'nube', 'actividad', 'recurso'];
 // A diferencia de los demás, elegir un desafío puntual de BioPuzzle es
 // opcional — sin elegir ninguno, la tarea queda ligada a "cualquier
 // sistema" y el alumno elige cuál jugar.
@@ -72,10 +79,10 @@ const OPTIONAL_ITEM_TYPES: LinkedActivityType[] = ['biopuzzle'];
 
 // Con muchas opciones a la vez la grilla se hacía muy larga para elegir
 // una sola — se pagina igual que la sección pública de Infografías (mismo
-// PER_PAGE que InfografiasClient.tsx), para estos cuatro tipos que se
-// muestran como grilla de tarjetas.
+// PER_PAGE que InfografiasClient.tsx), para estos tipos que se muestran
+// como grilla de tarjetas.
 const ITEMS_PER_PAGE = 10;
-const PAGINATED_TYPES: LinkedActivityType[] = ['trivia', 'infografia', 'completapalabras', 'nube'];
+const PAGINATED_TYPES: LinkedActivityType[] = ['trivia', 'infografia', 'completapalabras', 'nube', 'recurso'];
 
 /**
  * Pantalla completa (no modal) para crear/editar una tarea — mismo
@@ -168,12 +175,23 @@ export const CreateTareaScreen = ({
             isOwn,
           });
           setItemOptions([...ownSnap.docs.map(mapLesson(true)), ...cresiSnap.docs.map(mapLesson(false))]);
-        } else {
+        } else if (linkedType === 'nube') {
           // 'nube': solo las sesiones propias del docente (no hay catálogo
           // de CrESI para esto, cada una es de una clase puntual).
           const sessions = await WordCloudService.getTeacherSessions(teacherId);
           setItemOptions(
             sessions.map((s) => ({ id: s.code, label: s.title || 'Sin consigna', active: s.active }))
+          );
+        } else {
+          // 'recurso': catálogo compartido (guías, talleres), no por docente.
+          const resources = await ResourceService.getAll();
+          setItemOptions(
+            resources.map((r) => ({
+              id: r.id,
+              label: r.title,
+              cover: r.image,
+              meta: r.is_free ? 'Gratis' : r.price != null ? `$${r.price}` : undefined,
+            }))
           );
         }
       } catch (err) {
@@ -204,7 +222,7 @@ export const CreateTareaScreen = ({
       return;
     }
     if (needsItem && !itemOptional && !linkedId) {
-      setError('Elegí cuál trivia/infografía/lección/actividad querés asignar.');
+      setError('Elegí cuál trivia/infografía/lección/actividad/recurso querés asignar.');
       return;
     }
     // Sin actividad ligada, la consigna es lo único que le va a decir al
@@ -460,6 +478,54 @@ export const CreateTareaScreen = ({
                           <p className="text-[11px] font-medium text-ink dark:text-gray-100 leading-tight p-1.5 line-clamp-2">
                             {opt.label}
                           </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : linkedType === 'recurso' ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    {pageItems.map((opt) => {
+                      const selected = linkedId === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setLinkedId(opt.id)}
+                          title={opt.label}
+                          className={`relative text-left rounded-xl border-2 overflow-hidden transition-all min-w-0 ${
+                            selected ? 'border-coral shadow-sm' : 'border-pink-light dark:border-gray-700 hover:border-ink/20 dark:hover:border-gray-500'
+                          }`}
+                        >
+                          {selected && (
+                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-coral flex items-center justify-center z-10">
+                              <IconCheck size={12} className="text-white" />
+                            </div>
+                          )}
+                          <div className="relative w-full h-20 bg-pink-light dark:bg-gray-700 flex items-center justify-center">
+                            <IconFileDownload size={24} className="text-ink/30 dark:text-gray-500" />
+                            {opt.cover && (
+                              // <img> simple (no next/image): estas rutas vienen de datos
+                              // migrados y no todas tienen su archivo copiado a public/ todavía
+                              // — si falta, se oculta sola y queda el ícono de abajo.
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={opt.cover}
+                                alt={opt.label}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                          </div>
+                          <p className="text-[11px] font-medium text-ink dark:text-gray-100 leading-tight px-1.5 pt-1.5 line-clamp-2">
+                            {opt.label}
+                          </p>
+                          {opt.meta && (
+                            <p className="text-[10px] px-1.5 pb-1.5" style={{ color: RECURSO_ACCENT }}>
+                              {opt.meta}
+                            </p>
+                          )}
                         </button>
                       );
                     })}

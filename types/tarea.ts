@@ -14,15 +14,17 @@ export type LinkedActivityType =
   | 'biopuzzle'
   | 'nube'
   | 'actividad'
+  | 'recurso'
   | 'libre'; // sin actividad ligada — solo la consigna de texto
 
 export interface LinkedActivity {
   type: LinkedActivityType;
   /** ID de la trivia/infografía/lección/sistema de BioPuzzle puntual, código
-   *  de la sesión de Nube de Palabras, o el id del catálogo
-   *  (lib/activities.ts) si type === 'actividad'. Para 'biopuzzle', puede
-   *  quedar vacío ("cualquier sistema, elige el alumno"). No aplica para
-   *  'buscador' (no hay un ítem puntual) ni 'libre'. */
+   *  de la sesión de Nube de Palabras, id del catálogo (lib/activities.ts)
+   *  si type === 'actividad', o id del recurso (colección `resources`) si
+   *  type === 'recurso'. Para 'biopuzzle', puede quedar vacío ("cualquier
+   *  sistema, elige el alumno"). No aplica para 'buscador' (no hay un
+   *  ítem puntual) ni 'libre'. */
   id?: string;
   /** Nombre para mostrar, guardado en el momento de crear la tarea para
    *  no tener que volver a consultar la trivia/infografía cada vez que

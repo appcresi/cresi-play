@@ -24,6 +24,7 @@ const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   biopuzzle: 'BioPuzzle',
   nube: 'Nube de Palabras',
   actividad: 'Actividad del catálogo',
+  recurso: 'Recurso',
 };
 
 const formatDate = (iso: string) =>

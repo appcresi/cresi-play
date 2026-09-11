@@ -14,6 +14,7 @@ import {
   IconApps,
   IconPuzzle,
   IconCloud,
+  IconFileDownload,
   IconClipboardList,
   IconMaximize,
   IconX,
@@ -25,6 +26,8 @@ import { BiopuzzleInline } from '@/components/tareas/BiopuzzleInline';
 import { NubeDePalabrasInline } from '@/components/tareas/NubeDePalabrasInline';
 import { TriviaInline } from '@/components/tareas/TriviaInline';
 import { CompletaPalabrasInline } from '@/components/tareas/CompletaPalabrasInline';
+import ResourceService from '@/lib/resourceService';
+import type { Resource } from '@/types/resource';
 import type { LinkedActivity } from '@/types/tarea';
 
 export const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
@@ -36,6 +39,7 @@ export const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   biopuzzle: 'Jugar BioPuzzle',
   nube: 'Mandar una palabra',
   actividad: 'Ir a la actividad',
+  recurso: 'Ver el recurso',
 };
 
 const LINKED_TYPE_ICONS: Record<LinkedActivity['type'], React.ComponentType<{ size?: number; className?: string }>> = {
@@ -47,6 +51,7 @@ const LINKED_TYPE_ICONS: Record<LinkedActivity['type'], React.ComponentType<{ si
   biopuzzle: IconPuzzle,
   nube: IconCloud,
   actividad: IconApps,
+  recurso: IconFileDownload,
 };
 
 /** A dónde manda la actividad ligada — cuando hay una ruta directa
@@ -165,6 +170,67 @@ const InlineInfografia = ({ infografiaId }: { infografiaId: string }) => {
   );
 };
 
+// Para recursos (guías/talleres descargables), mostramos la miniatura,
+// título, descripción y un botón de descarga que abre el link de Drive
+// real en una pestaña nueva — no hay nada que "jugar" embebido, es
+// simplemente un archivo.
+const InlineRecurso = ({ resourceId }: { resourceId: string }) => {
+  const [data, setData] = useState<Resource | null | undefined>(undefined);
+
+  useEffect(() => {
+    ResourceService.getById(resourceId)
+      .then(setData)
+      .catch(() => setData(null));
+  }, [resourceId]);
+
+  if (data === undefined) {
+    return (
+      <div className="flex items-center gap-2 text-ink/40 dark:text-gray-500 text-sm py-2">
+        <IconLoader className="w-4 h-4 animate-spin" /> Cargando recurso...
+      </div>
+    );
+  }
+
+  if (data === null) {
+    return <p className="text-sm text-ink/40 dark:text-gray-500">No se pudo cargar el recurso.</p>;
+  }
+
+  return (
+    <div className="border border-pink-light dark:border-gray-700 rounded-xl overflow-hidden flex flex-col sm:flex-row">
+      {data.image && (
+        <div className="relative w-full sm:w-40 h-40 sm:h-auto shrink-0 bg-pink-light dark:bg-gray-700 flex items-center justify-center">
+          <IconFileDownload className="w-6 h-6 text-ink/30 dark:text-gray-500" />
+          {/* <img> simple: estas rutas vienen de datos migrados y no todas
+              tienen su archivo copiado a public/ todavía — si falta, se
+              oculta sola y queda el ícono de atrás. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.image}
+            alt={data.title}
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+      <div className="p-4 space-y-2 flex-1 min-w-0">
+        <h3 className="text-sm font-semibold text-ink dark:text-gray-100">{data.title}</h3>
+        <p className="text-sm text-ink/70 dark:text-gray-300 leading-relaxed">{data.description}</p>
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
+        >
+          <IconDownload className="w-4 h-4" />
+          {data.is_free ? 'Descargar' : `Descargar · $${data.price ?? ''}`}
+        </a>
+      </div>
+    </div>
+  );
+};
+
 // Tarjeta tipo "archivo adjunto" para los tipos sin vista embebida propia
 // (trivia, completa palabras, actividad del catálogo) — ícono + nombre +
 // abrir, linkeando a la sección real de la app.
@@ -229,6 +295,7 @@ export const LinkedActivityAttachment = ({
 }) => {
   if (linked.type === 'libre') return null;
   if (linked.type === 'infografia' && linked.id) return <InlineInfografia infografiaId={linked.id} />;
+  if (linked.type === 'recurso' && linked.id) return <InlineRecurso resourceId={linked.id} />;
   if (linked.type === 'buscador') {
     return <BuscadorInline classroomId={classroomId} awardPoints={awardPoints} onComplete={onComplete} />;
   }
