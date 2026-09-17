@@ -27,6 +27,7 @@ import { NubeDePalabrasInline } from '@/components/tareas/NubeDePalabrasInline';
 import { TriviaInline } from '@/components/tareas/TriviaInline';
 import { CompletaPalabrasInline } from '@/components/tareas/CompletaPalabrasInline';
 import ResourceService from '@/lib/resourceService';
+import InfografiaService from '@/lib/infografiaService';
 import type { Resource } from '@/types/resource';
 import type { LinkedActivity } from '@/types/tarea';
 
@@ -89,6 +90,7 @@ interface InfografiaData {
   informacion: string;
   cover: string;
   download: string;
+  downloads?: number;
 }
 
 // Para infografías, mostramos la imagen y el texto directo en vez de
@@ -138,6 +140,7 @@ const InlineInfografia = ({ infografiaId }: { infografiaId: string }) => {
           href={data.download}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => InfografiaService.incrementDownloads(infografiaId).catch(() => {})}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
         >
           <IconDownload className="w-4 h-4" />
@@ -221,6 +224,7 @@ const InlineRecurso = ({ resourceId }: { resourceId: string }) => {
           href={data.url}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => ResourceService.incrementDownloads(resourceId).catch(() => {})}
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
         >
           <IconDownload className="w-4 h-4" />

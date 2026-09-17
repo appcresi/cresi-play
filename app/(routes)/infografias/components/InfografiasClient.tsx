@@ -16,6 +16,7 @@ import {
 import GameStatusBar from "@/components/GameStatusBar";
 import UserDataManager from "@/lib/userDataManager";
 import ClassroomService from "@/lib/classroomService";
+import InfografiaService from "@/lib/infografiaService";
 import { getActivityById } from "@/lib/activities";
 
 const ACTIVITY = getActivityById("infografias");
@@ -32,6 +33,7 @@ interface Infographic {
   informacion: string;
   cover: string;
   download: string;
+  downloads: number;
 }
 
 export default function InfografiasClient(): JSX.Element {
@@ -58,6 +60,7 @@ export default function InfografiasClient(): JSX.Element {
             informacion: data.informacion,
             cover: data.cover,
             download: data.download,
+            downloads: data.downloads ?? 0,
           };
         });
 
@@ -121,6 +124,9 @@ export default function InfografiasClient(): JSX.Element {
       downloadedIds.current.add(item.id);
       awardPoints(POINTS_PER_DOWNLOAD);
     }
+    InfografiaService.incrementDownloads(item.id).catch(() => {});
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, downloads: i.downloads + 1 } : i)));
+    setSelected((prev) => (prev && prev.id === item.id ? { ...prev, downloads: prev.downloads + 1 } : prev));
   };
 
   // Una sola fuente de la verdad: si hay búsqueda, filtra; si no, muestra
@@ -227,6 +233,10 @@ export default function InfografiasClient(): JSX.Element {
                         Ver infografía
                       </span>
                     </div>
+                    <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 text-white text-[11px] font-medium backdrop-blur-sm">
+                      <IconDownload size={12} />
+                      {item.downloads}
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 translate-y-10 group-hover:translate-y-0 transition-transform">
                       <p className="text-white text-sm font-medium line-clamp-2">{item.title}</p>
                     </div>
@@ -306,7 +316,13 @@ export default function InfografiasClient(): JSX.Element {
 
               <div className="flex flex-col justify-between flex-grow">
                 <div className="space-y-4">
-                  <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{selected.title}</h2>
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{selected.title}</h2>
+                    <p className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      <IconDownload size={13} />
+                      {selected.downloads} descarga{selected.downloads === 1 ? '' : 's'}
+                    </p>
+                  </div>
                   <p className="text-gray-700 dark:text-gray-300 text-sm md:text-base leading-relaxed">{selected.informacion}</p>
                 </div>
 

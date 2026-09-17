@@ -95,9 +95,23 @@ service cloud.firestore {
     // trivias/completapalabras). Mismo criterio que questions/blog_posts.
     match /infografias/{infografiaId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && (
+      allow create, delete: if request.auth != null && (
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+      // El contador de descargas (InfografiaService.incrementDownloads) se
+      // suma tanto desde el catálogo público como desde una tarea — mismo
+      // criterio que `downloads` en resources y playCount en trivia: se
+      // permite sin login porque no es un dato sensible, y solo puede
+      // subir de a 1.
+      allow update: if (
+        request.auth != null && (
+          request.auth.token.admin == true ||
+          request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        )
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads']) &&
+        request.resource.data.downloads == resource.data.get('downloads', 0) + 1
       );
     }
     match /users/{userId} {
@@ -114,9 +128,23 @@ service cloud.firestore {
     }
     match /resources/{resourceId} {
       allow read: if true;
-      allow write: if request.auth != null && (
+      allow create, delete: if request.auth != null && (
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+      // El contador de descargas (ResourceService.incrementDownloads) se
+      // suma tanto desde la plataforma principal como desde acá (tareas
+      // con un recurso adjunto) — mismo criterio que playCount/
+      // questionStats en trivia más arriba: se permite sin login porque
+      // no es un dato sensible ni explotable, y solo puede subir de a 1.
+      allow update: if (
+        request.auth != null && (
+          request.auth.token.admin == true ||
+          request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        )
+      ) || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads']) &&
+        request.resource.data.downloads == resource.data.get('downloads', 0) + 1
       );
     }
     match /completapalabras/{lessonId} {
