@@ -14,6 +14,7 @@ import {
   IconCards,
   IconChevronLeft,
   IconChevronRight,
+  IconSearch,
 } from '@tabler/icons-react';
 import { db } from '@/lib/firebaseFirestore';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +27,14 @@ const ACCENT = '#7C3AED';
 // partida" quedaba empujado bien abajo — se pagina igual que el selector
 // de trivias del creador de tareas (CreateTareaScreen.tsx).
 const TRIVIAS_PER_PAGE = 8;
+
+function normalize(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
 interface TriviaOption {
   id: string;
@@ -43,6 +52,7 @@ export default function TriviaEnVivoPage(): JSX.Element {
   const [selectedTriviaId, setSelectedTriviaId] = useState('');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
+  const [triviaSearch, setTriviaSearch] = useState('');
 
   const [sessions, setSessions] = useState<LiveTriviaSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -78,9 +88,13 @@ export default function TriviaEnVivoPage(): JSX.Element {
   }, [user?.uid]);
 
   const atLimit = sessions.length >= MAX_LIVE_TRIVIA_SESSIONS_PER_TEACHER;
-  const totalTriviaPages = Math.max(1, Math.ceil(trivias.length / TRIVIAS_PER_PAGE));
+  const normalizedSearch = normalize(triviaSearch);
+  const filteredTrivias = normalizedSearch
+    ? trivias.filter((t) => normalize(t.name).includes(normalizedSearch))
+    : trivias;
+  const totalTriviaPages = Math.max(1, Math.ceil(filteredTrivias.length / TRIVIAS_PER_PAGE));
   const currentTriviaPage = Math.min(triviaPage, totalTriviaPages);
-  const pageTrivias = trivias.slice(
+  const pageTrivias = filteredTrivias.slice(
     (currentTriviaPage - 1) * TRIVIAS_PER_PAGE,
     currentTriviaPage * TRIVIAS_PER_PAGE
   );
@@ -164,57 +178,80 @@ export default function TriviaEnVivoPage(): JSX.Element {
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
-              {pageTrivias.map((t) => {
-                const selected = selectedTriviaId === t.id;
-                const color = colorForTrivia(t.id);
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => { setSelectedTriviaId(t.id); setError(''); }}
-                    disabled={atLimit}
-                    className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      selected ? 'border-transparent shadow-sm' : 'border-pink-light dark:border-gray-600 hover:border-ink/20'
-                    }`}
-                    style={selected ? { borderColor: color, backgroundColor: `${color}0D` } : undefined}
-                  >
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white mb-2" style={{ backgroundColor: color }}>
-                      <IconCards className="w-5 h-5" />
-                    </div>
-                    <p className="text-xs font-semibold text-ink dark:text-gray-100 leading-tight mb-0.5 line-clamp-2">{t.name}</p>
-                    <p className="text-[10px] text-ink/60 dark:text-gray-400">
-                      {t.questionCount} preg.{!t.isOwn ? ' · CrESI' : ''}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-
-            {totalTriviaPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setTriviaPage((p) => Math.max(1, p - 1))}
-                  disabled={currentTriviaPage === 1}
-                  className="p-1.5 rounded-full border border-pink-light dark:border-gray-700 text-ink/50 dark:text-gray-400 hover:bg-cream dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                  aria-label="Página anterior"
-                >
-                  <IconChevronLeft size={14} />
-                </button>
-                <span className="text-xs text-ink/50 dark:text-gray-400 px-1">
-                  Página {currentTriviaPage} de {totalTriviaPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setTriviaPage((p) => Math.min(totalTriviaPages, p + 1))}
-                  disabled={currentTriviaPage === totalTriviaPages}
-                  className="p-1.5 rounded-full border border-pink-light dark:border-gray-700 text-ink/50 dark:text-gray-400 hover:bg-cream dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                  aria-label="Página siguiente"
-                >
-                  <IconChevronRight size={14} />
-                </button>
+            {trivias.length > TRIVIAS_PER_PAGE && (
+              <div className="relative mb-3">
+                <IconSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/30 dark:text-gray-500" size={16} />
+                <input
+                  type="text"
+                  value={triviaSearch}
+                  onChange={(e) => { setTriviaSearch(e.target.value); setTriviaPage(1); }}
+                  placeholder="Buscar trivia por nombre..."
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 dark:text-gray-100 border border-pink-light dark:border-gray-700 rounded-xl text-sm
+                           focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                  style={{ '--tw-ring-color': ACCENT } as React.CSSProperties}
+                />
               </div>
+            )}
+
+            {filteredTrivias.length === 0 ? (
+              <p className="text-sm text-ink/60 dark:text-gray-400 py-3">
+                No encontramos trivias que coincidan con &quot;{triviaSearch}&quot;.
+              </p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
+                  {pageTrivias.map((t) => {
+                    const selected = selectedTriviaId === t.id;
+                    const color = colorForTrivia(t.id);
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => { setSelectedTriviaId(t.id); setError(''); }}
+                        disabled={atLimit}
+                        className={`relative text-left rounded-xl border-2 p-3 transition-all min-w-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          selected ? 'border-transparent shadow-sm' : 'border-pink-light dark:border-gray-600 hover:border-ink/20'
+                        }`}
+                        style={selected ? { borderColor: color, backgroundColor: `${color}0D` } : undefined}
+                      >
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white mb-2" style={{ backgroundColor: color }}>
+                          <IconCards className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs font-semibold text-ink dark:text-gray-100 leading-tight mb-0.5 line-clamp-2">{t.name}</p>
+                        <p className="text-[10px] text-ink/60 dark:text-gray-400">
+                          {t.questionCount} preg.{!t.isOwn ? ' · CrESI' : ''}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {totalTriviaPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setTriviaPage((p) => Math.max(1, p - 1))}
+                      disabled={currentTriviaPage === 1}
+                      className="p-1.5 rounded-full border border-pink-light dark:border-gray-700 text-ink/50 dark:text-gray-400 hover:bg-cream dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                      aria-label="Página anterior"
+                    >
+                      <IconChevronLeft size={14} />
+                    </button>
+                    <span className="text-xs text-ink/50 dark:text-gray-400 px-1">
+                      Página {currentTriviaPage} de {totalTriviaPages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setTriviaPage((p) => Math.min(totalTriviaPages, p + 1))}
+                      disabled={currentTriviaPage === totalTriviaPages}
+                      className="p-1.5 rounded-full border border-pink-light dark:border-gray-700 text-ink/50 dark:text-gray-400 hover:bg-cream dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                      aria-label="Página siguiente"
+                    >
+                      <IconChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
