@@ -1,6 +1,26 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // El puntaje lo calcula el cliente en el browser, así que cualquiera
+    // podía pisar game.totalScore desde la consola con el número que
+    // quisiera. Pasó de verdad: una cuenta llegó a 2.237.337 puntos,
+    // imposible jugando (a 100 pts por acierto son +22.000 aciertos).
+    // Ahora el dueño del documento NO puede escribir game.totalScore ni
+    // game.scoreSyncedAt ni game.scoreBudget: los sube el servidor (app/api/sync-score) con un
+    // tope por tiempo transcurrido. Solo el admin puede corregirlo a mano
+    // desde el panel. totalLives/streak son valores chicos por diseño
+    // (lib/userDataManager.ts).
+    function isValidGame(game) {
+      return game.totalScore is int &&
+        game.totalScore >= 0 &&
+        game.totalLives is int &&
+        game.totalLives >= 0 &&
+        game.totalLives <= 3 &&
+        game.streak is int &&
+        game.streak >= 0 &&
+        game.streak <= 100000;
+    }
+
     match /classrooms/{classroomId} {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.profesorId;
       allow read: if request.auth != null;
@@ -11,7 +31,20 @@ service cloud.firestore {
           request.auth.uid == estudianteId ||
           request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
         );
-        allow write: if request.auth != null && (
+        // El resumen de progreso que el alumno copia acá no puede declarar
+        // más puntaje que el validado por el servidor en users/{uid}
+        // (game.totalScore, ver /api/sync-score); si no, el ranking por
+        // clase sería falsificable desde la consola.
+        allow create, update: if request.auth != null && (
+          (request.auth.uid == estudianteId && (
+            !('progress' in request.resource.data) ||
+            !('totalScore' in request.resource.data.progress) ||
+            request.resource.data.progress.totalScore <=
+              get(/databases/$(database)/documents/users/$(estudianteId)).data.game.get('totalScore', 0)
+          )) ||
+          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+        );
+        allow delete: if request.auth != null && (
           request.auth.uid == estudianteId ||
           request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
         );
@@ -120,7 +153,31 @@ service cloud.firestore {
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId &&
+        (!('game' in request.resource.data) || (
+          isValidGame(request.resource.data.game) &&
+          request.resource.data.game.totalScore == 0 &&
+          !('scoreSyncedAt' in request.resource.data.game) &&
+          !('scoreBudget' in request.resource.data.game)
+        ));
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId &&
+          (!('game' in request.resource.data) || (
+            isValidGame(request.resource.data.game) &&
+            request.resource.data.game.totalScore == resource.data.get('game', {}).get('totalScore', 0) &&
+            request.resource.data.game.get('scoreSyncedAt', null) == resource.data.get('game', {}).get('scoreSyncedAt', null) &&
+            request.resource.data.game.get('scoreBudget', null) == resource.data.get('game', {}).get('scoreBudget', null)
+          ))
+        ) ||
+        // El panel admin puede corregir el puntaje de una cuenta (ver
+        // caso real en el comentario de isValidGame más arriba), pero
+        // solo ese campo — no el resto del documento del usuario.
+        (
+          (request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1") &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['game']) &&
+          isValidGame(request.resource.data.game)
+        )
+      );
       allow delete: if request.auth != null && (
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"

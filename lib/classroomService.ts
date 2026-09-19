@@ -534,13 +534,13 @@ const ClassroomService = {
   async syncStudentProgress(
     classroomId: string,
     studentUid: string,
-    progress: Omit<StudentProgress, 'completedCount'>
+    progress: Omit<StudentProgress, 'completedCount' | 'totalScore'> & { totalScore?: number }
   ): Promise<void> {
     await setDoc(
       doc(db, 'classrooms', classroomId, 'estudiantes', studentUid),
       {
         progress: {
-          totalScore: progress.totalScore,
+          ...(progress.totalScore === undefined ? {} : { totalScore: progress.totalScore }),
           streak: progress.streak,
           completedCount: progress.completedActivities.length,
           completedActivities: progress.completedActivities,

@@ -121,7 +121,12 @@ class UserDataManager {
     this.classroomSyncTimeoutId = setTimeout(() => {
       this.classroomSyncTimeoutId = null;
       ClassroomService.syncStudentProgress(classroomId, currentUser.uid, {
-        totalScore: userData.game.totalScore,
+        // Las reglas no dejan declarar más que el puntaje validado por
+        // el servidor; sin sync todavía, se omite y queda el valor previo.
+        totalScore: (() => {
+          const accepted = UserDataSync.getServerScore();
+          return accepted === null ? undefined : Math.min(userData.game.totalScore, accepted);
+        })(),
         streak: userData.game.streak,
         completedActivities: userData.progress.completedActivities,
         activityScores: userData.progress.activityScores,
