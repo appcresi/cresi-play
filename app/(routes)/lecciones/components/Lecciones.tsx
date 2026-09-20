@@ -13,6 +13,7 @@ import {
 	IconCheck,
 	IconArrowRight,
 	IconSparkles,
+	IconRotateClockwise,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import { trackEvent } from '@/lib/analytics';
@@ -134,6 +135,12 @@ export default function Lecciones(): JSX.Element {
 		return entry ? entry.percentage : null;
 	};
 
+	// Cuántas veces el alumno llegó al final de la lección (cada corrida
+	// completa, apruebe o no), para mostrarlo en la card de inicio.
+	const getTimesCompleted = (title: string): number => {
+		return userData.progress.lessonProgress?.[title]?.timesCompleted ?? 0;
+	};
+
 	const saveUserData = (updatedData: typeof userData) => {
 		UserDataManager.saveUserData(updatedData);
 		setUserData(updatedData);
@@ -203,6 +210,7 @@ export default function Lecciones(): JSX.Element {
 		const isCompleted = percentage > 65;
 		const lessonKey = `${ACTIVITY_TITLE}-${title}`;
 		const current = UserDataManager.loadUserData();
+		const previousTimesCompleted = current.progress.lessonProgress?.[title]?.timesCompleted ?? 0;
 
 		const updatedData = {
 			...current,
@@ -212,7 +220,8 @@ export default function Lecciones(): JSX.Element {
 					...current.progress.lessonProgress,
 					[title]: {
 						percentage,
-						completed: isCompleted
+						completed: isCompleted,
+						timesCompleted: previousTimesCompleted + 1
 					}
 				},
 				activityScores: {
@@ -310,6 +319,7 @@ export default function Lecciones(): JSX.Element {
 								const correctPercentage = getPercentage(feature.title);
 								const isCompleted = correctPercentage && correctPercentage > 65;
 								const colors = getColorClasses(feature.color);
+								const timesCompleted = getTimesCompleted(feature.title);
 
 								return (
 									<div
@@ -338,9 +348,19 @@ export default function Lecciones(): JSX.Element {
 											</div>
 
 											{/* Title */}
-											<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+											<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
 												{feature.title}
 											</h3>
+
+											{/* Cuántas veces se realizó */}
+											<div className="flex items-center gap-1 mb-2 text-xs text-gray-400 dark:text-gray-500">
+												<IconRotateClockwise size={14} />
+												<span>
+													{timesCompleted === 0
+														? "Todavía no realizada"
+														: `Realizada ${timesCompleted} ${timesCompleted === 1 ? "vez" : "veces"}`}
+												</span>
+											</div>
 
 											{/* Description */}
 											<p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">

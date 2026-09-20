@@ -63,7 +63,7 @@ export interface UserProgress {
   activityTimes: { [activityTitle: string]: string };
   lastVisits: { [activityTitle: string]: string };
   /** Progreso detallado por lección (usado por la actividad "Lecciones"). */
-  lessonProgress?: { [lessonTitle: string]: { percentage: number; completed: boolean } };
+  lessonProgress?: { [lessonTitle: string]: { percentage: number; completed: boolean; timesCompleted?: number } };
   /** Progreso de lectura por cuento (usado por la actividad "Literatura"). */
   storyProgress?: { [storyTitle: string]: { lastPage: number; percentage: number; pagesRead: string[] } };
   /** Progreso del test vocacional (respuestas, resultados por área, y el sub-test por profesión). */
