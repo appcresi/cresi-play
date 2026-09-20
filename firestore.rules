@@ -228,7 +228,19 @@ service cloud.firestore {
           request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
         ))
       );
-      allow update, delete: if request.auth != null && (
+      allow update: if (
+        (request.auth != null && (
+          resource.data.author == request.auth.uid ||
+          (resource.data.author == "CRESI" && (
+            request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+          ))
+        )) ||
+        // Contador de "veces completada" (timesCompleted), mismo criterio
+        // que playCount en trivia: lo suma cualquiera que termine la
+        // lección, logueado o anónimo — no es un dato sensible.
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['timesCompleted'])
+      );
+      allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||
         (resource.data.author == "CRESI" && (
           request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"

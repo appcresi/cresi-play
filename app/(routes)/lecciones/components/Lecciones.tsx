@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "@/lib/firebaseFirestore";
 import LessonPage from "./lesson";
 import GameStatusBar from '@/components/GameStatusBar';
@@ -241,6 +241,19 @@ export default function Lecciones(): JSX.Element {
 		saveUserData(updatedData);
 		if (isCompleted && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
 			trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, lesson: title });
+		}
+
+		// Contador agregado en el propio documento de la lección — igual
+		// patrón que `playCount` en trivia (app/(routes)/trivias/(routes)/[id]/page.tsx).
+		// El panel admin no puede leer `progress.lessonProgress` de cada
+		// usuario sin recorrer toda la colección `users`, así que esto es
+		// lo que muestra "veces completada" en appcresi-admin.
+		if (selectedLesson) {
+			updateDoc(doc(db, 'lecciones', selectedLesson.id), {
+				timesCompleted: increment(1),
+			}).catch((err) => {
+				console.error('No se pudo registrar la finalización de la lección:', err);
+			});
 		}
 	};
 
