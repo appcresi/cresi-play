@@ -1,0 +1,42 @@
+name: Health
+
+# Avisa si producción se rompe. Antes, un Node viejo dejó caídas la sesión, el
+# guardado de puntajes y el ingreso de alumnos con código, y nadie se enteró
+# hasta ver un 500 en la consola del navegador.
+#
+# Cuándo corre:
+#   - después de cada deploy de producción en Vercel (evento deployment_status)
+#   - cada 30 minutos
+#   - a mano, desde la pestaña Actions ("Run workflow")
+#
+# Si falla, GitHub manda un mail (Settings → Notifications → Actions).
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  deployment_status:
+  workflow_dispatch:
+
+jobs:
+  production:
+    # En deployment_status, solo para deploys de producción ya terminados.
+    if: >-
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://jugar.cresi.com.ar' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Salud del sitio (configuración y Admin SDK)
+        run: bash scripts/check-health.sh "$SITE_URL"
+
+      # Solo si cargaste el secreto HEALTH_TOKEN (en GitHub y en Vercel): además
+      # comprueba una lectura real de Firestore.
+      - name: Salud profunda (Firestore)
+        env:
+          HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
+        if: env.HEALTH_TOKEN != ''
+        run: bash scripts/check-health.sh "$SITE_URL" --deep

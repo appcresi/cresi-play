@@ -16,6 +16,9 @@ const env = {
   ...process.env,
   PORT: String(PORT),
   SESSION_SECRET: SECRET,
+  PENDING_PASSWORD_KEY: randomBytes(32).toString('base64'),
+  JWT_SECRET: 'secreto-de-prueba',
+  HEALTH_TOKEN: 'token-de-salud-de-prueba',
   FIREBASE_ADMIN_PROJECT_ID: 'demo-cresi',
   FIREBASE_ADMIN_CLIENT_EMAIL: 'x@demo-cresi.iam.gserviceaccount.com',
   FIREBASE_ADMIN_PRIVATE_KEY: privateKey.replace(/\n/g, '\\n'),
@@ -220,6 +223,24 @@ try {
   const okBody = await res.json();
   check('sync-score con token y documento válidos → 200 y guarda el puntaje', res.status === 200 && okBody.score === 150, JSON.stringify(okBody));
   check('sync-score: quedó guardado en Firestore', (await db.collection('users').doc(teacher.localId).get()).data()?.game?.totalScore === 150);
+
+  // ── /api/health ──
+  res = await fetch(`${BASE}/api/health`);
+  let health = await res.json();
+  check('health: 200 y ok con la configuración completa', res.status === 200 && health.ok === true, JSON.stringify(health));
+  check('health: verifica el Admin SDK', health.checks?.adminSdk === 'ok' && health.checks?.sessionSecret === 'ok' && health.checks?.passwordKey === 'ok', JSON.stringify(health));
+  check('health: informa la versión de Node', /^v\d+\./.test(health.node ?? ''), health.node);
+  check('health: no se cachea', (res.headers.get('cache-control') ?? '').includes('no-store'));
+  check('health: NO filtra ningún secreto', !JSON.stringify(health).includes(SECRET) && !JSON.stringify(health).includes('secreto-de-prueba'));
+  check('health: la versión superficial no toca Firestore', health.deep === false && health.checks?.firestore === undefined);
+
+  res = await fetch(`${BASE}/api/health?deep=1`);
+  check('health deep sin token → 401', res.status === 401, res.status);
+  res = await fetch(`${BASE}/api/health?deep=1`, { headers: { authorization: 'Bearer token-incorrecto' } });
+  check('health deep con token incorrecto → 401', res.status === 401, res.status);
+  res = await fetch(`${BASE}/api/health?deep=1`, { headers: { authorization: 'Bearer token-de-salud-de-prueba' } });
+  health = await res.json();
+  check('health deep con token correcto → 200 y lee Firestore', res.status === 200 && health.checks?.firestore === 'ok', JSON.stringify(health));
 
   // ── cierre de sesión ──
   res = await fetch(`${BASE}/api/session`, { method: 'DELETE' });
