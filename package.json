@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test:rules": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore --project demo-cresi \"node tests/rules/firestore.rules.test.mjs\"",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:session": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore,auth --project demo-cresi \"node tests/e2e/session.e2e.mjs\""
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -34,6 +35,7 @@
     "react-qr-code": "^2.0.15",
     "react-to-pdf": "^3.0.0",
     "recharts": "^2.15.0",
+    "server-only": "^0.0.1",
     "sharp": "^0.35.3",
     "tailwindcss": "^3.3.3"
   },

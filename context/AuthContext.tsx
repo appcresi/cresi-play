@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { User, onAuthStateChanged, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, onIdTokenChanged, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebaseAuth';
+import { syncSessionCookie } from '@/lib/sessionClient';
 import type { UserData, UserRole } from '@/types/user';
 
 
@@ -78,6 +79,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [refreshProfile]);
 
 
+  // Cookie de sesión para el servidor (lib/session.ts): se emite al iniciar
+  // sesión, se renueva cuando Firebase renueva el ID token (~cada hora) y se
+  // borra al cerrar sesión. `onIdTokenChanged` cubre los tres casos.
+  useEffect(() => {
+    return onIdTokenChanged(auth, (currentUser) => {
+      void syncSessionCookie(currentUser);
+    });
+  }, []);
+
   const [waitingForProfile, setWaitingForProfile] = useState(false);
 
   useEffect(() => {
@@ -94,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     await signOut(auth);
+    await syncSessionCookie(null);
     localStorage.removeItem(PROFILE_STORAGE_KEY);
     localStorage.removeItem(LEGACY_PROFILE_KEY);
     setProfile(null);

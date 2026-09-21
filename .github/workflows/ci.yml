@@ -39,3 +39,10 @@ jobs:
 
       - name: Reglas de Firestore
         run: npm run test:rules
+
+      # Sesión del servidor de punta a punta: levanta `next dev` real con los
+      # emuladores de Auth y Firestore. Tarda (compila Next), pero es lo único
+      # que prueba la cookie y las páginas de servidor juntas.
+      - name: Sesión del servidor (e2e)
+        run: npm run test:session
+        timeout-minutes: 8
