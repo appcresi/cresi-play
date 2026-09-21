@@ -1,0 +1,29 @@
+# Dependabot: abre pull requests cuando hay versiones nuevas o vulnerabilidades.
+# Las actualizaciones de SEGURIDAD se activan aparte, en GitHub: Settings →
+# Code security → "Dependabot security updates".
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Una sola PR con todas las subidas menores y parches, en vez de una por paquete.
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Los cambios de versión MAYOR de estos se hacen a mano:
+      # - firebase-admin: su árbol necesita el `override` de jwks-rsa (ver package.json y
+      #   README → "Solución de problemas") y hay que revisarlo cada vez.
+      - dependency-name: firebase-admin
+        update-types: [version-update:semver-major]
+      # - eslint: eslint-config-next todavía no soporta ESLint 10.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

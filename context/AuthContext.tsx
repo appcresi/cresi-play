@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { User, onAuthStateChanged, onIdTokenChanged, signOut } from 'firebase/auth';
+import { User, onAuthStateChanged, onIdTokenChanged, signInWithCustomToken, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebaseAuth';
 import { syncSessionCookie } from '@/lib/sessionClient';
 import type { UserData, UserRole } from '@/types/user';
@@ -86,6 +86,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return onIdTokenChanged(auth, (currentUser) => {
       void syncSessionCookie(currentUser);
     });
+  }, []);
+
+  // SOLO para las pruebas en navegador (tests/browser): los docentes entran con
+  // un popup de Google, que un test no puede recorrer, así que se les da una
+  // puerta de servicio contra el emulador. Sin la variable no existe.
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_E2E_EMULATORS !== '1') return;
+    (window as unknown as { __cresiE2E?: unknown }).__cresiE2E = {
+      signInWithCustomToken: (token: string) => signInWithCustomToken(auth, token),
+    };
   }, []);
 
   const [waitingForProfile, setWaitingForProfile] = useState(false);

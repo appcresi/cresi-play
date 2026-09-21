@@ -19,8 +19,8 @@ cp .env.example .env.local   # y completalo (ver abajo)
 npm run dev                  # http://localhost:3000
 ```
 
-> Este Next.js **no es el que quizá conozcas**: `next lint` ya no existe y
-> `middleware` se llama `proxy`. Ante la duda, leé `node_modules/next/dist/docs/`
+> Este Next.js **no es el que quizá conozcas**: `next lint` ya no existe (se usa
+> `npm run lint`) y `middleware` se llama `proxy`. Ante la duda, leé `node_modules/next/dist/docs/`
 > (ver `AGENTS.md`).
 
 ## Variables de entorno
@@ -49,12 +49,32 @@ después de cargarlas hay que volver a desplegar.
 |---|---|
 | `npm run dev` / `build` / `start` | desarrollo / compilar / servir el build |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` (el CI lo corre antes que nada) |
+| `npm run lint` | ESLint 9 con la config oficial de Next 16 (`eslint.config.mjs`). Falla con **errores** o si **sube** el tope de avisos de `package.json` (`--max-warnings`): los avisos actuales se corrigen de a poco y el tope solo puede bajar |
 | `npm test` | tests unitarios (Vitest, sin dependencias externas) |
 | `npm run test:rules` | reglas de Firestore contra el emulador (necesita Java) |
 | `npm run test:session` | sesión del servidor de punta a punta: `next dev` real + emuladores de Auth y Firestore (necesita Java; la primera compilación tarda) |
+| `npm run test:browser` | pruebas en **Chromium real** (Playwright) contra `next dev` y los emuladores, con las reglas reales de Firestore: panel docente (crear/duplicar/editar/borrar trivias, nube de palabras, trivia en vivo, completa palabras), ingreso de alumnos y errores de hidratación. Necesita Java y `npx playwright install chromium` |
 
-El CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) corre los cuatro
-en cada push y pull request.
+El CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) corre todos en cada
+push y pull request, y además compila producción y comprueba que los ganchos de
+prueba (ver abajo) no estén en el JavaScript público (`scripts/check-bundle.sh`).
+
+### Sobre las pruebas en navegador
+
+- Los docentes entran con un popup de Google, que un test no puede recorrer. Con
+  `NEXT_PUBLIC_E2E_EMULATORS=1` (que **solo** fija `playwright.config.ts`) el
+  navegador se conecta a los emuladores y expone `window.__cresiE2E` para iniciar
+  sesión con un token de prueba. `next.config.js` fija esa variable en `'0'` por
+  defecto, así que en producción esos ganchos **no existen** (el CI lo vigila).
+- `.env.local` tiene credenciales REALES de Firebase: `tests/browser/global-setup.ts`
+  se niega a correr si no están los emuladores. Usá siempre `npm run test:browser`.
+- Corren en `http://localhost` y no en `127.0.0.1`: Next 16 bloquea con 403 los
+  recursos de desarrollo pedidos desde otro host.
+- Las búsquedas de texto justo después de navegar usan `.filter({ visible: true })`:
+  la transmisión progresiva del servidor puede dejar un instante una copia oculta
+  del contenido, y un `getByText` a secas fallaría por "strict mode".
+- El aviso de cookies queda fijo abajo y tapa botones hasta que se decide;
+  `tests/browser/fixtures.ts` ya lo deja resuelto.
 
 ## Cómo está armado
 
@@ -135,6 +155,7 @@ otro dominio, definí la variable de repositorio `SITE_URL`. A mano:
 | Un alumno legítimo ve "Hiciste demasiados intentos" | superó un tope de `lib/joinClassLimits.ts` (mirá el log: `intento bloqueado por "<regla>"`); esperar 10 min o subir el tope de esa regla |
 | Los puntos no se guardan | `/api/sync-score` falla: la consola muestra el paso y el código del error |
 | Docente no puede ver/crear contraseñas de alumnos | falta o es incorrecta `PENDING_PASSWORD_KEY` (`/api/health` lo dice) |
+| `npm audit` / alertas de GitHub | `npm audit fix` suele bastar (no cambia versiones mayores). Dependabot abre PRs semanales agrupadas (`.github/dependabot.yml`); activá también "Dependabot security updates" en Settings → Code security |
 | Falla el CI en `tsc` con "Cannot find module '…webp'" | falta `next typegen`; ya está incluido en `npm run typecheck` |
 
 ## Scripts de mantenimiento

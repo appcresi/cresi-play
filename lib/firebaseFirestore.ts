@@ -1,4 +1,4 @@
-import { initializeFirestore, getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import app from './firebase';
 
 // `ignoreUndefinedProperties` evita el error de Firestore "Unsupported
@@ -16,3 +16,13 @@ try {
 }
 
 export const db = firestoreDb;
+
+// SOLO para las pruebas en navegador (tests/browser): apunta al emulador de
+// Firestore, con las reglas reales. Sin la variable es código muerto.
+if (process.env.NEXT_PUBLIC_E2E_EMULATORS === '1') {
+  try {
+    connectFirestoreEmulator(db, '127.0.0.1', 8085);
+  } catch {
+    // ya conectado (recarga en caliente)
+  }
+}
