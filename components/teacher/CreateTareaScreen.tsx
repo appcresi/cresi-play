@@ -18,6 +18,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react';
+import type { Icon } from '@tabler/icons-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebaseFirestore';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
@@ -51,7 +52,7 @@ interface ItemOption {
 interface AttachOption {
   type: LinkedActivityType;
   label: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: Icon;
 }
 
 // El equivalente de este app a "Adjuntar" de Google Classroom no es

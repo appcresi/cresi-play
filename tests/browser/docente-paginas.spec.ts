@@ -44,7 +44,7 @@ test.describe('Nube de palabras: crear una sala', () => {
     await page.goto('/docente/nube-de-palabras');
     await expect(page.getByText('0/5 nubes usadas').filter({ visible: true })).toBeVisible();
 
-    await page.locator('#wc-title').fill('¿Qué es el consentimiento?');
+    await page.locator('#wc-title').filter({ visible: true }).fill('¿Qué es el consentimiento?');
     await page.getByRole('button', { name: 'Crear nueva nube' }).click();
     await page.waitForURL(/\/docente\/nube-de-palabras\/[A-Z0-9]{5}$/);
 

@@ -21,6 +21,15 @@ service cloud.firestore {
         game.streak <= 100000;
     }
 
+    // El autor de un contenido (trivia, lección, completa palabras) solo lo
+    // puede cambiar el admin. Antes el dueño podía actualizar su propio
+    // documento con author == "CRESI" y hacerlo pasar por contenido OFICIAL:
+    // las pantallas de los alumnos listan `where author == 'CRESI'`, así que
+    // aparecía en el catálogo de todos.
+    function authorUnchanged() {
+      return request.resource.data.get('author', null) == resource.data.get('author', null);
+    }
+
     match /classrooms/{classroomId} {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.profesorId;
       allow read: if request.auth != null;
@@ -81,13 +90,41 @@ service cloud.firestore {
         // en sí es un update, así que el docente necesita permiso de
         // update acá también, no solo el alumno).
         match /entregas/{studentUid} {
+          function isClassTeacher() {
+            return request.auth != null &&
+              request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
+          }
+
           allow read: if request.auth != null && (
-            request.auth.uid == studentUid ||
-            request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+            request.auth.uid == studentUid || isClassTeacher()
           );
-          allow create, update: if request.auth != null && (
-            request.auth.uid == studentUid ||
-            request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId
+          // El alumno escribe SU entrega, pero no puede ponerse nota ni
+          // escribir la devolución del docente, ni apuntarla a otra clase
+          // (`classroomId` / `claseId` denormalizados: con eso el docente de
+          // OTRA clase la vería en su cuaderno). El docente sí puede escribir
+          // todo: es quien califica.
+          //
+          // Hay DOS vocabularios para lo mismo, porque escriben dos apps:
+          //   cresi-play (types/tarea.ts): grade, feedback, gradedAt, classroomId
+          //   classroom  (lib/taskService.ts): calificacion, comentarios, claseId
+          function studentCantGrade(keys) {
+            return !keys.hasAny(['grade', 'feedback', 'gradedAt', 'calificacion', 'comentarios']);
+          }
+          function studentStaysInClass() {
+            return request.resource.data.get('classroomId', classroomId) == classroomId &&
+              request.resource.data.get('claseId', classroomId) == classroomId;
+          }
+          allow create: if request.auth != null && (
+            isClassTeacher() ||
+            (request.auth.uid == studentUid &&
+              studentCantGrade(request.resource.data.keys()) &&
+              studentStaysInClass())
+          );
+          allow update: if request.auth != null && (
+            isClassTeacher() ||
+            (request.auth.uid == studentUid &&
+              studentCantGrade(request.resource.data.diff(resource.data).affectedKeys()) &&
+              studentStaysInClass())
           );
         }
       }
@@ -224,7 +261,9 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null &&
         request.resource.data.author == request.auth.uid;
-      allow update, delete: if request.auth != null &&
+      allow update: if request.auth != null &&
+        resource.data.author == request.auth.uid && authorUnchanged();
+      allow delete: if request.auth != null &&
         resource.data.author == request.auth.uid;
     }
     // Lecciones (contenido de lectura + preguntas V/F) — antes vivían
@@ -246,7 +285,7 @@ service cloud.firestore {
       );
       allow update: if (
         (request.auth != null && (
-          resource.data.author == request.auth.uid ||
+          (resource.data.author == request.auth.uid && authorUnchanged()) ||
           (resource.data.author == "CRESI" && (
             request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
           ))
@@ -278,9 +317,9 @@ service cloud.firestore {
       );
       allow update: if (
         (request.auth != null && (
-          resource.data.author == request.auth.uid ||
-          resource.data.userId == request.auth.uid ||
-          resource.data.user_id == request.auth.uid ||
+          ((resource.data.author == request.auth.uid ||
+            resource.data.userId == request.auth.uid ||
+            resource.data.user_id == request.auth.uid) && authorUnchanged()) ||
           (resource.data.author == "CRESI" && (
             request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
           ))

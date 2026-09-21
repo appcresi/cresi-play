@@ -20,6 +20,7 @@ import {
   IconPhoto,
   IconTrafficLights,
 } from '@tabler/icons-react';
+import type { Icon } from '@tabler/icons-react';
 
 // Única fuente de verdad para resolver el `iconName` (string) de cada
 // actividad en `lib/activities.ts` a su componente de ícono real. Antes
@@ -28,7 +29,7 @@ import {
 // actividad nueva significaba acordarse de actualizar las 4, y si te
 // olvidabas una, esa pantalla mostraba el ícono de relleno (IconMoodPuzzled)
 // sin que nadie lo notara. Ahora solo hace falta tocar acá.
-export const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+export const ICON_MAP: Record<string, Icon> = {
   IconCards,
   IconAB2,
   IconShieldCheck,

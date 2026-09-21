@@ -51,7 +51,7 @@ después de cargarlas hay que volver a desplegar.
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` (el CI lo corre antes que nada) |
 | `npm run lint` | ESLint 9 con la config oficial de Next 16 (`eslint.config.mjs`). Falla con **errores** o si **sube** el tope de avisos de `package.json` (`--max-warnings`): los avisos actuales se corrigen de a poco y el tope solo puede bajar |
 | `npm test` | tests unitarios (Vitest, sin dependencias externas) |
-| `npm run test:rules` | reglas de Firestore contra el emulador (necesita Java) |
+| `npm run test:rules` | reglas de Firestore contra el emulador (necesita Java): `tests/rules/firestore.rules.test.mjs` (usuarios, puntaje, pendientes, lecciones) y `tests/rules/collections.rules.test.mjs` (contenido, clases, tareas y entregas, salas sin login, todo lo demás cerrado). **Al tocar `firestore.rules`, agregá su prueba** |
 | `npm run test:session` | sesión del servidor de punta a punta: `next dev` real + emuladores de Auth y Firestore (necesita Java; la primera compilación tarda) |
 | `npm run test:browser` | pruebas en **Chromium real** (Playwright) contra `next dev` y los emuladores, con las reglas reales de Firestore: panel docente (crear/duplicar/editar/borrar trivias, nube de palabras, trivia en vivo, completa palabras), ingreso de alumnos y errores de hidratación. Necesita Java y `npx playwright install chromium` |
 
@@ -119,6 +119,7 @@ scripts/            mantenimiento: migraciones, carga de contenido, monitoreo
   *Opcional:* en la consola de Firestore → TTL, crear una política sobre la
   colección `rateLimits` con el campo `expiresAt` para que los contadores viejos
   se borren solos (sin ella no molestan, solo ocupan un poco de espacio).
+- **Reglas de Firestore.** Además de lo anterior: el **autor** de un contenido (trivia, lección, completa palabras) solo lo cambia el admin (si no, un docente podría hacer pasar su contenido por oficial, `author == 'CRESI'`, ante todos los alumnos); y en las **entregas** el alumno no puede escribir la nota ni la devolución del docente ni apuntarla a otra clase. Ojo: hay **dos vocabularios** para las entregas porque escriben dos apps (`grade`/`feedback`/`classroomId` en cresi-play; `calificacion`/`comentarios`/`claseId` en `classroom`); las reglas cubren los dos.
 - **El "rol" docente sigue en `localStorage`** y no es de confianza: la
   autorización real es de propiedad (`classrooms.profesorId`, `author == uid`)
   en las reglas y en las rutas.

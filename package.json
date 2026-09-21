@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=246",
-    "test:rules": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore --project demo-cresi \"node tests/rules/firestore.rules.test.mjs\"",
+    "test:rules": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore --project demo-cresi \"node tests/rules/firestore.rules.test.mjs && node tests/rules/collections.rules.test.mjs\"",
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "test:session": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore,auth --project demo-cresi \"node tests/e2e/session.e2e.mjs\"",

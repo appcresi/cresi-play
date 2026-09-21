@@ -19,6 +19,7 @@ import {
   IconMaximize,
   IconX,
 } from '@tabler/icons-react';
+import type { Icon } from '@tabler/icons-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebaseFirestore';
 import { BuscadorInline } from '@/components/tareas/BuscadorInline';
@@ -43,7 +44,7 @@ export const LINKED_TYPE_LABELS: Record<LinkedActivity['type'], string> = {
   recurso: 'Ver el recurso',
 };
 
-const LINKED_TYPE_ICONS: Record<LinkedActivity['type'], React.ComponentType<{ size?: number; className?: string }>> = {
+const LINKED_TYPE_ICONS: Record<LinkedActivity['type'], Icon> = {
   libre: IconClipboardList,
   trivia: IconCards,
   buscador: IconSearch,
