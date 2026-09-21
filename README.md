@@ -89,6 +89,16 @@ scripts/            mantenimiento: migraciones, carga de contenido, monitoreo
   `Authorization`, no la cookie (evita CSRF).
 - **Contraseñas de alumnos cifradas** (AES-256-GCM, `lib/passwordCrypto.ts`). El
   docente puede verlas pidiéndolas al servidor; nunca viajan con los datos de la clase.
+- **Límite de intentos en `/api/join-class`, persistente.** Los intentos
+  fallidos se cuentan en Firestore (colección `rateLimits`, solo del servidor),
+  así los comparten todas las instancias de Vercel. Se limita por usuario
+  (10 fallos / 10 min: es lo que protege una cuenta, porque una contraseña puede
+  tener 3 caracteres), por IP + clase (30), por IP (60, contra el escaneo de
+  códigos) y por clase (150). Los topes altos son a propósito: en un colegio
+  toda la clase sale por la misma IP. Ajustables en `lib/joinClassLimits.ts`.
+  *Opcional:* en la consola de Firestore → TTL, crear una política sobre la
+  colección `rateLimits` con el campo `expiresAt` para que los contadores viejos
+  se borren solos (sin ella no molestan, solo ocupan un poco de espacio).
 - **El "rol" docente sigue en `localStorage`** y no es de confianza: la
   autorización real es de propiedad (`classrooms.profesorId`, `author == uid`)
   en las reglas y en las rutas.
@@ -122,6 +132,7 @@ otro dominio, definí la variable de repositorio `SITE_URL`. A mano:
 |---|---|
 | 500 **sin cuerpo** en `/api/session`, `sync-score` o `join-class`; en el log de Vercel `ERR_REQUIRE_ESM` | Node del hosting demasiado viejo para `firebase-admin`. El proyecto fija `engines: 22.x` y un `override` de `jwks-rsa` para tolerarlo; revisar Settings → Build and Deployment → Node.js Version |
 | Cartel rojo "Iniciaste sesión, pero no pudimos verificarla en el servidor" | falta `SESSION_SECRET` (la consola dice `SERVER_MISCONFIGURED`) o falló `/api/session` |
+| Un alumno legítimo ve "Hiciste demasiados intentos" | superó un tope de `lib/joinClassLimits.ts` (mirá el log: `intento bloqueado por "<regla>"`); esperar 10 min o subir el tope de esa regla |
 | Los puntos no se guardan | `/api/sync-score` falla: la consola muestra el paso y el código del error |
 | Docente no puede ver/crear contraseñas de alumnos | falta o es incorrecta `PENDING_PASSWORD_KEY` (`/api/health` lo dice) |
 | Falla el CI en `tsc` con "Cannot find module '…webp'" | falta `next typegen`; ya está incluido en `npm run typecheck` |

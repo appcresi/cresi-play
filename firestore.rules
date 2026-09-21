@@ -113,6 +113,14 @@ service cloud.firestore {
       );
     }
 
+    // Contadores de intentos fallidos de /api/join-class (lib/rateLimitStore.ts):
+    // los escribe y lee solo el servidor con el Admin SDK, que ignora las
+    // reglas. Ningún cliente puede tocarlos — si pudiera, un alumno podría
+    // borrar su contador (o inflar el de otro para bloquearlo).
+    match /rateLimits/{id} {
+      allow read, write: if false;
+    }
+
     match /preguntas/{preguntaId} {
       allow read: if request.auth != null;
       allow create, update, delete: if request.auth != null && request.auth.token.admin == true;

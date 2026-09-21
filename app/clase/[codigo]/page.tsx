@@ -78,6 +78,10 @@ export default function JoinClassPage() {
           setError('Código inválido. Verificalo con tu docente.');
         } else if (data.error === 'INVALID_CREDENTIALS') {
           setError('Usuario o contraseña incorrectos. Verificalo con tu docente.');
+        } else if (data.error === 'TOO_MANY_ATTEMPTS') {
+          // El servidor dice cuántos segundos faltan para poder volver a probar.
+          const minutes = Math.max(1, Math.ceil((Number(data.retryAfter) || 600) / 60));
+          setError(`Hiciste demasiados intentos. Esperá ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'} y probá de nuevo.`);
         } else {
           setError('No se pudo iniciar sesión. Probá de nuevo.');
         }

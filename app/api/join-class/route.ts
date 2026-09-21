@@ -15,49 +15,32 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
 import { encryptPassword, isEncrypted, loadKey, passwordsMatch, readStoredPassword } from '@/lib/passwordCrypto';
+import { clearRules, findBlocked, recordFailure } from '@/lib/rateLimit';
+import { createFirestoreStore } from '@/lib/rateLimitStore';
+import { checkRules, failureRules, successRules } from '@/lib/joinClassLimits';
 
-// Freno básico contra fuerza bruta: cuenta intentos fallidos por
-// IP + código de clase, en memoria del proceso. Si se supera el máximo
-// dentro de la ventana, se corta antes de tocar Firestore.
+// Freno contra fuerza bruta: intentos fallidos contados en Firestore (los
+// comparten todas las instancias del hosting y sobreviven a los arranques en
+// frío). Qué se cuenta y con qué topes: lib/joinClassLimits.ts.
 //
-// Es una barrera simple, no a prueba de todo: vive en memoria de ESTE
-// proceso, así que un cold start la reinicia y, si el hosting corre varias
-// instancias en paralelo, cada una lleva su propio contador (un atacante
-// distribuido podría esquivarla). Para algo robusto ante eso haría falta
-// un contador persistente (ej. una colección en Firestore) — se deja así
-// a propósito por ahora, más simple y suficiente para el caso de uso actual.
-const MAX_FAILED_ATTEMPTS = 5;
-const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
+// Si el almacén de contadores falla, se DEJA PASAR (y se registra el error):
+// es preferible que un alumno pueda entrar a que una falla de esa colección
+// bloquee a todos. Firestore igual es necesario para validar la contraseña.
+const limiterStore = createFirestoreStore();
 
-const failedAttempts = new Map<string, { count: number; windowStart: number }>();
+async function safely<T>(what: string, fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.error(`❌ join-class: falló el límite de intentos (${what}):`, err);
+    return null;
+  }
+}
 
 function getClientIp(req: NextRequest): string {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) return forwardedFor.split(',')[0].trim();
   return req.headers.get('x-real-ip') ?? 'unknown';
-}
-
-function isRateLimited(key: string): boolean {
-  const record = failedAttempts.get(key);
-  if (!record) return false;
-  if (Date.now() - record.windowStart > WINDOW_MS) {
-    failedAttempts.delete(key);
-    return false;
-  }
-  return record.count >= MAX_FAILED_ATTEMPTS;
-}
-
-function registerFailedAttempt(key: string): void {
-  const record = failedAttempts.get(key);
-  if (!record || Date.now() - record.windowStart > WINDOW_MS) {
-    failedAttempts.set(key, { count: 1, windowStart: Date.now() });
-    return;
-  }
-  record.count += 1;
-}
-
-function clearFailedAttempts(key: string): void {
-  failedAttempts.delete(key);
 }
 
 export async function POST(req: NextRequest) {
@@ -72,9 +55,14 @@ export async function POST(req: NextRequest) {
     const normalizedUsername = String(username).trim().toLowerCase();
     const normalizedPassword = String(password).trim();
 
-    const rateLimitKey = `${getClientIp(req)}:${normalizedCode}`;
-    if (isRateLimited(rateLimitKey)) {
-      return NextResponse.json({ error: 'TOO_MANY_ATTEMPTS' }, { status: 429 });
+    const attempt = { ip: getClientIp(req), code: normalizedCode, username: normalizedUsername };
+    const blocked = await safely('consulta', () => findBlocked(limiterStore, checkRules(attempt)));
+    if (blocked) {
+      console.warn(`⚠️ join-class: intento bloqueado por "${blocked.rule.name}"`);
+      return NextResponse.json(
+        { error: 'TOO_MANY_ATTEMPTS', retryAfter: blocked.retryAfterSeconds },
+        { status: 429, headers: { 'Retry-After': String(blocked.retryAfterSeconds) } }
+      );
     }
 
     const app = getAdminApp();
@@ -88,7 +76,7 @@ export async function POST(req: NextRequest) {
       .get();
 
     if (classroomsSnap.empty) {
-      registerFailedAttempt(rateLimitKey);
+      await safely('registro', () => recordFailure(limiterStore, failureRules(attempt, false)));
       return NextResponse.json({ error: 'CODE_NOT_FOUND' }, { status: 404 });
     }
 
@@ -116,11 +104,12 @@ export async function POST(req: NextRequest) {
     });
 
     if (!match) {
-      registerFailedAttempt(rateLimitKey);
+      await safely('registro', () => recordFailure(limiterStore, failureRules(attempt, true)));
       return NextResponse.json({ error: 'INVALID_CREDENTIALS' }, { status: 401 });
     }
 
-    clearFailedAttempts(rateLimitKey);
+    // Solo se borra el contador de ESTE usuario (ver successRules).
+    await safely('limpieza', () => clearRules(limiterStore, successRules(attempt)));
 
     // Migración "al vuelo": si todavía estaba en texto plano, se cifra ahora
     // que sabemos que es la contraseña correcta. Si falla (por ejemplo,

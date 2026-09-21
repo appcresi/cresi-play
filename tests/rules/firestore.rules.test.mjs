@@ -111,6 +111,17 @@ await t('quien reclama NO puede pisar la contraseña de paso: denegado', () =>
   assertFails(updateDoc(doc(asUser('alumno9'), 'classrooms/cl2/estudiantesPendientes/p2'), { claimedUid: 'alumno9', passwordEnc: 'v1.a.b.c' })));
 await t('docente borra un pendiente: permitido', () => assertSucceeds(deleteDoc(pend('prof2'))));
 
+// ── rateLimits: contadores de /api/join-class, solo del servidor ──────
+await seed('rateLimits/abc123', { count: 4, windowStart: 1, expiresAt: new Date() });
+await t('rateLimits: un usuario logueado no puede leer un contador', () => assertFails(getDoc(doc(asUser('st'), 'rateLimits/abc123'))));
+await t('rateLimits: un anónimo no puede leer un contador', () => assertFails(getDoc(doc(anon, 'rateLimits/abc123'))));
+await t('rateLimits: un usuario no puede borrar su contador (evita saltearse el límite)', () => assertFails(deleteDoc(doc(asUser('st'), 'rateLimits/abc123'))));
+await t('rateLimits: un usuario no puede inflar un contador ajeno (bloquear a otro)', () => assertFails(setDoc(doc(asUser('st'), 'rateLimits/abc123'), { count: 999, windowStart: 1 })));
+await t('rateLimits: ni el docente ni el admin escriben desde el cliente', async () => {
+  await assertFails(setDoc(doc(asUser('prof'), 'rateLimits/x1'), { count: 1 }));
+  await assertFails(setDoc(doc(asAdmin, 'rateLimits/x2'), { count: 1 }));
+});
+
 console.log(`\n${pass} ok, ${fail} fallos`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);

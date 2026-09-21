@@ -224,6 +224,54 @@ try {
   check('sync-score con token y documento válidos → 200 y guarda el puntaje', res.status === 200 && okBody.score === 150, JSON.stringify(okBody));
   check('sync-score: quedó guardado en Firestore', (await db.collection('users').doc(teacher.localId).get()).data()?.game?.totalScore === 150);
 
+  // ── /api/join-class: límite de intentos persistente (en Firestore) ──
+  await db.collection('classrooms').doc('cj').set({ profesorId: teacher.localId, code: 'LIMIT1', name: 'Clase del límite' });
+  const cjPend = db.collection('classrooms').doc('cj').collection('estudiantesPendientes');
+  await cjPend.doc('u-ana').set({ username: 'Ana', password: 'clave-ana', claimed: false, claimedUid: null });
+  await cjPend.doc('u-beto').set({ username: 'Beto', password: 'clave-beto', claimed: false, claimedUid: null });
+  const join = (ip, username, password, code = 'LIMIT1') =>
+    fetch(`${BASE}/api/join-class`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': ip }, body: JSON.stringify({ code, username, password }) });
+
+  res = await join('1.1.1.1', 'ana', 'clave-ana');
+  check('join-class: login correcto → 200 con token', res.status === 200 && !!(await res.json()).token, res.status);
+
+  // Por usuario: 10 contraseñas malas para "ana" desde 10 IPs distintas (un ataque distribuido).
+  let statuses = [];
+  for (let i = 1; i <= 10; i++) statuses.push((await join(`2.0.0.${i}`, 'ana', 'incorrecta')).status);
+  check('join-class: los 10 primeros intentos malos dan 401', statuses.every((s) => s === 401), statuses.join(','));
+  res = await join('2.0.0.99', 'ana', 'clave-ana');
+  const blockedBody = await res.json();
+  check('join-class: al 11º, "ana" queda bloqueada incluso con la contraseña CORRECTA y desde una IP nueva', res.status === 429 && blockedBody.error === 'TOO_MANY_ATTEMPTS', `${res.status} ${JSON.stringify(blockedBody)}`);
+  check('join-class: el 429 trae Retry-After y retryAfter en segundos (≤ 10 min)', Number(res.headers.get('retry-after')) > 0 && blockedBody.retryAfter > 0 && blockedBody.retryAfter <= 600, `${res.headers.get('retry-after')} ${blockedBody.retryAfter}`);
+  res = await join('2.0.0.98', 'beto', 'clave-beto');
+  check('join-class: otro alumno de la MISMA clase no se ve afectado', res.status === 200, res.status);
+
+  // Un login correcto limpia solo el contador de ese usuario.
+  for (let i = 1; i <= 9; i++) await join(`3.0.0.${i}`, 'beto', 'mala');
+  check('join-class: beto con 9 fallos todavía entra', (await join('3.0.0.50', 'beto', 'clave-beto')).status === 200);
+  for (let i = 1; i <= 9; i++) await join(`4.0.0.${i}`, 'beto', 'mala');
+  check('join-class: tras un login bueno se reinició su contador (otros 9 fallos no lo bloquean)', (await join('4.0.0.50', 'beto', 'clave-beto')).status === 200);
+
+  // Por IP + clase: 30 intentos (un curso entero equivocándose) y recién ahí se corta.
+  statuses = [];
+  for (let i = 0; i < 30; i++) statuses.push((await join('5.5.5.5', `inexistente${i}`, 'x')).status);
+  check('join-class: 30 fallos desde una IP no cortan (cabe un curso tras la misma IP del colegio)', statuses.every((s) => s === 401), statuses.join(','));
+  res = await join('5.5.5.5', 'beto', 'clave-beto');
+  check('join-class: al 31º esa IP queda bloqueada aunque las credenciales sean buenas', res.status === 429, res.status);
+  check('join-class: otra IP no está bloqueada', (await join('5.5.5.6', 'beto', 'clave-beto')).status === 200);
+
+  // Escaneo de códigos: una IP probando muchos códigos de clase.
+  statuses = [];
+  for (let i = 0; i < 60; i++) statuses.push((await join('6.6.6.6', 'x', 'y', `NOPE${String(i).padStart(2, '0')}`)).status);
+  check('join-class: 60 códigos inexistentes dan 404', statuses.every((s) => s === 404), statuses.join(','));
+  res = await join('6.6.6.6', 'beto', 'clave-beto');
+  check('join-class: al 61º código la IP queda bloqueada (escaneo)', res.status === 429, res.status);
+
+  // Persistencia: los contadores están en Firestore, no en la memoria del servidor.
+  const limiterDocs = (await db.collection('rateLimits').get()).docs;
+  check('join-class: los contadores quedaron guardados en Firestore', limiterDocs.length > 20 && limiterDocs.every((d) => typeof d.data().count === 'number' && d.data().expiresAt), limiterDocs.length);
+  check('join-class: los ids son hashes (no exponen IPs ni usuarios)', limiterDocs.every((d) => /^[0-9a-f]{64}$/.test(d.id)));
+
   // ── /api/health ──
   res = await fetch(`${BASE}/api/health`);
   let health = await res.json();
