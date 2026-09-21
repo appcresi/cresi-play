@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import TeacherHeader from '@/components/TeacherHeader';
 import { RoleSwitchNotice } from '@/components/RoleSwitchNotice';
@@ -20,11 +21,22 @@ export default function TeacherAreaShell({ children }: { children: React.ReactNo
   // asignado. Solo mostramos el aviso si SABEMOS que no es docente, no ante la duda.
   const isKnownNonTeacher = !!role && role !== 'teacher';
 
+  // El rol sale de localStorage, que el servidor no ve: si el PRIMER render del
+  // cliente ya mostrara el aviso de cambio de rol, no coincidiría con el HTML
+  // que armó el servidor ("Hydration failed") y React descartaría todo el
+  // árbol. `useSyncExternalStore` devuelve false en el servidor y durante la
+  // hidratación, y true recién después: se muestra recién ahí.
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+
   // A propósito, NO bloqueamos el render mientras `loading` está en curso:
   // page.tsx ya maneja ese estado mostrando su landing pública por defecto
   // (en vez de esta pantalla en blanco), así el contenido queda disponible
   // para quien llega sin sesión — incluidos los buscadores.
-  if (isKnownNonTeacher) {
+  if (mounted && isKnownNonTeacher) {
     return <RoleSwitchNotice targetRole="teacher" sectionLabel="el panel docente" />;
   }
 

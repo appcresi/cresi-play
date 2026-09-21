@@ -67,6 +67,36 @@ describe('createSessionToken / verifySessionToken', () => {
   });
 });
 
+describe('marca de alumno (stu)', () => {
+  it('un token de alumno la lleva y se recupera al verificar', () => {
+    const { token } = createSessionToken('alumno-1', { secret, now: NOW, student: true });
+    expect(verifySessionToken(token, { secret, now: NOW })).toMatchObject({ uid: 'alumno-1', stu: true });
+  });
+
+  it('un token de docente NO la lleva', () => {
+    const { token, payload } = createSessionToken('docente-1', { secret, now: NOW });
+    expect(payload.stu).toBeUndefined();
+    expect(verifySessionToken(token, { secret, now: NOW })?.stu).toBeUndefined();
+  });
+
+  it('student: false tampoco la escribe', () => {
+    expect(createSessionToken('u', { secret, now: NOW, student: false }).payload.stu).toBeUndefined();
+  });
+
+  it('un alumno no puede sacársela: cambiar el payload rompe la firma', () => {
+    const { token } = createSessionToken('alumno-1', { secret, now: NOW, student: true });
+    const [h, , s] = token.split('.');
+    const forged = `${h}.${b64({ uid: 'alumno-1', iat: NOW / 1000, exp: NOW / 1000 + 7200 })}.${s}`;
+    expect(verifySessionToken(forged, { secret, now: NOW })).toBeNull();
+  });
+
+  it('un valor que no es true (p. ej. "yes") se ignora', () => {
+    const sign = (body: string) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${body}.${createHmac('sha256', secret).update(`${b64({ alg: 'HS256', typ: 'JWT' })}.${body}`).digest('base64url')}`;
+    const t = sign(b64({ uid: 'x', iat: NOW / 1000, exp: NOW / 1000 + 100, stu: 'yes' }));
+    expect(verifySessionToken(t, { secret, now: NOW })?.stu).toBeUndefined();
+  });
+});
+
 describe('loadSessionSecret', () => {
   it('acepta un secreto largo', () => {
     expect(loadSessionSecret(secret)).toBe(secret);

@@ -26,12 +26,23 @@ service cloud.firestore {
     // documento con author == "CRESI" y hacerlo pasar por contenido OFICIAL:
     // las pantallas de los alumnos listan `where author == 'CRESI'`, así que
     // aparecía en el catálogo de todos.
+    // Los alumnos que entran con código de clase (/api/join-class) llevan la
+    // marca `student` en su token de Firebase: la firma Firebase, el usuario
+    // no puede quitársela. No pueden crear clases, trivias, lecciones ni salas
+    // (antes cualquier usuario logueado podía, aunque un alumno nunca usa esas
+    // funciones): son menores y eso cierra una vía de abuso desde la consola.
+    // Leer, entregar sus tareas y jugar siguen igual. Solo aplica a quien ya
+    // está logueado (`request.auth != null`).
+    function isStudent() {
+      return request.auth.token.get('student', false) == true;
+    }
+
     function authorUnchanged() {
       return request.resource.data.get('author', null) == resource.data.get('author', null);
     }
 
     match /classrooms/{classroomId} {
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.profesorId;
+      allow create: if request.auth != null && !isStudent() && request.auth.uid == request.resource.data.profesorId;
       allow read: if request.auth != null;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.profesorId;
 
@@ -259,7 +270,7 @@ service cloud.firestore {
     }
     match /completapalabras/{lessonId} {
       allow read: if true;
-      allow create: if request.auth != null &&
+      allow create: if request.auth != null && !isStudent() &&
         request.resource.data.author == request.auth.uid;
       allow update: if request.auth != null &&
         resource.data.author == request.auth.uid && authorUnchanged();
@@ -277,7 +288,7 @@ service cloud.firestore {
     // "CRESI" bajo la regla genérica de arriba.
     match /lecciones/{leccionId} {
       allow read: if true;
-      allow create: if request.auth != null && (
+      allow create: if request.auth != null && !isStudent() && (
         request.resource.data.author == request.auth.uid ||
         (request.resource.data.author == "CRESI" && (
           request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
@@ -309,7 +320,7 @@ service cloud.firestore {
     // contra un valor que es un string fijo, no un uid.
     match /trivia/{triviaId} {
       allow read: if true;
-      allow create: if request.auth != null && (
+      allow create: if request.auth != null && !isStudent() && (
         request.resource.data.author == request.auth.uid ||
         (request.resource.data.author == "CRESI" && (
           request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
@@ -349,7 +360,7 @@ service cloud.firestore {
     // trivia de arriba.
     match /wordclouds/{code} {
       allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.teacherId;
+      allow create: if request.auth != null && !isStudent() && request.auth.uid == request.resource.data.teacherId;
       allow update: if request.auth != null && request.auth.uid == resource.data.teacherId;
       allow delete: if request.auth != null && request.auth.uid == resource.data.teacherId;
 
@@ -377,7 +388,7 @@ service cloud.firestore {
     // que playCount/questionStats/wordclouds.
     match /livetrivias/{code} {
       allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.teacherId;
+      allow create: if request.auth != null && !isStudent() && request.auth.uid == request.resource.data.teacherId;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.teacherId;
 
       match /players/{playerId} {

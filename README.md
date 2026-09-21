@@ -53,6 +53,7 @@ después de cargarlas hay que volver a desplegar.
 | `npm run lint` | ESLint 9 con la config oficial de Next 16 (`eslint.config.mjs`). Falla con **errores** o si **sube** el tope de avisos de `package.json` (`--max-warnings`): los avisos actuales se corrigen de a poco y el tope solo puede bajar |
 | `npm test` | tests unitarios (Vitest, sin dependencias externas) |
 | `npm run test:rules` | reglas de Firestore contra el emulador (necesita Java): `tests/rules/firestore.rules.test.mjs` (usuarios, puntaje, pendientes, lecciones) y `tests/rules/collections.rules.test.mjs` (contenido, clases, tareas y entregas, salas sin login, todo lo demás cerrado). **Al tocar `firestore.rules`, agregá su prueba** |
+| `npm run test:browser:prod` | las mismas pruebas de navegador pero contra un **build de producción** (`next build && next start`): la política de seguridad de contenido es otra que en desarrollo, y esto prueba el sitio con la que recibe el público |
 | `npm run test:session` | sesión del servidor de punta a punta: `next dev` real + emuladores de Auth y Firestore (necesita Java; la primera compilación tarda) |
 | `npm run test:browser` | pruebas en **Chromium real** (Playwright) contra `next dev` y los emuladores, con las reglas reales de Firestore: panel docente (crear/duplicar/editar/borrar trivias, nube de palabras, trivia en vivo, completa palabras), ingreso de alumnos y errores de hidratación. Necesita Java y `npx playwright install chromium` |
 
@@ -108,6 +109,28 @@ scripts/            mantenimiento: migraciones, carga de contenido, monitoreo
   reglas de Firestore, así que tiene que filtrar por `session.uid` ella misma.
   Las rutas que cambian datos usan el token de Firebase en la cabecera
   `Authorization`, no la cookie (evita CSRF).
+- **La sesión se puede revocar.** Además de la firma y el vencimiento (2 h), cada
+  lectura de la cookie consulta a Firebase Auth si el usuario fue **revocado,
+  deshabilitado o borrado** (`lib/sessionRevocation.ts`, con caché de 60 s por
+  instancia: `SESSION_REVOCATION_TTL_MS`). Ante una cuenta comprometida:
+  `npx tsx scripts/revoke-sessions.ts <uid> --apply` (y `--disable` para cortar
+  también los ID tokens ya emitidos, que duran hasta 1 h en las rutas de `/api`).
+  Si Firebase Auth no responde, se deja pasar (no se deja afuera a todos los docentes).
+- **Los alumnos con código de clase no usan funciones de docente.** `/api/join-class`
+  les pone la marca `student` en el token de Firebase (firmada, no la pueden
+  quitar): las reglas les impiden crear clases, trivias, lecciones y salas, y las
+  páginas del panel docente les muestran "solo para docentes" sin traer datos. Los
+  alumnos que ya estaban logueados antes de este cambio no tienen la marca hasta que
+  vuelvan a entrar con su código.
+- **Encabezados de seguridad** (`lib/securityHeaders.js`, aplicados en `next.config.js`):
+  `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, y `Permissions-Policy`
+  que cierra cámara, micrófono, geolocalización y pagos (el sitio no los usa). La
+  **política de contenido (CSP)** está en modo **solo observación**: no bloquea
+  nada, informa a `/api/csp-report` y se registra en el log `CSP (observación): …`
+  (una línea por combinación). Cuando el log lleve unos días sin cosas legítimas
+  (AdSense abre muchos dominios), se pasa a modo que **bloquea** con la variable
+  `CSP_ENFORCE=1` en Vercel + redesplegar; volver atrás es quitarla. No hay COOP
+  (rompe el popup de Google) ni HSTS (lo pone Vercel).
 - **Contraseñas de alumnos cifradas** (AES-256-GCM, `lib/passwordCrypto.ts`). El
   docente puede verlas pidiéndolas al servidor; nunca viajan con los datos de la clase.
 - **Límite de intentos en `/api/join-class`, persistente.** Los intentos

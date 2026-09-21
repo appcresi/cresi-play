@@ -47,10 +47,12 @@ export default defineConfig({
     locale: 'es-AR',
   },
   webServer: {
-    command: `npx next dev -p ${PORT}`,
+    // PLAYWRIGHT_PROD=1: contra un build de PRODUCCIÓN (`next start`), donde la política de
+    // seguridad no lleva las relajaciones de desarrollo ('unsafe-eval', WebSockets locales).
+    command: process.env.PLAYWRIGHT_PROD ? `npx next build && npx next start -p ${PORT}` : `npx next dev -p ${PORT}`,
     url: `http://${HOST}:${PORT}/api/health`,
     reuseExistingServer: false,
-    timeout: 240_000,
+    timeout: process.env.PLAYWRIGHT_PROD ? 480_000 : 240_000,
     env: {
       NEXT_PUBLIC_E2E_EMULATORS: '1',
       NEXT_PUBLIC_FIREBASE_API_KEY: 'x',

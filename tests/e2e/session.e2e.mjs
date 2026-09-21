@@ -19,6 +19,8 @@ const env = {
   PENDING_PASSWORD_KEY: randomBytes(32).toString('base64'),
   JWT_SECRET: 'secreto-de-prueba',
   HEALTH_TOKEN: 'token-de-salud-de-prueba',
+  // Sin caché: la revocación se ve al instante (en producción son 60 s).
+  SESSION_REVOCATION_TTL_MS: '0',
   FIREBASE_ADMIN_PROJECT_ID: 'demo-cresi',
   FIREBASE_ADMIN_CLIENT_EMAIL: 'x@demo-cresi.iam.gserviceaccount.com',
   FIREBASE_ADMIN_PRIVATE_KEY: privateKey.replace(/\n/g, '\\n'),
@@ -78,6 +80,10 @@ try {
   const { getFirestore } = await import('firebase-admin/firestore');
   if (!getApps().length) initializeApp({ credential: cert({ projectId: 'demo-cresi', clientEmail: env.FIREBASE_ADMIN_CLIENT_EMAIL, privateKey }) });
   const db = getFirestore();
+  const { getAuth: getAdminAuth } = await import('firebase-admin/auth');
+  const adminAuth = getAdminAuth();
+  // Una cookie solo vale si el usuario EXISTE en Auth (ver lib/sessionRevocation.ts).
+  await adminAuth.createUser({ uid: 'uid-sin-nubes' });
 
   const teacher = await signUp('prof@x.com');
   const other = await signUp('otra@x.com');
@@ -233,7 +239,26 @@ try {
     fetch(`${BASE}/api/join-class`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': ip }, body: JSON.stringify({ code, username, password }) });
 
   res = await join('1.1.1.1', 'ana', 'clave-ana');
-  check('join-class: login correcto → 200 con token', res.status === 200 && !!(await res.json()).token, res.status);
+  const joinBody = await res.json();
+  check('join-class: login correcto → 200 con token', res.status === 200 && !!joinBody.token, res.status);
+
+  // ── Alumno con código: su token lleva la marca "student" y la sesión del servidor lo sabe ──
+  const stuIdToken = (await (await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=x', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: joinBody.token, returnSecureToken: true }) })).json()).idToken;
+  const stuClaims = JSON.parse(Buffer.from(stuIdToken.split('.')[1], 'base64url').toString('utf8'));
+  check('alumno: el ID token trae la marca student:true', stuClaims.student === true, JSON.stringify(stuClaims));
+  const teacherClaims = JSON.parse(Buffer.from(teacher.idToken.split('.')[1], 'base64url').toString('utf8'));
+  check('docente: su ID token NO trae la marca', teacherClaims.student === undefined, JSON.stringify(teacherClaims));
+  const stuSession = await fetch(`${BASE}/api/session`, { method: 'POST', headers: { authorization: `Bearer ${stuIdToken}` } });
+  const stuCookie = setCookieOf(stuSession).split(';')[0].split('=').slice(1).join('=');
+  check('alumno: /api/session le emite cookie (para que las páginas lo reconozcan)', stuSession.status === 200 && !!stuCookie, stuSession.status);
+  const stuCookiePayload = JSON.parse(Buffer.from(stuCookie.split('.')[1], 'base64url').toString('utf8'));
+  check('alumno: la cookie del servidor lleva stu:true', stuCookiePayload.stu === true, JSON.stringify(stuCookiePayload));
+  for (const ruta of ['/docente/trivias', '/docente/nube-de-palabras', '/docente/trivia-en-vivo', '/docente/completapalabras']) {
+    const r = await fetch(`${BASE}${ruta}`, { headers: { cookie: `cresi_session=${stuCookie}` } });
+    const html = await r.text();
+    check(`alumno: ${ruta} dice "solo para docentes" y no trae datos`, html.includes('Esta sección es solo para docentes.') && !html.includes('Consigna de la profe') && !html.includes('Trivia de la profe'), r.status);
+  }
+  check('docente: su cookie NO lleva stu', JSON.parse(Buffer.from(cookie.split('.')[1], 'base64url').toString('utf8')).stu === undefined);
 
   // Por usuario: 10 contraseñas malas para "ana" desde 10 IPs distintas (un ataque distribuido).
   let statuses = [];
@@ -271,6 +296,73 @@ try {
   const limiterDocs = (await db.collection('rateLimits').get()).docs;
   check('join-class: los contadores quedaron guardados en Firestore', limiterDocs.length > 20 && limiterDocs.every((d) => typeof d.data().count === 'number' && d.data().expiresAt), limiterDocs.length);
   check('join-class: los ids son hashes (no exponen IPs ni usuarios)', limiterDocs.every((d) => /^[0-9a-f]{64}$/.test(d.id)));
+
+  // ── Revocación: una cookie deja de valer si el usuario se revoca, deshabilita o borra ──
+  const mintCookie = async (idToken) => {
+    const r = await fetch(`${BASE}/api/session`, { method: 'POST', headers: { authorization: `Bearer ${idToken}` } });
+    return { status: r.status, cookie: setCookieOf(r).split(';')[0].split('=').slice(1).join('=') };
+  };
+  const triviasVisible = async (c) => (await triviasPage(c)).html.includes('Aún no creaste ninguna trivia');
+  const signInWithCustomToken = async (uid) => {
+    const customToken = await adminAuth.createCustomToken(uid);
+    const r = await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=x', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: customToken, returnSecureToken: true }) });
+    return (await r.json()).idToken;
+  };
+
+  const rev = await signUp('revocada@x.com');
+  const revMint = await mintCookie(rev.idToken);
+  check('revocación: la cookie de un usuario sano funciona', revMint.status === 200 && (await triviasVisible(revMint.cookie)));
+  // La revocación tiene resolución de segundos y una sesión emitida en el MISMO segundo sigue valiendo
+  // (es la del login nuevo): se espera para que la cookie sea claramente anterior.
+  await new Promise((r) => setTimeout(r, 1300));
+  await adminAuth.revokeRefreshTokens(rev.localId);
+  check('revocación: tras revokeRefreshTokens la MISMA cookie ya no da acceso', !(await triviasVisible(revMint.cookie)) && (await triviasPage(revMint.cookie)).html.includes('Debes estar logueado'));
+  check('revocación: el token viejo ya no puede pedir una cookie nueva (401)', (await mintCookie(rev.idToken)).status === 401);
+  await new Promise((r) => setTimeout(r, 1300)); // la revocación tiene resolución de segundos
+  const rev2 = await mintCookie(await signInWithCustomToken(rev.localId));
+  check('revocación: un inicio de sesión NUEVO vuelve a funcionar', rev2.status === 200 && (await triviasVisible(rev2.cookie)), rev2.status);
+  check('revocación: y la cookie vieja sigue muerta', !(await triviasVisible(revMint.cookie)));
+
+  const dis = await signUp('deshabilitada@x.com');
+  const disMint = await mintCookie(dis.idToken);
+  check('deshabilitada: antes de deshabilitar funciona', await triviasVisible(disMint.cookie));
+  await adminAuth.updateUser(dis.localId, { disabled: true });
+  check('deshabilitada: la cookie deja de valer', !(await triviasVisible(disMint.cookie)));
+  await adminAuth.updateUser(dis.localId, { disabled: false });
+  check('deshabilitada: al rehabilitarla, la cookie (aún vigente) vuelve a valer', await triviasVisible(disMint.cookie));
+
+  const gone = await signUp('borrada@x.com');
+  const goneMint = await mintCookie(gone.idToken);
+  check('borrada: antes de borrar funciona', await triviasVisible(goneMint.cookie));
+  await adminAuth.deleteUser(gone.localId);
+  check('borrada: la cookie de un usuario borrado deja de valer', !(await triviasVisible(goneMint.cookie)));
+
+  // ── Encabezados de seguridad (lib/securityHeaders.js) y receptor de informes CSP ──
+  for (const ruta of ['/', '/docente', '/api/health', '/lecciones']) {
+    const r = await fetch(`${BASE}${ruta}`);
+    const h = r.headers;
+    check(`encabezados en ${ruta}: nosniff, SAMEORIGIN, Referrer-Policy y Permissions-Policy`,
+      h.get('x-content-type-options') === 'nosniff' && h.get('x-frame-options') === 'SAMEORIGIN' &&
+      h.get('referrer-policy') === 'strict-origin-when-cross-origin' && (h.get('permissions-policy') ?? '').includes('camera=()'), JSON.stringify([...h.entries()].filter(([k]) => /x-|referrer|permissions/.test(k))));
+  }
+  const cspHeader = (await fetch(`${BASE}/`)).headers.get('content-security-policy-report-only') ?? '';
+  check('la política de contenido va en modo SOLO OBSERVACIÓN (Report-Only), no bloquea', cspHeader.includes("default-src 'self'") && cspHeader.includes('report-uri /api/csp-report') && !(await fetch(`${BASE}/`)).headers.get('content-security-policy'), cspHeader.slice(0, 200));
+  check('la política cierra object-src y frame-ancestors', /object-src 'none'/.test(cspHeader) && /frame-ancestors 'self'/.test(cspHeader));
+
+  const report = (body, type = 'application/csp-report') => fetch(`${BASE}/api/csp-report`, { method: 'POST', headers: { 'content-type': type }, body });
+  res = await report(JSON.stringify({ 'csp-report': { 'document-uri': 'https://x.com/clase/ABC123?token=secreto', 'violated-directive': 'img-src', 'blocked-uri': 'https://malo.example.com/a.png' } }));
+  check('csp-report: un informe válido → 204', res.status === 204, res.status);
+  res = await report(JSON.stringify([{ type: 'csp-violation', body: { effectiveDirective: 'connect-src', blockedURL: 'https://otro.example.com/x', documentURL: 'https://x.com/' } }]), 'application/reports+json');
+  check('csp-report: el formato de la Reporting API → 204', res.status === 204, res.status);
+  res = await report('esto no es JSON');
+  check('csp-report: basura → 204 (sin error)', res.status === 204, res.status);
+  res = await report('x'.repeat(20000));
+  check('csp-report: un cuerpo enorme → 413', res.status === 413, res.status);
+  check('csp-report: el log NO incluye la URL completa ni parámetros', !serverLog.includes('token=secreto') && !serverLog.includes('ABC123?'), serverLog.slice(-400));
+  check('csp-report: registró UNA línea legible del informe', serverLog.includes('CSP (observación): img-src bloqueó https://malo.example.com en /clase/ABC123'), serverLog.slice(-400));
+  await report(JSON.stringify({ 'csp-report': { 'document-uri': 'https://x.com/clase/ABC123', 'violated-directive': 'img-src', 'blocked-uri': 'https://malo.example.com/otra.png' } }));
+  const lineCount = serverLog.split('img-src bloqueó https://malo.example.com en /clase/ABC123').length - 1;
+  check('csp-report: el mismo informe repetido se registra una sola vez', lineCount === 1, lineCount);
 
   // ── /api/health ──
   res = await fetch(`${BASE}/api/health`);

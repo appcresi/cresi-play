@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/session';
 import { getTeacherSessions } from '@/lib/wordCloudServer';
 import SessionSync from '@/components/SessionSync';
+import SoloDocentes from '@/components/teacher/SoloDocentes';
 import NubeDePalabrasManager from './NubeDePalabrasManager';
 
 // Server Component: verifica la sesión y trae las nubes del docente en el
@@ -20,6 +21,9 @@ export default async function NubeDePalabrasPage(): Promise<JSX.Element> {
       </div>
     );
   }
+
+  // Un alumno que entró con código de clase no usa el panel docente.
+  if (session.student) return <SoloDocentes />;
 
   const sessions = await getTeacherSessions(session.uid);
   return <NubeDePalabrasManager teacherId={session.uid} initialSessions={sessions} />;

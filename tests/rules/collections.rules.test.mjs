@@ -30,6 +30,8 @@ const asUser = (uid) => env.authenticatedContext(uid).firestore();
 const asAdmin = env.authenticatedContext('admin-1', { admin: true }).firestore();
 const asHardcodedAdmin = env.authenticatedContext(HARDCODED_ADMIN).firestore();
 const anon = env.unauthenticatedContext().firestore();
+// Alumno que entró con código de clase: /api/join-class le pone la marca `student` al token.
+const asStudent = (uid) => env.authenticatedContext(uid, { student: true }).firestore();
 const seed = (path, data) => env.withSecurityRulesDisabled((c) => setDoc(doc(c.firestore(), path), data));
 const d = (db, path) => doc(db, path);
 
@@ -206,6 +208,20 @@ await t('respuestas: una respuesta ya enviada no se puede pisar', () => assertFa
 await t('respuestas: más de 1000 puntos por pregunta: denegado', () => assertFails(answer('j1_1', { ...ok, questionIndex: 1, pointsEarned: 5000 })));
 await t('respuestas: puntos negativos: denegado', () => assertFails(answer('j1_2', { ...ok, questionIndex: 2, pointsEarned: -1 })));
 await t('respuestas: campo de más: denegado', () => assertFails(answer('j1_3', { ...ok, questionIndex: 3, extra: 1 })));
+
+// ── Alumnos con código de clase (token con la marca "student"): sin funciones de docente ──
+await t('alumno con código: NO crea una clase', () => assertFails(setDoc(d(asStudent('al1'), 'classrooms/k-alumno'), { name: 'mia', profesorId: 'al1', code: 'ZZZ999' })));
+await t('alumno con código: NO crea una trivia', () => assertFails(setDoc(d(asStudent('al1'), 'trivia/t-alumno'), { name: 'n', author: 'al1', questions: [] })));
+await t('alumno con código: NO crea una lección de completa palabras', () => assertFails(setDoc(d(asStudent('al1'), 'completapalabras/c-alumno'), { title: 't', author: 'al1', lecciones: [] })));
+await t('alumno con código: NO crea una lección', () => assertFails(setDoc(d(asStudent('al1'), 'lecciones/l-alumno'), { title: 't', author: 'al1', lecciones: [] })));
+await t('alumno con código: NO crea una nube de palabras', () => assertFails(setDoc(d(asStudent('al1'), 'wordclouds/NUBEA'), { code: 'NUBEA', teacherId: 'al1', title: 't', active: true, createdAt: 'x' })));
+await t('alumno con código: NO crea una partida de trivia en vivo', () => assertFails(setDoc(d(asStudent('al1'), 'livetrivias/LIVEA'), { code: 'LIVEA', teacherId: 'al1', phase: 'lobby' })));
+await t('un usuario SIN la marca (docente, o alumno con Google) sí crea una clase', () => assertSucceeds(setDoc(d(asUser('docente-x'), 'classrooms/k-docente'), { name: 'mia', profesorId: 'docente-x', code: 'DDD444' })));
+await t('alumno con código: sigue leyendo clases (así se busca por código)', () => assertSucceeds(getDoc(d(asStudent('al1'), 'classrooms/k1'))));
+await t('alumno con código: sigue entregando SU tarea', () => assertSucceeds(setDoc(d(asStudent('al1'), 'classrooms/k1/tareas/tarea1/entregas/al1'), { status: 'entregada', classroomId: 'k1', tareaId: 'tarea1' })));
+await t('alumno con código: sigue sumando partidas a una trivia (playCount)', () => assertSucceeds(updateDoc(d(asStudent('al1'), 'trivia/t-ana'), { playCount: increment(1) })));
+await t('alumno con código: sigue sumando "veces completada" a una lección', () => assertSucceeds(updateDoc(d(asStudent('al1'), 'lecciones/l-oficial'), { timesCompleted: increment(1) })));
+await t('alumno con código: su marca no se puede poner desde el cliente (viene firmada por Firebase)', () => assertFails(setDoc(d(asUser('al2'), 'users/al2'), { student: false, game: { totalScore: 500, totalLives: 3, streak: 0 } })));
 
 // ── Todo lo demás está cerrado ────────────────────────────────────────────
 await t('colección desconocida: un usuario logueado no lee ni escribe', async () => {

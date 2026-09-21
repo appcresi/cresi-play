@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/session';
 import { getTeacherCompletaPalabras } from '@/lib/completaPalabrasServer';
 import SessionSync from '@/components/SessionSync';
+import SoloDocentes from '@/components/teacher/SoloDocentes';
 import CompletaPalabrasManager, { type LessonDoc } from './CompletaPalabrasManager';
 
 // Server Component: verifica la sesión y trae las lecciones del docente en
@@ -20,6 +21,9 @@ export default async function CompletaPalabrasPage(): Promise<JSX.Element> {
       </div>
     );
   }
+
+  // Un alumno que entró con código de clase no usa el panel docente.
+  if (session.student) return <SoloDocentes />;
 
   const lessons = (await getTeacherCompletaPalabras(session.uid)) as unknown as LessonDoc[];
   return <CompletaPalabrasManager teacherId={session.uid} initialLessons={lessons} />;

@@ -1,3 +1,5 @@
+const { securityHeaders } = require('./lib/securityHeaders');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -8,6 +10,22 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   productionBrowserSourceMaps: false,
+  // Encabezados de seguridad en TODAS las respuestas (ver lib/securityHeaders.js:
+  // la política de contenido está en modo solo observación por ahora).
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders({
+          dev: process.env.NODE_ENV === 'development',
+          emulators: process.env.NEXT_PUBLIC_E2E_EMULATORS === '1',
+          authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+          // CSP_ENFORCE=1 pasa la política de "observar" a "bloquear" (ver lib/securityHeaders.js).
+          enforce: process.env.CSP_ENFORCE === '1',
+        }),
+      },
+    ];
+  },
   // Interruptor de las pruebas en navegador (tests/browser). Se declara SIEMPRE
   // (con '0' por defecto) para que Next lo reemplace por un literal al compilar:
   // sin esto, si la variable no está definida, la comprobación se queda como una

@@ -2,6 +2,7 @@ import { getSession } from '@/lib/session';
 import { getTriviaOptionsForTeacher } from '@/lib/triviaServer';
 import { getTeacherLiveSessions } from '@/lib/liveTriviaServer';
 import SessionSync from '@/components/SessionSync';
+import SoloDocentes from '@/components/teacher/SoloDocentes';
 import TriviaEnVivoManager from './TriviaEnVivoManager';
 
 // Server Component: verifica la sesión y trae las trivias disponibles y las
@@ -22,6 +23,9 @@ export default async function TriviaEnVivoPage(): Promise<JSX.Element> {
       </div>
     );
   }
+
+  // Un alumno que entró con código de clase no usa el panel docente.
+  if (session.student) return <SoloDocentes />;
 
   const [trivias, sessions] = await Promise.all([
     getTriviaOptionsForTeacher(session.uid),

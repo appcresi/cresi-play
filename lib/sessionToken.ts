@@ -33,6 +33,8 @@ export interface SessionPayload {
   iat: number;
   /** Vence (segundos, epoch). */
   exp: number;
+  /** true si es un ALUMNO que entró con código de clase (marca `student` del token de Firebase). */
+  stu?: boolean;
 }
 
 /** Secreto del servidor (`openssl rand -base64 48`). Falla cerrado si falta o es corto. */
@@ -53,11 +55,13 @@ const HEADER = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
 
 export function createSessionToken(
   uid: string,
-  options: { secret?: string; now?: number; ttlSeconds?: number } = {}
+  options: { secret?: string; now?: number; ttlSeconds?: number; student?: boolean } = {}
 ): { token: string; payload: SessionPayload } {
   const secret = options.secret ?? loadSessionSecret();
   const iat = Math.floor((options.now ?? Date.now()) / 1000);
   const payload: SessionPayload = { uid, iat, exp: iat + (options.ttlSeconds ?? SESSION_TTL_SECONDS) };
+  // Solo se escribe cuando es true: la mayoría de las cookies (docentes) no lo llevan.
+  if (options.student === true) payload.stu = true;
   const body = b64url(JSON.stringify(payload));
   const signature = b64url(sign(`${HEADER}.${body}`, secret));
   return { token: `${HEADER}.${body}.${signature}`, payload };
@@ -90,7 +94,7 @@ export function verifySessionToken(
     if (typeof payload.iat !== 'number' || typeof payload.exp !== 'number') return null;
     const now = Math.floor((options.now ?? Date.now()) / 1000);
     if (payload.exp <= now) return null;
-    return { uid: payload.uid, iat: payload.iat, exp: payload.exp };
+    return { uid: payload.uid, iat: payload.iat, exp: payload.exp, ...(payload.stu === true ? { stu: true } : {}) };
   } catch {
     return null;
   }

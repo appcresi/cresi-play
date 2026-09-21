@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/session';
 import { getTeacherTrivias } from '@/lib/triviaServer';
 import SessionSync from '@/components/SessionSync';
+import SoloDocentes from '@/components/teacher/SoloDocentes';
 import TriviasManager, { type UserTrivia } from './TriviasManager';
 
 // Server Component: verifica la sesión y trae las trivias del docente en el
@@ -20,6 +21,9 @@ export default async function TriviasPage(): Promise<JSX.Element> {
       </div>
     );
   }
+
+  // Un alumno que entró con código de clase no usa el panel docente.
+  if (session.student) return <SoloDocentes />;
 
   const trivias = (await getTeacherTrivias(session.uid)) as unknown as UserTrivia[];
   return <TriviasManager teacherId={session.uid} initialTrivias={trivias} />;

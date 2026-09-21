@@ -37,7 +37,9 @@ export async function POST(req: NextRequest) {
       return json({ error: 'ANONYMOUS_NOT_ALLOWED' }, 403);
     }
 
-    const { expiresAt } = await setSessionCookie(decoded.uid);
+    // `student` la pone /api/join-class en el token de los alumnos que entran con
+    // código de clase; el usuario no puede modificarla (va firmada por Firebase).
+    const { expiresAt } = await setSessionCookie(decoded.uid, { student: decoded.student === true });
     return json({ ok: true, expiresAt });
   } catch (err) {
     console.error('❌ Error en POST /api/session:', err);

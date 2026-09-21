@@ -134,7 +134,10 @@ export async function POST(req: NextRequest) {
     }
 
     const auth = getAuth(app);
-    const token = await auth.createCustomToken(studentUid);
+    // La marca `student` viaja dentro del token de Firebase y las reglas de
+    // Firestore la leen (`request.auth.token.student`): un alumno con código no
+    // puede crear clases, trivias ni salas, aunque lo intente desde la consola.
+    const token = await auth.createCustomToken(studentUid, { student: true });
 
     return NextResponse.json({
       token,

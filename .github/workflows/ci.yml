@@ -102,6 +102,12 @@ jobs:
       - name: Pruebas en navegador
         run: npm run test:browser
 
+      # Lo mismo contra un BUILD DE PRODUCCIÓN: la política de seguridad (CSP) es otra
+      # que en desarrollo, y esto prueba el sitio con la que recibe el público.
+      - name: Pruebas en navegador (build de producción)
+        run: npm run test:browser:prod
+        timeout-minutes: 10
+
       # Si algo falla, el reporte trae capturas y el "trace" para reproducirlo.
       - name: Guardar el reporte
         if: failure()

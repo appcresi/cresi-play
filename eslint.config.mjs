@@ -39,6 +39,11 @@ export default defineConfig([
     rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
   {
+    // Archivos CommonJS: `require` es lo normal ahí (next.config.js carga lib/securityHeaders.js).
+    files: ['next.config.js', '**/*.cjs'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
+  },
+  {
     // Los `eslint-disable` que ya no hacen falta no son un problema de fondo.
     linterOptions: { reportUnusedDisableDirectives: 'off' },
   },

@@ -52,6 +52,28 @@ test.describe('Ingreso de un alumno a su clase', () => {
     expect(problems).toEqual([]);
   });
 
+  test('un alumno que entró con su código NO puede usar el panel docente', async ({ page }) => {
+    const { code } = await seedClass();
+    const problems = watchProblems(page);
+    await fillAndJoin(page, code, 'Lucía', 'clave-lucia');
+    await page.waitForURL('**/escritorio');
+
+    // Lo decide el SERVIDOR: con la cookie de este navegador, la página de trivias del docente le
+    // dice que es solo para docentes y no trae datos. (La cookie se la pide el propio navegador
+    // a /api/session al iniciar sesión, por eso se espera hasta que exista.)
+    await expect
+      .poll(async () => (await (await page.request.get('/docente/trivias')).text()).includes('Esta sección es solo para docentes.'), { timeout: 20_000 })
+      .toBe(true);
+
+    // Y lo que el alumno VE no es el panel: ni la lista, ni el botón de crear.
+    await page.goto('/docente/trivias');
+    await page.waitForTimeout(2500);
+    await expect(page.getByRole('heading', { name: 'Mis trivias' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Crear trivia' })).toHaveCount(0);
+    // Y sin errores de hidratación: su navegador tiene el rol "alumno" guardado, que el servidor no ve.
+    expect(problems).toEqual([]);
+  });
+
   test('con contraseña incorrecta muestra el error y no entra', async ({ page }) => {
     const { code } = await seedClass();
     await fillAndJoin(page, code, 'Lucía', 'incorrecta');
