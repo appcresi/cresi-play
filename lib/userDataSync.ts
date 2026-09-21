@@ -31,19 +31,24 @@ class UserDataSync {
     if (lastPushed?.uid === currentUser.uid && lastPushed.score === score) return;
 
     try {
-      const idToken = await currentUser.getIdToken();
-      const res = await fetch('/api/sync-score', {
+      const send = async (forceRefresh: boolean) => fetch('/api/sync-score', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`
+          Authorization: `Bearer ${await currentUser.getIdToken(forceRefresh)}`
         },
         body: JSON.stringify({ score: Math.max(0, Math.round(score)) })
       });
 
+      let res = await send(false);
+      // Token rechazado: se pide uno nuevo a Firebase y se reintenta una vez.
+      if (res.status === 401) res = await send(true);
+
       if (res.status === 404) return; // el documento aún no existe; se reintenta tras crearlo
       if (!res.ok) {
-        console.error('❌ /api/sync-score respondió', res.status);
+        // El servidor dice en qué paso falló y con qué código (sin datos internos).
+        const detail = await res.json().catch(() => ({})) as { error?: string; step?: string; code?: string };
+        console.error('❌ /api/sync-score respondió', res.status, detail.error ?? '', detail.step ?? '', detail.code ?? '');
         return;
       }
 

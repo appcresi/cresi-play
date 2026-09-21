@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
+import { errorCode } from '@/lib/routeErrors';
 
 // Cubeta de fichas: el "presupuesto" de aumento se recarga a POINTS_PER_SECOND
 // hasta MAX_BUDGET y se consume al subir el puntaje. Guardarlo (en
@@ -25,6 +26,9 @@ const MAX_BUDGET = 20000;
 const UNKNOWN_HISTORY_BUDGET = 5000;
 
 export async function POST(req: NextRequest) {
+  // Dónde estaba cuando falló: va al log y al cuerpo del 500 para poder
+  // diagnosticar sin adivinar.
+  let step = 'start';
   try {
     const authHeader = req.headers.get('authorization');
     const idToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -38,8 +42,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'INVALID_SCORE' }, { status: 400 });
     }
 
+    step = 'admin-init';
     const app = getAdminApp();
-    const decoded = await getAuth(app).verifyIdToken(idToken);
+
+    step = 'verify-token';
+    let decoded;
+    try {
+      decoded = await getAuth(app).verifyIdToken(idToken);
+    } catch (err) {
+      // Un token vencido o mal formado es culpa de quien llama (401), no un
+      // error del servidor: antes salía como 500 y parecía una caída.
+      console.warn('⚠️ /api/sync-score: token rechazado:', errorCode(err));
+      return NextResponse.json({ error: 'INVALID_TOKEN' }, { status: 401 });
+    }
+
+    step = 'transaction';
     const db = getFirestore(app);
     const userRef = db.collection('users').doc(decoded.uid);
 
@@ -88,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, score: result.accepted, clamped: result.clamped });
   } catch (err) {
-    console.error('❌ Error en /api/sync-score:', err);
-    return NextResponse.json({ error: 'SERVER_ERROR' }, { status: 500 });
+    console.error(`❌ Error en /api/sync-score (paso: ${step}):`, err);
+    return NextResponse.json({ error: 'SERVER_ERROR', step, code: errorCode(err) }, { status: 500 });
   }
 }

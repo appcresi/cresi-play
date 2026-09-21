@@ -12,6 +12,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
 import { clearSessionCookie, setSessionCookie } from '@/lib/session';
 import { SessionSecretError } from '@/lib/sessionToken';
+import { errorCode } from '@/lib/routeErrors';
 
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
@@ -40,7 +41,8 @@ export async function POST(req: NextRequest) {
     return json({ ok: true, expiresAt });
   } catch (err) {
     console.error('❌ Error en POST /api/session:', err);
-    return json({ error: err instanceof SessionSecretError ? 'SERVER_MISCONFIGURED' : 'SERVER_ERROR' }, 500);
+    if (err instanceof SessionSecretError) return json({ error: 'SERVER_MISCONFIGURED', code: 'SESSION_SECRET' }, 500);
+    return json({ error: 'SERVER_ERROR', code: errorCode(err) }, 500);
   }
 }
 

@@ -204,6 +204,23 @@ try {
   lv = await livePage(forge(teacher.localId, { iat: Math.floor(Date.now() / 1000) - 8000, exp: Math.floor(Date.now() / 1000) - 800 }));
   check('trivia-en-vivo: cookie vencida → sin sesión', lv.html.includes('Debes estar logueado') && !lv.html.includes('Partida de la profe'));
 
+  // ── /api/sync-score: un token malo es 401 (antes salía como 500 mudo) ──
+  const sync = (token, score) => fetch(`${BASE}/api/sync-score`, { method: 'POST', headers: { 'content-type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ score }) });
+  res = await sync(null, 10);
+  check('sync-score sin token → 401', res.status === 401, res.status);
+  res = await sync('token-roto', 10);
+  const brokenBody = await res.json();
+  check('sync-score con token roto → 401 INVALID_TOKEN (no 500)', res.status === 401 && brokenBody.error === 'INVALID_TOKEN', JSON.stringify(brokenBody));
+  res = await sync(teacher.idToken, -5);
+  check('sync-score con puntaje inválido → 400', res.status === 400, res.status);
+  res = await sync(teacher.idToken, 50);
+  check('sync-score de un usuario sin documento → 404 (el cliente reintenta al crearlo)', res.status === 404, res.status);
+  await db.collection('users').doc(teacher.localId).set({ game: { totalScore: 100, totalLives: 3, streak: 0 } });
+  res = await sync(teacher.idToken, 150);
+  const okBody = await res.json();
+  check('sync-score con token y documento válidos → 200 y guarda el puntaje', res.status === 200 && okBody.score === 150, JSON.stringify(okBody));
+  check('sync-score: quedó guardado en Firestore', (await db.collection('users').doc(teacher.localId).get()).data()?.game?.totalScore === 150);
+
   // ── cierre de sesión ──
   res = await fetch(`${BASE}/api/session`, { method: 'DELETE' });
   const cleared = setCookieOf(res);

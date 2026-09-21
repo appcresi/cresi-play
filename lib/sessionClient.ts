@@ -47,7 +47,12 @@ export async function syncSessionCookie(user: User | null): Promise<boolean> {
       method: 'POST',
       headers: { Authorization: `Bearer ${await user.getIdToken()}` },
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      // Ej.: SERVER_MISCONFIGURED / SESSION_SECRET = falta configurar el secreto en el servidor.
+      const detail = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+      console.warn('⚠️ /api/session respondió', res.status, detail.error ?? '', detail.code ?? '');
+      return false;
+    }
     remember(true);
     return true;
   } catch (err) {
