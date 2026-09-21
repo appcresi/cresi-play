@@ -53,5 +53,8 @@
     "eslint-config-love": "^0.3.0",
     "typescript": "^5.2.2",
     "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "jwks-rsa": "^3.2.0"
   }
 }
