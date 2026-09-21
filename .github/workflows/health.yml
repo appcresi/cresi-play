@@ -23,12 +23,12 @@ jobs:
       github.event_name != 'deployment_status' ||
       (github.event.deployment_status.state == 'success' &&
        github.event.deployment.environment == 'Production')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://jugar.cresi.com.ar' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Salud del sitio (configuración y Admin SDK)
         run: bash scripts/check-health.sh "$SITE_URL"

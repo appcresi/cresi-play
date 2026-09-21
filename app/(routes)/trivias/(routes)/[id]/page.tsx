@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { db } from '@/lib/firebaseFirestore';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { track } from '@/lib/trackClient';
 import { IconArrowNarrowLeft } from '@tabler/icons-react';
 import TriviaGame from '../../components/TriviaGame';
 import { getActivityById } from '@/lib/activities';
@@ -93,13 +94,9 @@ export default function TriviaPage({ params }: PageProps) {
         // docente — es decir, nunca reflejaba partidas reales de alumnos,
         // ni funcionaba para trivias de CrESI. Acá es el único lugar por
         // el que se entra a jugar de verdad, sin importar quién ni de
-        // quién sea la trivia — así el contador es real. No bloquea la
-        // carga del juego si falla (no es crítico).
-        updateDoc(doc(db, 'trivia', id), {
-          playCount: increment(1),
-        }).catch((err) => {
-          console.error('No se pudo registrar la partida:', err);
-        });
+        // quién sea la trivia — así el contador es real. Lo suma /api/track
+        // y no bloquea la carga del juego si falla (no es crítico).
+        track({ kind: 'trivia-play', id });
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Error al obtener la trivia';

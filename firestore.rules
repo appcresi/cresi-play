@@ -196,19 +196,10 @@ service cloud.firestore {
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
-      // El contador de descargas (InfografiaService.incrementDownloads) se
-      // suma tanto desde el catálogo público como desde una tarea — mismo
-      // criterio que `downloads` en resources y playCount en trivia: se
-      // permite sin login porque no es un dato sensible, y solo puede
-      // subir de a 1.
-      allow update: if (
-        request.auth != null && (
-          request.auth.token.admin == true ||
-          request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
-        )
-      ) || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads']) &&
-        request.resource.data.downloads == resource.data.get('downloads', 0) + 1
+      // El contador de descargas lo suma /api/track (Admin SDK), no el navegador.
+      allow update: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
     }
     match /users/{userId} {
@@ -253,19 +244,10 @@ service cloud.firestore {
         request.auth.token.admin == true ||
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
-      // El contador de descargas (ResourceService.incrementDownloads) se
-      // suma tanto desde la plataforma principal como desde acá (tareas
-      // con un recurso adjunto) — mismo criterio que playCount/
-      // questionStats en trivia más arriba: se permite sin login porque
-      // no es un dato sensible ni explotable, y solo puede subir de a 1.
-      allow update: if (
-        request.auth != null && (
-          request.auth.token.admin == true ||
-          request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
-        )
-      ) || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads']) &&
-        request.resource.data.downloads == resource.data.get('downloads', 0) + 1
+      // El contador de descargas lo suma /api/track (Admin SDK), no el navegador.
+      allow update: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
     }
     match /completapalabras/{lessonId} {
@@ -300,11 +282,8 @@ service cloud.firestore {
           (resource.data.author == "CRESI" && (
             request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
           ))
-        )) ||
-        // Contador de "veces completada" (timesCompleted), mismo criterio
-        // que playCount en trivia: lo suma cualquiera que termine la
-        // lección, logueado o anónimo — no es un dato sensible.
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['timesCompleted'])
+        ))
+        // timesCompleted lo suma /api/track (Admin SDK), no el navegador.
       );
       allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||
@@ -334,12 +313,11 @@ service cloud.firestore {
           (resource.data.author == "CRESI" && (
             request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
           ))
-        )) ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['playCount']) ||
-        // Estadística de "en qué se equivocan más" (questionStats): la
-        // escribe cualquiera que esté jugando, logueado o anónimo, igual
-        // que playCount arriba — no es un dato sensible ni explotable.
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['questionStats'])
+        ))
+        // playCount y questionStats ya NO se escriben desde el navegador: los
+        // suma /api/track con el Admin SDK (valida el índice y limita la
+        // frecuencia). Antes cualquiera, sin login, podía escribir datos
+        // libres en trivias oficiales.
       );
       allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||

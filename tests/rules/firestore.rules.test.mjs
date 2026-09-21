@@ -80,12 +80,12 @@ await t('docente escribe: permitido', () =>
   assertSucceeds(setDoc(doc(asUser('prof'), 'classrooms/cl/estudiantes/st'), { nota: 'x' }, { merge: true })));
 await t('alumno borra su documento: permitido', () => assertSucceeds(deleteDoc(est('st'))));
 
-// ── lecciones/{id}.timesCompleted: contador abierto, solo ese campo ────
+// ── lecciones/{id}.timesCompleted: solo lo suma /api/track (Admin SDK) ──
 await seed('lecciones/l1', { title: 'Pubertad', author: 'CRESI', lecciones: [] });
-await t('anónimo suma timesCompleted: permitido', () =>
-  assertSucceeds(updateDoc(doc(anon, 'lecciones/l1'), { timesCompleted: increment(1) })));
-await t('alumno suma timesCompleted: permitido', () =>
-  assertSucceeds(updateDoc(doc(asUser('st'), 'lecciones/l1'), { timesCompleted: increment(1) })));
+await t('anónimo suma timesCompleted desde el cliente: denegado', () =>
+  assertFails(updateDoc(doc(anon, 'lecciones/l1'), { timesCompleted: increment(1) })));
+await t('alumno suma timesCompleted desde el cliente: denegado', () =>
+  assertFails(updateDoc(doc(asUser('st'), 'lecciones/l1'), { timesCompleted: increment(1) })));
 await t('alumno suma timesCompleted y toca otro campo: denegado', () =>
   assertFails(updateDoc(doc(asUser('st'), 'lecciones/l1'), { timesCompleted: increment(1), title: 'X' })));
 await t('alumno edita el contenido: denegado', () =>

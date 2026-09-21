@@ -53,13 +53,13 @@ await t('preguntas: un usuario logueado lee', () => assertSucceeds(getDoc(d(asUs
 await t('preguntas: un usuario común no escribe', () => assertFails(setDoc(d(asUser('u1'), 'preguntas/p2'), { q: 2 })));
 await t('preguntas: el admin escribe', () => assertSucceeds(setDoc(d(asAdmin, 'preguntas/p2'), { q: 2 })));
 
-// ── infografias / resources: contador de descargas abierto pero solo de a +1 ──
+// ── infografias / resources: el contador de descargas lo suma /api/track, no el cliente ──
 for (const col of ['infografias', 'resources']) {
   await seed(`${col}/i1`, { title: 'i', downloads: 5 });
   await t(`${col}: lectura pública`, () => assertSucceeds(getDoc(d(anon, `${col}/i1`))));
-  await t(`${col}: un anónimo suma 1 descarga`, () => assertSucceeds(updateDoc(d(anon, `${col}/i1`), { downloads: 6 })));
-  await t(`${col}: no se puede sumar de a 2`, () => assertFails(updateDoc(d(anon, `${col}/i1`), { downloads: 8 })));
-  await t(`${col}: no se puede bajar el contador`, () => assertFails(updateDoc(d(anon, `${col}/i1`), { downloads: 1 })));
+  await t(`${col}: un anónimo NO suma descargas desde el cliente`, () => assertFails(updateDoc(d(anon, `${col}/i1`), { downloads: 6 })));
+  await t(`${col}: un usuario común NO suma descargas desde el cliente`, () => assertFails(updateDoc(d(asUser('u1'), `${col}/i1`), { downloads: increment(1) })));
+  await t(`${col}: no se puede inflar el contador`, () => assertFails(updateDoc(d(anon, `${col}/i1`), { downloads: 999999 })));
   await t(`${col}: no se puede tocar otro campo junto con el contador`, () => assertFails(updateDoc(d(anon, `${col}/i1`), { downloads: 7, title: 'hack' })));
   await t(`${col}: un usuario común no crea`, () => assertFails(setDoc(d(asUser('u1'), `${col}/nuevo`), { title: 'n', downloads: 0 })));
   await t(`${col}: un usuario común no borra`, () => assertFails(deleteDoc(d(asUser('u1'), `${col}/i1`))));
@@ -108,8 +108,11 @@ await t('trivia: un docente NO edita una oficial', () => assertFails(updateDoc(d
 await t('trivia: el admin edita una oficial', () => assertSucceeds(updateDoc(d(asAdmin, 'trivia/t-oficial'), { name: 'corregida' })));
 await t('trivia: el dueño NO puede cambiar el autor a "CRESI" (se haría pasar por oficial)', () => assertFails(updateDoc(d(asUser('ana'), 'trivia/t-ana'), { author: 'CRESI' })));
 await t('trivia: el dueño de una trivia vieja (userId) sigue pudiendo editarla', () => assertSucceeds(updateDoc(d(asUser('lola'), 'trivia/t-legacy'), { name: 'editada' })));
-await t('trivia: cualquiera suma partidas (playCount)', () => assertSucceeds(updateDoc(d(anon, 'trivia/t-ana'), { playCount: increment(1) })));
-await t('trivia: cualquiera registra estadísticas de preguntas (questionStats)', () => assertSucceeds(updateDoc(d(anon, 'trivia/t-ana'), { questionStats: { 0: { shown: 1, wrong: 0 } } })));
+await t('trivia: un anónimo NO suma partidas desde el cliente (playCount lo suma /api/track)', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { playCount: increment(1) })));
+await t('trivia: un anónimo NO escribe questionStats (lo suma /api/track)', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { questionStats: { 0: { shown: 1, wrong: 0 } } })));
+await t('trivia: un anónimo NO puede meter datos libres en una trivia oficial', () => assertFails(updateDoc(d(anon, 'trivia/t-oficial'), { questionStats: { basura: 'x'.repeat(1000) } })));
+await t('trivia: otro usuario logueado tampoco suma partidas desde el cliente', () => assertFails(updateDoc(d(asUser('beto'), 'trivia/t-ana'), { playCount: increment(1) })));
+await t('trivia: el dueño sí puede editar su propia trivia (incluidos los contadores)', () => assertSucceeds(updateDoc(d(asUser('ana'), 'trivia/t-ana'), { playCount: 0 })));
 await t('trivia: un anónimo NO edita otro campo', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { name: 'pisada' })));
 await t('trivia: un anónimo NO cambia el autor junto con el contador', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { playCount: 5, author: 'CRESI' })));
 await t('trivia: otro docente no borra', () => assertFails(deleteDoc(d(asUser('beto'), 'trivia/t-ana'))));
@@ -219,8 +222,8 @@ await t('alumno con código: NO crea una partida de trivia en vivo', () => asser
 await t('un usuario SIN la marca (docente, o alumno con Google) sí crea una clase', () => assertSucceeds(setDoc(d(asUser('docente-x'), 'classrooms/k-docente'), { name: 'mia', profesorId: 'docente-x', code: 'DDD444' })));
 await t('alumno con código: sigue leyendo clases (así se busca por código)', () => assertSucceeds(getDoc(d(asStudent('al1'), 'classrooms/k1'))));
 await t('alumno con código: sigue entregando SU tarea', () => assertSucceeds(setDoc(d(asStudent('al1'), 'classrooms/k1/tareas/tarea1/entregas/al1'), { status: 'entregada', classroomId: 'k1', tareaId: 'tarea1' })));
-await t('alumno con código: sigue sumando partidas a una trivia (playCount)', () => assertSucceeds(updateDoc(d(asStudent('al1'), 'trivia/t-ana'), { playCount: increment(1) })));
-await t('alumno con código: sigue sumando "veces completada" a una lección', () => assertSucceeds(updateDoc(d(asStudent('al1'), 'lecciones/l-oficial'), { timesCompleted: increment(1) })));
+await t('alumno con código: no suma partidas desde el cliente (lo hace /api/track)', () => assertFails(updateDoc(d(asStudent('al1'), 'trivia/t-ana'), { playCount: increment(1) })));
+await t('alumno con código: no suma "veces completada" desde el cliente (lo hace /api/track)', () => assertFails(updateDoc(d(asStudent('al1'), 'lecciones/l-oficial'), { timesCompleted: increment(1) })));
 await t('alumno con código: su marca no se puede poner desde el cliente (viene firmada por Firebase)', () => assertFails(setDoc(d(asUser('al2'), 'users/al2'), { student: false, game: { totalScore: 500, totalLives: 3, streak: 0 } })));
 
 // ── Todo lo demás está cerrado ────────────────────────────────────────────

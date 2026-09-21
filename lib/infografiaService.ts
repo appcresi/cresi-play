@@ -5,17 +5,15 @@
 // InfografiasPicker.tsx, LinkedActivityPreview.tsx). Este servicio solo
 // junta el contador de descargas, igual que ResourceService.incrementDownloads.
 
-import { doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from './firebaseFirestore';
+import { track } from './trackClient';
 
 const InfografiaService = {
-  /** Suma 1 al contador de descargas — ver firestore.rules: se permite
-   *  este único campo sin requerir sesión, igual que `downloads` en
-   *  resources y `playCount` en trivia. Se llama al hacer clic en
-   *  "Descargar PDF", tanto desde el catálogo público como embebida en
-   *  una tarea. */
+  /** Suma 1 al contador de descargas por /api/track (las reglas de
+   *  Firestore ya no dejan escribirlo desde el navegador). Se llama al
+   *  hacer clic en "Descargar PDF", tanto desde el catálogo público como
+   *  embebida en una tarea. */
   async incrementDownloads(infografiaId: string): Promise<void> {
-    await updateDoc(doc(db, 'infografias', infografiaId), { downloads: increment(1) });
+    track({ kind: 'download', collection: 'infografias', id: infografiaId });
   },
 };
 

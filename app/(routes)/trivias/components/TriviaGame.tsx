@@ -18,8 +18,7 @@ import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
-import { db } from '@/lib/firebaseFirestore';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { track } from '@/lib/trackClient';
 
 const ACTIVITY = getActivityById('trivias');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Trivias';
@@ -186,15 +185,11 @@ export default function TriviaGame({
 
   // Estadística simple de "en qué se equivocan más" — un contador por
   // pregunta (según su posición en `questions` al momento de jugarla), sin
-  // recalcular nada server-side: a diferencia del % del certificado, a
-  // nadie le sirve falsear esto, así que confiar en el cliente es
-  // suficiente. Se ve en el panel admin al editar la trivia.
+  // recalcular nada server-side: a nadie le sirve falsear esto, así que
+  // confiar en el cliente es suficiente. Lo suma /api/track (que valida el
+  // índice y limita la frecuencia). Se ve en el panel admin al editar la trivia.
   const recordQuestionStat = useCallback((questionIndex: number, isCorrect: boolean) => {
-    const triviaRef = doc(db, 'trivia', id);
-    updateDoc(triviaRef, {
-      [`questionStats.${questionIndex}.shown`]: increment(1),
-      [`questionStats.${questionIndex}.wrong`]: increment(isCorrect ? 0 : 1),
-    }).catch((err) => console.error('Error al registrar estadística de pregunta:', err));
+    track({ kind: 'question-stat', id, index: questionIndex, correct: isCorrect });
   }, [id]);
 
   const handleTimeOut = useCallback(() => {

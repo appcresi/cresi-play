@@ -94,9 +94,18 @@ scripts/            mantenimiento: migraciones, carga de contenido, monitoreo
 
 **Rutas de API** (`app/api/`): `session` (cookie de sesión), `sync-score`
 (puntaje del alumno), `join-class` (ingreso con código), `pending-students`
-(alumnos que arma el docente), `certificado`, `delete-account`, `health`.
+(alumnos que arma el docente), `certificado`, `delete-account`, `health`,
+`track` (contadores públicos), `csp-report`.
 
 ### Decisiones de seguridad que conviene conocer
+
+- **Los contadores públicos los suma el servidor.** Partidas de una trivia,
+  "veces completada" de una lección, descargas y "en qué se equivocan más" ya no
+  se escriben desde el navegador (las reglas lo prohíben, antes lo permitían a
+  cualquiera sin login): van a `/api/track`, que solo suma +1 sobre documentos
+  existentes, valida ids e índices y corta por IP y elemento (en memoria, mejor
+  esfuerzo). Un contador que no suma nunca rompe el juego. `web` ya sumaba sus
+  descargas por su cuenta.
 
 - **El puntaje lo valida el servidor.** El cliente no puede escribir
   `game.totalScore` (lo prohíben las reglas): lo manda a `/api/sync-score`, que

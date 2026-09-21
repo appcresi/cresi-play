@@ -5,8 +5,9 @@
 // (no hay CRUD de docente/admin acá), así que este servicio es de lectura
 // más el contador de descargas (incrementDownloads).
 
-import { collection, doc, getDoc, getDocs, updateDoc, increment } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from './firebaseFirestore';
+import { track } from './trackClient';
 import type { Resource } from '@/types/resource';
 
 const mapResource = (id: string, data: any): Resource => ({
@@ -37,13 +38,12 @@ const ResourceService = {
     return mapResource(snap.id, snap.data());
   },
 
-  /** Suma 1 al contador de descargas — el mismo campo `downloads` que
-   *  suma la plataforma principal, así el total queda unificado sin
-   *  importar desde dónde se descargó (ver firestore.rules: se permite
-   *  este único campo sin requerir sesión, igual que playCount en
-   *  trivia). Se llama al hacer clic en "Descargar" dentro de una tarea. */
+  /** Suma 1 al contador de descargas por /api/track — el mismo campo
+   *  `downloads` que suma la plataforma principal, así el total queda
+   *  unificado (las reglas de Firestore ya no dejan escribirlo desde el
+   *  navegador). Se llama al hacer clic en "Descargar" dentro de una tarea. */
   async incrementDownloads(resourceId: string): Promise<void> {
-    await updateDoc(doc(db, 'resources', resourceId), { downloads: increment(1) });
+    track({ kind: 'download', collection: 'resources', id: resourceId });
   },
 };
 

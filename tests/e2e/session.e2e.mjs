@@ -364,6 +364,58 @@ try {
   const lineCount = serverLog.split('img-src bloqueó https://malo.example.com en /clase/ABC123').length - 1;
   check('csp-report: el mismo informe repetido se registra una sola vez', lineCount === 1, lineCount);
 
+  // ── /api/track (contadores públicos, sin login) ──
+  await db.collection('trivia').doc('trv1').set({ name: 'T', author: 'CRESI', playCount: 5, questions: [{}, {}, {}] });
+  await db.collection('lecciones').doc('lec1').set({ title: 'L', author: 'CRESI', timesCompleted: 2 });
+  await db.collection('resources').doc('res1').set({ title: 'R', downloads: 7 });
+  await db.collection('infografias').doc('inf1').set({ title: 'I' });
+  const track = (body, ip) => fetch(`${BASE}/api/track`, { method: 'POST', headers: { 'content-type': 'application/json', ...(ip ? { 'x-forwarded-for': ip } : {}) }, body: typeof body === 'string' ? body : JSON.stringify(body) });
+  const field = async (col, id) => (await db.collection(col).doc(id).get()).data();
+
+  res = await track({ kind: 'trivia-play', id: 'trv1' }, '10.0.0.1');
+  check('track: partida de trivia → 204 sin cuerpo', res.status === 204 && (await res.text()) === '', res.status);
+  check('track: suma 1 a playCount', (await field('trivia', 'trv1')).playCount === 6, JSON.stringify(await field('trivia', 'trv1')));
+  await track({ kind: 'lesson-complete', id: 'lec1' }, '10.0.0.1');
+  check('track: suma 1 a timesCompleted', (await field('lecciones', 'lec1')).timesCompleted === 3);
+  await track({ kind: 'download', collection: 'resources', id: 'res1' }, '10.0.0.1');
+  await track({ kind: 'download', collection: 'infografias', id: 'inf1' }, '10.0.0.1');
+  check('track: suma 1 a downloads (resources y también infografias sin contador previo)', (await field('resources', 'res1')).downloads === 8 && (await field('infografias', 'inf1')).downloads === 1);
+  await track({ kind: 'question-stat', id: 'trv1', index: 1, correct: false }, '10.0.0.1');
+  await track({ kind: 'question-stat', id: 'trv1', index: 1, correct: true }, '10.0.0.1');
+  const stats = (await field('trivia', 'trv1')).questionStats;
+  check('track: question-stat cuenta mostradas y erradas', stats?.[1]?.shown === 2 && stats?.[1]?.wrong === 1, JSON.stringify(stats));
+
+  res = await track({ kind: 'trivia-play', id: 'no-existe' }, '10.0.0.1');
+  check('track: un id que no existe → 404 y no crea el documento', res.status === 404 && !(await db.collection('trivia').doc('no-existe').get()).exists, res.status);
+  for (const [nombre, body] of [
+    ['basura', 'esto no es json'],
+    ['tipo desconocido', { kind: 'otro', id: 'trv1' }],
+    ['id con ruta', { kind: 'trivia-play', id: '../users/x' }],
+    ['colección no permitida', { kind: 'download', collection: 'users', id: 'x' }],
+    ['índice negativo', { kind: 'question-stat', id: 'trv1', index: -1, correct: true }],
+    ['índice fuera de rango', { kind: 'question-stat', id: 'trv1', index: 100000, correct: true }],
+  ]) {
+    res = await track(body, '10.0.0.1');
+    check(`track: ${nombre} → 400`, res.status === 400, res.status);
+  }
+  res = await track('x'.repeat(5000), '10.0.0.1');
+  check('track: un cuerpo enorme → 413', res.status === 413, res.status);
+  check('track: los campos de más se ignoran (no se cuela un playCount ni un autor)', await (async () => {
+    await track({ kind: 'trivia-play', id: 'trv1', playCount: 99999, author: 'yo' }, '10.0.0.1');
+    const t = await field('trivia', 'trv1');
+    return t.playCount === 7 && t.author === 'CRESI';
+  })());
+
+  // Tope por IP y elemento: pasado el máximo (200 partidas/hora) corta con 429, otra IP sigue.
+  let last = 0;
+  for (let i = 0; i < 205; i++) last = (await track({ kind: 'trivia-play', id: 'trv1' }, '10.0.0.2')).status;
+  check('track: pasado el tope de una IP → 429', last === 429, last);
+  check('track: el tope no supera el máximo permitido', (await field('trivia', 'trv1')).playCount <= 7 + 200, (await field('trivia', 'trv1')).playCount);
+  res = await track({ kind: 'trivia-play', id: 'trv1' }, '10.0.0.3');
+  check('track: otra IP no se ve afectada por el tope', res.status === 204, res.status);
+  res = await fetch(`${BASE}/api/track`);
+  check('track: GET no está permitido → 405', res.status === 405, res.status);
+
   // ── /api/health ──
   res = await fetch(`${BASE}/api/health`);
   let health = await res.json();

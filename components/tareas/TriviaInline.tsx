@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebaseFirestore';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { track } from '@/lib/trackClient';
 import TriviaGame from '@/app/(routes)/trivias/components/TriviaGame';
 import { sortArrayRandomly } from '@/utils/helpers';
 import type { TriviaQuestion } from '@/types/trivia';
@@ -47,9 +48,7 @@ export const TriviaInline = ({ triviaId }: { triviaId: string }) => {
           })),
         });
 
-        updateDoc(doc(db, 'trivia', triviaId), { playCount: increment(1) }).catch((err) => {
-          console.error('No se pudo registrar la partida:', err);
-        });
+        track({ kind: 'trivia-play', id: triviaId });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al obtener la trivia');
         console.error('Error fetching trivia:', err);
