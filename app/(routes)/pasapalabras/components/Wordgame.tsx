@@ -12,6 +12,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import FinalReport from './FinalReport';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
@@ -211,14 +212,14 @@ const UnifiedWordGame = () => {
     saveGameData();
 
     const data = UserDataManager.loadUserData();
-    const wasAlreadyCompleted = data.progress.completedActivities.includes(ACTIVITY_TITLE);
-    if (!wasAlreadyCompleted) {
-      data.progress.completedActivities.push(ACTIVITY_TITLE);
-    }
-    data.progress.activityScores[ACTIVITY_TITLE] = correctWords.length * 100;
-    data.progress.activityTimes[ACTIVITY_TITLE] = new Date().toISOString();
-    UserDataManager.saveUserData(data);
-    if (!wasAlreadyCompleted) {
+    const updated = {
+      ...data,
+      progress: recordActivityProgress(data.progress, [
+        { key: ACTIVITY_TITLE, score: correctWords.length * 100, complete: true }
+      ])
+    };
+    UserDataManager.saveUserData(updated);
+    if (becameCompleted(data.progress, updated.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { IconHeartHandshake, IconRefresh, IconBooks, IconHome } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -90,15 +91,9 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
         totalScore: current.game.totalScore + POINTS_PER_QUESTION
       },
       progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_QUESTION
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        }
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: POINTS_PER_QUESTION, scoreMode: 'add' }
+        ]),
       }
     };
     UserDataManager.saveUserData(updatedData);
@@ -127,14 +122,9 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
           totalScore: current.game.totalScore + COMPLETION_BONUS
         },
         progress: {
-          ...current.progress,
-          completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
-            ? [...current.progress.completedActivities, ACTIVITY_TITLE]
-            : current.progress.completedActivities,
-          activityScores: {
-            ...current.progress.activityScores,
-            [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + COMPLETION_BONUS
-          }
+          ...recordActivityProgress(current.progress, [
+            { key: ACTIVITY_TITLE, score: COMPLETION_BONUS, scoreMode: 'add', touchTime: false, complete: true }
+          ]),
         }
       };
 

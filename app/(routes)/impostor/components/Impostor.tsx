@@ -4,6 +4,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import { IconChevronUp, IconMinus, IconPlus } from '@tabler/icons-react';
 import esiTermsByCategory from '../data/esiTermsByCategory.json';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -62,17 +63,9 @@ export default function ESIImpostor() {
         ...current.game,
         totalScore: score
       },
-      progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: Math.max(current.progress.activityScores[ACTIVITY_TITLE] || 0, sessionScore)
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        }
-      }
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, score: sessionScore }
+      ])
     };
 
     UserDataManager.saveUserData(updatedData);
@@ -238,10 +231,15 @@ export default function ESIImpostor() {
     // rondas indefinidamente), así que "completarlo" significa haber
     // jugado al menos una vez, no llegar a un puntaje o nivel específico.
     const current = UserDataManager.loadUserData();
-    if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
-      current.progress.completedActivities.push(ACTIVITY_TITLE);
-      UserDataManager.saveUserData(current);
-      setUserData(current);
+    const updatedData = {
+      ...current,
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, complete: true, touchTime: false }
+      ])
+    };
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
+      UserDataManager.saveUserData(updatedData);
+      setUserData(updatedData);
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
   };

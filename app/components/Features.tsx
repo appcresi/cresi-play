@@ -16,6 +16,7 @@ import {
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService from '@/lib/classroomService';
+import { countCompletedCatalog } from '@/lib/activityProgress';
 import { useAuth } from '@/context/AuthContext';
 import type { UserData } from '@/types/user';
 import { ACTIVITIES } from '@/lib/activities';
@@ -72,6 +73,13 @@ const EducationalProgressPanel = () => {
     if (!allowedActivities) return DEFAULT_FEATURES;
     return DEFAULT_FEATURES.filter((f) => allowedActivities.includes(f.id));
   }, [allowedActivities]);
+
+  // `completedActivities` también guarda claves finas (una por trivia,
+  // por lección...): contar `.length` a secas pasaba de 100%.
+  const completedCount = useMemo(
+    () => countCompletedCatalog(userData.progress.completedActivities, effectiveFeatures.map((f) => f.title)),
+    [userData.progress.completedActivities, effectiveFeatures]
+  );
 
   const loadUserData = async () => {
     const merged = await loadStudentUserData(user);
@@ -182,7 +190,7 @@ const EducationalProgressPanel = () => {
                     <IconCircle size={16} className="text-green-600" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Completadas</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.progress.completedActivities.length}/{effectiveFeatures.length}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{completedCount}/{effectiveFeatures.length}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -214,11 +222,11 @@ const EducationalProgressPanel = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(userData.progress.completedActivities.length / effectiveFeatures.length) * 100}%` }}
+                    style={{ width: `${effectiveFeatures.length > 0 ? (completedCount / effectiveFeatures.length) * 100 : 0}%` }}
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {Math.round((userData.progress.completedActivities.length / effectiveFeatures.length) * 100)}% completado
+                  {effectiveFeatures.length > 0 ? Math.round((completedCount / effectiveFeatures.length) * 100) : 0}% completado
                 </p>
               </div>
             </div>

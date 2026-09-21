@@ -12,6 +12,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -154,30 +155,17 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
         totalScore: current.game.totalScore + sessionScore,
         totalLives: lives
       },
-      progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [LESSON_KEY]: Math.max(current.progress.activityScores[LESSON_KEY] || 0, lessonPercent),
-          ...(finishedLesson
-            ? { [ACTIVITY_TITLE]: Math.max(current.progress.activityScores[ACTIVITY_TITLE] || 0, sessionScore) }
-            : {})
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [LESSON_KEY]: new Date().toISOString(),
-          ...(finishedLesson ? { [ACTIVITY_TITLE]: new Date().toISOString() } : {})
-        },
-        completedActivities: finishedLesson
-          ? Array.from(new Set([...current.progress.completedActivities, LESSON_KEY, ACTIVITY_TITLE]))
-          : current.progress.completedActivities
-      }
+      progress: recordActivityProgress(current.progress, [
+        { key: LESSON_KEY, score: lessonPercent, complete: Boolean(finishedLesson) },
+        // El título general solo se toca al terminar la lección.
+        ...(finishedLesson ? [{ key: ACTIVITY_TITLE, score: sessionScore, complete: true }] : [])
+      ])
     };
 
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
-    if (finishedLesson && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
   };

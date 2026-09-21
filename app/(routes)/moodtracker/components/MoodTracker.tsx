@@ -4,6 +4,7 @@ import { IconCalendar, IconMedal, IconTrophy, IconBook, IconStar, IconChartBar, 
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import type { Achievement } from '@/types/user';
@@ -239,14 +240,9 @@ const MoodTracker = () => {
     if (!updatedData.progress.completedActivities.includes(ACTIVITY_TITLE)) {
       updatedData = {
         ...updatedData,
-        progress: {
-          ...updatedData.progress,
-          completedActivities: [...updatedData.progress.completedActivities, ACTIVITY_TITLE],
-          activityTimes: {
-            ...updatedData.progress.activityTimes,
-            [ACTIVITY_TITLE]: new Date().toISOString()
-          }
-        }
+        progress: recordActivityProgress(updatedData.progress, [
+          { key: ACTIVITY_TITLE, complete: true }
+        ])
       };
       UserDataManager.saveUserData(updatedData);
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });

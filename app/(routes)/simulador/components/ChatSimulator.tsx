@@ -7,6 +7,7 @@ import PurchaseModal from '@/components/PurchaseModal';
 import TypingIndicator from './TypingIndicator';
 import { SCENARIOS, type ChatOption, type ChatNode, type ChatScenario } from '../utils/scenarios';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -113,15 +114,9 @@ const ChatSimulator = () => {
         totalScore: current.game.totalScore + POINTS_PER_SAFE_ANSWER
       },
       progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_ID]: Math.max(current.progress.activityScores[ACTIVITY_ID] || 0, newSessionScore)
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_ID]: new Date().toISOString()
-        }
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_ID, score: newSessionScore }
+        ]),
       }
     };
     UserDataManager.saveUserData(updatedData);
@@ -235,14 +230,13 @@ const ChatSimulator = () => {
     checkAndUnlockAchievements();
 
     const current = UserDataManager.loadUserData();
-    if (!current.progress.completedActivities.includes(ACTIVITY_ID)) {
-      const updatedData = {
-        ...current,
-        progress: {
-          ...current.progress,
-          completedActivities: [...current.progress.completedActivities, ACTIVITY_ID]
-        }
-      };
+    const updatedData = {
+      ...current,
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_ID, complete: true, touchTime: false }
+      ])
+    };
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_ID)) {
       UserDataManager.saveUserData(updatedData);
       setUserData(updatedData);
       trackEvent('activity_completed', { activity_id: ACTIVITY_ID });

@@ -16,6 +16,7 @@ import {
 	IconRotateClockwise,
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import type { Lesson } from './types';
@@ -215,7 +216,15 @@ export default function Lecciones(): JSX.Element {
 		const updatedData = {
 			...current,
 			progress: {
-				...current.progress,
+				...recordActivityProgress(current.progress, [
+					{
+						key: lessonKey,
+						score: (correctAnswersCount * POINTS_PER_CORRECT_ANSWER) + (levelsCompleted * POINTS_PER_LEVEL_COMPLETION),
+						scoreMode: 'add',
+						touchTime: false
+					},
+					{ key: ACTIVITY_TITLE, complete: isCompleted }
+				]),
 				lessonProgress: {
 					...current.progress.lessonProgress,
 					[title]: {
@@ -223,23 +232,12 @@ export default function Lecciones(): JSX.Element {
 						completed: isCompleted,
 						timesCompleted: previousTimesCompleted + 1
 					}
-				},
-				activityScores: {
-					...current.progress.activityScores,
-					[lessonKey]: (current.progress.activityScores[lessonKey] || 0) + (correctAnswersCount * POINTS_PER_CORRECT_ANSWER) + (levelsCompleted * POINTS_PER_LEVEL_COMPLETION)
-				},
-				activityTimes: {
-					...current.progress.activityTimes,
-					[ACTIVITY_TITLE]: new Date().toISOString()
-				},
-				completedActivities: isCompleted
-					? Array.from(new Set([...current.progress.completedActivities, ACTIVITY_TITLE]))
-					: current.progress.completedActivities
+				}
 			}
 		};
 
 		saveUserData(updatedData);
-		if (isCompleted && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+		if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
 			trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, lesson: title });
 		}
 

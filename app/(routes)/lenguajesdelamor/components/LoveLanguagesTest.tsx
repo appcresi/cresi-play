@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { IconRefresh, IconSparkles } from '@tabler/icons-react';
 import { QUESTIONS, LANGUAGES, shuffleQuestions, type LoveLanguageKey, type LoveLanguageQuestion } from '../lib/questions';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -61,7 +62,9 @@ export default function LoveLanguagesTest({ onScoreChange }: LoveLanguagesTestPr
         totalScore: current.game.totalScore + POINTS_PER_QUESTION,
       },
       progress: {
-        ...current.progress,
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: POINTS_PER_QUESTION, scoreMode: 'add' }
+        ]),
         loveLanguagesTest: {
           answers: newAnswers,
           // Ojo: Firestore rechaza `undefined` como valor de campo. Antes
@@ -70,14 +73,6 @@ export default function LoveLanguagesTest({ onScoreChange }: LoveLanguagesTestPr
           ...(current.progress.loveLanguagesTest?.results
             ? { results: current.progress.loveLanguagesTest.results }
             : {}),
-        },
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_QUESTION,
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString(),
         },
       },
     };
@@ -113,17 +108,12 @@ export default function LoveLanguagesTest({ onScoreChange }: LoveLanguagesTestPr
         totalScore: current.game.totalScore + COMPLETION_BONUS,
       },
       progress: {
-        ...current.progress,
-        completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
-          ? [...current.progress.completedActivities, ACTIVITY_TITLE]
-          : current.progress.completedActivities,
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: COMPLETION_BONUS, scoreMode: 'add', touchTime: false, complete: true }
+        ]),
         loveLanguagesTest: {
           answers: finalAnswers,
           results: counts,
-        },
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + COMPLETION_BONUS,
         },
       },
     };

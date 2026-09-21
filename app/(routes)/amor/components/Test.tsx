@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { IconRefresh, IconHeartHandshake } from "@tabler/icons-react";
 import testData from "../data.json";
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -66,20 +67,9 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 				...current.game,
 				totalScore: current.game.totalScore + COMPLETION_POINTS
 			},
-			progress: {
-				...current.progress,
-				activityScores: {
-					...current.progress.activityScores,
-					[ACTIVITY_TITLE]: COMPLETION_POINTS
-				},
-				activityTimes: {
-					...current.progress.activityTimes,
-					[ACTIVITY_TITLE]: new Date().toISOString()
-				},
-				completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
-					? [...current.progress.completedActivities, ACTIVITY_TITLE]
-					: current.progress.completedActivities
-			}
+			progress: recordActivityProgress(current.progress, [
+				{ key: ACTIVITY_TITLE, score: COMPLETION_POINTS, complete: true }
+			])
 		};
 		UserDataManager.saveUserData(updatedData);
 		setHasSavedCompletion(true);

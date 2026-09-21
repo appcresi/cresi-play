@@ -11,6 +11,7 @@ import {
   type BankQuestion,
 } from '@/lib/questionSearch';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import ClassroomService from '@/lib/classroomService';
 
 const ACCENT = '#4F46E5';
@@ -101,12 +102,9 @@ export const BuscadorInline = ({
         ...current,
         game: { ...current.game, totalScore: current.game.totalScore + POINTS_PER_SEARCH },
         progress: {
-          ...current.progress,
-          activityScores: {
-            ...current.progress.activityScores,
-            [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_SEARCH,
-          },
-          activityTimes: { ...current.progress.activityTimes, [ACTIVITY_TITLE]: new Date().toISOString() },
+          ...recordActivityProgress(current.progress, [
+            { key: ACTIVITY_TITLE, score: POINTS_PER_SEARCH, scoreMode: 'add' }
+          ]),
         },
         searchHistory: [...(current.searchHistory || []), { term: trimmed, date: new Date().toISOString() }].slice(-200),
       });
@@ -124,11 +122,9 @@ export const BuscadorInline = ({
       ...current,
       game: { ...current.game, totalScore: current.game.totalScore + points },
       progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + points,
-        },
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: points, scoreMode: 'add', touchTime: false }
+        ]),
       },
     });
   };

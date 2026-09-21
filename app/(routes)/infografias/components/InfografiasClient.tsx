@@ -15,6 +15,7 @@ import {
 } from "@tabler/icons-react";
 import GameStatusBar from "@/components/GameStatusBar";
 import UserDataManager from "@/lib/userDataManager";
+import { recordActivityProgress } from '@/lib/activityProgress';
 import ClassroomService from "@/lib/classroomService";
 import InfografiaService from "@/lib/infografiaService";
 import { getActivityById } from "@/lib/activities";
@@ -96,15 +97,9 @@ export default function InfografiasClient(): JSX.Element {
       ...current,
       game: { ...current.game, totalScore: current.game.totalScore + points },
       progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + points,
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString(),
-        },
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: points, scoreMode: 'add' }
+        ]),
       },
     };
     UserDataManager.saveUserData(updated);

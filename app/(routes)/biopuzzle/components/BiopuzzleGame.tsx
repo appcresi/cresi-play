@@ -12,6 +12,7 @@ import {
 import { bodySystems, type BodyPart } from '../data/bodySystems';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -185,28 +186,20 @@ export function BiopuzzleGame({
       onComplete?.();
 
       if (awardPoints) {
-        const current = UserDataManager.loadUserData();
+        const before = UserDataManager.loadUserData();
         const systemKey = `${ACTIVITY_ID}-${currentSystem().name}`;
 
-        if (!current.progress.completedActivities.includes(systemKey)) {
-          current.progress.completedActivities.push(systemKey);
-        }
-        current.progress.activityScores[systemKey] = score;
-        current.progress.activityTimes[systemKey] = new Date().toISOString();
-
-        const wasAlreadyCompleted = current.progress.completedActivities.includes(ACTIVITY_ID);
-        if (!wasAlreadyCompleted) {
-          current.progress.completedActivities.push(ACTIVITY_ID);
-        }
-        current.progress.activityScores[ACTIVITY_ID] = Math.max(
-          current.progress.activityScores[ACTIVITY_ID] || 0,
-          sessionScore
-        );
-        current.progress.activityTimes[ACTIVITY_ID] = new Date().toISOString();
+        const current = {
+          ...before,
+          progress: recordActivityProgress(before.progress, [
+            { key: systemKey, score, complete: true },
+            { key: ACTIVITY_ID, score: sessionScore, complete: true }
+          ])
+        };
 
         UserDataManager.saveUserData(current);
         setUserData(current);
-        if (!wasAlreadyCompleted) {
+        if (becameCompleted(before.progress, current.progress, ACTIVITY_ID)) {
           trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
         }
       }

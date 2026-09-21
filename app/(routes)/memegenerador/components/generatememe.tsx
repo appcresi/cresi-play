@@ -13,6 +13,7 @@ import {
 } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -99,33 +100,21 @@ export default function MemeGenerator() {
     link.click();
 
     const current = UserDataManager.loadUserData();
-    const wasAlreadyCompleted = current.progress.completedActivities.includes(ACTIVITY_TITLE);
     const updatedData = {
       ...current,
       game: {
         ...current.game,
         totalScore: current.game.totalScore + SCORE_PER_MEME
       },
-      progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + SCORE_PER_MEME
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        },
-        completedActivities: !wasAlreadyCompleted
-          ? [...current.progress.completedActivities, ACTIVITY_TITLE]
-          : current.progress.completedActivities
-      }
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, score: SCORE_PER_MEME, scoreMode: 'add', complete: true }
+      ])
     };
 
     UserDataManager.saveUserData(updatedData);
     setScore(updatedData.game.totalScore);
     setMemesCreated(prev => prev + 1);
-    if (!wasAlreadyCompleted) {
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
   };

@@ -1,8 +1,9 @@
 import UserDataSync from '@/lib/userDataSync';
 import ClassroomService from '@/lib/classroomService';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { auth } from '@/lib/firebaseAuth';
 import type { UserData, MoodRecord, Achievement, UserRole } from '@/types/user';
-import { ACTIVITY_IDS as DEFAULT_FEATURES } from '@/lib/activities';
+import { ACTIVITIES, ACTIVITY_IDS as DEFAULT_FEATURES } from '@/lib/activities';
 
 export type { UserData, UserRole };
 
@@ -115,6 +116,8 @@ class UserDataManager {
       ? lastVisitDates.reduce((latest, current) => (current > latest ? current : latest))
       : null;
 
+    const catalogTitles = new Set(ACTIVITIES.map((a) => a.title));
+
     if (this.classroomSyncTimeoutId) {
       clearTimeout(this.classroomSyncTimeoutId);
     }
@@ -128,7 +131,11 @@ class UserDataManager {
           return accepted === null ? undefined : Math.min(userData.game.totalScore, accepted);
         })(),
         streak: userData.game.streak,
-        completedActivities: userData.progress.completedActivities,
+        // Solo los títulos del catálogo: el resto son claves finas (una
+        // por trivia, por lección...) que inflaban el conteo del docente.
+        completedActivities: Array.from(new Set(
+          userData.progress.completedActivities.filter((key) => catalogTitles.has(key))
+        )),
         activityScores: userData.progress.activityScores,
         lessonTimes: Object.fromEntries(
           Object.entries(userData.progress.lessonProgress ?? {})
@@ -154,11 +161,9 @@ class UserDataManager {
 
   static completeActivity(activityTitle: string, score: number = 0): UserData {
     const userData = this.loadUserData();
-    if (!userData.progress.completedActivities.includes(activityTitle)) {
-      userData.progress.completedActivities.push(activityTitle);
-    }
-    userData.progress.activityScores[activityTitle] = score;
-    userData.progress.activityTimes[activityTitle] = new Date().toISOString();
+    userData.progress = recordActivityProgress(userData.progress, [
+      { key: activityTitle, score, complete: true }
+    ]);
     userData.game.totalScore += score;
     this.saveUserData(userData);
     return userData;
@@ -268,8 +273,11 @@ class UserDataManager {
     userData.game.totalScore = newScore;
 
     if (activityName) {
-      userData.progress.activityScores[activityName] =
-        newScore - previousScore + (userData.progress.activityScores[activityName] || 0);
+      // Ajusta en la misma proporción que el total (puede ser negativo:
+      // compras, penalidades), por eso acumula en vez de conservar el mejor.
+      userData.progress = recordActivityProgress(userData.progress, [
+        { key: activityName, score: newScore - previousScore, scoreMode: 'add', touchTime: false }
+      ]);
     }
 
     this.saveUserData(userData);

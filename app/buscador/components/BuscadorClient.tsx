@@ -12,6 +12,7 @@ import {
 } from "@/lib/questionSearch";
 import GameStatusBar from "@/components/GameStatusBar";
 import UserDataManager from "@/lib/userDataManager";
+import { recordActivityProgress } from '@/lib/activityProgress';
 import ClassroomService from "@/lib/classroomService";
 
 const ACCENT = "#4F46E5"; // indigo — no pertenece a ninguna actividad puntual del catálogo
@@ -92,15 +93,9 @@ export default function BuscadorClient(): JSX.Element {
           totalScore: current.game.totalScore + POINTS_PER_SEARCH,
         },
         progress: {
-          ...current.progress,
-          activityScores: {
-            ...current.progress.activityScores,
-            [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_SEARCH,
-          },
-          activityTimes: {
-            ...current.progress.activityTimes,
-            [ACTIVITY_TITLE]: new Date().toISOString(),
-          },
+          ...recordActivityProgress(current.progress, [
+            { key: ACTIVITY_TITLE, score: POINTS_PER_SEARCH, scoreMode: 'add' }
+          ]),
         },
         searchHistory: [
           ...(current.searchHistory || []),
@@ -126,11 +121,9 @@ export default function BuscadorClient(): JSX.Element {
         totalScore: current.game.totalScore + points,
       },
       progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + points,
-        },
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: points, scoreMode: 'add', touchTime: false }
+        ]),
       },
     };
     UserDataManager.saveUserData(updatedData);

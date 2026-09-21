@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { IconArrowRight, IconRefresh, IconHeartHandshake, IconCircleCheck } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { SCENARIOS, CLOSING_MESSAGE, type LightColor } from '../data/scenarios';
@@ -98,27 +99,18 @@ export default function SemaforoDelCuidado(): JSX.Element {
 
     setIsComplete(true);
     const current = UserDataManager.loadUserData();
-    const alreadyCompleted = current.progress.completedActivities.includes(ACTIVITY_ID);
     const updated = {
       ...current,
-      progress: {
-        ...current.progress,
-        completedActivities: alreadyCompleted
-          ? current.progress.completedActivities
-          : [...current.progress.completedActivities, ACTIVITY_ID],
-        activityScores: {
-          ...current.progress.activityScores,
-          // `sessionScore` ya incluye los puntos de ESTA situación: se
-          // suma dentro de `handleSelect`, que siempre corre antes que
-          // este handler (el botón "Terminar" no aparece hasta elegir un
-          // semáforo).
-          [ACTIVITY_ID]: Math.max(current.progress.activityScores[ACTIVITY_ID] || 0, sessionScore),
-        },
-        activityTimes: { ...current.progress.activityTimes, [ACTIVITY_ID]: new Date().toISOString() },
-      },
+      // `sessionScore` ya incluye los puntos de ESTA situación: se
+      // suma dentro de `handleSelect`, que siempre corre antes que
+      // este handler (el botón "Terminar" no aparece hasta elegir un
+      // semáforo).
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_ID, score: sessionScore, complete: true }
+      ]),
     };
     UserDataManager.saveUserData(updated);
-    if (!alreadyCompleted) {
+    if (becameCompleted(current.progress, updated.progress, ACTIVITY_ID)) {
       trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
     }
   };

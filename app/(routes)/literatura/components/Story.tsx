@@ -17,6 +17,7 @@ import { stories } from '../data/stories';
 import { splitIntoPages } from '../utils/textUtils';
 import type { Story, ReadingProgress } from '../types/types';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -315,7 +316,10 @@ export default function Story(): JSX.Element {
         totalScore: current.game.totalScore + pointsEarned
       },
       progress: {
-        ...current.progress,
+        ...recordActivityProgress(current.progress, [
+          { key: storyKey, score: pointsEarned, scoreMode: 'add', touchTime: false },
+          { key: ACTIVITY_TITLE, complete: isStoryComplete }
+        ]),
         storyProgress: {
           ...current.progress.storyProgress,
           [storyTitle]: {
@@ -323,23 +327,12 @@ export default function Story(): JSX.Element {
             percentage,
             pagesRead: updatedPagesRead
           }
-        },
-        activityScores: {
-          ...current.progress.activityScores,
-          [storyKey]: (current.progress.activityScores[storyKey] || 0) + pointsEarned
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        },
-        completedActivities: isStoryComplete
-          ? Array.from(new Set([...current.progress.completedActivities, ACTIVITY_TITLE]))
-          : current.progress.completedActivities
+        }
       }
     };
 
     saveUserData(updatedData);
-    if (isStoryComplete && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, story: storyTitle });
     }
   };

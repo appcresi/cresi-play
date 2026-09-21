@@ -19,6 +19,7 @@ import {
   LEVELS
 } from '../types/constants';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -88,26 +89,15 @@ const DataMuncher = () => {
         totalScore: current.game.totalScore + sessionScore,
         totalLives: lives
       },
-      progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: Math.max(current.progress.activityScores[ACTIVITY_TITLE] || 0, sessionScore)
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        },
-        completedActivities: isComplete
-          ? Array.from(new Set([...current.progress.completedActivities, ACTIVITY_TITLE]))
-          : current.progress.completedActivities
-      }
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, score: sessionScore, complete: isComplete }
+      ])
     };
 
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
-    if (isComplete && !current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
   };

@@ -12,6 +12,7 @@ import {
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { stepsData, type Step } from '../data/questions';
@@ -86,15 +87,9 @@ export default function ComicPoneloSimulator() {
           totalScore: userData.game.totalScore + POINTS_PER_CORRECT
         },
         progress: {
-          ...userData.progress,
-          activityScores: {
-            ...userData.progress.activityScores,
-            [ACTIVITY_TITLE]: (userData.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_CORRECT
-          },
-          activityTimes: {
-            ...userData.progress.activityTimes,
-            [ACTIVITY_TITLE]: new Date().toISOString()
-          }
+          ...recordActivityProgress(userData.progress, [
+            { key: ACTIVITY_TITLE, score: POINTS_PER_CORRECT, scoreMode: 'add' }
+          ]),
         }
       };
       saveUserData(updatedData);
@@ -107,11 +102,9 @@ export default function ComicPoneloSimulator() {
           totalLives: newLives
         },
         progress: {
-          ...userData.progress,
-          activityTimes: {
-            ...userData.progress.activityTimes,
-            [ACTIVITY_TITLE]: new Date().toISOString()
-          }
+          ...recordActivityProgress(userData.progress, [
+            { key: ACTIVITY_TITLE }
+          ]),
         }
       };
       saveUserData(updatedData);
@@ -139,11 +132,15 @@ export default function ComicPoneloSimulator() {
       // Antes esto nunca pasaba: el juego no marcaba la actividad como
       // completada en ningún lado, sin importar cuántas veces lo terminaras.
       const current = UserDataManager.loadUserData();
-      if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
-        current.progress.completedActivities.push(ACTIVITY_TITLE);
-        current.progress.activityTimes[ACTIVITY_TITLE] = new Date().toISOString();
-        UserDataManager.saveUserData(current);
-        setUserData(current);
+      const updatedData = {
+        ...current,
+        progress: recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, complete: true }
+        ])
+      };
+      if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
+        UserDataManager.saveUserData(updatedData);
+        setUserData(updatedData);
         trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
       }
     }

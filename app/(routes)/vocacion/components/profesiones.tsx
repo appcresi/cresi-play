@@ -6,6 +6,7 @@ import { IconCircleCheck, IconBriefcase, IconX } from '@tabler/icons-react';
 import { QUESTIONS } from '../lib/questions';
 import { PROFESSIONS } from '../lib/professions';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -114,20 +115,14 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
         totalScore: current.game.totalScore + POINTS_PER_QUESTION
       },
       progress: {
-        ...current.progress,
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: POINTS_PER_QUESTION, scoreMode: 'add' }
+        ]),
         vocationalTest: {
           answers: newAnswers,
           results: newResults || current.progress.vocationalTest?.results,
           professionAnswers: newProfessionAnswers || current.progress.vocationalTest?.professionAnswers,
         },
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_QUESTION
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [ACTIVITY_TITLE]: new Date().toISOString()
-        }
       }
     };
 
@@ -188,19 +183,14 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
         totalScore: current.game.totalScore + COMPLETION_BONUS
       },
       progress: {
-        ...current.progress,
-        completedActivities: !current.progress.completedActivities.includes(ACTIVITY_TITLE)
-          ? [...current.progress.completedActivities, ACTIVITY_TITLE]
-          : current.progress.completedActivities,
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: COMPLETION_BONUS, scoreMode: 'add', touchTime: false, complete: true }
+        ]),
         vocationalTest: {
           answers: finalAnswers,
           results: formattedResults,
           professionAnswers,
         },
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + COMPLETION_BONUS
-        }
       }
     };
 
@@ -227,16 +217,14 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
         totalScore: current.game.totalScore + POINTS_PER_PROFESSION
       },
       progress: {
-        ...current.progress,
+        ...recordActivityProgress(current.progress, [
+          { key: ACTIVITY_TITLE, score: POINTS_PER_PROFESSION, scoreMode: 'add', touchTime: false }
+        ]),
         vocationalTest: {
           ...current.progress.vocationalTest,
           answers: current.progress.vocationalTest?.answers ?? {},
           professionAnswers,
         },
-        activityScores: {
-          ...current.progress.activityScores,
-          [ACTIVITY_TITLE]: (current.progress.activityScores[ACTIVITY_TITLE] || 0) + POINTS_PER_PROFESSION
-        }
       }
     };
 

@@ -14,6 +14,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import { IconBrandInstagram, IconMaximize, IconRefresh, IconShoppingCart } from '@tabler/icons-react';
 import UserDataManager from '@/lib/userDataManager';
+import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
@@ -101,21 +102,11 @@ export default function TriviaGame({
         totalScore: score,
         totalLives: lives
       },
-      progress: {
-        ...current.progress,
-        activityScores: {
-          ...current.progress.activityScores,
-          [id]: Math.max(current.progress.activityScores[id] || 0, sessionScore)
-        },
-        activityTimes: {
-          ...current.progress.activityTimes,
-          [id]: new Date().toISOString(),
-          ...(isFinished ? { [ACTIVITY_TITLE]: new Date().toISOString() } : {})
-        },
-        completedActivities: isFinished
-          ? Array.from(new Set([...current.progress.completedActivities, id, ACTIVITY_TITLE]))
-          : current.progress.completedActivities
-      }
+      progress: recordActivityProgress(current.progress, [
+        { key: id, score: sessionScore, complete: isFinished },
+        // El título general solo se toca al terminar la trivia.
+        { key: ACTIVITY_TITLE, complete: isFinished, touchTime: isFinished }
+      ])
     };
 
     UserDataManager.saveUserData(updatedData);
