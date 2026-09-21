@@ -49,6 +49,7 @@ después de cargarlas hay que volver a desplegar.
 |---|---|
 | `npm run dev` / `build` / `start` | desarrollo / compilar / servir el build |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` (el CI lo corre antes que nada) |
+| `npm run check:lock` | comprueba el `package-lock.json` con **npm 10**, el que trae Node 22 y usa el CI. Correlo después de tocar dependencias: npm 11 (Windows) puede dejar el lock sin paquetes opcionales de otras plataformas y `npm ci` falla en Linux con "Missing: … from lock file"; se arregla con `npx npm@10 install --package-lock-only` |
 | `npm run lint` | ESLint 9 con la config oficial de Next 16 (`eslint.config.mjs`). Falla con **errores** o si **sube** el tope de avisos de `package.json` (`--max-warnings`): los avisos actuales se corrigen de a poco y el tope solo puede bajar |
 | `npm test` | tests unitarios (Vitest, sin dependencias externas) |
 | `npm run test:rules` | reglas de Firestore contra el emulador (necesita Java): `tests/rules/firestore.rules.test.mjs` (usuarios, puntaje, pendientes, lecciones) y `tests/rules/collections.rules.test.mjs` (contenido, clases, tareas y entregas, salas sin login, todo lo demás cerrado). **Al tocar `firestore.rules`, agregá su prueba** |

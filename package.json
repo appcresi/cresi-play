@@ -14,7 +14,8 @@
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit",
     "test:session": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore,auth --project demo-cresi \"node tests/e2e/session.e2e.mjs\"",
-    "test:browser": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore,auth --project demo-cresi \"npx playwright test\""
+    "test:browser": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore,auth --project demo-cresi \"npx playwright test\"",
+    "check:lock": "npx -y npm@10 ci --dry-run"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
