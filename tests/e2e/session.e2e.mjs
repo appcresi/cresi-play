@@ -127,6 +127,83 @@ try {
   p = await page(forge('uid-sin-nubes'));
   check('un usuario sin nubes ve la lista vacía', p.html.includes('Todavía no creaste ninguna') && !p.html.includes('SECRETO'));
 
+  // ── /docente/trivias: misma sesión, otra página ──
+  const { Timestamp } = await import('firebase-admin/firestore');
+  const q = (n) => ({ question: `Pregunta ${n}`, answer: 'a', options: { first: 'a', second: 'b', third: 'c' }, resume: 'r' });
+  await db.collection('trivia').doc('t-1').set({ id: 't-1', name: 'Trivia de la profe', author: teacher.localId, questions: [q(1), q(2), q(3)], playCount: 7, level: 1, isPublic: true, created_at: '2026-01-01T00:00:00Z' });
+  // `Timestamp` real de Firestore: sin el sanitizador (lib/plain.ts) rompe el render del servidor.
+  await db.collection('trivia').doc('t-2').set({ id: 't-2', name: 'Trivia con Timestamp', author: teacher.localId, questions: [q(1)], playCount: 1, created_at: Timestamp.fromDate(new Date('2026-02-03T04:05:06Z')) });
+  await db.collection('trivia').doc('t-3').set({ id: 't-3', name: 'TRIVIA SECRETA de otra docente', author: other.localId, questions: [q(1)], playCount: 99 });
+  await db.collection('trivia').doc('t-4').set({ id: 't-4', name: 'Trivia oficial de CrESI', author: 'CRESI', questions: [q(1)], playCount: 500 });
+
+  const triviasPage = async (cookie) => {
+    const r = await fetch(`${BASE}/docente/trivias`, { headers: cookie ? { cookie: `cresi_session=${cookie}` } : {}, redirect: 'manual' });
+    return { status: r.status, html: await r.text() };
+  };
+  let tp = await triviasPage(null);
+  check('trivias sin cookie: pide iniciar sesión', tp.status === 200 && tp.html.includes('Debes estar logueado'), tp.status);
+  check('trivias sin cookie: no filtra ninguna trivia', !/Trivia de la profe|SECRETA|oficial de CrESI/.test(tp.html));
+
+  tp = await triviasPage(cookie);
+  check('trivias con cookie: llegan SUS trivias ya en el HTML', tp.status === 200 && tp.html.includes('Trivia de la profe') && tp.html.includes('Trivia con Timestamp'), tp.html.slice(0, 200));
+  check('trivias con cookie: el documento con Timestamp no rompe el render', !/Application error|Unhandled Runtime Error|Only plain objects/.test(tp.html));
+  check('trivias con cookie: NO aparece la de otra docente ni la de CrESI', !tp.html.includes('SECRETA') && !tp.html.includes('oficial de CrESI'));
+  check('trivias con cookie: muestra el contador de partidas', tp.html.includes('7') && tp.html.includes('partidas'));
+  check('trivias con cookie: dice "2 trivias creadas"', /2\s*(<!-- -->)?\s*trivias?\s*(<!-- -->)?\s*creadas?/.test(tp.html) || tp.html.replace(/<!-- -->/g, '').includes('2 trivias creadas'), '');
+  check('trivias con cookie: ya no muestra "Debes estar logueado"', !tp.html.includes('Debes estar logueado'));
+
+  tp = await triviasPage(forge(other.localId));
+  check('trivias: la otra docente ve SOLO la suya', tp.html.includes('TRIVIA SECRETA') && !tp.html.includes('Trivia de la profe'));
+  tp = await triviasPage(forge(teacher.localId, { iat: Math.floor(Date.now() / 1000) - 8000, exp: Math.floor(Date.now() / 1000) - 800 }));
+  check('trivias: cookie vencida → sin sesión', tp.html.includes('Debes estar logueado') && !tp.html.includes('Trivia de la profe'));
+  tp = await triviasPage(forge(teacher.localId, { secret: 'un-secreto-que-no-es-el-real-1234567890' }));
+  check('trivias: cookie firmada con otro secreto → sin sesión', tp.html.includes('Debes estar logueado') && !tp.html.includes('Trivia de la profe'));
+
+  // ── /docente/completapalabras ──
+  const part = { text: 'La {pubertad} es una etapa', extraWords: ['otra'] };
+  await db.collection('completapalabras').doc('c-1').set({ id: 'c-1', title: 'Lección de la profe', author: teacher.localId, lecciones: [part], created_at: '2026-01-01T00:00:00Z' });
+  await db.collection('completapalabras').doc('c-2').set({ id: 'c-2', title: 'Lección con Timestamp', author: teacher.localId, lecciones: [part], created_at: Timestamp.fromDate(new Date('2026-03-04T05:06:07Z')) });
+  await db.collection('completapalabras').doc('c-3').set({ id: 'c-3', title: 'LECCION SECRETA de otra docente', author: other.localId, lecciones: [part] });
+  await db.collection('completapalabras').doc('c-4').set({ id: 'c-4', title: 'Lección oficial de CrESI', author: 'CRESI', lecciones: [part] });
+
+  const cpPage = async (cookie) => {
+    const r = await fetch(`${BASE}/docente/completapalabras`, { headers: cookie ? { cookie: `cresi_session=${cookie}` } : {}, redirect: 'manual' });
+    return { status: r.status, html: await r.text() };
+  };
+  let cp = await cpPage(null);
+  check('completapalabras sin cookie: pide iniciar sesión', cp.status === 200 && cp.html.includes('Debés estar logueado'), cp.status);
+  check('completapalabras sin cookie: no filtra ninguna lección', !/Lección de la profe|SECRETA|oficial de CrESI/.test(cp.html));
+
+  cp = await cpPage(cookie);
+  check('completapalabras con cookie: llegan SUS lecciones ya en el HTML', cp.status === 200 && cp.html.includes('Lección de la profe') && cp.html.includes('Lección con Timestamp'), cp.html.slice(0, 200));
+  check('completapalabras con cookie: el Timestamp no rompe el render', !/Application error|Unhandled Runtime Error|Only plain objects/.test(cp.html));
+  check('completapalabras con cookie: NO aparece la de otra docente ni la de CrESI', !cp.html.includes('SECRETA') && !cp.html.includes('oficial de CrESI'));
+  cp = await cpPage(forge(other.localId));
+  check('completapalabras: la otra docente ve SOLO la suya', cp.html.includes('LECCION SECRETA') && !cp.html.includes('Lección de la profe'));
+  cp = await cpPage(forge(teacher.localId, { secret: 'un-secreto-que-no-es-el-real-1234567890' }));
+  check('completapalabras: cookie con otro secreto → sin sesión', cp.html.includes('Debés estar logueado') && !cp.html.includes('Lección de la profe'));
+
+  // ── /docente/trivia-en-vivo ──
+  await db.collection('livetrivias').doc('LIVE1').set({ code: 'LIVE1', teacherId: teacher.localId, triviaId: 't-1', triviaName: 'Partida de la profe', questions: [], phase: 'lobby', currentQuestionIndex: 0, createdAt: '2026-01-05T00:00:00Z' });
+  await db.collection('livetrivias').doc('LIVE2').set({ code: 'LIVE2', teacherId: other.localId, triviaId: 't-3', triviaName: 'PARTIDA SECRETA de otra docente', questions: [], phase: 'lobby', currentQuestionIndex: 0, createdAt: '2026-01-06T00:00:00Z' });
+
+  const livePage = async (cookie) => {
+    const r = await fetch(`${BASE}/docente/trivia-en-vivo`, { headers: cookie ? { cookie: `cresi_session=${cookie}` } : {}, redirect: 'manual' });
+    return { status: r.status, html: await r.text() };
+  };
+  let lv = await livePage(null);
+  check('trivia-en-vivo sin cookie: pide iniciar sesión', lv.status === 200 && lv.html.includes('Debes estar logueado'), lv.status);
+  check('trivia-en-vivo sin cookie: no filtra trivias ni partidas', !/Trivia de la profe|Partida de la profe|SECRET/.test(lv.html));
+
+  lv = await livePage(cookie);
+  check('trivia-en-vivo con cookie: llegan SUS partidas ya en el HTML', lv.status === 200 && lv.html.includes('Partida de la profe'), lv.html.slice(0, 200));
+  check('trivia-en-vivo con cookie: puede elegir sus trivias y las de CrESI', lv.html.includes('Trivia de la profe') && lv.html.includes('Trivia oficial de CrESI'));
+  check('trivia-en-vivo con cookie: NO aparece nada de otra docente', !lv.html.includes('SECRETA'));
+  lv = await livePage(forge(other.localId));
+  check('trivia-en-vivo: la otra docente ve SOLO lo suyo (y las de CrESI)', lv.html.includes('PARTIDA SECRETA') && lv.html.includes('TRIVIA SECRETA') && !lv.html.includes('Partida de la profe') && !lv.html.includes('Trivia de la profe'));
+  lv = await livePage(forge(teacher.localId, { iat: Math.floor(Date.now() / 1000) - 8000, exp: Math.floor(Date.now() / 1000) - 800 }));
+  check('trivia-en-vivo: cookie vencida → sin sesión', lv.html.includes('Debes estar logueado') && !lv.html.includes('Partida de la profe'));
+
   // ── cierre de sesión ──
   res = await fetch(`${BASE}/api/session`, { method: 'DELETE' });
   const cleared = setCookieOf(res);
