@@ -13,7 +13,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 import { stepsData, type Step } from '../data/questions';
 
@@ -138,11 +138,12 @@ export default function ComicPoneloSimulator() {
           { key: ACTIVITY_TITLE, complete: true }
         ])
       };
-      if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
+      const firstTime = becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE);
+      if (firstTime) {
         UserDataManager.saveUserData(updatedData);
         setUserData(updatedData);
-        trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
       }
+      reportActivityFinished(ACTIVITY_TITLE, { firstTime });
     }
   };
 

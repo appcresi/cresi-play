@@ -18,7 +18,7 @@ import {
 } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 import type { Lesson } from './types';
 
@@ -238,9 +238,10 @@ export default function Lecciones(): JSX.Element {
 		};
 
 		saveUserData(updatedData);
-		if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
-			trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, lesson: title });
-		}
+		reportActivityFinished(ACTIVITY_TITLE, {
+			firstTime: becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE),
+			extra: { lesson: title },
+		});
 
 		// Contador agregado en el propio documento de la lección (lo suma
 		// /api/track, ver lib/track.ts). El panel admin no puede leer

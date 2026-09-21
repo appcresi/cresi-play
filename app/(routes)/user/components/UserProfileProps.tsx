@@ -292,7 +292,7 @@ const UserProfile: React.FC = () => {
                     <p className="text-xs text-gray-500 dark:text-gray-400">Días consecutivos</p>
                   </div>
                 </div>
-                <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{userData.game.streak}</span>
+                <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{UserDataManager.getStreakView(userData).current}</span>
               </div>
             </div>
           </div>

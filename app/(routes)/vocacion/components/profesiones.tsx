@@ -7,7 +7,7 @@ import { QUESTIONS } from '../lib/questions';
 import { PROFESSIONS } from '../lib/professions';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 interface AreaResult {
@@ -196,9 +196,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
 
     saveUserData(updatedData);
     setShowResults(true);
-    if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
-    }
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime: !current.progress.completedActivities.includes(ACTIVITY_TITLE) });
 
     toast.success(
       `¡Test completado! +${POINTS_PER_QUESTION * QUESTIONS.length + COMPLETION_BONUS} puntos en total`,

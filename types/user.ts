@@ -57,7 +57,27 @@ export interface UserProfile {
   className?: string | null;
 }
 
+/** Racha de días con actividad (ver lib/dailyStreak.ts). `lastDay` es 'YYYY-MM-DD' local. */
+export interface ActivityStreak {
+  current: number;
+  best: number;
+  lastDay: string | null;
+}
+
+/** Reto del día ya cumplido (ver lib/dailyChallenge.ts). */
+export interface DailyChallengeState {
+  day: string;
+  activityId: string;
+  done: boolean;
+}
+
 export interface UserProgress {
+  /** Racha de días con actividad; `game.streak` guarda una copia de `current`. */
+  activityStreak?: ActivityStreak;
+  /** Reto del día: solo se guarda el de HOY (el de ayer ya no importa). */
+  dailyChallenge?: DailyChallengeState;
+  /** Cuántos retos del día cumplió en total. */
+  challengesCompleted?: number;
   completedActivities: string[];
   activityScores: { [activityTitle: string]: number };
   activityTimes: { [activityTitle: string]: string };

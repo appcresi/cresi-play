@@ -24,6 +24,7 @@ import { formatAgeCycles } from '@/types/activity';
 import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 import { ActivityIcon } from '@/components/ActivityIcon';
+import DailyCard from '@/components/student/DailyCard';
 
 const DEFAULT_FEATURES = ACTIVITIES.map((activity) => ({
   ...activity,
@@ -206,7 +207,7 @@ const EducationalProgressPanel = () => {
                     <IconTarget size={16} className="text-blue-600" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">Racha</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{userData.game.streak} días</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{UserDataManager.getStreakView(userData).current} días</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -256,6 +257,8 @@ const EducationalProgressPanel = () => {
 
           {/* Main Content */}
           <main className="lg:col-span-3">
+            <DailyCard userData={userData} />
+
             {/* Search and Filter Bar */}
             <div className="mb-6 flex flex-col sm:flex-row items-center gap-3">
               {/* Buscador */}

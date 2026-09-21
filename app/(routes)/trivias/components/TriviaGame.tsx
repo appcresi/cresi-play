@@ -16,6 +16,8 @@ import { IconBrandInstagram, IconMaximize, IconRefresh, IconShoppingCart } from 
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
+import { useAbandonTracking } from '@/lib/useAbandonTracking';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
 import { track } from '@/lib/trackClient';
@@ -312,7 +314,25 @@ export default function TriviaGame({
       percentage: actualPercentage,
       passed: actualPercentage >= 80,
     });
-  }, [id, name, calculateCorrectAnswersPercentage]);
+    // Racha, reto del día y la tarjeta "qué sigue" (esta última no dentro de una tarea).
+    reportActivityFinished(ACTIVITY_TITLE, {
+      extra: { trivia_id: id, percentage: actualPercentage },
+      silent: !showChrome,
+    });
+  }, [id, name, calculateCorrectAnswersPercentage, showChrome]);
+
+  // Si se va a mitad de trivia: en qué pregunta se quedó (para ver dónde se pierde la gente).
+  useAbandonTracking('trivia_abandoned', () =>
+    !isFinished && answeredQuestions.length > 0
+      ? {
+          trivia_id: id,
+          question: answeredQuestions.length,
+          of: items.length,
+          lives,
+          game_over: isGameOver,
+        }
+      : null
+  );
 
   useEffect(() => {
     if (isFinished) {

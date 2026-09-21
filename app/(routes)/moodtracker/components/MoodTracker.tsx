@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, 
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 import type { Achievement } from '@/types/user';
 
@@ -166,12 +166,15 @@ const MoodTracker = () => {
   const checkAchievements = (updatedHistory: MoodEntry[]) => {
     let achievementsToUnlock: Achievement[] = [];
 
-    if (userData.game.streak >= 3) {
+    // Días seguidos registrando el ánimo (no la racha diaria de juego).
+    const moodStreak = UserDataManager.getMoodStreak(updatedHistory);
+
+    if (moodStreak >= 3) {
       const a = userData.achievements.find(a => a.id === 'streak-3');
       if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
 
-    if (userData.game.streak >= 7) {
+    if (moodStreak >= 7) {
       const a = userData.achievements.find(a => a.id === 'streak-7');
       if (a && !a.unlocked) achievementsToUnlock.push(a);
     }
@@ -234,10 +237,11 @@ const MoodTracker = () => {
     };
 
     UserDataManager.updateMoodEntry(newMoodEntry);
-    let updatedData = UserDataManager.updateMoodStreakAndRewards(newMoodEntry);
+    let updatedData = UserDataManager.updateMoodStreakAndRewards();
 
     // Se marca "MoodTracker" como completado desde el primer registro.
-    if (!updatedData.progress.completedActivities.includes(ACTIVITY_TITLE)) {
+    const firstTime = !updatedData.progress.completedActivities.includes(ACTIVITY_TITLE);
+    if (firstTime) {
       updatedData = {
         ...updatedData,
         progress: recordActivityProgress(updatedData.progress, [
@@ -245,8 +249,10 @@ const MoodTracker = () => {
         ])
       };
       UserDataManager.saveUserData(updatedData);
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
+    // Registrar cómo te sentís cuenta como día con actividad, pero es algo
+    // personal: sin la tarjeta de "qué sigue" después de cada registro.
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime, silent: true });
 
     setUserData(updatedData);
     checkAchievements(updatedData.mood.history);
@@ -298,7 +304,7 @@ const MoodTracker = () => {
                   </div>
                   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-x border-b border-pink-light dark:border-gray-700 p-6 border-t-4 border-t-green-500">
                     <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Racha Actual</p>
-                    <p className="text-3xl font-bold text-green-600 mt-2">{userData.game.streak} días</p>
+                    <p className="text-3xl font-bold text-green-600 mt-2">{UserDataManager.getMoodStreak(userData.mood.history)} días</p>
                   </div>
                   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border-x border-b border-pink-light dark:border-gray-700 p-6 border-t-4 border-t-purple-500">
                     <p className="text-ink/60 dark:text-gray-400 text-sm font-medium">Intensidad Promedio</p>
@@ -394,7 +400,7 @@ const MoodTracker = () => {
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-3 text-ink/80 dark:text-gray-300">
                 <IconCalendar className="w-5 h-5" style={{ color: ACCENT }} />
-                <span className="font-medium">Racha actual: <span className="font-bold" style={{ color: ACCENT }}>{userData.game.streak} días</span></span>
+                <span className="font-medium">Racha actual: <span className="font-bold" style={{ color: ACCENT }}>{UserDataManager.getMoodStreak(userData.mood.history)} días</span></span>
               </div>
               <button
                 onClick={() => setShowStats(true)}

@@ -2,6 +2,9 @@ import UserDataSync from '@/lib/userDataSync';
 import ClassroomService from '@/lib/classroomService';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { auth } from '@/lib/firebaseAuth';
+import { trackEvent } from '@/lib/analytics';
+import { advanceStreak, dayKey, reachedMilestone, viewStreak, type StreakAdvance, type StreakView } from '@/lib/dailyStreak';
+import { viewDailyChallenge, type DailyChallengeView } from '@/lib/dailyChallenge';
 import type { UserData, MoodRecord, Achievement, UserRole } from '@/types/user';
 import { ACTIVITIES, ACTIVITY_IDS as DEFAULT_FEATURES } from '@/lib/activities';
 
@@ -130,7 +133,8 @@ class UserDataManager {
           const accepted = UserDataSync.getServerScore();
           return accepted === null ? undefined : Math.min(userData.game.totalScore, accepted);
         })(),
-        streak: userData.game.streak,
+        // La que corresponde HOY: una guardada de hace días ya se cortó.
+        streak: viewStreak(userData.progress.activityStreak).current,
         // Solo los títulos del catálogo: el resto son claves finas (una
         // por trivia, por lección...) que inflaban el conteo del docente.
         completedActivities: Array.from(new Set(
@@ -165,7 +169,9 @@ class UserDataManager {
       { key: activityTitle, score, complete: true }
     ]);
     userData.game.totalScore += score;
+    const advance = this.applyPlayDay(userData);
     this.saveUserData(userData);
+    this.reportStreak(advance);
     return userData;
   }
 
@@ -215,14 +221,13 @@ class UserDataManager {
   }
 
   /**
-   * Calcula la racha de días consecutivos con al menos un registro de
-   * humor, actualiza `game.streak`, y da una recompensa (recupera una
-   * vida si falta alguna, si no, puntos).
+   * Da la recompensa por registrar el ánimo (recupera una vida si falta
+   * alguna, si no, puntos). Antes esto también pisaba `game.streak` con los
+   * días seguidos de registro de ánimo, pero `game.streak` es ahora la racha
+   * de días con actividad (ver lib/dailyStreak.ts).
    */
-  static updateMoodStreakAndRewards(moodEntry: MoodRecord): UserData {
+  static updateMoodStreakAndRewards(): UserData {
     const userData = this.loadUserData();
-    const streak = this.calculateMoodStreak([...userData.mood.history, moodEntry]);
-    userData.game.streak = streak;
 
     if (userData.game.totalLives < 3) {
       userData.game.totalLives += 1;
@@ -234,7 +239,12 @@ class UserDataManager {
     return userData;
   }
 
-  private static calculateMoodStreak(history: MoodRecord[]): number {
+  /**
+   * Días seguidos con al menos un registro de ánimo (para la pantalla y los
+   * logros del MoodTracker). No es la racha diaria del resto de la
+   * plataforma (`viewStreak`), aunque antes compartían `game.streak`.
+   */
+  static getMoodStreak(history: ReadonlyArray<{ date: string }>): number {
     if (history.length === 0) return 0;
 
     let streak = 1;
@@ -261,6 +271,85 @@ class UserDataManager {
     return streak;
   }
 
+  // ── Racha diaria y reto del día ──────────────────────────────────────
+
+  /**
+   * Anota HOY como día con actividad, sobre `userData` (sin guardar). Deja la
+   * racha en `progress.activityStreak` y una copia en `game.streak`, que es
+   * lo que leen el panel del docente y la sync con la clase.
+   */
+  private static applyPlayDay(userData: UserData): StreakAdvance {
+    const advance = advanceStreak(userData.progress.activityStreak);
+    if (advance.status !== 'same-day') {
+      userData.progress = { ...userData.progress, activityStreak: advance.streak };
+    }
+    userData.game.streak = advance.streak.current;
+    return advance;
+  }
+
+  /** Eventos de analítica de una racha que avanzó (no hace nada si fue el mismo día). */
+  private static reportStreak(advance: StreakAdvance): void {
+    if (advance.status === 'same-day') return;
+    const days = advance.streak.current;
+    trackEvent('streak_day', { days, status: advance.status });
+    // "Regreso": volvió a jugar tras uno o más días. Es la métrica de retención.
+    if (advance.daysAway !== null) trackEvent('return_visit', { days_away: advance.daysAway, kept_streak: advance.status === 'continued' });
+    if (advance.status === 'continued' && reachedMilestone(days)) trackEvent('streak_milestone', { days });
+  }
+
+  /** Anota que hoy la persona jugó. Es seguro llamarlo muchas veces por día. */
+  static registerPlayDay(): { data: UserData; advance: StreakAdvance } {
+    const data = this.loadUserData();
+    const advance = this.applyPlayDay(data);
+    if (advance.status !== 'same-day') {
+      this.saveUserData(data);
+      this.reportStreak(advance);
+    }
+    return { data, advance };
+  }
+
+  /** La racha que corresponde mostrar hoy (una guardada de hace días ya no vale). */
+  static getStreakView(userData: UserData): StreakView {
+    return viewStreak(userData.progress.activityStreak);
+  }
+
+  /**
+   * Fija el reto de HOY (una vez por día) y lo devuelve. `candidates` son las
+   * actividades que la persona puede ver; si ya hay uno guardado para hoy,
+   * se mantiene aunque la lista cambie.
+   */
+  static ensureDailyChallenge(candidates: readonly string[]): { data: UserData; view: DailyChallengeView | null } {
+    const data = this.loadUserData();
+    const today = dayKey();
+    const view = viewDailyChallenge(candidates, today, data.progress.dailyChallenge);
+    if (view && data.progress.dailyChallenge?.day !== today) {
+      data.progress = { ...data.progress, dailyChallenge: { day: today, activityId: view.activityId, done: false } };
+      this.saveUserData(data);
+    }
+    return { data, view };
+  }
+
+  /**
+   * Marca el reto de hoy como cumplido si `activity` (título o id) es la
+   * actividad del reto. Devuelve true solo la vez que lo cumple.
+   */
+  static completeDailyChallenge(activity: string): boolean {
+    const data = this.loadUserData();
+    const challenge = data.progress.dailyChallenge;
+    if (!challenge || challenge.day !== dayKey() || challenge.done) return false;
+    const finished = ACTIVITIES.find((a) => a.id === activity || a.title === activity);
+    if (!finished || finished.id !== challenge.activityId) return false;
+
+    data.progress = {
+      ...data.progress,
+      dailyChallenge: { ...challenge, done: true },
+      challengesCompleted: (data.progress.challengesCompleted ?? 0) + 1,
+    };
+    this.saveUserData(data);
+    trackEvent('daily_challenge_completed', { activity_id: finished.id });
+    return true;
+  }
+
   /**
    * Sincroniza el puntaje mostrado en pantalla (prop `score` de
    * GameStatusBar) con lo guardado. Si se indica `activityName`, también
@@ -272,6 +361,9 @@ class UserDataManager {
     const previousScore = userData.game.totalScore;
     userData.game.totalScore = newScore;
 
+    // Sumar puntos es jugar de verdad (abrir la pantalla no cuenta).
+    const advance = newScore > previousScore ? this.applyPlayDay(userData) : null;
+
     if (activityName) {
       // Ajusta en la misma proporción que el total (puede ser negativo:
       // compras, penalidades), por eso acumula en vez de conservar el mejor.
@@ -281,6 +373,7 @@ class UserDataManager {
     }
 
     this.saveUserData(userData);
+    if (advance) this.reportStreak(advance);
     return userData;
   }
 

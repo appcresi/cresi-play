@@ -20,7 +20,7 @@ import {
 } from '../types/constants';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('datamuncher');
@@ -97,8 +97,9 @@ const DataMuncher = () => {
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
-    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    // Este guardado corre en cada cambio de puntaje o vidas: solo se avisa al terminar el juego.
+    if (isComplete) {
+      reportActivityFinished(ACTIVITY_TITLE, { firstTime: becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE) });
     }
   };
 

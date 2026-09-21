@@ -77,7 +77,7 @@ export const QUESTION_BANK: SeedQuestion[] = Array.from({ length: 6 }, (_, i) =>
   id: `q${i + 1}`,
   question: `¿Pregunta de prueba número ${i + 1}?`,
   answer: 'Correcta',
-  options: { first: 'Correcta', second: 'Incorrecta A', third: 'Incorrecta B' },
+  options: { first: 'Incorrecta A', second: 'Incorrecta B', third: 'Incorrecta C' }, // las 3 incorrectas: el juego suma la correcta (answer)
   resume: `Resumen ${i + 1}`,
 }));
 

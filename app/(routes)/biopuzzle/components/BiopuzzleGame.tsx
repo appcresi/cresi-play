@@ -13,7 +13,7 @@ import { bodySystems, type BodyPart } from '../data/bodySystems';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('biopuzzle');
@@ -199,9 +199,10 @@ export function BiopuzzleGame({
 
         UserDataManager.saveUserData(current);
         setUserData(current);
-        if (becameCompleted(before.progress, current.progress, ACTIVITY_ID)) {
-          trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
-        }
+        reportActivityFinished(ACTIVITY_ID, {
+          firstTime: becameCompleted(before.progress, current.progress, ACTIVITY_ID),
+          silent: !showChrome, // dentro de una tarea no se muestra la pantalla final
+        });
       }
     } else {
       setLevelCompleted(false);

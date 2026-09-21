@@ -125,3 +125,134 @@ describe('contador de actividades completadas', () => {
     expect(countCompletedCatalog(completed, ACTIVITIES.map((a) => a.title))).toBe(ACTIVITIES.length);
   });
 });
+
+// 2026-09-18 es viernes; 09-21 lunes; 09-22 martes; 09-23 miércoles.
+const at = (iso: string) => vi.setSystemTime(new Date(`${iso}T12:00:00`));
+
+describe('racha diaria', () => {
+  it('sumar puntos cuenta el día, pero abrir la pantalla (mismo puntaje) no', () => {
+    at('2026-09-21');
+    UserDataManager.updateGameScore(0);
+    expect(UserDataManager.getStreakView(UserDataManager.loadUserData()).current).toBe(0);
+
+    UserDataManager.updateGameScore(100);
+    const view = UserDataManager.getStreakView(UserDataManager.loadUserData());
+    expect(view.current).toBe(1);
+    expect(view.playedToday).toBe(true);
+  });
+
+  it('varias jugadas el mismo día no suman más de un día', () => {
+    at('2026-09-21');
+    UserDataManager.updateGameScore(100);
+    UserDataManager.updateGameScore(300);
+    UserDataManager.registerPlayDay();
+    expect(UserDataManager.loadUserData().game.streak).toBe(1);
+  });
+
+  it('sube día tras día y game.streak queda igual a la racha (lo que lee el docente)', () => {
+    at('2026-09-21');
+    UserDataManager.registerPlayDay();
+    at('2026-09-22');
+    UserDataManager.registerPlayDay();
+    const data = UserDataManager.loadUserData();
+    expect(data.progress.activityStreak).toEqual({ current: 2, best: 2, lastDay: '2026-09-22' });
+    expect(data.game.streak).toBe(2);
+  });
+
+  it('el fin de semana no la corta, pero un día hábil sin jugar sí', () => {
+    at('2026-09-18'); // viernes
+    UserDataManager.registerPlayDay();
+    at('2026-09-21'); // lunes
+    UserDataManager.registerPlayDay();
+    expect(UserDataManager.loadUserData().game.streak).toBe(2);
+
+    at('2026-09-23'); // miércoles, faltó el martes
+    UserDataManager.registerPlayDay();
+    const data = UserDataManager.loadUserData();
+    expect(data.game.streak).toBe(1);
+    expect(data.progress.activityStreak?.best).toBe(2);
+  });
+
+  it('al docente le llega la racha de HOY, no una guardada de hace días', () => {
+    authMock.currentUser = { uid: 'alumno-1', isAnonymous: true };
+    at('2026-09-21');
+    const data = UserDataManager.getDefaultUserData();
+    data.profile.classroomId = 'clase-1';
+    data.progress.activityStreak = { current: 5, best: 5, lastDay: '2026-09-21' };
+    data.game.streak = 5;
+    UserDataManager.saveUserData(data);
+    vi.advanceTimersByTime(1000);
+    expect(syncStudentProgress.mock.calls.at(-1)![2].streak).toBe(5);
+
+    at('2026-09-25'); // jueves: faltaron el martes y el miércoles
+    UserDataManager.saveUserData(data);
+    vi.advanceTimersByTime(1000);
+    expect(syncStudentProgress.mock.calls.at(-1)![2].streak).toBe(0);
+  });
+
+  it('registrar el ánimo ya no pisa la racha diaria ni la cuenta como "días de ánimo"', () => {
+    at('2026-09-21');
+    UserDataManager.registerPlayDay();
+    const entry = { date: new Date().toISOString(), mood: 8, label: 'Feliz', intensity: 5 };
+    UserDataManager.updateMoodEntry(entry);
+    UserDataManager.updateMoodStreakAndRewards();
+    expect(UserDataManager.loadUserData().game.streak).toBe(1);
+
+    const history = UserDataManager.loadUserData().mood.history;
+    expect(UserDataManager.getMoodStreak(history)).toBe(1);
+  });
+
+  it('resetear el progreso reinicia la racha', () => {
+    at('2026-09-21');
+    UserDataManager.registerPlayDay();
+    UserDataManager.resetGameData();
+    const data = UserDataManager.loadUserData();
+    expect(data.game.streak).toBe(0);
+    expect(data.progress.activityStreak).toBeUndefined();
+  });
+});
+
+describe('reto del día', () => {
+  const candidates = ['trivias', 'pasapalabras', 'condon'];
+
+  it('se fija una vez por día y no cambia aunque la lista sí', () => {
+    at('2026-09-21');
+    const first = UserDataManager.ensureDailyChallenge(candidates).view!;
+    expect(candidates).toContain(first.activityId);
+    expect(first.done).toBe(false);
+
+    const again = UserDataManager.ensureDailyChallenge(['datamuncher', 'impostor']).view!;
+    expect(again.activityId).toBe(first.activityId);
+  });
+
+  it('completar OTRA actividad no lo cumple; completar la del reto sí, una sola vez', () => {
+    at('2026-09-21');
+    const { view } = UserDataManager.ensureDailyChallenge(candidates);
+    const other = ACTIVITIES.find((a) => a.id !== view!.activityId && candidates.includes(a.id))!;
+    expect(UserDataManager.completeDailyChallenge(other.title)).toBe(false);
+
+    const target = ACTIVITIES.find((a) => a.id === view!.activityId)!;
+    expect(UserDataManager.completeDailyChallenge(target.title)).toBe(true);
+    expect(UserDataManager.completeDailyChallenge(target.title)).toBe(false);
+    const data = UserDataManager.loadUserData();
+    expect(data.progress.dailyChallenge?.done).toBe(true);
+    expect(data.progress.challengesCompleted).toBe(1);
+  });
+
+  it('sin haber visto el reto de hoy, no se marca nada', () => {
+    at('2026-09-21');
+    expect(UserDataManager.completeDailyChallenge('Trivias')).toBe(false);
+    expect(UserDataManager.loadUserData().progress.challengesCompleted).toBeUndefined();
+  });
+
+  it('al día siguiente hay un reto nuevo, sin cumplir, y los retos cumplidos se conservan', () => {
+    at('2026-09-21');
+    const { view } = UserDataManager.ensureDailyChallenge(candidates);
+    UserDataManager.completeDailyChallenge(ACTIVITIES.find((a) => a.id === view!.activityId)!.title);
+
+    at('2026-09-22');
+    const next = UserDataManager.ensureDailyChallenge(candidates);
+    expect(next.view!.done).toBe(false);
+    expect(next.data.progress.challengesCompleted).toBe(1);
+  });
+});

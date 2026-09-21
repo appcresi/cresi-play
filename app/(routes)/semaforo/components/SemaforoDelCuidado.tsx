@@ -5,7 +5,7 @@ import { IconArrowRight, IconRefresh, IconHeartHandshake, IconCircleCheck } from
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 import { SCENARIOS, CLOSING_MESSAGE, type LightColor } from '../data/scenarios';
 
@@ -110,9 +110,7 @@ export default function SemaforoDelCuidado(): JSX.Element {
       ]),
     };
     UserDataManager.saveUserData(updated);
-    if (becameCompleted(current.progress, updated.progress, ACTIVITY_ID)) {
-      trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
-    }
+    reportActivityFinished(ACTIVITY_ID, { firstTime: becameCompleted(current.progress, updated.progress, ACTIVITY_ID) });
   };
 
   const handleRestart = (): void => {

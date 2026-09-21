@@ -6,7 +6,7 @@ import { IconRefresh, IconSparkles } from '@tabler/icons-react';
 import { QUESTIONS, LANGUAGES, shuffleQuestions, type LoveLanguageKey, type LoveLanguageQuestion } from '../lib/questions';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('lenguajesdelamor');
@@ -120,9 +120,7 @@ export default function LoveLanguagesTest({ onScoreChange }: LoveLanguagesTestPr
     UserDataManager.saveUserData(updatedData);
     onScoreChange?.(updatedData.game.totalScore);
 
-    if (!current.progress.completedActivities.includes(ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
-    }
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime: !current.progress.completedActivities.includes(ACTIVITY_TITLE) });
 
     toast.success(
       `¡Test completado! +${POINTS_PER_QUESTION * questions.length + COMPLETION_BONUS} puntos en total`,

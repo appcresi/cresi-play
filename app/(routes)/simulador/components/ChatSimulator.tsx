@@ -8,7 +8,7 @@ import TypingIndicator from './TypingIndicator';
 import { SCENARIOS, type ChatOption, type ChatNode, type ChatScenario } from '../utils/scenarios';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 // Antes esto era el string suelto 'ChatSimulator' — no coincidía con el
@@ -236,11 +236,12 @@ const ChatSimulator = () => {
         { key: ACTIVITY_ID, complete: true, touchTime: false }
       ])
     };
-    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_ID)) {
+    const firstTime = becameCompleted(current.progress, updatedData.progress, ACTIVITY_ID);
+    if (firstTime) {
       UserDataManager.saveUserData(updatedData);
       setUserData(updatedData);
-      trackEvent('activity_completed', { activity_id: ACTIVITY_ID });
     }
+    reportActivityFinished(ACTIVITY_ID, { firstTime });
 
     setMessages((prev) => [
       ...prev,

@@ -18,7 +18,7 @@ import { splitIntoPages } from '../utils/textUtils';
 import type { Story, ReadingProgress } from '../types/types';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('literatura');
@@ -332,8 +332,12 @@ export default function Story(): JSX.Element {
     };
 
     saveUserData(updatedData);
-    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE, story: storyTitle });
+    // Este handler corre en cada página leída: solo se avisa al llegar al final del cuento.
+    if (isStoryComplete) {
+      reportActivityFinished(ACTIVITY_TITLE, {
+        firstTime: becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE),
+        extra: { story: storyTitle },
+      });
     }
   };
 

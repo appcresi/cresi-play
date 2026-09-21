@@ -159,6 +159,46 @@ scripts/            mantenimiento: migraciones, carga de contenido, monitoreo
 - **Progreso de actividades:** todas las pantallas usan `recordActivityProgress`
   (`lib/activityProgress.ts`); no armes `activityScores` / `completedActivities` a mano.
 
+## Retención y métricas
+
+**Racha diaria** (`lib/dailyStreak.ts`, funciones puras con tests). Cuenta los
+días en que la persona *juega* (suma puntos o termina una actividad; abrir la
+página no cuenta). Los fines de semana no la cortan (`FORGIVE_WEEKENDS`), porque
+el uso es sobre todo en clase. Se guarda en `progress.activityStreak` y se copia
+a `game.streak`, que es lo que lee el panel del docente. Antes `game.streak`
+era la racha del registro de ánimo: el MoodTracker ahora calcula la suya aparte
+(`UserDataManager.getMoodStreak`).
+
+**Reto del día** (`lib/dailyChallenge.ts`). Una actividad repetible que sale de
+la fecha (igual para todos, sin servidor) y respeta las actividades que el
+docente habilitó a la clase. Cumplirlo marca un tilde y suma a "retos
+cumplidos"; a propósito no da puntos ni vidas, porque cada juego es dueño de
+los suyos y pisaría el premio.
+
+**Pantalla final "qué sigue"** (`components/ActivityFinishedSheet.tsx`). Todas
+las pantallas de juego avisan al terminar con `reportActivityFinished`
+(`lib/activityFinished.ts`), que registra la analítica, cuenta el día, revisa el
+reto y muestra una tarjeta con la racha y qué hacer ahora. Para una actividad
+nueva alcanza con llamar a esa función al terminar (con `silent: true` si no
+debe mostrar la tarjeta, por ejemplo dentro de una tarea).
+
+**Eventos de Google Analytics** (solo de quien aceptó cookies):
+
+| Evento | Qué mide |
+|---|---|
+| `activity_completed` | primera vez que se completa una actividad (`activity_title`) |
+| `activity_finished` | cada vez que se termina una actividad (`first_time`) |
+| `trivia_completed` / `trivia_abandoned` | fin de una trivia, o en qué pregunta se fue (`question`, `of`) |
+| `streak_day`, `streak_milestone` | un día más de racha (`days`, `status`) y los hitos de 3, 7, 14, 30... |
+| `return_visit` | volvió a jugar tras `days_away` días (`kept_streak`): es la métrica de regreso |
+| `next_steps_shown`, `next_step_click` | si la tarjeta final se ve y a dónde lleva |
+| `daily_challenge_click`, `daily_challenge_completed` | uso del reto del día |
+
+Cómo leerlo en GA4 → Explorar: un *embudo* con `page_view` de la actividad →
+`activity_finished` muestra cuánta gente termina; `trivia_abandoned` por
+`question` muestra dónde se pierde; `return_visit` por `days_away` muestra
+cuánta gente vuelve. Ojo: solo ve a quien aceptó cookies.
+
 ## Desplegar
 
 1. Cargar/actualizar las variables de entorno en Vercel (Node **22.x**).

@@ -5,7 +5,7 @@ import { IconChevronUp, IconMinus, IconPlus } from '@tabler/icons-react';
 import esiTermsByCategory from '../data/esiTermsByCategory.json';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('impostor');
@@ -237,11 +237,13 @@ export default function ESIImpostor() {
         { key: ACTIVITY_TITLE, complete: true, touchTime: false }
       ])
     };
-    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
+    const firstTime = becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE);
+    if (firstTime) {
       UserDataManager.saveUserData(updatedData);
       setUserData(updatedData);
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }
+    // Es un juego de mesa de rondas sin fin: la pantalla final solo la primera vez, no en cada ronda.
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime, silent: !firstTime });
   };
 
   /**

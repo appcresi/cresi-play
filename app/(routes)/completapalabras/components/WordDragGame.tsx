@@ -13,7 +13,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 
 interface WordDragGameProps {
@@ -165,8 +165,12 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
     setScore(updatedData.game.totalScore);
     UserDataManager.saveUserData(updatedData);
     setUserData(updatedData);
-    if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
+    // Este guardado corre en cada cambio de puntaje o vidas: solo se avisa al terminar la lección.
+    if (finishedLesson) {
+      reportActivityFinished(ACTIVITY_TITLE, {
+        firstTime: becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE),
+        silent: !showChrome, // dentro de una tarea no se muestra la pantalla final
+      });
     }
   };
 

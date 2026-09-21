@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { db } from '@/lib/firebaseFirestore';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
 import { IconRefresh, IconHome, IconDeviceFloppy } from '@tabler/icons-react';
@@ -268,7 +268,8 @@ export default function JugarAzar(): JSX.Element {
     if (availableCategories.length === 0) {
       setGameState('finished');
       setIsSpinning(false);
-      trackEvent('activity_completed', { activity_id: 'jugarazar' });
+      // No está en el catálogo: se cuenta el día y la analítica, sin tarjeta.
+      reportActivityFinished('jugarazar', { firstTime: true, silent: true });
       return;
     }
 

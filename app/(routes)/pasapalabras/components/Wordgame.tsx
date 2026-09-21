@@ -13,7 +13,7 @@ import PurchaseModal from '@/components/PurchaseModal';
 import FinalReport from './FinalReport';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
-import { trackEvent } from '@/lib/analytics';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -219,9 +219,7 @@ const UnifiedWordGame = () => {
       ])
     };
     UserDataManager.saveUserData(updated);
-    if (becameCompleted(data.progress, updated.progress, ACTIVITY_TITLE)) {
-      trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
-    }
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime: becameCompleted(data.progress, updated.progress, ACTIVITY_TITLE) });
 
     setShowFinalReport(true);
   };

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Fredoka } from 'next/font/google';
-import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconTarget } from '@tabler/icons-react';
+import { IconTrophy, IconHeart, IconHeartFilled, IconStarFilled, IconClock, IconCheckbox, IconUser, IconFlame } from '@tabler/icons-react';
 import UserDataSync from '@/lib/userDataSync';
 import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebaseAuth';
@@ -143,6 +143,8 @@ const GameStatusBar = ({
     }
   }, [lives, isAuthenticated, isAnonymous, userData.game.totalLives]);
 
+  const dailyStreak = UserDataManager.getStreakView(userData).current;
+
   const handleProfileClick = () => {
     router.push('/');
   };
@@ -253,12 +255,16 @@ const GameStatusBar = ({
               )}
             </div>
 
-            {/* Streak */}
-            <div className="hidden md:flex items-center space-x-2 px-3 py-2 bg-pink-light dark:bg-gray-800 rounded-full">
-              <IconTarget size={16} className="text-coral-dark" />
+            {/* Racha de días con actividad (ver lib/dailyStreak.ts). Si ya se
+                cortó, se muestra 0 aunque quede guardado el último valor. */}
+            <div
+              className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-pink-light dark:bg-gray-800 rounded-full"
+              title="Días seguidos con actividad"
+            >
+              <IconFlame size={16} className={dailyStreak > 0 ? 'text-orange-500' : 'text-ink/30 dark:text-gray-600'} />
               <div className="text-sm">
-                <span className="text-xs text-ink/50 dark:text-gray-400">Racha: </span>
-                <span className="font-medium text-ink dark:text-gray-100">{userData.game.streak}</span>
+                <span className="text-xs text-ink/50 dark:text-gray-400 hidden md:inline">Racha: </span>
+                <span className="font-medium text-ink dark:text-gray-100">{dailyStreak}</span>
               </div>
             </div>
 

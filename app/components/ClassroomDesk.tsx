@@ -24,6 +24,7 @@ import { loadStudentUserData } from './loadStudentUserData';
 import Header from '@/components/Header';
 import { ActivityIcon } from '@/components/ActivityIcon';
 import { TareasStudentTab } from '@/components/student/TareasStudentTab';
+import DailyCard from '@/components/student/DailyCard';
 import { TareaViewScreen } from '@/components/student/TareaViewScreen';
 import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
@@ -271,7 +272,7 @@ const ClassroomDesk = () => {
                       </div>
                       <div className="flex items-center gap-1.5 text-orange-500">
                         <IconFlame className="w-4 h-4" />
-                        <span className="text-sm font-bold">{userData.game.streak}</span>
+                        <span className="text-sm font-bold">{UserDataManager.getStreakView(userData).current}</span>
                       </div>
                     </div>
                   </div>
@@ -282,6 +283,8 @@ const ClassroomDesk = () => {
                     />
                   </div>
                 </div>
+
+                <DailyCard userData={userData} className="" />
 
                 {userData.mood.lastEntry && (
                   <button
