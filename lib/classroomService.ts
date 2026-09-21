@@ -545,6 +545,7 @@ const ClassroomService = {
           completedCount: progress.completedActivities.length,
           completedActivities: progress.completedActivities,
           activityScores: progress.activityScores,
+          ...(progress.lessonTimes === undefined ? {} : { lessonTimes: progress.lessonTimes }),
           lastActive: progress.lastActive,
         },
         progressUpdatedAt: serverTimestamp(),

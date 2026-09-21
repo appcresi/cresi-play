@@ -43,6 +43,8 @@ export interface StudentProgress {
   completedCount: number;
   completedActivities: string[];
   activityScores: Record<string, number>;
+  /** Veces que el alumno terminó cada lección (título → cantidad). */
+  lessonTimes?: Record<string, number>;
   lastActive: string | null;
 }
 

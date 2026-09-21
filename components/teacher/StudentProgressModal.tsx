@@ -102,6 +102,25 @@ export const StudentProgressModal = ({
                   </ul>
                 )}
               </div>
+
+              {Object.keys(progress.lessonTimes ?? {}).length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-ink/80 dark:text-gray-300 mb-2">Lecciones realizadas</p>
+                  <ul className="space-y-1.5">
+                    {Object.entries(progress.lessonTimes ?? {}).map(([title, times]) => (
+                      <li
+                        key={title}
+                        className="flex items-center justify-between text-sm text-ink/80 dark:text-gray-300 bg-cream dark:bg-gray-700 rounded-lg px-3 py-2"
+                      >
+                        <span>{title}</span>
+                        <span className="text-xs font-medium text-teal-600">
+                          {times} {times === 1 ? 'vez' : 'veces'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
         </div>

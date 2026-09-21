@@ -130,6 +130,11 @@ class UserDataManager {
         streak: userData.game.streak,
         completedActivities: userData.progress.completedActivities,
         activityScores: userData.progress.activityScores,
+        lessonTimes: Object.fromEntries(
+          Object.entries(userData.progress.lessonProgress ?? {})
+            .filter(([, entry]) => (entry.timesCompleted ?? 0) > 0)
+            .map(([title, entry]) => [title, entry.timesCompleted as number])
+        ),
         lastActive,
       }).catch(err => {
         console.error('❌ Error sincronizando progreso con la clase:', err);
