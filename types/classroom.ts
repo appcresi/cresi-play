@@ -64,7 +64,8 @@ export interface ClassroomStudent {
 export interface PendingStudent {
   id: string;
   username: string;
-  password: string;
+  /** La contraseña NO viene acá: está cifrada en Firestore y el docente la
+   *  pide al servidor cuando la necesita (lib/pendingStudentsClient.ts). */
   claimed: boolean;
   createdAt: string;
 }

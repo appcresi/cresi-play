@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:rules": "npx -y firebase-tools@13 emulators:exec --config firebase.emulator.json --only firestore --project demo-cresi \"node tests/rules/firestore.rules.test.mjs\"",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",

@@ -24,6 +24,15 @@ import {
 import { generateUniqueJoinCode } from '@/lib/joinCode';
 import type { Character } from '@/types/user';
 import type { Classroom, StudentProgress, ClassroomStudent, PendingStudent } from '@/types/classroom';
+import { createPendingStudents, updatePendingCredentials } from '@/lib/pendingStudentsClient';
+
+// Un pendiente tal como se lee de Firestore, SIN la contraseña: ni la
+// cifrada ni la vieja en texto plano llegan al estado de la app. Para verla
+// el docente la pide al servidor (revealPendingPassword).
+function toPendingStudent(id: string, data: Record<string, any>): PendingStudent {
+  const { password: _password, passwordEnc: _passwordEnc, ...rest } = data;
+  return { id, ...rest } as PendingStudent;
+}
 
 export type { Character, Classroom, StudentProgress, ClassroomStudent, PendingStudent };
 
@@ -310,37 +319,21 @@ const ClassroomService = {
 
   // ---------- Alumnos agregados manualmente por el docente ----------
 
+  // La contraseña ya no se escribe desde el cliente: la cifra el servidor
+  // (ver /api/pending-students y lib/passwordCrypto.ts).
+
   async addPendingStudent(
     classroomId: string,
     username: string,
     password: string
-  ): Promise<PendingStudent> {
-    // Evita el caso que causaba alumnos "duplicados" en el panel: dos
-    // registros con el mismo nombre, uno reclamado y otro fantasma que
-    // nunca se usa. Comparamos sin distinguir mayúsculas.
-    const normalizedUsername = username.trim().toLowerCase();
-    const existingSnap = await getDocs(collection(db, 'classrooms', classroomId, 'estudiantesPendientes'));
-    const alreadyExists = existingSnap.docs.some(
-      (d) => String(d.data().username ?? '').trim().toLowerCase() === normalizedUsername
-    );
-    if (alreadyExists) {
+  ): Promise<void> {
+    const { skipped } = await createPendingStudents(classroomId, [{ username, password }]);
+    if (skipped.some((s) => s.reason === 'DUPLICATE_USERNAME')) {
+      // Evita el caso que causaba alumnos "duplicados" en el panel: dos
+      // registros con el mismo nombre, uno reclamado y otro fantasma.
       throw new Error('DUPLICATE_USERNAME');
     }
-
-    const ref = await addDoc(collection(db, 'classrooms', classroomId, 'estudiantesPendientes'), {
-      username,
-      password,
-      claimed: false,
-      claimedUid: null,
-      createdAt: serverTimestamp(),
-    });
-    return {
-      id: ref.id,
-      username,
-      password,
-      claimed: false,
-      createdAt: new Date().toISOString(),
-    };
+    if (skipped.length > 0) throw new Error('INVALID_CREDENTIALS');
   },
 
   /**
@@ -351,8 +344,9 @@ const ClassroomService = {
     classroomId: string,
     lines: string[]
   ): Promise<{ added: number; skipped: string[] }> {
-    let added = 0;
     const skipped: string[] = [];
+    const students: Array<{ username: string; password: string }> = [];
+    const lineByUsername = new Map<string, string>();
 
     for (const rawLine of lines) {
       const line = rawLine.trim();
@@ -370,63 +364,30 @@ const ClassroomService = {
         continue;
       }
 
-      try {
-        await this.addPendingStudent(classroomId, username, password);
-        added += 1;
-      } catch (err) {
-        // Ya existe un alumno con ese usuario en la clase: lo salteamos
-        // en vez de cortar el resto de la carga masiva.
-        skipped.push(`${rawLine} (usuario repetido)`);
-      }
+      students.push({ username, password });
+      lineByUsername.set(username, rawLine);
     }
 
-    return { added, skipped };
+    if (students.length === 0) return { added: 0, skipped };
+
+    const result = await createPendingStudents(classroomId, students);
+    for (const item of result.skipped) {
+      // Ya existe un alumno con ese usuario en la clase: lo salteamos
+      // en vez de cortar el resto de la carga masiva.
+      const raw = lineByUsername.get(item.username) ?? item.username;
+      skipped.push(item.reason === 'DUPLICATE_USERNAME' ? `${raw} (usuario repetido)` : raw);
+    }
+
+    return { added: result.added, skipped };
   },
 
   async getPendingStudents(classroomId: string): Promise<PendingStudent[]> {
     const snap = await getDocs(collection(db, 'classrooms', classroomId, 'estudiantesPendientes'));
-    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+    return snap.docs.map((d) => toPendingStudent(d.id, d.data()));
   },
 
   async removePendingStudent(classroomId: string, pendingId: string): Promise<void> {
     await deleteDoc(doc(db, 'classrooms', classroomId, 'estudiantesPendientes', pendingId));
-  },
-
-  /**
-   * Valida usuario + contraseña de un alumno agregado manualmente que todavía
-   * no reclamó su cuenta. Requiere estar autenticado (por ej. sesión anónima)
-   * antes de llamarlo, ya que la regla de lectura exige `request.auth != null`.
-   */
-  /**
-   * Busca un registro por usuario/contraseña, sin importar mayúsculas en el
-   * usuario (los chicos no siempre lo tipean igual que se lo asignaron) y
-   * sin filtrar por `claimed` — si ya estaba reclamado, quien llama a esto
-   * decide qué hacer (por ejemplo, avisar "ya te uniste antes" en vez de
-   * decir "incorrecto", que sería engañoso).
-   *
-   * Trae todos los pendientes de la clase y compara en memoria en vez de
-   * hacer un query por igualdad exacta — para una clase de 30-40 alumnos
-   * esto no tiene costo real, y evita depender de un campo extra
-   * (usernameLower) que los registros viejos no tendrían.
-   */
-  async validateManualCredentials(
-    classroomId: string,
-    username: string,
-    password: string
-  ): Promise<PendingStudent | null> {
-    const normalizedUsername = username.trim().toLowerCase();
-    const normalizedPassword = password.trim();
-
-    const snap = await getDocs(collection(db, 'classrooms', classroomId, 'estudiantesPendientes'));
-    const match = snap.docs.find((d) => {
-      const data = d.data() as any;
-      const storedUsername = String(data.username ?? '').trim().toLowerCase();
-      const storedPassword = String(data.password ?? '').trim();
-      return storedUsername === normalizedUsername && storedPassword === normalizedPassword;
-    });
-
-    if (!match) return null;
-    return { id: match.id, ...(match.data() as any) } as PendingStudent;
   },
 
   /**
@@ -474,7 +435,7 @@ const ClassroomService = {
   async getPendingStudentById(classroomId: string, pendingId: string): Promise<PendingStudent | null> {
     const snap = await getDoc(doc(db, 'classrooms', classroomId, 'estudiantesPendientes', pendingId));
     if (!snap.exists()) return null;
-    return { id: snap.id, ...(snap.data() as any) } as PendingStudent;
+    return toPendingStudent(snap.id, snap.data() ?? {});
   },
 
   /**
@@ -491,7 +452,7 @@ const ClassroomService = {
     const snap = await getDocs(q);
     if (snap.empty) return null;
     const d = snap.docs[0];
-    return { id: d.id, ...(d.data() as any) } as PendingStudent;
+    return toPendingStudent(d.id, d.data());
   },
 
   /**
@@ -503,7 +464,7 @@ const ClassroomService = {
     pendingId: string,
     updates: { username?: string; password?: string }
   ): Promise<void> {
-    await updateDoc(doc(db, 'classrooms', classroomId, 'estudiantesPendientes', pendingId), updates);
+    await updatePendingCredentials(classroomId, pendingId, updates);
   },
 
   /**

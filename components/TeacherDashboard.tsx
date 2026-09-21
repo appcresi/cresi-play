@@ -65,7 +65,6 @@ const TeacherDashboard = () => {
     classroomId: string;
     pendingId: string;
     username: string;
-    password: string;
     /** Si ya está reclamado, presente y con su uid — habilita "Reiniciar acceso". */
     claimedUid?: string;
   } | null>(null);
@@ -226,7 +225,6 @@ const TeacherDashboard = () => {
       classroomId,
       pendingId: p.id,
       username: p.username,
-      password: p.password,
     });
   };
 
@@ -247,7 +245,6 @@ const TeacherDashboard = () => {
         classroomId,
         pendingId: record.id,
         username: record.username,
-        password: record.password,
         claimedUid: s.uid,
       });
     } catch (err) {

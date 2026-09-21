@@ -1,44 +1,71 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconX, IconKey, IconEye, IconEyeOff, IconLoader } from '@tabler/icons-react';
 import ClassroomService from '@/lib/classroomService';
+import { revealPendingPassword } from '@/lib/pendingStudentsClient';
 
 // ==================== Modal de credenciales ====================
 //
 // Muestra y permite cambiar el usuario/contraseña de un alumno agregado
 // manualmente — sirve tanto para uno que todavía no inició sesión como
 // para uno que ya se unió (por si se le olvida y necesita que se la
-// reasignen). La contraseña se guarda en texto plano en `estudiantesPendientes`
-// (no son cuentas reales, es solo un login acotado a la clase), así que
-// mostrarla directamente es intencional, no un descuido de seguridad.
+// reasignen). La contraseña está cifrada en `estudiantesPendientes` (no son
+// cuentas reales, es solo un login acotado a la clase): el docente puede
+// verla igual, pero se la pide al servidor al abrir este modal — no viaja
+// con el resto de los datos de la clase.
 
 export const CredentialsModal = ({
   target,
   onClose,
   onSaved,
 }: {
-  target: { classroomId: string; pendingId: string; username: string; password: string; claimedUid?: string };
+  target: { classroomId: string; pendingId: string; username: string; claimedUid?: string };
   onClose: () => void;
   onSaved: () => void;
 }) => {
   const [username, setUsername] = useState(target.username);
-  const [password, setPassword] = useState(target.password);
+  const [password, setPassword] = useState('');
+  const [originalPassword, setOriginalPassword] = useState('');
+  const [loadingPassword, setLoadingPassword] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [resetting, setResetting] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    revealPendingPassword(target.classroomId, target.pendingId)
+      .then((value) => {
+        if (cancelled) return;
+        setPassword(value);
+        setOriginalPassword(value);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (!cancelled) setError('No se pudo cargar la contraseña actual. Igual podés escribir una nueva.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingPassword(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [target.classroomId, target.pendingId]);
+
+  const passwordChanged = password !== originalPassword;
+
   const handleSave = async () => {
-    if (username.trim().length < 3 || password.trim().length < 3) {
+    if (username.trim().length < 3 || (passwordChanged && password.trim().length < 3)) {
       setError('Usuario y contraseña deben tener al menos 3 caracteres.');
       return;
     }
     try {
       setSaving(true);
       setError('');
+      // Solo se manda la contraseña si el docente la cambió.
       await ClassroomService.updateCredentials(target.classroomId, target.pendingId, {
         username: username.trim(),
-        password: password.trim(),
+        ...(passwordChanged ? { password: password.trim() } : {}),
       });
       onSaved();
     } catch (err) {
@@ -98,8 +125,9 @@ export const CredentialsModal = ({
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
+                placeholder={loadingPassword ? 'Cargando...' : ''}
                 onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                disabled={saving || resetting}
+                disabled={saving || resetting || loadingPassword}
                 className="w-full px-3 py-2 pr-10 border border-pink-light dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm font-mono
                          focus:outline-none focus:ring-2 focus:ring-coral disabled:opacity-50"
               />
@@ -127,7 +155,7 @@ export const CredentialsModal = ({
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || resetting}
+            disabled={saving || resetting || loadingPassword}
             className="px-4 py-2 text-sm bg-coral text-white rounded-lg hover:bg-coral-dark
                      disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >

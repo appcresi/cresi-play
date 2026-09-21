@@ -52,12 +52,20 @@ service cloud.firestore {
       match /estudiantesPendientes/{pendingId} {
         allow read: if request.auth != null &&
           request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
-        allow create, delete: if request.auth != null &&
+        // Las altas y el cambio de usuario/contraseña los hace el servidor
+        // (/api/pending-students, con el Admin SDK): la contraseña se guarda
+        // cifrada y el cliente no debe poder escribirla en texto plano.
+        allow create: if false;
+        allow delete: if request.auth != null &&
           request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId;
-        allow update: if request.auth != null && (
-          request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId ||
-          (resource.data.claimedUid == null && request.resource.data.claimedUid == request.auth.uid)
-        );
+        // Desde el cliente solo se toca el estado de "reclamado" (reiniciar
+        // el acceso de un alumno). Antes esta regla dejaba reescribir
+        // cualquier campo, contraseña incluida.
+        allow update: if request.auth != null &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed', 'claimedUid']) && (
+            request.auth.uid == get(/databases/$(database)/documents/classrooms/$(classroomId)).data.profesorId ||
+            (resource.data.claimedUid == null && request.resource.data.claimedUid == request.auth.uid)
+          );
       }
 
       // Tareas: el docente crea/edita/borra; cualquiera de la clase

@@ -11,9 +11,10 @@
 // entrar de nuevo (otro día, otro dispositivo) da la misma identidad y el
 // mismo progreso guardado, en vez de crear un alumno nuevo cada vez.
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
+import { encryptPassword, isEncrypted, loadKey, passwordsMatch, readStoredPassword } from '@/lib/passwordCrypto';
 
 // Freno básico contra fuerza bruta: cuenta intentos fallidos por
 // IP + código de clase, en memoria del proceso. Si se supera el máximo
@@ -105,11 +106,13 @@ export async function POST(req: NextRequest) {
       .collection('estudiantesPendientes')
       .get();
 
+    //    La contraseña puede estar cifrada (`passwordEnc`) o, en documentos
+    //    de antes de ese cambio, en texto plano (`password`).
     const match = pendingSnap.docs.find((d) => {
       const data = d.data();
-      const storedUsername = String(data.username ?? '').trim().toLowerCase();
-      const storedPassword = String(data.password ?? '').trim();
-      return storedUsername === normalizedUsername && storedPassword === normalizedPassword;
+      if (String(data.username ?? '').trim().toLowerCase() !== normalizedUsername) return false;
+      const stored = readStoredPassword(data);
+      return stored !== null && passwordsMatch(stored.password.trim(), normalizedPassword);
     });
 
     if (!match) {
@@ -118,6 +121,20 @@ export async function POST(req: NextRequest) {
     }
 
     clearFailedAttempts(rateLimitKey);
+
+    // Migración "al vuelo": si todavía estaba en texto plano, se cifra ahora
+    // que sabemos que es la contraseña correcta. Si falla (por ejemplo,
+    // falta configurar la clave), el login igual sigue.
+    if (!isEncrypted(match.data().passwordEnc) && typeof match.data().password === 'string') {
+      try {
+        await match.ref.update({
+          passwordEnc: encryptPassword(String(match.data().password), loadKey()),
+          password: FieldValue.delete(),
+        });
+      } catch (err) {
+        console.warn('⚠️ No se pudo cifrar una contraseña vieja en /api/join-class:', err);
+      }
+    }
 
     // 3. Uid estable = id de este registro. Firebase crea el usuario de
     //    Auth automáticamente la primera vez que se usa un token con este uid.

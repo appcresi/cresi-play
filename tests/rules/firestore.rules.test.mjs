@@ -7,7 +7,7 @@
 // propósito: es un script plano que sale con código 1 si algo falla.
 import { initializeTestEnvironment, assertSucceeds, assertFails } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'fs';
-import { deleteDoc, doc, setDoc, updateDoc, increment, setLogLevel } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, setDoc, updateDoc, increment, setLogLevel } from 'firebase/firestore';
 
 setLogLevel('silent'); // los PERMISSION_DENIED esperados no son ruido útil
 
@@ -92,6 +92,24 @@ await t('alumno edita el contenido: denegado', () =>
   assertFails(updateDoc(doc(asUser('st'), 'lecciones/l1'), { title: 'X' })));
 await t('admin edita el contenido: permitido', () =>
   assertSucceeds(updateDoc(doc(asAdmin, 'lecciones/l1'), { title: 'Editado' })));
+
+// ── classrooms/{id}/estudiantesPendientes: la contraseña es cosa del servidor ──
+await seed('classrooms/cl2', { profesorId: 'prof2' });
+await seed('classrooms/cl2/estudiantesPendientes/p1', { username: 'ana', passwordEnc: 'v1.x.y.z', claimed: false, claimedUid: null });
+const pend = (uid) => doc(asUser(uid), 'classrooms/cl2/estudiantesPendientes/p1');
+await t('docente lee los pendientes de su clase: permitido', () => assertSucceeds(getDoc(pend('prof2'))));
+await t('otro usuario lee los pendientes: denegado', () => assertFails(getDoc(pend('intruso'))));
+await t('docente crea un pendiente desde el cliente: denegado (lo hace el servidor)', () =>
+  assertFails(setDoc(doc(asUser('prof2'), 'classrooms/cl2/estudiantesPendientes/nuevo'), { username: 'b', password: 'texto-plano', claimed: false })));
+await t('docente escribe una contraseña en texto plano: denegado', () => assertFails(updateDoc(pend('prof2'), { password: 'texto-plano' })));
+await t('docente cambia el usuario desde el cliente: denegado (va por el servidor)', () => assertFails(updateDoc(pend('prof2'), { username: 'otro' })));
+await t('docente pisa passwordEnc: denegado', () => assertFails(updateDoc(pend('prof2'), { passwordEnc: 'v1.a.b.c' })));
+await t('docente reinicia el acceso (claimed/claimedUid): permitido', () => assertSucceeds(updateDoc(pend('prof2'), { claimed: false, claimedUid: null })));
+await t('un usuario reclama un pendiente libre: permitido', () => assertSucceeds(updateDoc(pend('alumno9'), { claimed: true, claimedUid: 'alumno9' })));
+await seed('classrooms/cl2/estudiantesPendientes/p2', { username: 'bea', passwordEnc: 'v1.x.y.z', claimed: false, claimedUid: null });
+await t('quien reclama NO puede pisar la contraseña de paso: denegado', () =>
+  assertFails(updateDoc(doc(asUser('alumno9'), 'classrooms/cl2/estudiantesPendientes/p2'), { claimedUid: 'alumno9', passwordEnc: 'v1.a.b.c' })));
+await t('docente borra un pendiente: permitido', () => assertSucceeds(deleteDoc(pend('prof2'))));
 
 console.log(`\n${pass} ok, ${fail} fallos`);
 await env.cleanup();
