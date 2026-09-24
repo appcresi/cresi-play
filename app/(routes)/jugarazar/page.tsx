@@ -6,7 +6,7 @@ import { db } from '@/lib/firebaseFirestore';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
-import { IconRefresh, IconHome, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconRefresh, IconHome, IconDeviceFloppy, IconCircleCheck, IconCircleX } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import GameStatusBar from '@/components/GameStatusBar';
 import PurchaseModal from '@/components/PurchaseModal';
@@ -40,9 +40,11 @@ interface UserData {
   };
 }
 
+// Sin letras (A, B, C...): antes cada opción llevaba una fija ANTES de mezclar,
+// y la correcta siempre era la "A" — se veía cuál era con solo mirar la letra.
+// Igual que en Trivias, las opciones se distinguen por su color.
 interface ShuffledOption {
   key: string;
-  label: string;
   value: string;
 }
 
@@ -114,6 +116,9 @@ export default function JugarAzar(): JSX.Element {
   const [isSpinning, setIsSpinning] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState<string | undefined>(undefined);
   const [answerSelected, setAnswerSelected] = useState(false);
+  // Qué opción tocó la persona: después de responder se muestran solo esa
+  // (si erró) y la correcta.
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showAnswerResult, setShowAnswerResult] = useState(false);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [progressSaved, setProgressSaved] = useState(false);
@@ -313,10 +318,10 @@ export default function JugarAzar(): JSX.Element {
             const randomIndex = Math.floor(Math.random() * nextLevelQuestions.length);
             const question = nextLevelQuestions[randomIndex];
             const options: ShuffledOption[] = [
-              { key: 'answer', label: 'A', value: question.answer },
-              { key: 'first', label: 'B', value: question.options.first },
-              { key: 'second', label: 'C', value: question.options.second },
-              { key: 'third', label: 'D', value: question.options.third },
+              { key: 'answer', value: question.answer },
+              { key: 'first', value: question.options.first },
+              { key: 'second', value: question.options.second },
+              { key: 'third', value: question.options.third },
             ];
             setCurrentQuestion(question);
             setShuffledOptions(shuffleArray(options));
@@ -328,10 +333,10 @@ export default function JugarAzar(): JSX.Element {
             const randomIndex = Math.floor(Math.random() * availableQuestions.length);
             const question = availableQuestions[randomIndex];
             const options: ShuffledOption[] = [
-              { key: 'answer', label: 'A', value: question.answer },
-              { key: 'first', label: 'B', value: question.options.first },
-              { key: 'second', label: 'C', value: question.options.second },
-              { key: 'third', label: 'D', value: question.options.third },
+              { key: 'answer', value: question.answer },
+              { key: 'first', value: question.options.first },
+              { key: 'second', value: question.options.second },
+              { key: 'third', value: question.options.third },
             ];
             setCurrentQuestion(question);
             setShuffledOptions(shuffleArray(options));
@@ -349,6 +354,7 @@ export default function JugarAzar(): JSX.Element {
       if (answerSelected || !currentQuestion || isGameOver) return;
 
       setCorrectAnswer(currentQuestion.answer);
+      setSelectedAnswer(selectedOption);
       setAnswerSelected(true);
       setShowAnswerResult(true);
       setIsTimerPaused(true);
@@ -361,12 +367,10 @@ export default function JugarAzar(): JSX.Element {
         const newSessionScore = sessionScore + CORRECT_ANSWER_POINTS;
         setScore(newScore);
         setSessionScore(newSessionScore);
-        toast.success('¡Respuesta correcta!', { duration: 1000, icon: '✅' });
         
         // Guardar pregunta como correcta para no repetir
         setCorrectQuestions(new Set([...Array.from(correctQuestions), currentQuestion.id]));
       } else {
-        toast.error('Respuesta incorrecta', { duration: 1000, icon: '❌' });
 
         setLives((prevLives) => {
           const newLives = prevLives - 1;
@@ -383,6 +387,15 @@ export default function JugarAzar(): JSX.Element {
     [answerSelected, currentQuestion, isGameOver, score, sessionScore, usedQuestions, correctQuestions, handleGameOver]
   );
 
+  // Después de responder: si acertó, solo queda la correcta; si erró, la que
+  // tocó y la correcta. Los otros botones desaparecen para que el de
+  // "Siguiente Pregunta" quede a la vista.
+  const selectedIsCorrect = currentQuestion !== null && selectedAnswer === currentQuestion.answer;
+  const visibleOptions =
+    answerSelected && currentQuestion !== null && selectedAnswer !== null
+      ? shuffledOptions.filter((option) => option.value === currentQuestion.answer || option.value === selectedAnswer)
+      : shuffledOptions;
+
   const handleContinueToWheel = useCallback(() => {
     if (isGameOver) return;
 
@@ -391,6 +404,7 @@ export default function JugarAzar(): JSX.Element {
     setCurrentQuestion(null);
     setRotation(0);
     setAnswerSelected(false);
+    setSelectedAnswer(null);
     setShowAnswerResult(false);
     setCorrectAnswer(undefined);
     setIsTimerPaused(false);
@@ -407,6 +421,7 @@ export default function JugarAzar(): JSX.Element {
     setCompletedCategories(new Set());
     setRotation(0);
     setAnswerSelected(false);
+    setSelectedAnswer(null);
     setCorrectAnswer(undefined);
     setCurrentLevel(1);
     setSessionScore(0);
@@ -441,6 +456,7 @@ export default function JugarAzar(): JSX.Element {
     setCurrentQuestion(null);
     setRotation(0);
     setAnswerSelected(false);
+    setSelectedAnswer(null);
     setTimeLeft(DEFAULT_TIME);
     setIsTimerPaused(false);
   }, [loadUserData]);
@@ -646,9 +662,32 @@ export default function JugarAzar(): JSX.Element {
             </p>
           </div>
 
+          {/* Cartel de resultado: grande, para que se lea de un vistazo */}
+          {answerSelected && selectedAnswer !== null && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={`mb-6 flex items-center justify-center gap-3 rounded-2xl border-2 px-6 py-5 text-center ${
+                selectedIsCorrect
+                  ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-950/40 dark:text-green-300'
+                  : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-950/40 dark:text-red-300'
+              }`}
+            >
+              {selectedIsCorrect ? (
+                <IconCircleCheck size={48} className="shrink-0" aria-hidden="true" />
+              ) : (
+                <IconCircleX size={48} className="shrink-0" aria-hidden="true" />
+              )}
+              <p className="text-3xl md:text-4xl font-bold">
+                {selectedIsCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
+              </p>
+            </div>
+          )}
+
           {/* Options Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {shuffledOptions.map((option, index) => {
+            {visibleOptions.map((option, index) => {
+              const isCorrectOption = option.value === currentQuestion.answer;
               const colors = [
                 'bg-red-500 hover:bg-red-600 border-red-600',
                 'bg-green-500 hover:bg-green-600 border-green-600',
@@ -663,17 +702,26 @@ export default function JugarAzar(): JSX.Element {
                   disabled={answerSelected}
                   className={`${
                     answerSelected
-                      ? option.value === currentQuestion.answer
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
+                      ? isCorrectOption
+                        ? 'bg-green-500 border-green-600'
+                        : 'bg-red-500 border-red-600'
                       : colors[index % 4]
+                  } ${
+                    // Con las opciones que quedan a la vista, un botón ya respondido no se ve atenuado.
+                    visibleOptions.length === 1 ? 'md:col-span-2' : ''
                   } text-white p-6 rounded-lg font-medium text-lg
                   border-2 transition-all duration-200
                   hover:shadow-lg hover:-translate-y-1
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0
+                  disabled:opacity-100 disabled:cursor-default disabled:hover:translate-y-0 disabled:hover:shadow-none
                   focus:outline-none focus:ring-2 focus:ring-offset-2`}
                 >
-                  <span className="font-bold">{option.label}.</span> {option.value}
+                  {/* Cuando erró, se rotula cuál tocó y cuál era la correcta (no depende solo del color). */}
+                  {answerSelected && !selectedIsCorrect && (
+                    <span className="block text-xs font-semibold uppercase tracking-wide opacity-90 mb-1">
+                      {isCorrectOption ? 'Respuesta correcta' : 'Tu respuesta'}
+                    </span>
+                  )}
+                  {option.value}
                 </button>
               );
             })}
