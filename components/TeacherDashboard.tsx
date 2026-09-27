@@ -6,6 +6,7 @@ import { trackEvent } from '@/lib/analytics';
 import type { Classroom, ClassroomStudent, PendingStudent } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
 import { useAuth } from '@/context/AuthContext';
+import { ensureModelClassroom } from '@/lib/modelClassroom';
 
 import type { DetailTab } from './teacher/types';
 import { ClassroomGridView } from './teacher/ClassroomGridView';
@@ -83,6 +84,12 @@ const TeacherDashboard = () => {
     if (!user?.uid) return;
     try {
       setLoading(true);
+      // Primera vez en el panel: se le arma la clase modelo con un ejemplo
+      // de cada recurso (ver lib/modelClassroom.ts). Si falla, no bloquea
+      // el listado de sus clases.
+      await ensureModelClassroom(user.uid).catch((err) =>
+        console.error('No se pudo crear la clase modelo:', err)
+      );
       const data = await ClassroomService.getTeacherClassrooms(user.uid);
       setClassrooms(data);
     } catch (err) {

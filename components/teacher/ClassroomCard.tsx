@@ -1,6 +1,7 @@
 import React from 'react';
 import { IconUsers, IconClock, IconCheck, IconCopy } from '@tabler/icons-react';
 import type { Classroom } from '@/types/classroom';
+import { isModelClassroom } from '@/lib/modelClassroom';
 
 export const ClassroomCard = ({
   classroom,
@@ -23,6 +24,11 @@ export const ClassroomCard = ({
         <h3 className="text-white font-medium text-base leading-tight pr-6 line-clamp-2">
           {classroom.name}
         </h3>
+        {isModelClassroom(classroom.id, classroom.teacherId) && (
+          <span className="self-start px-2 py-0.5 rounded-full bg-white/25 text-white text-[11px] font-semibold">
+            Clase de ejemplo
+          </span>
+        )}
       </div>
     </button>
 
