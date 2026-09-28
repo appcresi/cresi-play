@@ -93,6 +93,11 @@ class UserDataManager {
             console.error('❌ Error sincronizando con Firestore:', err);
           });
         }, 800);
+      } else if (this.syncTimeoutId) {
+        // Un invitado que acaba de salir del ranking: una sincronización
+        // pendiente volvería a crear el documento que el servidor borró.
+        clearTimeout(this.syncTimeoutId);
+        this.syncTimeoutId = null;
       }
 
       // Sincronizar el RESUMEN de progreso a la clase, si el alumno pertenece a una.

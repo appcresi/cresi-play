@@ -1,7 +1,8 @@
 // app/api/leaderboard/me/route.ts
 //
 // GET  → si puede estar en el ranking, si se sumó, su alias y su posición.
-// POST { join: boolean } → sumarse o darse de baja.
+// POST { join: boolean } → sumarse o darse de baja (un invitado que se da de
+// baja pierde su documento de `users`: solo existía por el ranking).
 //
 // Aparecer en el ranking es voluntario (plataforma para adolescentes): nadie
 // entra solo por jugar. La marca `users/{uid}.leaderboard.optIn` la escribe
@@ -17,6 +18,7 @@ import {
   deleteEntriesInTx,
   eligibleFor,
   invalidateLeaderboardCache,
+  isGuestToken,
   readMe,
   writeEntriesInTx,
 } from '@/lib/leaderboardServer';
@@ -77,7 +79,14 @@ export async function POST(req: NextRequest) {
 
       if (!join) {
         deleteEntriesInTx(tx, db, decoded.uid, data);
-        tx.update(userRef, { 'leaderboard.optIn': false, 'leaderboard.weeks': FieldValue.delete() });
+        if (isGuestToken(decoded)) {
+          // Un invitado solo tenía datos acá por el ranking (ver canSync en
+          // lib/userDataSync.ts): al salir se borran y su progreso vuelve a
+          // vivir solo en su navegador.
+          tx.delete(userRef);
+        } else {
+          tx.update(userRef, { 'leaderboard.optIn': false, 'leaderboard.weeks': FieldValue.delete() });
+        }
         return 'OK' as const;
       }
 

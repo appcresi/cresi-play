@@ -74,9 +74,19 @@ export async function joinLeaderboard(): Promise<LeaderboardMe> {
   }
 }
 
+/**
+ * Salir del ranking. Si es invitado, el servidor además borra su documento
+ * de `users`: se deja de sincronizar ANTES de pedirlo, para que ningún
+ * guardado en curso lo vuelva a crear.
+ */
 export async function leaveLeaderboard(): Promise<LeaderboardMe> {
+  const guest = auth.currentUser?.isAnonymous === true;
+  if (guest) setLocalOptIn(false);
   const res = await callMe('POST', { join: false });
-  if (!res.ok) throw new Error(`LEADERBOARD_LEAVE_${res.status}`);
+  if (!res.ok) {
+    if (guest) setLocalOptIn(true);
+    throw new Error(`LEADERBOARD_LEAVE_${res.status}`);
+  }
   setLocalOptIn(false);
   trackEvent('leaderboard_leave');
   return res.json();
