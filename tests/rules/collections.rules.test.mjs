@@ -235,6 +235,12 @@ await t('colección desconocida: un usuario logueado no lee ni escribe', async (
 });
 await t('colección desconocida: ni el admin (por reglas de cliente)', () => assertFails(setDoc(d(asAdmin, 'secretos/x'), { a: 1 })));
 
+// ── Panel admin: consultas de grupo para las Estadísticas ──────────────
+for (const group of ['estudiantes', 'tareas', 'entregas', 'players', 'words']) {
+  await t(`${group} (grupo): el admin cuenta en toda la plataforma`, () => assertSucceeds(getDocs(collectionGroup(asAdmin, group))));
+  await t(`${group} (grupo): un usuario común NO lee todo`, () => assertFails(getDocs(collectionGroup(asUser('curioso'), group))));
+}
+
 console.log(`\n${pass} ok, ${fail} fallos`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);
