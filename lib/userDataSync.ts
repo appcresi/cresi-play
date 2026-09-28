@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { auth } from './firebaseAuth';
 import { db } from './firebaseFirestore';
@@ -98,9 +98,14 @@ class UserDataSync {
 
       const userDocRef = doc(db, 'users', currentUser.uid);
 
+      // Un invitado solo sincroniza porque se sumó al ranking (ver canSync):
+      // su registro de ánimo es un dato sensible que el ranking no necesita,
+      // así que queda solo en su navegador (y se borra si ya se había subido).
+      const guest = currentUser.isAnonymous;
+
       // Datos completos a guardar. `game.totalScore` va aparte, por
       // /api/sync-score; acá solo vidas y racha (por campo, para no pisar
-      // el mapa `game` entero).
+      // el mapa `game` entero). `mood` se agrega abajo según `guest`.
       const dataToSave = {
         uid: currentUser.uid,
         email: currentUser.email,
@@ -108,7 +113,6 @@ class UserDataSync {
         'game.totalLives': userData.game.totalLives,
         'game.streak': userData.game.streak,
         progress: userData.progress,
-        mood: userData.mood,
         achievements: userData.achievements,
         settings: userData.settings,
         dashboard: userData.dashboard || {
@@ -127,13 +131,14 @@ class UserDataSync {
         // game.totalScore, el servidor lo crea y recién ahí las reglas
         // aceptan el update de vidas/racha.
         await this.pushScoreToServer(userData.game.totalScore);
-        await updateDoc(userDocRef, dataToSave);
+        await updateDoc(userDocRef, { ...dataToSave, mood: guest ? deleteField() : userData.mood });
       } else {
         // Crear nuevo documento: el puntaje arranca en 0 (lo exigen las
         // reglas) y se sube enseguida por el servidor.
         const { 'game.totalLives': totalLives, 'game.streak': streak, ...rest } = dataToSave;
         await setDoc(userDocRef, {
           ...rest,
+          ...(guest ? {} : { mood: userData.mood }),
           game: { totalScore: 0, totalLives, streak },
           createdAt: new Date().toISOString()
         });
