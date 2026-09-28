@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { IconAlertTriangle, IconUserOff, IconLoader } from '@tabler/icons-react';
+import PrivacyLink from '@/components/PrivacyLink';
 
 interface DeleteAccountModalProps {
   classroomCount: number;
@@ -43,6 +44,9 @@ export function DeleteAccountModal({
           ) : (
             <>Se borra tu perfil y cualquier trivia o lección propia. Esta acción es <strong>permanente</strong>.</>
           )}
+        </p>
+        <p className="text-xs text-ink/50 dark:text-gray-500 mb-3">
+          Más info en nuestra <PrivacyLink />.
         </p>
 
         <label className="block text-xs font-semibold text-ink/70 dark:text-gray-400 mb-1.5">

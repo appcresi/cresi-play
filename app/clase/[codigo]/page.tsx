@@ -12,6 +12,7 @@ import { trackEvent } from '@/lib/analytics';
 import { IconLoader, IconArrowLeft, IconEye, IconEyeOff, IconBrandGoogle } from '@tabler/icons-react';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
+import { PrivacyNotice } from '@/components/PrivacyLink';
 
 const fredoka = Fredoka({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' });
 
@@ -357,6 +358,7 @@ export default function JoinClassPage() {
           <p className="text-[10px] text-[#241B37]/40 dark:text-gray-500 text-center -mt-1.5">
             Solo funciona si tu docente lo habilitó para esta clase.
           </p>
+          <PrivacyNotice />
 
           <Link href="/" className="flex items-center justify-center gap-1 text-xs text-[#241B37]/40 dark:text-gray-500 hover:text-[#241B37]/70 dark:hover:text-gray-300">
             <IconArrowLeft className="w-3.5 h-3.5" /> Inicio

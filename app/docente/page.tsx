@@ -20,6 +20,7 @@ import TeacherDashboard from '@/components/TeacherDashboard';
 import ThemeToggle from '@/components/ThemeToggle';
 import type { UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
+import { PrivacyNotice } from '@/components/PrivacyLink';
 
 const fredoka = Fredoka({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' });
 
@@ -199,6 +200,8 @@ export default function DocentePage() {
             {signingIn ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4 text-[#4285F4]" />}
             Continuar con Google
           </button>
+
+          <PrivacyNotice className="-mt-2 mb-4" />
 
           <Link href="/" className="flex items-center justify-center gap-1 text-xs text-ink/40 dark:text-gray-500 hover:text-ink/70 dark:hover:text-gray-300">
             <IconArrowLeft className="w-3.5 h-3.5" /> ¿Sos alumno o alumna? Volver al inicio

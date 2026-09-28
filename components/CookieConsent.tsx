@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Analytics from './Analytics';
 import Adsense from './Adsense';
+import { PRIVACY_URL } from './PrivacyLink';
 
 const CONSENT_KEY = 'cresi_cookie_consent';
 
@@ -65,7 +66,7 @@ export default function CookieConsent(): JSX.Element {
               entender cómo se usa CrESI y mantenerlo gratuito. Podés aceptarlas o rechazarlas
               — conocé más en nuestra{' '}
               <a
-                href="https://cresi.com.ar/privacidad"
+                href={PRIVACY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-coral-dark hover:underline"

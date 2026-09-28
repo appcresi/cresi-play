@@ -4,7 +4,8 @@ import React, { Fragment, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Popover, Transition } from '@headlessui/react';
-import { IconSchool, IconLogout, IconChevronDown, IconUserOff } from '@tabler/icons-react';
+import { IconSchool, IconLogout, IconChevronDown, IconUserOff, IconShieldLock } from '@tabler/icons-react';
+import PrivacyLink from './PrivacyLink';
 import { useAuth } from '@/context/AuthContext';
 import ClassroomService from '@/lib/classroomService';
 import { deleteMyAccount } from '@/lib/accountDeletion';
@@ -117,6 +118,11 @@ export default function TeacherHeader(): JSX.Element {
                       <p className="text-sm font-medium text-ink dark:text-gray-100 truncate">{username}</p>
                       <p className="text-xs text-ink/60 dark:text-gray-400">Docente</p>
                     </div>
+                    <PrivacyLink className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-ink/80 dark:text-gray-300
+                               hover:bg-pink-light dark:hover:bg-gray-700 transition-colors">
+                      <IconShieldLock className="w-4 h-4" />
+                      Política de privacidad
+                    </PrivacyLink>
                     <button
                       onClick={() => { close(); handleLogout(); }}
                       disabled={isLoggingOut}

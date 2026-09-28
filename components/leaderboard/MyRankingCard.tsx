@@ -8,6 +8,7 @@ import { IconArrowRight, IconEyeOff, IconTrophy } from '@tabler/icons-react';
 import { useAuth } from '@/context/AuthContext';
 import { fetchMyRanking, joinLeaderboard, leaveLeaderboard } from '@/lib/leaderboardClient';
 import { publicAlias, type LeaderboardMe } from '@/lib/leaderboard';
+import PrivacyLink from '@/components/PrivacyLink';
 import GuestLinkButton from './GuestLinkButton';
 
 function Position({ label, rank, score }: { label: string; rank: number | null; score: number }) {
@@ -117,7 +118,9 @@ export default function MyRankingCard({ onChange }: { onChange?: () => void }) {
           >
             {busy ? 'Sumándote…' : 'Sumarme al ranking'}
           </button>
-          <p className="mt-2 text-xs text-ink/50 dark:text-gray-400">Podés salir cuando quieras.</p>
+          <p className="mt-2 text-xs text-ink/50 dark:text-gray-400">
+            Podés salir cuando quieras. Más info en nuestra <PrivacyLink />.
+          </p>
         </>
       )}
 

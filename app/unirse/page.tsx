@@ -20,6 +20,7 @@ import UserDataSync from '@/lib/userDataSync';
 import { trackEvent } from '@/lib/analytics';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
+import { PrivacyNotice } from '@/components/PrivacyLink';
 
 // Misma display face que la landing, usada con la misma restricción
 // (solo el título grande).
@@ -245,6 +246,7 @@ export default function UnirseSinCodigoPage() {
               {loading === 'google' ? <IconLoader className="w-4 h-4 animate-spin" /> : <IconBrandGoogle className="w-4 h-4 text-[#4285F4]" />}
               Continuar con Google
             </button>
+            <PrivacyNotice />
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[#241B37]/8 dark:border-gray-700 text-xs">

@@ -16,6 +16,7 @@ import {
   IconTrophy,
 } from '@tabler/icons-react';
 import LeaderboardBoard from '@/components/leaderboard/LeaderboardBoard';
+import PrivacyLink from '@/components/PrivacyLink';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
 import { formatAgeCycles } from '@/types/activity';
 import { ActivityIcon } from '@/components/ActivityIcon';
@@ -460,6 +461,8 @@ const WelcomeLanding = () => {
         >
           Conocé más sobre CrESI
         </a>
+        <span className="mx-2">·</span>
+        <PrivacyLink className="hover:text-[#FF6B6B] transition-colors">Política de privacidad</PrivacyLink>
       </footer>
 
       {/* Botón flotante "jugar ya" — acceso directo a una partida rápida,

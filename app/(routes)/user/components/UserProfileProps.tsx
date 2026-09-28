@@ -30,6 +30,7 @@ import ClassroomService from '@/lib/classroomService';
 import { ActivityIcon } from '@/components/ActivityIcon';
 import { useAuth } from '@/context/AuthContext';
 import { deleteMyAccount } from '@/lib/accountDeletion';
+import PrivacyLink from '@/components/PrivacyLink';
 
 // Los títulos reales del catálogo — se usan para filtrar
 // `completedActivities`, que además de estos títulos también contiene
@@ -575,6 +576,10 @@ const UserProfile: React.FC = () => {
             </button>
           </div>
 
+          <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            Qué datos guardamos y cómo pedir que los borremos: <PrivacyLink />.
+          </p>
+
           <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-900">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
@@ -648,6 +653,9 @@ const UserProfile: React.FC = () => {
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Se borra tu perfil, tu progreso y tu acceso a cualquier clase de la que
                   formes parte. Esta acción es <strong>permanente</strong> y no se puede deshacer.
+                </p>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Más info en nuestra <PrivacyLink />.
                 </p>
               </div>
               <div className="w-full text-left">
