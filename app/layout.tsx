@@ -193,8 +193,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
               {children}
               <ActivityFinishedSheet />
             </main>
+            {/* Dentro de AuthProvider: AdSense no se carga en el aula virtual (ver components/Adsense.tsx). */}
+            <CookieConsent />
           </AuthProvider>
-          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
