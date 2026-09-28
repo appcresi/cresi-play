@@ -64,6 +64,30 @@ await env.withSecurityRulesDisabled((ctx) =>
 await t('doc viejo tras el push del servidor: update de vidas permitido', () =>
   assertSucceeds(updateDoc(doc(asUser('old'), 'users/old'), { 'game.totalLives': 2 })));
 
+// ── Ranking del modo libre: solo el servidor ──────────────────────────
+// (la marca users/{uid}.leaderboard la pone /api/leaderboard/me, que
+// controla que no sea docente ni alumno de una clase)
+await t('crear users con leaderboard: denegado', () =>
+  assertFails(setDoc(doc(asUser('lb1'), 'users/lb1'), { uid: 'lb1', game: game(), leaderboard: { optIn: true } })));
+await seed('users/lb2', { uid: 'lb2', game: game({ totalScore: 50 }), leaderboard: { optIn: false, weeks: ['2026-W39'] } });
+await t('dueño se pone optIn por su cuenta: denegado', () =>
+  assertFails(updateDoc(doc(asUser('lb2'), 'users/lb2'), { 'leaderboard.optIn': true })));
+await t('dueño se saca el bloqueo: denegado', () =>
+  assertFails(updateDoc(doc(asUser('lb2'), 'users/lb2'), { 'leaderboard.blocked': false })));
+await t('dueño actualiza su perfil sin tocar leaderboard: permitido', () =>
+  assertSucceeds(updateDoc(doc(asUser('lb2'), 'users/lb2'), { 'profile.username': 'Nuevo', 'game.totalLives': 2 })));
+await seed('leaderboard/lb2', { name: 'X', score: 50 });
+await seed('leaderboardWeeks/2026-W39/entries/lb2', { name: 'X', weeklyScore: 50 });
+await t('leaderboard: nadie lee desde el cliente (va por /api/leaderboard)', async () => {
+  await assertFails(getDoc(doc(anon, 'leaderboard/lb2')));
+  await assertFails(getDoc(doc(asUser('lb2'), 'leaderboard/lb2')));
+  await assertFails(getDoc(doc(asUser('lb2'), 'leaderboardWeeks/2026-W39/entries/lb2')));
+});
+await t('leaderboard: el dueño no se sube el puntaje', async () => {
+  await assertFails(setDoc(doc(asUser('lb2'), 'leaderboard/lb2'), { name: 'X', score: 999999 }));
+  await assertFails(setDoc(doc(asUser('lb2'), 'leaderboardWeeks/2026-W39/entries/lb2'), { weeklyScore: 999999 }));
+});
+
 // ── classrooms/{id}/estudiantes/{uid}: no declarar más que lo validado ──
 await seed('classrooms/cl', { profesorId: 'prof' });
 await seed('users/st', { game: game({ totalScore: 300 }) });

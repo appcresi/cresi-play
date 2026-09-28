@@ -18,6 +18,7 @@ import {
 } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
+import { deleteEntriesInTx, invalidateLeaderboardCache } from '@/lib/leaderboardServer';
 
 async function deleteAllDocs(ref: CollectionReference): Promise<void> {
   const snap = await ref.get();
@@ -119,6 +120,12 @@ export async function POST(req: NextRequest) {
     } else {
       await deleteStudentFootprint(db, uid);
     }
+
+    // Ranking del modo libre: su fila del histórico y la de cada semana.
+    const rankingBatch = db.batch();
+    deleteEntriesInTx(rankingBatch, db, uid, userSnap.data());
+    await rankingBatch.commit();
+    invalidateLeaderboardCache();
 
     if (userSnap.exists) {
       await userRef.delete();

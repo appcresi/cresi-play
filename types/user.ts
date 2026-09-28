@@ -128,4 +128,9 @@ export interface UserData {
   notes: LessonNote[];
   /** Términos buscados en el buscador de preguntas — últimos 200. */
   searchHistory: SearchHistoryEntry[];
+  /**
+   * Ranking del modo libre (lib/leaderboard.ts). En Firestore lo escribe solo
+   * el servidor; acá es la copia local para saber si un invitado sincroniza.
+   */
+  leaderboard?: { optIn: boolean; since?: string };
 }

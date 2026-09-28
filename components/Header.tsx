@@ -8,6 +8,7 @@ import {
   IconBell,
   IconSettings,
   IconLogout,
+  IconTrophy,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -312,6 +313,18 @@ export default function Header(): JSX.Element | null {
               </>
             )}
           </Popover>
+
+          {/* Ranking del modo libre (los alumnos de una clase no participan) */}
+          {!profile?.profile?.classroomId && (
+            <Link
+              href="/ranking"
+              title="Ranking"
+              aria-label="Ranking"
+              className="p-2 rounded-full hover:bg-pink-light dark:hover:bg-gray-800 transition-colors"
+            >
+              <IconTrophy className="w-5 h-5 text-ink/70 dark:text-gray-400" />
+            </Link>
+          )}
 
           {/* Configuración */}
           <Link

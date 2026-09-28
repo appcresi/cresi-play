@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IconFlame, IconArrowRight, IconX, IconCircleCheck, IconTarget } from '@tabler/icons-react';
+import { IconFlame, IconArrowRight, IconX, IconCircleCheck, IconTarget, IconTrophy } from '@tabler/icons-react';
 import { useAuth } from '@/context/AuthContext';
 import UserDataManager from '@/lib/userDataManager';
 import ClassroomService from '@/lib/classroomService';
@@ -16,6 +16,8 @@ import { ACTIVITY_FINISHED_EVENT, type ActivityFinishedDetail } from '@/lib/acti
 import { challengeCandidates } from '@/lib/dailyChallenge';
 import { nextPlayDayLabel, reachedMilestone, type StreakView } from '@/lib/dailyStreak';
 import { trackEvent } from '@/lib/analytics';
+import { auth } from '@/lib/firebaseAuth';
+import GuestLinkButton from '@/components/leaderboard/GuestLinkButton';
 
 /** Espera antes de mostrarla, para no pisar la animación final de cada juego. */
 const SHOW_DELAY_MS = 900;
@@ -30,6 +32,10 @@ interface Summary {
   pendingChallenge: { id: string; title: string; route: string } | null;
   /** Otra actividad para seguir (null si ya hizo todo lo disponible). */
   next: { id: string; title: string; route: string } | null;
+  /** Modo libre: invitarlo al ranking si no está. */
+  suggestRanking: boolean;
+  /** Invitado: ofrecer guardar el progreso con Google. */
+  guest: boolean;
 }
 
 /** Otra actividad repetible que todavía no completó, en el orden del catálogo. */
@@ -85,6 +91,8 @@ export default function ActivityFinishedSheet() {
           challengeJustDone,
           pendingChallenge,
           next: nextActivity ? { id: nextActivity.id, title: nextActivity.title, route: nextActivity.route } : null,
+          suggestRanking: !classroomId && data.leaderboard?.optIn !== true,
+          guest: !classroomId && auth.currentUser?.isAnonymous === true,
         });
         trackEvent('next_steps_shown', {
           activity_title: finished?.title ?? title,
@@ -104,7 +112,7 @@ export default function ActivityFinishedSheet() {
 
   if (!summary || summary.path !== pathname) return null;
 
-  const { streak, next, pendingChallenge, challengeJustDone, finishedTitle } = summary;
+  const { streak, next, pendingChallenge, challengeJustDone, finishedTitle, suggestRanking, guest } = summary;
   const milestone = reachedMilestone(streak.current);
   const click = (target: string) => trackEvent('next_step_click', { target, from: finishedTitle });
 
@@ -170,6 +178,25 @@ export default function ActivityFinishedSheet() {
             <span>Seguí con {next.title}</span>
             <IconArrowRight size={16} />
           </Link>
+        )}
+        {suggestRanking && (
+          <Link
+            href="/ranking"
+            onClick={() => click('ranking')}
+            className="flex items-center justify-between gap-2 rounded-xl bg-gold dark:bg-gray-700 px-3 py-2.5 text-sm font-medium text-ink dark:text-gray-100 hover:opacity-90"
+          >
+            <span className="flex items-center gap-2">
+              <IconTrophy size={16} className="text-gold-accent shrink-0" />
+              Sumate al ranking de la semana
+            </span>
+            <IconArrowRight size={16} />
+          </Link>
+        )}
+        {guest && (
+          <GuestLinkButton
+            label="Guardar mi progreso con Google"
+            onDone={() => setSummary((s) => (s ? { ...s, guest: false } : s))}
+          />
         )}
         <Link
           href="/escritorio"

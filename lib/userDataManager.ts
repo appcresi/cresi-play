@@ -81,8 +81,9 @@ class UserDataManager {
 
       const currentUser = auth.currentUser;
 
-      // Sincronizar con Firestore (colección `users`) si el usuario NO es anónimo
-      if (currentUser && !currentUser.isAnonymous) {
+      // Sincronizar con Firestore (colección `users`) si el usuario NO es
+      // anónimo, o si es un invitado que se sumó al ranking (ver canSync).
+      if (currentUser && (!currentUser.isAnonymous || userData.leaderboard?.optIn === true)) {
         if (this.syncTimeoutId) {
           clearTimeout(this.syncTimeoutId);
         }

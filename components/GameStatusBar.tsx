@@ -89,7 +89,7 @@ const GameStatusBar = ({
         const updatedData = UserDataManager.updateGameScore(score, activityName);
         setUserData(updatedData);
 
-        if (!isAnonymous) {
+        if (!isAnonymous || updatedData.leaderboard?.optIn === true) {
           // No esperar a que termine, ejecutar en background
           UserDataSync.syncCompleteData(updatedData).catch(err =>
             console.error('Error sincronizando en background:', err)
@@ -125,7 +125,7 @@ const GameStatusBar = ({
         const updatedData = UserDataManager.updateLives(lives);
         setUserData(updatedData);
 
-        if (!isAnonymous) {
+        if (!isAnonymous || updatedData.leaderboard?.optIn === true) {
           UserDataSync.syncCompleteData(updatedData).catch(err =>
             console.error('Error sincronizando en background:', err)
           );

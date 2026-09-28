@@ -1,9 +1,26 @@
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
 import { auth } from './firebaseAuth';
 import { db } from './firebaseFirestore';
 import type { UserData, DashboardConfig, UserRole } from '@/types/user';
 
 export type { UserData, UserRole };
+
+/**
+ * ¿Se guarda en Firestore? Las cuentas con Google, siempre. Los invitados
+ * (anónimos) no — todo queda en su navegador — salvo que se hayan sumado al
+ * ranking: ahí su puntaje tiene que pasar por /api/sync-score para contar.
+ */
+export function canSync(user: User, userData?: Pick<UserData, 'leaderboard'> | null): boolean {
+  if (!user.isAnonymous) return true;
+  if (userData !== undefined) return userData?.leaderboard?.optIn === true;
+  try {
+    const stored = JSON.parse(localStorage.getItem('cresi_user_data') ?? 'null') as UserData | null;
+    return stored?.leaderboard?.optIn === true;
+  } catch {
+    return false;
+  }
+}
 
 let lastPushed: { uid: string, score: number } | null = null;
 let serverScore: { uid: string, score: number } | null = null;
@@ -27,7 +44,7 @@ class UserDataSync {
    */
   private static async pushScoreToServer(score: number): Promise<void> {
     const currentUser = auth.currentUser;
-    if (!currentUser || currentUser.isAnonymous) return;
+    if (!currentUser || !canSync(currentUser)) return;
     if (lastPushed?.uid === currentUser.uid && lastPushed.score === score) return;
 
     try {
@@ -75,7 +92,7 @@ class UserDataSync {
         return;
       }
 
-      if (currentUser.isAnonymous) {
+      if (!canSync(currentUser, userData)) {
         return;
       }
 
@@ -210,7 +227,7 @@ class UserDataSync {
         return;
       }
 
-      if (currentUser.isAnonymous) {
+      if (!canSync(currentUser)) {
         return;
       }
 
@@ -226,7 +243,7 @@ class UserDataSync {
       if (error.code === 'not-found') {
         try {
           const currentUser = auth.currentUser;
-          if (currentUser && !currentUser.isAnonymous) {
+          if (currentUser && canSync(currentUser)) {
             const userDocRef = doc(db, 'users', currentUser.uid);
             const defaultUserData = {
               uid: currentUser.uid,

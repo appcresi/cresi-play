@@ -9,11 +9,16 @@
 // por el tiempo transcurrido desde el último sync. No prueba que cada punto
 // sea legítimo, pero impide saltos (setear millones de una) y el goteo
 // rápido. Bajar el puntaje siempre se acepta (compras de vidas, penalidades).
+//
+// Si la persona se sumó al ranking del modo libre (users/{uid}.leaderboard),
+// en la misma transacción se actualiza su fila: así el ranking nunca muestra
+// un puntaje que el servidor no aceptó.
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAdminApp } from '@/lib/firebaseAdmin';
 import { errorCode } from '@/lib/routeErrors';
+import { deleteEntriesInTx, eligibleFor, writeEntriesInTx } from '@/lib/leaderboardServer';
 
 // Cubeta de fichas: el "presupuesto" de aumento se recarga a POINTS_PER_SECOND
 // hasta MAX_BUDGET y se consume al subir el puntaje. Guardarlo (en
@@ -87,10 +92,22 @@ export async function POST(req: NextRequest) {
         : Math.min(requested, previous + Math.floor(budget));
       const spent = Math.max(0, accepted - previous);
 
+      let leaderboardFields: Record<string, unknown> = {};
+      if (data.leaderboard?.optIn === true) {
+        if (eligibleFor(data, decoded)) {
+          leaderboardFields = writeEntriesInTx(tx, db, decoded.uid, data, decoded, accepted, spent);
+        } else {
+          // Se sumó jugando libre y después entró a una clase (o lo bloquearon).
+          deleteEntriesInTx(tx, db, decoded.uid, data);
+          leaderboardFields = { 'leaderboard.optIn': false };
+        }
+      }
+
       tx.update(userRef, {
         'game.totalScore': accepted,
         'game.scoreSyncedAt': now,
-        'game.scoreBudget': Math.floor(budget - spent)
+        'game.scoreBudget': Math.floor(budget - spent),
+        ...leaderboardFields
       });
       return { accepted, clamped: accepted < requested };
     });

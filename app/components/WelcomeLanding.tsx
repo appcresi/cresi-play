@@ -13,7 +13,9 @@ import {
   IconDeviceGamepad2,
   IconKey,
   IconPlayerPlay,
+  IconTrophy,
 } from '@tabler/icons-react';
+import LeaderboardBoard from '@/components/leaderboard/LeaderboardBoard';
 import { ACTIVITIES, getActivityById } from '@/lib/activities';
 import { formatAgeCycles } from '@/types/activity';
 import { ActivityIcon } from '@/components/ActivityIcon';
@@ -269,6 +271,34 @@ const WelcomeLanding = () => {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ============ RANKING ============ */}
+      <section className="max-w-6xl mx-auto px-5 pb-24 grid lg:grid-cols-2 gap-10 items-center">
+        <Reveal reducedMotion={reducedMotion}>
+          <div className="inline-flex items-center gap-1.5 bg-[#FFF3D6] text-[#B9800A] text-xs font-bold px-3 py-1.5 rounded-full mb-4">
+            <IconTrophy className="w-3.5 h-3.5" />
+            Ranking semanal
+          </div>
+          <h2 className={`${fredoka.className} text-2xl sm:text-3xl mb-3`}>
+            ¿Quién sabe más esta semana?
+          </h2>
+          <p className="text-[#241B37]/60 dark:text-gray-400 mb-6 max-w-md">
+            Jugá por tu cuenta, sumá puntos en cualquier actividad y aparecé en el ranking.
+            Cada lunes arranca de cero: siempre hay chance de llegar arriba.
+          </p>
+          <Link
+            href="/unirse"
+            className="inline-flex items-center gap-2 bg-[#FF6B6B] hover:bg-[#E8514F] text-white font-bold
+                     px-6 py-3 rounded-full transition-all hover:-translate-y-0.5"
+          >
+            Quiero entrar al ranking
+            <IconArrowRight className="w-5 h-5" />
+          </Link>
+        </Reveal>
+        <Reveal reducedMotion={reducedMotion} delay={120}>
+          <LeaderboardBoard limit={5} />
+        </Reveal>
       </section>
 
       {/* ============ ELEGÍ CÓMO ENTRAR ============ */}
