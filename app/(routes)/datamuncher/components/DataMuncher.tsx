@@ -25,7 +25,6 @@ import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('datamuncher');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'DataMuncher';
-const ACCENT = ACTIVITY?.color ?? '#D32F2F';
 
 const DataMuncher = () => {
   const [player, setPlayer] = useState<Position>(INITIAL_PLAYER);
@@ -35,7 +34,7 @@ const DataMuncher = () => {
   const [sessionScore, setSessionScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [direction, setDirection] = useState('right');
-  const [effect, setEffect] = useState<Effect>({ text: '', x: 0, y: 0 });
+  const [effect] = useState<Effect>({ text: '', x: 0, y: 0 });
   const [currentLevel, setCurrentLevel] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(0);
   const [levelTransition, setLevelTransition] = useState(false);

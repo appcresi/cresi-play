@@ -9,6 +9,7 @@ import AnswerResultModal from "./AnswerResultModal";
 import { Question, Lesson } from "./types";
 import { IconCheck, IconX, IconArrowRight, IconNotes, IconTrash, IconEdit, IconPlus } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
+import { track } from '@/lib/trackClient';
 import type { LessonNote } from '@/types/user';
 
 type LessonPageProps = {
@@ -53,6 +54,13 @@ export default function LessonPage({ lesson: currentLesson, onBack, onLessonComp
     const data = UserDataManager.loadUserData();
     setNotes((data.notes || []).filter((n) => n.lessonTitle === title));
   }, [title]);
+
+  // Contadores agregados de la lección para el panel admin (ver lib/track.ts):
+  // cuántos la abren y hasta qué nivel llegan. Sin esto solo se sabía cuántos
+  // la terminaban entera (entre 5 y 11 niveles), y eso casi nunca pasa.
+  useEffect(() => {
+    track({ kind: 'lesson-start', id: currentLesson.id });
+  }, [currentLesson.id]);
 
   const currentLeccion = currentLesson.lecciones[currentLessonIndex];
   const currentQuestion = currentLeccion.questions[currentQuestionIndex];
@@ -183,6 +191,8 @@ export default function LessonPage({ lesson: currentLesson, onBack, onLessonComp
   };
 
   const goToNextLesson = () => {
+    track({ kind: 'lesson-level', id: currentLesson.id, index: currentLessonIndex });
+
     if (currentLessonIndex < currentLesson.lecciones.length - 1) {
       toast.success('¡Nivel completado! +100 puntos', { duration: 1500 });
 

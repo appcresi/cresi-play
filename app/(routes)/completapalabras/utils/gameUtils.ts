@@ -4,16 +4,13 @@ export const processText = (levelText: string) => {
     const blanks: Blank[] = [];
     const textParts: string[] = [];
     let currentText = '';
-    let inBrackets = false;
     const correctWords: string[] = [];
   
     for (let i = 0; i < levelText.length; i++) {
       if (levelText[i] === '{') {
-        inBrackets = true;
         textParts.push(currentText);
         currentText = '';
       } else if (levelText[i] === '}') {
-        inBrackets = false;
         correctWords.push(currentText);
         blanks.push({
           id: `blank-${blanks.length}`,

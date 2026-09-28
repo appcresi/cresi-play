@@ -40,6 +40,10 @@ function updatesFor(event: TrackEvent): Record<string, FieldValue> {
       return { playCount: FieldValue.increment(1) };
     case 'lesson-complete':
       return { timesCompleted: FieldValue.increment(1) };
+    case 'lesson-start':
+      return { timesStarted: FieldValue.increment(1) };
+    case 'lesson-level':
+      return { [`levelCompletions.${event.index}`]: FieldValue.increment(1) };
     case 'download':
       return { downloads: FieldValue.increment(1) };
     case 'question-stat':

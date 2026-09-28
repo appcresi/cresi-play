@@ -163,9 +163,27 @@ service cloud.firestore {
     // contemplarlas acá).
     match /{path=**}/entregas/{entregaId} {
       allow read: if request.auth != null && (
+        isCresiAdmin() ||
         request.auth.uid == entregaId ||
         request.auth.uid == get(/databases/$(database)/documents/classrooms/$(resource.data.classroomId)).data.profesorId
       );
+    }
+
+    // Panel admin (Estadísticas): cuenta alumnos, tareas, entregas y
+    // participantes en vivo de TODA la plataforma con consultas de grupo
+    // (appcresi-admin/lib/platformCounts.ts). Solo el admin: docentes y
+    // alumnos siguen con las reglas anidadas de cada colección.
+    match /{path=**}/estudiantes/{estudianteId} {
+      allow read: if isCresiAdmin();
+    }
+    match /{path=**}/tareas/{tareaId} {
+      allow read: if isCresiAdmin();
+    }
+    match /{path=**}/players/{playerId} {
+      allow read: if isCresiAdmin();
+    }
+    match /{path=**}/words/{wordId} {
+      allow read: if isCresiAdmin();
     }
 
     // Contadores de intentos fallidos de /api/join-class (lib/rateLimitStore.ts):

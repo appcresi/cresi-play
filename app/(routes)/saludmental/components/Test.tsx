@@ -242,10 +242,10 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
         <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">¿Cuál es tu respuesta?</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { text: 'No', value: 1 as 1, color: 'bg-green-50 border-green-200 hover:bg-green-100' },
-            { text: 'Rara vez', value: 2 as 2, color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100' },
-            { text: 'A veces', value: 3 as 3, color: 'bg-orange-50 border-orange-200 hover:bg-orange-100' },
-            { text: 'Sí', value: 4 as 4, color: 'bg-red-50 border-red-200 hover:bg-red-100' }
+            { text: 'No', value: 1 as const, color: 'bg-green-50 border-green-200 hover:bg-green-100' },
+            { text: 'Rara vez', value: 2 as const, color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100' },
+            { text: 'A veces', value: 3 as const, color: 'bg-orange-50 border-orange-200 hover:bg-orange-100' },
+            { text: 'Sí', value: 4 as const, color: 'bg-red-50 border-red-200 hover:bg-red-100' }
           ].map((answer) => (
             <button
               key={answer.text}

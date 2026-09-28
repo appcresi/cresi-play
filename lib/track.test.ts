@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_QUESTION_INDEX, TRACK_LIMITS, collectionFor, limitRuleFor, parseTrackEvent } from './track';
+import { MAX_LESSON_LEVEL_INDEX, MAX_QUESTION_INDEX, TRACK_LIMITS, collectionFor, limitRuleFor, parseTrackEvent } from './track';
 import { createMemoryStore, findBlocked, recordFailure } from './rateLimit';
 
 describe('parseTrackEvent', () => {
@@ -8,6 +8,15 @@ describe('parseTrackEvent', () => {
     expect(parseTrackEvent({ kind: 'lesson-complete', id: 'l_1' })).toEqual({ kind: 'lesson-complete', id: 'l_1' });
     expect(parseTrackEvent({ kind: 'download', collection: 'resources', id: 'r1' })).toEqual({ kind: 'download', collection: 'resources', id: 'r1' });
     expect(parseTrackEvent({ kind: 'question-stat', id: 't1', index: 3, correct: false })).toEqual({ kind: 'question-stat', id: 't1', index: 3, correct: false });
+    expect(parseTrackEvent({ kind: 'lesson-start', id: 'l_1' })).toEqual({ kind: 'lesson-start', id: 'l_1' });
+    expect(parseTrackEvent({ kind: 'lesson-level', id: 'l_1', index: 2 })).toEqual({ kind: 'lesson-level', id: 'l_1', index: 2 });
+  });
+
+  it('lesson-level: índice entero entre 0 y el máximo', () => {
+    expect(parseTrackEvent({ kind: 'lesson-level', id: 'l', index: MAX_LESSON_LEVEL_INDEX })).not.toBeNull();
+    for (const index of [-1, MAX_LESSON_LEVEL_INDEX + 1, 1.5, '3', null, undefined]) {
+      expect(parseTrackEvent({ kind: 'lesson-level', id: 'l', index })).toBeNull();
+    }
   });
 
   it('descarta los campos que no conoce (no se cuelan datos)', () => {
@@ -49,6 +58,8 @@ describe('collectionFor', () => {
     expect(collectionFor({ kind: 'trivia-play', id: 'a' })).toBe('trivia');
     expect(collectionFor({ kind: 'question-stat', id: 'a', index: 0, correct: true })).toBe('trivia');
     expect(collectionFor({ kind: 'lesson-complete', id: 'a' })).toBe('lecciones');
+    expect(collectionFor({ kind: 'lesson-start', id: 'a' })).toBe('lecciones');
+    expect(collectionFor({ kind: 'lesson-level', id: 'a', index: 0 })).toBe('lecciones');
     expect(collectionFor({ kind: 'download', collection: 'infografias', id: 'a' })).toBe('infografias');
   });
 });

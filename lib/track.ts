@@ -13,6 +13,10 @@
 export type TrackEvent =
   | { kind: 'trivia-play'; id: string }
   | { kind: 'lesson-complete'; id: string }
+  /** Alguien abrió la lección (→ `timesStarted`). */
+  | { kind: 'lesson-start'; id: string }
+  /** Alguien terminó el nivel `index` (desde 0) de la lección (→ `levelCompletions.{index}`). */
+  | { kind: 'lesson-level'; id: string; index: number }
   | { kind: 'download'; collection: 'resources' | 'infografias'; id: string }
   | { kind: 'question-stat'; id: string; index: number; correct: boolean };
 
@@ -20,6 +24,8 @@ export type TrackEvent =
 const ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 /** Ninguna trivia del proyecto tiene tanto (el panel docente tope a 20). */
 export const MAX_QUESTION_INDEX = 199;
+/** Las lecciones tienen hoy entre 5 y 11 niveles; margen de sobra. */
+export const MAX_LESSON_LEVEL_INDEX = 49;
 
 const isId = (value: unknown): value is string => typeof value === 'string' && ID_PATTERN.test(value);
 
@@ -31,7 +37,13 @@ export function parseTrackEvent(body: unknown): TrackEvent | null {
   switch (b.kind) {
     case 'trivia-play':
     case 'lesson-complete':
+    case 'lesson-start':
       return isId(b.id) ? { kind: b.kind, id: b.id } : null;
+    case 'lesson-level':
+      return isId(b.id) &&
+        Number.isInteger(b.index) && (b.index as number) >= 0 && (b.index as number) <= MAX_LESSON_LEVEL_INDEX
+        ? { kind: 'lesson-level', id: b.id, index: b.index as number }
+        : null;
     case 'download':
       return (b.collection === 'resources' || b.collection === 'infografias') && isId(b.id)
         ? { kind: 'download', collection: b.collection, id: b.id }
@@ -54,6 +66,8 @@ export function collectionFor(event: TrackEvent): string {
     case 'question-stat':
       return 'trivia';
     case 'lesson-complete':
+    case 'lesson-start':
+    case 'lesson-level':
       return 'lecciones';
     case 'download':
       return event.collection;
@@ -72,6 +86,9 @@ const HOUR_MS = 60 * 60 * 1000;
 export const TRACK_LIMITS: Record<TrackEvent['kind'], { max: number; windowMs: number }> = {
   'trivia-play': { max: 200, windowMs: HOUR_MS },
   'lesson-complete': { max: 200, windowMs: HOUR_MS },
+  'lesson-start': { max: 200, windowMs: HOUR_MS },
+  // Un curso de 40 recorriendo una lección de hasta 11 niveles.
+  'lesson-level': { max: 600, windowMs: HOUR_MS },
   download: { max: 100, windowMs: HOUR_MS },
   'question-stat': { max: 3000, windowMs: HOUR_MS },
 };

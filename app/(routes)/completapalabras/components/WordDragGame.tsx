@@ -71,8 +71,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
 
   const [draggedWord, setDraggedWord] = useState<Word | null>(null);
   const [draggedBlankId, setDraggedBlankId] = useState<string | null>(null);
-  const [touchStartX, setTouchStartX] = useState<number>(0);
-  const [touchStartY, setTouchStartY] = useState<number>(0);
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
   const [selectedBlankId, setSelectedBlankId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -244,9 +242,6 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
   ) => {
     if (isGameOver) return;
     e.preventDefault();
-    const touch = e.touches[0];
-    setTouchStartX(touch.clientX);
-    setTouchStartY(touch.clientY);
     setSelectedWord(word);
     setSelectedBlankId(blankId || null);
     setIsDragging(true);

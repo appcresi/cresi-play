@@ -137,10 +137,10 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 
 			<div className="grid grid-cols-2 gap-4">
 				{[
-					{ text: 'Sí', value: 4 as 4 },
-					{ text: 'A veces', value: 3 as 3 },
-					{ text: 'Rara vez', value: 2 as 2 },
-					{ text: 'No', value: 1 as 1 }
+					{ text: 'Sí', value: 4 as const },
+					{ text: 'A veces', value: 3 as const },
+					{ text: 'Rara vez', value: 2 as const },
+					{ text: 'No', value: 1 as const }
 				].map((answer) => (
 					<button
 						key={answer.text}

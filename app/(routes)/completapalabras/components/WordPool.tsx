@@ -22,7 +22,6 @@ export const WordPool: React.FC<WordPoolProps> = ({
   onTouchEnd,
   onDrop,
   handleDragOver,
-  isDragging,
   accentColor = '#7B1FA2',
 }) => (
   <div className="relative">
