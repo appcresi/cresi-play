@@ -7,6 +7,7 @@
 
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from './firebaseFirestore';
+import { auth } from './firebaseAuth';
 import { track } from './trackClient';
 import type { Resource } from '@/types/resource';
 
@@ -14,7 +15,6 @@ const mapResource = (id: string, data: any): Resource => ({
   id,
   title: data.title,
   description: data.description,
-  url: data.url,
   type: data.type,
   image: data.image,
   is_free: data.is_free ?? true,
@@ -36,6 +36,19 @@ const ResourceService = {
     const snap = await getDoc(doc(db, 'resources', resourceId));
     if (!snap.exists()) return null;
     return mapResource(snap.id, snap.data());
+  },
+
+  /** Link de descarga (en una clase todos los recursos son gratis). Null si
+   *  no hay sesión, no es docente ni alumno de una clase, o no tiene archivo. */
+  async getFileUrl(resourceId: string): Promise<string | null> {
+    const user = auth.currentUser;
+    if (!user) return null;
+    const res = await fetch(`/api/resources/${encodeURIComponent(resourceId)}/file`, {
+      headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+    });
+    if (!res.ok) return null;
+    const { url } = (await res.json()) as { url?: unknown };
+    return typeof url === 'string' ? url : null;
   },
 
   /** Suma 1 al contador de descargas por /api/track — el mismo campo

@@ -6,6 +6,7 @@ import { COMPLETION_PERCENTAGE } from '@/utils/constants'
 import Link from 'next/link'
 import { getActivityById } from '@/lib/activities'
 import CertificateRequestForm from '@/components/CertificateRequestForm'
+import { CONTACT_URL } from '@/lib/cresiWeb'
 
 const ACCENT = getActivityById('trivias')?.color ?? '#1976D2'
 
@@ -243,7 +244,7 @@ function QuestionReview ({ index, question }: QuestionReviewProps): JSX.Element 
         {/* Contact Link */}
         <div className="flex items-center justify-between pt-2">
           <a
-            href={`https://cresi.com.ar/contacto/?question=${question.question}`}
+            href={`${CONTACT_URL}/?question=${encodeURIComponent(question.question)}`}
             target="_blank"
             rel="noreferrer"
             className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 transition-colors"

@@ -6,6 +6,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
+import HelpLinesCard from '@/components/HelpLinesCard';
 
 const ACTIVITY = getActivityById('saludmental');
 const ACTIVITY_TITLE = ACTIVITY?.title ?? 'Salud Mental Test';
@@ -165,6 +166,11 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
           <p className="text-xs text-gray-500 dark:text-gray-400">+{COMPLETION_BONUS} por completar el test</p>
           <p className="font-semibold text-sm mt-1" style={{ color: ACCENT }}>Total: +{totalEarned} puntos</p>
         </div>
+
+        <HelpLinesCard
+          intro="Sea cual sea tu resultado, pedir ayuda es una forma de cuidarte."
+          className="max-w-xl mx-auto mb-8"
+        />
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button

@@ -56,9 +56,12 @@ export default function Page({ params }: PageProps) {
           throw new Error('Trivia no encontrada');
         }
 
-        const triviaData = triviaSnap.data() as Trivia;
+        const triviaData = triviaSnap.data() as Trivia & { createdAt?: string };
         setData({
           ...triviaData,
+          // Las trivias de docentes (acá) guardan `created_at`; las oficiales,
+          // creadas desde appcresi-admin, `createdAt`.
+          created_at: triviaData.created_at ?? triviaData.createdAt ?? '',
           id: triviaSnap.id,
         });
       } catch (err) {
@@ -216,11 +219,13 @@ export default function Page({ params }: PageProps) {
                   <div className="min-w-0">
                     <p className="text-[11px] text-ink/60 dark:text-gray-400">Creación</p>
                     <p className="text-xs font-medium text-ink dark:text-gray-100 truncate">
-                      {new Date(data.created_at).toLocaleDateString('es-AR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {Number.isNaN(Date.parse(data.created_at))
+                        ? '—'
+                        : new Date(data.created_at).toLocaleDateString('es-AR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
                     </p>
                   </div>
                 </div>

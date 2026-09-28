@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SaludMentalSection from "./components/SaludMentalSection";
 import { IconHeart, IconArrowRight } from "@tabler/icons-react";
+import { CONTACT_URL, HELPLINES_URL } from "@/lib/cresiWeb";
 
 export const metadata: Metadata = {
 	title: "ESI | Test de Salud Mental | CrESI",
@@ -106,15 +107,28 @@ export default function MentalHealthTestPage(): JSX.Element {
 						</h3>
 						<p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
 							Este test está dirigido principalmente a adolescentes y jóvenes, y tiene como objetivo evaluar el estado de su salud mental a partir de una serie de preguntas prácticas. Al finalizar, podrás determinar si estás en buen estado emocional o si, por el contrario, podrías estar experimentando niveles de estrés, ansiedad u otros desafíos mentales que podrían requerir apoyo emocional.
-							Si después de realizar el test sentís que necesitás hablar con alguien, no dudes en contactar a un profesional de la salud mental o comunicarte con nosotros.
+							Si después de realizar el test sentís que necesitás hablar con alguien, no dudes en contactar a un profesional de la salud mental, a una línea de ayuda gratuita o comunicarte con nosotros.
 						</p>
-						<a
-							href="/contacto"
-							className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1"
-						>
-							Contacta con nosotros
-							<IconArrowRight className="w-4 h-4" />
-						</a>
+						<div className="flex flex-wrap gap-x-5 gap-y-2">
+							<a
+								href={HELPLINES_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold inline-flex items-center gap-1"
+							>
+								Ver líneas de ayuda
+								<IconArrowRight className="w-4 h-4" />
+							</a>
+							<a
+								href={CONTACT_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium inline-flex items-center gap-1"
+							>
+								Contactá con nosotros
+								<IconArrowRight className="w-4 h-4" />
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>

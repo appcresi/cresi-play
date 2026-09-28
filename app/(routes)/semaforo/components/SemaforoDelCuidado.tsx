@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { IconArrowRight, IconRefresh, IconHeartHandshake, IconCircleCheck } from '@tabler/icons-react';
 import GameStatusBar from '@/components/GameStatusBar';
+import HelpLinesCard from '@/components/HelpLinesCard';
+import { HELPLINES_URL } from '@/lib/cresiWeb';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
@@ -174,6 +176,16 @@ export default function SemaforoDelCuidado(): JSX.Element {
                     <p className="text-sm md:text-base text-gray-700 dark:text-gray-200 leading-relaxed">
                       {scenario.feedback}
                     </p>
+                    {scenario.light === 'rojo' && (
+                      <a
+                        href={HELPLINES_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`mt-3 inline-flex items-center gap-1 text-sm font-semibold hover:underline ${referenceLight.textClass}`}
+                      >
+                        Ver líneas de ayuda gratuitas <IconArrowRight size={16} />
+                      </a>
+                    )}
                   </div>
 
                   <button
@@ -203,6 +215,8 @@ export default function SemaforoDelCuidado(): JSX.Element {
               <IconCircleCheck size={18} className="text-green-600" />
               <span>Sumaste {sessionScore} puntos esta vez</span>
             </div>
+            <HelpLinesCard className="max-w-md mx-auto mb-6" />
+
             <button
               onClick={handleRestart}
               className="inline-flex items-center gap-2 px-6 py-2.5 text-white rounded-full font-semibold hover:opacity-90 transition-colors"

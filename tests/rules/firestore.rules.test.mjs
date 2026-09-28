@@ -146,6 +146,16 @@ await t('rateLimits: ni el docente ni el admin escriben desde el cliente', async
   await assertFails(setDoc(doc(asAdmin, 'rateLimits/x2'), { count: 1 }));
 });
 
+// ── resourceFiles: link de descarga, fuera del alcance del público ─────
+await seed('resourceFiles/r1', { url: 'https://drive.google.com/pago' });
+await t('resourceFiles: un anónimo no puede leer el link', () => assertFails(getDoc(doc(anon, 'resourceFiles/r1'))));
+await t('resourceFiles: un usuario logueado no puede leer el link', () => assertFails(getDoc(doc(asUser('prof'), 'resourceFiles/r1'))));
+await t('resourceFiles: un usuario no puede escribir un link', () => assertFails(setDoc(doc(asUser('prof'), 'resourceFiles/r2'), { url: 'x' })));
+await t('resourceFiles: el admin lee y escribe', async () => {
+  await assertSucceeds(getDoc(doc(asAdmin, 'resourceFiles/r1')));
+  await assertSucceeds(setDoc(doc(asAdmin, 'resourceFiles/r3'), { url: 'https://drive.google.com/x' }));
+});
+
 console.log(`\n${pass} ok, ${fail} fallos`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);

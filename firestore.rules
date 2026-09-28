@@ -265,6 +265,17 @@ service cloud.firestore {
         request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
       );
     }
+    // Link de descarga de cada recurso, aparte de `resources` porque ese es
+    // de lectura pública y los recursos pagos no pueden quedar a la vista.
+    // Lo escribe el panel admin; fuera de él lo leen solo los servidores
+    // (Admin SDK): web lo entrega si es gratis o el pago está aprobado, y
+    // cresi-play a docentes y alumnos de una clase (/api/resources/[id]/file).
+    match /resourceFiles/{resourceId} {
+      allow read, write: if request.auth != null && (
+        request.auth.token.admin == true ||
+        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+      );
+    }
     match /completapalabras/{lessonId} {
       allow read: if true;
       allow create: if request.auth != null && !isStudent() &&

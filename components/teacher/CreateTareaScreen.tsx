@@ -191,7 +191,8 @@ export const CreateTareaScreen = ({
               id: r.id,
               label: r.title,
               cover: r.image,
-              meta: r.is_free ? 'Gratis' : r.price != null ? `$${r.price}` : undefined,
+              // En una clase todos los recursos son gratis, también los pagos de cresi.com.ar.
+              meta: 'Gratis',
             }))
           );
         }

@@ -1,8 +1,9 @@
 // Link a la política de privacidad, que vive en el sitio institucional
 // (web/app/(company)/privacidad). Va en cada lugar donde se piden o se
 // publican datos: entrar, crear cuenta, sumarse al ranking.
+import { PRIVACY_URL } from '@/lib/cresiWeb';
 
-export const PRIVACY_URL = 'https://cresi.com.ar/privacidad';
+export { PRIVACY_URL };
 
 export default function PrivacyLink({
   children = 'política de privacidad',

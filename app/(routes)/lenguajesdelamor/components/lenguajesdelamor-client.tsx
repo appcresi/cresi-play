@@ -6,6 +6,7 @@ import { getActivityById } from '@/lib/activities';
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import LoveLanguagesTest from './LoveLanguagesTest';
+import { CONTACT_URL } from '@/lib/cresiWeb';
 
 const ACCENT = getActivityById('lenguajesdelamor')?.color ?? '#EC407A';
 
@@ -81,7 +82,9 @@ export default function LenguajesDelAmorClient() {
                 profundizar sobre relaciones saludables, no dudes en contactarnos.
               </p>
               <a
-                href="https://www.cresi.com.ar/contacto"
+                href={CONTACT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-sm text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 font-medium inline-flex items-center gap-1"
               >
                 Contacta con nosotros

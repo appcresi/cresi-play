@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import AmorSection from "./components/AmorSection";
 import testData from "./data.json";
 import { IconHeart, IconArrowRight } from "@tabler/icons-react";
+import { CONTACT_URL, HELPLINES_URL } from "@/lib/cresiWeb";
 
 export const metadata: Metadata = {
 	title: "ESI | Amor sin violencia | CrESI",
@@ -107,13 +108,26 @@ export default function LoveTestPage(): JSX.Element {
 							{testData.about}
 							Si reconocés que estás en una relación violenta, recordá que no estás sola/o. Existen recursos y profesionales dispuestos a ayudarte.
 						</p>
-						<a
-							href="https://www.cresi.com.ar/contacto"
-							className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium inline-flex items-center gap-1"
-						>
-							Contacta con nosotros
-							<IconArrowRight className="w-4 h-4" />
-						</a>
+						<div className="flex flex-wrap gap-x-5 gap-y-2">
+							<a
+								href={HELPLINES_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold inline-flex items-center gap-1"
+							>
+								Ver líneas de ayuda (Línea 144 y más)
+								<IconArrowRight className="w-4 h-4" />
+							</a>
+							<a
+								href={CONTACT_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium inline-flex items-center gap-1"
+							>
+								Contactá con nosotros
+								<IconArrowRight className="w-4 h-4" />
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>

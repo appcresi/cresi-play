@@ -177,14 +177,19 @@ const InlineInfografia = ({ infografiaId }: { infografiaId: string }) => {
 // Para recursos (guías/talleres descargables), mostramos la miniatura,
 // título, descripción y un botón de descarga que abre el link de Drive
 // real en una pestaña nueva — no hay nada que "jugar" embebido, es
-// simplemente un archivo.
+// simplemente un archivo. Dentro de una clase todos los recursos son
+// gratis, también los que en cresi.com.ar son pagos.
 const InlineRecurso = ({ resourceId }: { resourceId: string }) => {
   const [data, setData] = useState<Resource | null | undefined>(undefined);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   useEffect(() => {
     ResourceService.getById(resourceId)
       .then(setData)
       .catch(() => setData(null));
+    ResourceService.getFileUrl(resourceId)
+      .then(setFileUrl)
+      .catch(() => setFileUrl(null));
   }, [resourceId]);
 
   if (data === undefined) {
@@ -221,16 +226,20 @@ const InlineRecurso = ({ resourceId }: { resourceId: string }) => {
       <div className="p-4 space-y-2 flex-1 min-w-0">
         <h3 className="text-sm font-semibold text-ink dark:text-gray-100">{data.title}</h3>
         <p className="text-sm text-ink/70 dark:text-gray-300 leading-relaxed">{data.description}</p>
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => ResourceService.incrementDownloads(resourceId).catch(() => {})}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
-        >
-          <IconDownload className="w-4 h-4" />
-          {data.is_free ? 'Descargar' : `Descargar · $${data.price ?? ''}`}
-        </a>
+        {fileUrl ? (
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => ResourceService.incrementDownloads(resourceId).catch(() => {})}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-mint text-mint-text rounded-full text-sm font-semibold hover:bg-mint-light transition-colors"
+          >
+            <IconDownload className="w-4 h-4" />
+            Descargar
+          </a>
+        ) : (
+          <p className="text-xs text-ink/50 dark:text-gray-400">El archivo no está disponible por ahora.</p>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
+import HelpLinesCard from '@/components/HelpLinesCard';
 import type { Achievement } from '@/types/user';
 
 const ACTIVITY = getActivityById('moodtracker');
@@ -504,6 +505,8 @@ const MoodTracker = () => {
                 </div>
               </div>
             )}
+
+            <HelpLinesCard intro="Si hace días que te sentís mal o hay algo que te pesa, contalo." />
           </>
         )}
       </main>
