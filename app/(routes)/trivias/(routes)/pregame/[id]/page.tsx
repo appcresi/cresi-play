@@ -56,12 +56,9 @@ export default function Page({ params }: PageProps) {
           throw new Error('Trivia no encontrada');
         }
 
-        const triviaData = triviaSnap.data() as Trivia & { createdAt?: string };
+        const triviaData = triviaSnap.data() as Trivia;
         setData({
           ...triviaData,
-          // Las trivias de docentes (acá) guardan `created_at`; las oficiales,
-          // creadas desde appcresi-admin, `createdAt`.
-          created_at: triviaData.created_at ?? triviaData.createdAt ?? '',
           id: triviaSnap.id,
         });
       } catch (err) {

@@ -41,6 +41,13 @@ service cloud.firestore {
       return request.resource.data.get('author', null) == resource.data.get('author', null);
     }
 
+    // Quién administra el contenido de CrESI (appcresi-admin): la marca `admin`
+    // del token, que se pone con cresi-play/scripts/set-admin-claim.mjs. El panel
+    // usa la misma marca para dejar entrar (appcresi-admin/lib/serverAuth.ts).
+    function isCresiAdmin() {
+      return request.auth != null && request.auth.token.get("admin", false) == true;
+    }
+
     match /classrooms/{classroomId} {
       allow create: if request.auth != null && !isStudent() && request.auth.uid == request.resource.data.profesorId;
       allow read: if request.auth != null;
@@ -181,20 +188,18 @@ service cloud.firestore {
 
     match /preguntas/{preguntaId} {
       allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
+      allow create, update, delete: if isCresiAdmin();
     }
     match /questions/{questionId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     match /blog_posts/{blogPostId} {
       allow read: if true;
       allow create, update, delete: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     // Infografías — contenido de diseño, lo sube solo CrESI (no hay
@@ -203,20 +208,17 @@ service cloud.firestore {
     match /infografias/{infografiaId} {
       allow read: if true;
       allow create, delete: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
       // El contador de descargas lo suma /api/track (Admin SDK), no el navegador.
       allow update: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     match /users/{userId} {
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
       // `leaderboard` (ranking del modo libre: optIn, semanas, bloqueo) lo
       // escribe solo /api/leaderboard/me y /api/sync-score, que controlan que
@@ -243,26 +245,23 @@ service cloud.firestore {
         // caso real en el comentario de isValidGame más arriba), pero
         // solo ese campo — no el resto del documento del usuario.
         (
-          (request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1") &&
+          isCresiAdmin() &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['game']) &&
           isValidGame(request.resource.data.game)
         )
       );
       allow delete: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     match /resources/{resourceId} {
       allow read: if true;
       allow create, delete: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
       // El contador de descargas lo suma /api/track (Admin SDK), no el navegador.
       allow update: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     // Link de descarga de cada recurso, aparte de `resources` porque ese es
@@ -272,8 +271,7 @@ service cloud.firestore {
     // cresi-play a docentes y alumnos de una clase (/api/resources/[id]/file).
     match /resourceFiles/{resourceId} {
       allow read, write: if request.auth != null && (
-        request.auth.token.admin == true ||
-        request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+        isCresiAdmin()
       );
     }
     match /completapalabras/{lessonId} {
@@ -299,14 +297,14 @@ service cloud.firestore {
       allow create: if request.auth != null && !isStudent() && (
         request.resource.data.author == request.auth.uid ||
         (request.resource.data.author == "CRESI" && (
-          request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+          isCresiAdmin()
         ))
       );
       allow update: if (
         (request.auth != null && (
           (resource.data.author == request.auth.uid && authorUnchanged()) ||
           (resource.data.author == "CRESI" && (
-            request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+            isCresiAdmin()
           ))
         ))
         // timesCompleted lo suma /api/track (Admin SDK), no el navegador.
@@ -314,7 +312,7 @@ service cloud.firestore {
       allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||
         (resource.data.author == "CRESI" && (
-          request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+          isCresiAdmin()
         ))
       );
     }
@@ -328,16 +326,15 @@ service cloud.firestore {
       allow create: if request.auth != null && !isStudent() && (
         request.resource.data.author == request.auth.uid ||
         (request.resource.data.author == "CRESI" && (
-          request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+          isCresiAdmin()
         ))
       );
       allow update: if (
         (request.auth != null && (
           ((resource.data.author == request.auth.uid ||
-            resource.data.userId == request.auth.uid ||
             resource.data.user_id == request.auth.uid) && authorUnchanged()) ||
           (resource.data.author == "CRESI" && (
-            request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+            isCresiAdmin()
           ))
         ))
         // playCount y questionStats ya NO se escriben desde el navegador: los
@@ -347,10 +344,9 @@ service cloud.firestore {
       );
       allow delete: if request.auth != null && (
         resource.data.author == request.auth.uid ||
-        resource.data.userId == request.auth.uid ||
         resource.data.user_id == request.auth.uid ||
         (resource.data.author == "CRESI" && (
-          request.auth.token.admin == true || request.auth.uid == "feHhnkE3m1Yzbwn4AgEA7rJjsul1"
+          isCresiAdmin()
         ))
       );
     }

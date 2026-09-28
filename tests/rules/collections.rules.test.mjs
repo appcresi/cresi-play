@@ -25,6 +25,8 @@ const t = async (name, fn) => {
   catch (e) { fail++; console.log('FAIL', name, '-', String(e.message).split('\n')[0]); }
 };
 
+// La cuenta de CrESI SIN la marca `admin`: antes las reglas la dejaban pasar por
+// su uid; ahora lo único que cuenta es la marca (isCresiAdmin en firestore.rules).
 const HARDCODED_ADMIN = 'feHhnkE3m1Yzbwn4AgEA7rJjsul1';
 const asUser = (uid) => env.authenticatedContext(uid).firestore();
 const asAdmin = env.authenticatedContext('admin-1', { admin: true }).firestore();
@@ -43,7 +45,7 @@ for (const col of ['questions', 'blog_posts']) {
   await t(`${col}: un usuario común no edita`, () => assertFails(updateDoc(d(asUser('u1'), `${col}/x`), { title: 'pisado' })));
   await t(`${col}: un usuario común no borra`, () => assertFails(deleteDoc(d(asUser('u1'), `${col}/x`))));
   await t(`${col}: el admin (claim) escribe`, () => assertSucceeds(setDoc(d(asAdmin, `${col}/z`), { title: 'admin' })));
-  await t(`${col}: el admin fijo por uid escribe`, () => assertSucceeds(setDoc(d(asHardcodedAdmin, `${col}/w`), { title: 'admin uid' })));
+  await t(`${col}: el uid de CrESI sin la marca admin NO escribe`, () => assertFails(setDoc(d(asHardcodedAdmin, `${col}/w`), { title: 'admin uid' })));
 }
 
 // ── preguntas: solo usuarios logueados leen; escribe el admin ─────────────
@@ -98,7 +100,7 @@ await t('lecciones: el dueño borra la suya', () => assertSucceeds(deleteDoc(d(a
 
 // ── trivia ────────────────────────────────────────────────────────────────
 await seed('trivia/t-ana', { name: 'de ana', author: 'ana', playCount: 0, questions: [] });
-await seed('trivia/t-legacy', { name: 'vieja', userId: 'lola', playCount: 0, questions: [] });
+await seed('trivia/t-legacy', { name: 'vieja', user_id: 'lola', playCount: 0, questions: [] });
 await seed('trivia/t-oficial', { name: 'oficial', author: 'CRESI', playCount: 0, questions: [] });
 await t('trivia: lectura pública', () => assertSucceeds(getDoc(d(anon, 'trivia/t-oficial'))));
 await t('trivia: un docente crea la suya', () => assertSucceeds(setDoc(d(asUser('ana'), 'trivia/t-nueva'), { name: 'n', author: 'ana', questions: [] })));
@@ -107,7 +109,7 @@ await t('trivia: el dueño edita la suya', () => assertSucceeds(updateDoc(d(asUs
 await t('trivia: un docente NO edita una oficial', () => assertFails(updateDoc(d(asUser('ana'), 'trivia/t-oficial'), { name: 'pisada' })));
 await t('trivia: el admin edita una oficial', () => assertSucceeds(updateDoc(d(asAdmin, 'trivia/t-oficial'), { name: 'corregida' })));
 await t('trivia: el dueño NO puede cambiar el autor a "CRESI" (se haría pasar por oficial)', () => assertFails(updateDoc(d(asUser('ana'), 'trivia/t-ana'), { author: 'CRESI' })));
-await t('trivia: el dueño de una trivia vieja (userId) sigue pudiendo editarla', () => assertSucceeds(updateDoc(d(asUser('lola'), 'trivia/t-legacy'), { name: 'editada' })));
+await t('trivia: el dueño de una trivia vieja (user_id, sin author propio) sigue pudiendo editarla', () => assertSucceeds(updateDoc(d(asUser('lola'), 'trivia/t-legacy'), { name: 'editada' })));
 await t('trivia: un anónimo NO suma partidas desde el cliente (playCount lo suma /api/track)', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { playCount: increment(1) })));
 await t('trivia: un anónimo NO escribe questionStats (lo suma /api/track)', () => assertFails(updateDoc(d(anon, 'trivia/t-ana'), { questionStats: { 0: { shown: 1, wrong: 0 } } })));
 await t('trivia: un anónimo NO puede meter datos libres en una trivia oficial', () => assertFails(updateDoc(d(anon, 'trivia/t-oficial'), { questionStats: { basura: 'x'.repeat(1000) } })));
