@@ -28,7 +28,7 @@ jobs:
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://jugar.cresi.com.ar' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Salud del sitio (configuración y Admin SDK)
         run: bash scripts/check-health.sh "$SITE_URL"
