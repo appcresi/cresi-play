@@ -10,6 +10,7 @@ import { Question, Lesson } from "./types";
 import { IconCheck, IconX, IconArrowRight, IconNotes, IconTrash, IconEdit, IconPlus } from "@tabler/icons-react";
 import UserDataManager from '@/lib/userDataManager';
 import { track } from '@/lib/trackClient';
+import { playSound } from '@/lib/sounds';
 import type { LessonNote } from '@/types/user';
 
 type LessonPageProps = {
@@ -97,6 +98,7 @@ export default function LessonPage({ lesson: currentLesson, onBack, onLessonComp
     setAllQuestions(prev => [...prev, currentQuestionWithAnswer]);
 
     const isCorrect = answer === currentQuestion.correctAnswer;
+    playSound(isCorrect ? 'correcto' : 'incorrecto');
     if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
 

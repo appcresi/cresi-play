@@ -15,6 +15,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -141,6 +142,7 @@ export default function MemeGenerator() {
     UserDataManager.saveUserData(updatedData);
     setScore(updatedData.game.totalScore);
     setMemesCreated(prev => prev + 1);
+    playSound('puntos');
     if (becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
       trackEvent('activity_completed', { activity_title: ACTIVITY_TITLE });
     }

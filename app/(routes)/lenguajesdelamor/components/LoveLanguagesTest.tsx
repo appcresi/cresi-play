@@ -7,6 +7,7 @@ import { QUESTIONS, LANGUAGES, shuffleQuestions, type LoveLanguageKey, type Love
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('lenguajesdelamor');
@@ -81,6 +82,7 @@ export default function LoveLanguagesTest({ onScoreChange }: LoveLanguagesTestPr
   };
 
   const handleAnswer = (letter: LoveLanguageKey) => {
+    playSound('tap');
     const newAnswers = { ...answers, [questions[currentQuestion].id]: letter };
     setAnswers(newAnswers);
     saveAnswerProgress(newAnswers);

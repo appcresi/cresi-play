@@ -14,6 +14,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('biopuzzle');
@@ -127,6 +128,7 @@ export function BiopuzzleGame({
     const targetPart = bodyParts.find(part => part.id === targetId);
 
     if (targetPart && droppedItemId === targetId) {
+      playSound('correcto');
       setBodyParts(prevParts =>
         prevParts.map(part =>
           part.id === droppedItemId
@@ -146,6 +148,8 @@ export function BiopuzzleGame({
         UserDataManager.saveUserData(updated);
         setUserData(updated);
       }
+    } else if (targetPart) {
+      playSound('incorrecto');
     }
 
     setDraggedItem(null);

@@ -19,6 +19,7 @@ import { ACTIVITIES } from "@/lib/activities";
 import ClassroomService from "@/lib/classroomService";
 import { ActivityIcon } from "@/components/ActivityIcon";
 import ThemeToggle from "@/components/ThemeToggle";
+import SoundToggle from "@/components/SoundToggle";
 
 import cresiLogo from "@/public/cresi-logo.webp";
 import { characterImageSrc } from '@/lib/characterImage';
@@ -248,6 +249,9 @@ export default function Header(): JSX.Element | null {
 
         {/* Lado derecho */}
         <div className="flex items-center gap-2">
+          {/* Sonidos de los juegos */}
+          <SoundToggle className="w-9 h-9 hover:bg-pink-light dark:hover:bg-gray-800" />
+
           {/* Modo noche */}
           <ThemeToggle className="w-9 h-9 hover:bg-pink-light dark:hover:bg-gray-800" />
 

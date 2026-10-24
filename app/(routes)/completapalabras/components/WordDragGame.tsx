@@ -14,6 +14,7 @@ import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 interface WordDragGameProps {
@@ -226,6 +227,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
     setLives(prevLives => {
       const newLives = prevLives - 1;
       if (newLives <= 0) {
+        playSound('sinVidas');
         setIsGameOver(true);
         if (userData.game.totalScore >= 200) {
           setShowPurchaseModal(true);
@@ -350,6 +352,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
         ? { ...blank, filledWord: wordToMove.text, filledWordId: wordToMove.id }
         : blank
     ));
+    playSound('tap');
 
     clearDragStates();
     setShowFeedback(false);
@@ -380,6 +383,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
 
     if (allBlanksFilledCorrectly) {
       setFeedbackMessage('¡Correcto! ¡Muy bien!');
+      playSound('correcto');
       setIsLevelComplete(true);
       setSessionScore(prevScore => prevScore + CORRECT_ANSWER_POINTS);
 
@@ -391,6 +395,7 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
         blank => blank.filledWord === blank.correctWord
       ).length;
       setFeedbackMessage(`Tienes ${correctCount} de ${blanks.length} palabras correctas. ¡Sigue intentando!`);
+      playSound('incorrecto');
       handleIncorrectAnswer();
     }
   };

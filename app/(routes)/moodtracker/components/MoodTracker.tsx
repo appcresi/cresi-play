@@ -6,6 +6,7 @@ import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 import HelpLinesCard from '@/components/HelpLinesCard';
 import type { Achievement } from '@/types/user';
@@ -254,6 +255,7 @@ const MoodTracker = () => {
     // Registrar cómo te sentís cuenta como día con actividad, pero es algo
     // personal: sin la tarjeta de "qué sigue" después de cada registro.
     reportActivityFinished(ACTIVITY_TITLE, { firstTime, silent: true });
+    playSound('logro');
 
     setUserData(updatedData);
     checkAchievements(updatedData.mood.history);

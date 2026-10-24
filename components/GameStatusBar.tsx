@@ -7,6 +7,7 @@ import UserDataSync from '@/lib/userDataSync';
 import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebaseAuth';
 import ThemeToggle from '@/components/ThemeToggle';
+import SoundToggle from '@/components/SoundToggle';
 import type { UserData } from '@/types/user';
 import { characterImageSrc } from '@/lib/characterImage';
 
@@ -323,6 +324,9 @@ const GameStatusBar = ({
                 {isAnonymous ? 'Invitado' : 'Registrado'}
               </span>
             </div>
+
+            {/* Sonidos */}
+            <SoundToggle className="w-9 h-9 bg-white dark:bg-gray-800 border border-pink-light dark:border-gray-700" />
 
             {/* Theme Toggle */}
             <ThemeToggle className="w-9 h-9 bg-white dark:bg-gray-800 border border-pink-light dark:border-gray-700" />

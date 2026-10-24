@@ -14,6 +14,7 @@ import FinalReport from './FinalReport';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -157,6 +158,7 @@ const UnifiedWordGame = () => {
       setScore((prev) => prev + 100);
       setCorrectWords((prev) => [...prev, currentWord]);
       toast.success('¡Correcto!');
+      playSound('correcto');
 
       if (correctWords.length % 5 === 0) {
         setLevel(prev => prev + 1);
@@ -165,6 +167,7 @@ const UnifiedWordGame = () => {
       moveToNextLetter();
     } else {
       toast.error('Incorrecto. Intenta de nuevo.');
+      playSound('incorrecto');
       setIncorrectLetters((prev) => new Set(prev).add(currentWord.palabra.charAt(0)));
       setIncorrectWords((prev) => [...prev, currentWord]);
       setIsIncorrect(true);
@@ -183,6 +186,7 @@ const UnifiedWordGame = () => {
   const handlePass = () => {
     const currentLetter = letters[currentLetterIndex];
     setPassedLetters((prev) => new Set(prev).add(currentLetter));
+    playSound('tap');
     moveToNextLetter();
     if (progress + 1 === maxWords) {
       handleGameEnd();

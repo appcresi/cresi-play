@@ -2,6 +2,7 @@
 import { IconHeartPlus, IconX } from '@tabler/icons-react';
 import toast from 'react-hot-toast';
 import UserDataManager from '@/lib/userDataManager';
+import { playSound } from '@/lib/sounds';
 
 const LIFE_PURCHASE_COST = 200;
 
@@ -35,6 +36,7 @@ const PurchaseModal = ({
     updatedUserData.game.totalLives = Math.min(currentLives + 1, 3);
 
     UserDataManager.saveUserData(updatedUserData);
+    playSound('vida');
     onPurchase();
     onClose();
 

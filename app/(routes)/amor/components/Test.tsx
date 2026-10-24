@@ -6,6 +6,7 @@ import testData from "../data.json";
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('amor');
@@ -45,6 +46,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
 	}, []);
 
 	function handleAnswerSubmit(answerScore: 1 | 2 | 3 | 4): void {
+		playSound('tap');
 		setScore((previous) => previous + answerScore);
 		setPercentage((previous) => previous + oneQuestion);
 

@@ -5,6 +5,7 @@ import { IconHeartHandshake, IconRefresh, IconBooks, IconHome } from "@tabler/ic
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 import HelpLinesCard from '@/components/HelpLinesCard';
 
@@ -80,6 +81,7 @@ export default function Test({ onCompleted }: { onCompleted?: (newScore: number)
   }, []);
 
   function handleAnswerSubmit(answerScore: 1 | 2 | 3 | 4): void {
+    playSound('tap');
     const newTestScore = testScore + answerScore;
     setTestScore(newTestScore);
     setPercentage((previous) => previous + oneQuestion);

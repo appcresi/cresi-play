@@ -14,6 +14,16 @@
 import { trackEvent } from '@/lib/analytics';
 import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebaseAuth';
+import { ACTIVITIES } from '@/lib/activities';
+import { playSound } from '@/lib/sounds';
+
+/** Tests, lecturas y lecciones terminan con un "logro" tranquilo; los juegos, con fanfarria (igual que la app). */
+const CALM_FINISH_IDS = new Set(['lecciones', 'literatura', 'saludmental', 'vocacion', 'amor', 'lenguajesdelamor', 'semaforo']);
+
+function finishSound(title: string) {
+  const activity = ACTIVITIES.find((a) => a.title === title || a.id === title);
+  playSound(activity && CALM_FINISH_IDS.has(activity.id) ? 'logro' : 'victoria');
+}
 
 export const ACTIVITY_FINISHED_EVENT = 'cresi:activity-finished';
 
@@ -49,6 +59,7 @@ export function reportActivityFinished(title: string, options: ActivityFinishedO
     }
 
     if (!silent && typeof window !== 'undefined') {
+      finishSound(title);
       window.dispatchEvent(new CustomEvent<ActivityFinishedDetail>(ACTIVITY_FINISHED_EVENT, { detail: { title, challengeJustDone } }));
     }
   } catch (err) {

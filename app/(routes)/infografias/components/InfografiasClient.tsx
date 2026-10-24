@@ -19,6 +19,7 @@ import { recordActivityProgress } from '@/lib/activityProgress';
 import ClassroomService from "@/lib/classroomService";
 import InfografiaService from "@/lib/infografiaService";
 import { getActivityById } from "@/lib/activities";
+import { playSound } from "@/lib/sounds";
 
 const ACTIVITY = getActivityById("infografias");
 const ACTIVITY_TITLE = ACTIVITY?.title ?? "Infografías";
@@ -104,6 +105,7 @@ export default function InfografiasClient(): JSX.Element {
     };
     UserDataManager.saveUserData(updated);
     setScore(updated.game.totalScore);
+    playSound('puntos');
   };
 
   const handleOpen = (item: Infographic) => {

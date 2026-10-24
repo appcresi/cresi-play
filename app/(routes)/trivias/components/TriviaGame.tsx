@@ -17,6 +17,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { trackEvent } from '@/lib/analytics';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { useAbandonTracking } from '@/lib/useAbandonTracking';
 import { getActivityById } from '@/lib/activities';
 import { useTheme } from '@/context/ThemeContext';
@@ -167,6 +168,7 @@ export default function TriviaGame({
   };
 
   const handleGameOver = () => {
+    playSound('sinVidas');
     setIsGameOver(true);
     setTimeLeft(undefined);
     if (userData.game.totalScore >= 200) {
@@ -199,6 +201,7 @@ export default function TriviaGame({
 
     setIsTimerPaused(true);
     toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
+    playSound('incorrecto');
     recordQuestionStat(currentQuestion, false);
 
     setLives(prevLives => {
@@ -237,6 +240,7 @@ export default function TriviaGame({
 
       const isCorrect = answer === items[currentQuestion].question.answer;
       recordQuestionStat(currentQuestion, isCorrect);
+      playSound(isCorrect ? 'correcto' : 'incorrecto');
 
       if (isCorrect) {
         const newScore = score + CORRECT_ANSWER_POINTS;

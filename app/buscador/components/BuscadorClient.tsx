@@ -13,6 +13,7 @@ import {
 import GameStatusBar from "@/components/GameStatusBar";
 import UserDataManager from "@/lib/userDataManager";
 import { recordActivityProgress } from '@/lib/activityProgress';
+import { playSound } from '@/lib/sounds';
 import ClassroomService from "@/lib/classroomService";
 
 const ACCENT = "#4F46E5"; // indigo — no pertenece a ninguna actividad puntual del catálogo
@@ -105,6 +106,7 @@ export default function BuscadorClient(): JSX.Element {
 
       UserDataManager.saveUserData(updatedData);
       setScore(updatedData.game.totalScore);
+      playSound('puntos');
     }, SEARCH_COMMIT_DELAY_MS);
 
     return () => {
@@ -128,6 +130,7 @@ export default function BuscadorClient(): JSX.Element {
     };
     UserDataManager.saveUserData(updatedData);
     setScore(updatedData.game.totalScore);
+    playSound('puntos');
   };
 
   const handleCopy = (question: BankQuestion) => {

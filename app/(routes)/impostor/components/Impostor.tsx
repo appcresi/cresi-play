@@ -6,6 +6,7 @@ import esiTermsByCategory from '../data/esiTermsByCategory.json';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('impostor');
@@ -78,6 +79,13 @@ export default function ESIImpostor() {
     return () => clearInterval(interval);
   }, [timerActive]);
 
+  // Aviso a los 10 segundos y al terminar el tiempo (igual que la app).
+  useEffect(() => {
+    if (!timerActive) return;
+    if (timer === 10) playSound('tap');
+    if (timer === 0) playSound('sinVidas');
+  }, [timer, timerActive]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsMouseDown(true);
     setStartY(e.clientY);
@@ -92,6 +100,7 @@ export default function ESIImpostor() {
   const handleMouseUp = () => {
     setIsMouseDown(false);
     if (translateY < -100) {
+      if (!revealed) playSound('tap');
       setRevealed(true);
       setTranslateY(-200);
     } else {
@@ -113,6 +122,7 @@ export default function ESIImpostor() {
 
   const handleTouchEnd = () => {
     if (translateY < -100) {
+      if (!revealed) playSound('tap');
       setRevealed(true);
       setTranslateY(-200);
     } else {
@@ -244,6 +254,8 @@ export default function ESIImpostor() {
     }
     // Es un juego de mesa de rondas sin fin: la pantalla final solo la primera vez, no en cada ronda.
     reportActivityFinished(ACTIVITY_TITLE, { firstTime, silent: !firstTime });
+    // Sin pantalla final, el festejo de cada ronda va acá (con pantalla, lo pone reportActivityFinished).
+    if (!firstTime) playSound('victoria');
   };
 
   /**

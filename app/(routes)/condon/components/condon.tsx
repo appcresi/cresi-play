@@ -15,6 +15,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
+import { playSound } from '@/lib/sounds';
 import { stepsData, type Step } from '../data/questions';
 
 const ACTIVITY = getActivityById('condon');
@@ -78,6 +79,7 @@ export default function ComicPoneloSimulator() {
     setShowFeedback(true);
 
     const isCorrect = steps[currentStep].options[optionIndex].correct;
+    playSound(isCorrect ? 'correcto' : 'incorrecto');
 
     if (isCorrect) {
       const updatedData = {
@@ -110,6 +112,7 @@ export default function ComicPoneloSimulator() {
       saveUserData(updatedData);
 
       if (newLives === 0) {
+        playSound('sinVidas');
         setShowPurchaseModal(true);
       }
     }

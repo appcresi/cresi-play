@@ -10,6 +10,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
+import { playSound } from '@/lib/sounds';
 import { characterImageSrc } from '@/lib/characterImage';
 
 // Antes esto era el string suelto 'ChatSimulator' — no coincidía con el
@@ -261,6 +262,7 @@ const ChatSimulator = () => {
     setOptionsOrder([]);
 
     const isCorrect = option.outcome === 'safe';
+    playSound(isCorrect ? 'correcto' : 'incorrecto');
 
     setModalContent({
       title: option.feedbackTitle,
@@ -288,6 +290,7 @@ const ChatSimulator = () => {
     persistLives(newLives);
 
     if (newLives <= 0) {
+      playSound('sinVidas');
       if (userData.game.totalScore >= 200) {
         setShowPurchaseModal(true);
         setShowModal(false);

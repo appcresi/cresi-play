@@ -8,6 +8,7 @@ import { PROFESSIONS } from '../lib/professions';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 interface AreaResult {
@@ -130,6 +131,7 @@ export default function VocationalTest({ onScoreChange }: VocationalTestProps) {
   };
 
   const handleAnswer = (value: boolean) => {
+    playSound('tap');
     const newAnswers = {
       ...answers,
       [QUESTIONS[currentQuestion].id]: value,

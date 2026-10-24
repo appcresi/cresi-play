@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { db } from '@/lib/firebaseFirestore';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound, playWheelTicks } from '@/lib/sounds';
 import { collection, query, where, getDocs, QueryConstraint } from 'firebase/firestore';
 import toast, { Toaster } from 'react-hot-toast';
 import { IconRefresh, IconHome, IconDeviceFloppy, IconCircleCheck, IconCircleX } from '@tabler/icons-react';
@@ -78,6 +79,8 @@ const PENDING_SCORE_KEY = 'cresi_pending_score';
 const PENDING_RETURN_KEY = 'cresi_pending_return_to';
 const CORRECT_ANSWER_POINTS = 100;
 const DEFAULT_TIME = 60;
+/** Duración del giro de la ruleta (la animación y el tic-tac usan la misma). */
+const SPIN_DURATION_MS = 3000;
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -202,6 +205,7 @@ export default function JugarAzar(): JSX.Element {
   // ============================================
 
   const handleGameOver = useCallback(() => {
+    playSound('sinVidas');
     setIsGameOver(true);
     setTimeLeft(undefined);
     if (userData && userData.game.totalScore >= 200) {
@@ -215,6 +219,7 @@ export default function JugarAzar(): JSX.Element {
     setIsTimerPaused(true);
     setTimeLeft(undefined);
     toast('¡Se acabó el tiempo!', { duration: 2000, icon: '⏰' });
+    playSound('incorrecto');
 
     setLives((prevLives) => {
       const newLives = prevLives - 1;
@@ -273,6 +278,7 @@ export default function JugarAzar(): JSX.Element {
     if (availableCategories.length === 0) {
       setGameState('finished');
       setIsSpinning(false);
+      playSound('victoria');
       // No está en el catálogo: se cuenta el día y la analítica, sin tarjeta.
       reportActivityFinished('jugarazar', { firstTime: true, silent: true });
       return;
@@ -282,6 +288,8 @@ export default function JugarAzar(): JSX.Element {
     const randomCategory = CATEGORIES.indexOf(availableCategories[randomIndex]);
     const spinRotation = randomCategory * 60 + 360 * 5;
     setRotation(spinRotation);
+    // La rueda arranca siempre desde 0 (se reinicia al volver), así que recorre spinRotation grados.
+    playWheelTicks(SPIN_DURATION_MS, spinRotation, 60);
 
     setTimeout(async () => {
       const selectedCat = availableCategories[randomIndex].name;
@@ -346,7 +354,7 @@ export default function JugarAzar(): JSX.Element {
           }
         }
       }, 1000);
-    }, 3000);
+    }, SPIN_DURATION_MS);
   }, [isSpinning, fetchQuestions, correctQuestions, completedCategories]);
 
   const handleAnswer = useCallback(
@@ -361,6 +369,7 @@ export default function JugarAzar(): JSX.Element {
       setTimeLeft(undefined);
 
       const isCorrect = selectedOption === currentQuestion.answer;
+      playSound(isCorrect ? 'correcto' : 'incorrecto');
 
       if (isCorrect) {
         const newScore = score + CORRECT_ANSWER_POINTS;
@@ -534,7 +543,7 @@ export default function JugarAzar(): JSX.Element {
                 className="drop-shadow-xl"
                 style={{
                   transform: `rotate(${rotation}deg)`,
-                  transition: isSpinning ? 'transform 3s ease-out' : 'none',
+                  transition: isSpinning ? `transform ${SPIN_DURATION_MS}ms ease-out` : 'none',
                 }}
               />
 

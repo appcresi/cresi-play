@@ -8,6 +8,7 @@ import { HELPLINES_URL } from '@/lib/cresiWeb';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 import { SCENARIOS, CLOSING_MESSAGE, type LightColor } from '../data/scenarios';
 
@@ -77,6 +78,8 @@ export default function SemaforoDelCuidado(): JSX.Element {
   const handleSelect = (light: LightColor): void => {
     if (selected !== null) return;
     setSelected(light);
+    // No hay respuesta "incorrecta": cada color es válido, así que solo un toque (como en la app).
+    playSound('tap');
 
     const newSessionScore = sessionScore + POINTS_PER_SCENARIO;
     setSessionScore(newSessionScore);

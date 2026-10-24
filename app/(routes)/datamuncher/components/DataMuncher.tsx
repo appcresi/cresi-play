@@ -21,6 +21,7 @@ import {
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
+import { playSound } from '@/lib/sounds';
 import { getActivityById } from '@/lib/activities';
 
 const ACTIVITY = getActivityById('datamuncher');
@@ -251,6 +252,7 @@ const DataMuncher = () => {
   const handleGhostCollision = () => {
     const newLives = lives - 1;
     setLives(newLives);
+    playSound(newLives <= 0 ? 'sinVidas' : 'incorrecto');
     if (newLives <= 0) {
       if (userData.game.totalScore >= 200) {
         setShowPurchaseModal(true);
@@ -266,6 +268,7 @@ const DataMuncher = () => {
   const handleTimeOut = () => {
     const newLives = lives - 1;
     setLives(newLives);
+    playSound(newLives <= 0 ? 'sinVidas' : 'incorrecto');
     if (newLives <= 0) {
       if (userData.game.totalScore >= 200) {
         setShowPurchaseModal(true);
@@ -302,6 +305,7 @@ const DataMuncher = () => {
     if (!currentQuestion) return;
 
     const isCorrect = currentQuestion.answer === answer;
+    playSound(isCorrect ? 'correcto' : 'incorrecto');
     // Se calcula acá, no en el modal: `answeredQuestions` recién se
     // actualiza abajo (y de forma asíncrona), así que hay que decidir con
     // el valor que va a terminar teniendo, antes de que cambie.
