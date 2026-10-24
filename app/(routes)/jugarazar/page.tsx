@@ -55,6 +55,10 @@ interface ShuffledOption {
 // nombres de archivo, pero el servidor de Vercel (Linux) sí. Los archivos
 // en /public deben llamarse exactamente: salud.png, prevencion.png,
 // diversidad.png, derecho.png, proyecto.png, azar.png
+//
+// El ORDEN también importa: es el de las porciones de /ruleta.webp en sentido
+// horario empezando arriba (cruz, preservativo, manos, martillo, embarazo,
+// estrella). Si cambia la imagen, hay que reordenar esta lista.
 const CATEGORIES = [
   { name: 'Salud', slug: 'salud', color: '#3B82F6' },
   { name: 'Prevención', slug: 'prevencion', color: '#10B981' },
@@ -286,10 +290,17 @@ export default function JugarAzar(): JSX.Element {
 
     const randomIndex = Math.floor(Math.random() * availableCategories.length);
     const randomCategory = CATEGORIES.indexOf(availableCategories[randomIndex]);
-    const spinRotation = randomCategory * 60 + 360 * 5;
+    // En ruleta.webp las porciones van en sentido horario desde arriba en el
+    // mismo orden que CATEGORIES (Salud arriba, Prevención a 60°, ...): la
+    // porción i está a i·60°. Para dejarla bajo la flecha hay que girar la
+    // rueda −i·60° (antes se giraba +i·60° y frenaba en otra categoría). Un
+    // desvío chico dentro de la porción hace que no frene siempre en el centro.
+    const sectorAngle = 360 / CATEGORIES.length;
+    const offset = (Math.random() - 0.5) * sectorAngle * 0.6;
+    const spinRotation = 360 * 5 + ((360 - randomCategory * sectorAngle) % 360) + offset;
     setRotation(spinRotation);
     // La rueda arranca siempre desde 0 (se reinicia al volver), así que recorre spinRotation grados.
-    playWheelTicks(SPIN_DURATION_MS, spinRotation, 60);
+    playWheelTicks(SPIN_DURATION_MS, spinRotation, sectorAngle);
 
     setTimeout(async () => {
       const selectedCat = availableCategories[randomIndex].name;
