@@ -319,8 +319,7 @@ const EducationalProgressPanel = () => {
                     >
                       {/* Header */}
                       <div
-                        className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden"
-                        style={{ backgroundColor: `${feature.color}15` }}
+                        className="h-16 md:h-24 rounded-t-lg flex items-center justify-center relative overflow-hidden bg-white"
                       >
                         {feature.image && (
                           <Image
@@ -328,12 +327,23 @@ const EducationalProgressPanel = () => {
                             alt=""
                             fill
                             sizes="(max-width: 768px) 50vw, 33vw"
-                            className="object-cover opacity-20"
+                            className="object-contain p-1.5 md:p-2"
                           />
                         )}
 
+                        {/* Sombra del color de la actividad sobre la ilustración: el fondo
+                            blanco se funde con el de las imágenes y esto le da identidad a la card */}
+                        <div
+                          aria-hidden
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `linear-gradient(to top, ${feature.color}66 0%, ${feature.color}1F 45%, transparent 75%)`,
+                            boxShadow: `inset 0 -12px 20px -12px ${feature.color}`,
+                          }}
+                        />
+
                         {isCompleted && (
-                          <div className="absolute top-1 right-1 md:top-2 md:right-2">
+                          <div className="absolute top-1 right-1 md:top-2 md:right-2 z-10">
                             <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center">
                               <IconCircle size={12} className="text-white md:hidden" />
                               <IconCircle size={14} className="text-white hidden md:block" />
@@ -341,7 +351,7 @@ const EducationalProgressPanel = () => {
                           </div>
                         )}
 
-                        <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3">
+                        <div className="absolute bottom-1 left-2 md:bottom-2 md:left-3 z-10">
                           <div className={`flex items-center space-x-1 text-[10px] md:text-xs backdrop-blur-sm rounded-full px-1.5 py-0.5 md:px-2 md:py-1 ${
                             getLastVisitDate(feature.title)
                               ? 'text-gray-600 bg-white/80'
@@ -354,8 +364,9 @@ const EducationalProgressPanel = () => {
                           </div>
                         </div>
 
+                        {/* Ícono en la esquina, para no tapar la ilustración */}
                         <div
-                          className="w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center relative z-10"
+                          className="absolute top-1 left-1 md:top-2 md:left-2 w-5 h-5 md:w-8 md:h-8 rounded-full flex items-center justify-center z-10"
                           style={{ backgroundColor: feature.color }}
                         >
                           <div className="text-white scale-55 md:scale-75">

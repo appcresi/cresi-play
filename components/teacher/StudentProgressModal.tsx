@@ -4,6 +4,7 @@ import { IconX, IconTrophy, IconFlame, IconCalendarTime } from '@tabler/icons-re
 import type { ClassroomStudent } from '@/types/classroom';
 import { ACTIVITIES } from '@/lib/activities';
 import { formatDate } from './utils';
+import { characterImageSrc } from '@/lib/characterImage';
 
 const TOTAL_ACTIVITIES = ACTIVITIES.length;
 
@@ -26,7 +27,7 @@ export const StudentProgressModal = ({
         <div className="flex items-center justify-between p-5 border-b border-pink-light dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Image
-              src={student.character?.image || '/logocresi.svg'}
+              src={characterImageSrc(student.character?.image) || '/logocresi.svg'}
               alt={student.character?.name ?? ''}
               width={40}
               height={40}

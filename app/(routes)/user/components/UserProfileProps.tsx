@@ -26,6 +26,7 @@ import {
 import PurchaseModal from '@/components/PurchaseModal';
 import UserDataManager from '@/lib/userDataManager';
 import { ACTIVITIES } from '@/lib/activities';
+import { characterImageSrc } from '@/lib/characterImage';
 import ClassroomService from '@/lib/classroomService';
 import { ActivityIcon } from '@/components/ActivityIcon';
 import { useAuth } from '@/context/AuthContext';
@@ -201,7 +202,7 @@ const UserProfile: React.FC = () => {
                 {userData.profile.character.image ? (
                   <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
                     <Image
-                      src={`/${userData.profile.character.image.replace(/^\/+/, '')}`}
+                      src={characterImageSrc(userData.profile.character.image)}
                       alt={userData.profile.character.name}
                       width={96}
                       height={96}

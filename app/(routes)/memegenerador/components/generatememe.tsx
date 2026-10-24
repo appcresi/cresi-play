@@ -14,6 +14,7 @@ import {
 import GameStatusBar from '@/components/GameStatusBar';
 import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
+import { reportActivityFinished } from '@/lib/activityFinished';
 import { trackEvent } from '@/lib/analytics';
 import { getActivityById } from '@/lib/activities';
 
@@ -89,6 +90,32 @@ export default function MemeGenerator() {
     setMemesCreated(data.progress.activityScores[ACTIVITY_TITLE] ? Math.round(data.progress.activityScores[ACTIVITY_TITLE] / SCORE_PER_MEME) : 0);
     UserDataManager.visitActivity(ACTIVITY_TITLE);
   }, []);
+
+  // Armar un meme (imagen + algo de texto) ya cuenta como completar la
+  // actividad. Antes solo contaba al descargarlo y en el panel figuraba 0%:
+  // la descarga a veces no anda en el celular (navegadores dentro de otras
+  // apps) y mucha gente lo arma sin bajarlo. Los puntos se siguen dando
+  // solo al descargar, para no regalarlos por escribir y borrar.
+  const markedCreatedRef = useRef(false);
+  useEffect(() => {
+    if (markedCreatedRef.current) return;
+    const hasImage = selectedMeme !== null || customImage !== null;
+    const hasText = topText.content.trim() !== '' || bottomText.content.trim() !== '';
+    if (!hasImage || !hasText) return;
+
+    markedCreatedRef.current = true;
+    const current = UserDataManager.loadUserData();
+    const updatedData = {
+      ...current,
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, complete: true, touchTime: false }
+      ])
+    };
+    if (!becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) return;
+    UserDataManager.saveUserData(updatedData);
+    // En silencio: la pantalla final cortaría la edición del meme.
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime: true, silent: true });
+  }, [selectedMeme, customImage, topText.content, bottomText.content]);
 
   const downloadMeme = () => {
     const canvas = canvasRef.current;

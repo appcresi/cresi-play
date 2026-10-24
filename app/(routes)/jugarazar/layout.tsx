@@ -23,7 +23,7 @@ export const metadata: Metadata = {
       'Girá la ruleta y respondé preguntas al azar sobre Educación Sexual Integral.',
     images: [
       {
-        url: '/ruleta.png',
+        url: '/ruleta.webp',
         width: 858,
         height: 861,
         alt: 'Ruleta de Jugar al Azar - CrESI',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Jugar al Azar | CrESI',
     description: 'Girá la ruleta y respondé preguntas al azar sobre ESI.',
-    images: ['/ruleta.png'],
+    images: ['/ruleta.webp'],
   },
   alternates: {
     canonical: 'https://jugar.cresi.com.ar/jugarazar',

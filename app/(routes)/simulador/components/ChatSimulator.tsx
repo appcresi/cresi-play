@@ -10,6 +10,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { recordActivityProgress, becameCompleted } from '@/lib/activityProgress';
 import { reportActivityFinished } from '@/lib/activityFinished';
 import { getActivityById } from '@/lib/activities';
+import { characterImageSrc } from '@/lib/characterImage';
 
 // Antes esto era el string suelto 'ChatSimulator' — no coincidía con el
 // título real de la actividad en el catálogo ("Simulador Grooming"), así
@@ -376,7 +377,7 @@ const ChatSimulator = () => {
                   <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2 max-w-md`}>
                     {isUser && userData.profile.character.image ? (
                       <Image
-                        src={userData.profile.character.image}
+                        src={characterImageSrc(userData.profile.character.image)}
                         alt="User"
                         width={32}
                         height={32}

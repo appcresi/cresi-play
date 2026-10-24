@@ -21,6 +21,7 @@ import { trackEvent } from '@/lib/analytics';
 import type { Character, UserData } from '@/types/user';
 import { ACTIVITY_IDS as DEFAULT_FEATURES_IDS } from '@/lib/activities';
 import { PrivacyNotice } from '@/components/PrivacyLink';
+import { characterImageSrc } from '@/lib/characterImage';
 
 // Misma display face que la landing, usada con la misma restricción
 // (solo el título grande).
@@ -210,7 +211,7 @@ export default function UnirseSinCodigoPage() {
                     ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="relative w-full aspect-square rounded-lg bg-white mb-1 flex items-center justify-center overflow-hidden shadow-sm border border-[#241B37]/8">
-                    <Image src={character.image} alt={character.name} fill sizes="120px" className="object-cover" />
+                    <Image src={characterImageSrc(character.image)} alt={character.name} fill sizes="120px" className="object-cover" />
                   </div>
                   <p className="text-center text-xs font-medium text-[#241B37]/70 dark:text-gray-400 leading-tight">{character.name}</p>
                 </button>

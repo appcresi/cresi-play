@@ -141,6 +141,11 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
     const current = UserDataManager.loadUserData();
     const finishedLesson =
       isLevelComplete && currentLessonData && currentLevel === currentLessonData.lecciones.length - 1;
+    // Pasar un nivel ya cuenta como haber completado la actividad general.
+    // Antes hacía falta terminar todos los niveles de un texto y nadie
+    // llegaba (0% en el panel). La clave POR LECCIÓN y la pantalla final
+    // siguen esperando al texto entero.
+    const passedLevel = isLevelComplete && !finishedLesson;
 
     const lessonPercent = currentLessonData
       ? Math.round(((finishedLesson ? currentLevel + 1 : currentLevel) / currentLessonData.lecciones.length) * 100)
@@ -155,8 +160,10 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
       },
       progress: recordActivityProgress(current.progress, [
         { key: LESSON_KEY, score: lessonPercent, complete: Boolean(finishedLesson) },
-        // El título general solo se toca al terminar la lección.
-        ...(finishedLesson ? [{ key: ACTIVITY_TITLE, score: sessionScore, complete: true }] : [])
+        // El puntaje y la hora del título general solo se tocan al terminar la lección.
+        ...(finishedLesson
+          ? [{ key: ACTIVITY_TITLE, score: sessionScore, complete: true }]
+          : passedLevel ? [{ key: ACTIVITY_TITLE, complete: true, touchTime: false }] : [])
       ])
     };
 
@@ -169,6 +176,10 @@ const WordDragGame: React.FC<WordDragGameProps> = ({ lessonId, showChrome = true
         firstTime: becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE),
         silent: !showChrome, // dentro de una tarea no se muestra la pantalla final
       });
+    } else if (passedLevel && becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) {
+      // Primera vez que la completa: se avisa en silencio (racha, reto del
+      // día, analítica) sin cortar el juego con la pantalla final.
+      reportActivityFinished(ACTIVITY_TITLE, { firstTime: true, silent: true });
     }
   };
 

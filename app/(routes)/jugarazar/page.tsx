@@ -527,7 +527,7 @@ export default function JugarAzar(): JSX.Element {
 
             <div className="relative w-72 h-72 sm:w-80 sm:h-80">
               <Image
-                src="/ruleta.png"
+                src="/ruleta.webp"
                 alt="Ruleta"
                 fill
                 sizes="(max-width: 640px) 288px, 320px"

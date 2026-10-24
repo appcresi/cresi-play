@@ -3,6 +3,7 @@ import { IconLoader } from '@tabler/icons-react';
 import TareaService, { isEntregaLate } from '@/lib/tareaService';
 import type { Tarea, Entrega } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
+import { characterImageSrc } from '@/lib/characterImage';
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
@@ -162,7 +163,7 @@ export const TareasGradebook = ({
                 <td className="px-3 py-2.5 sticky left-0 bg-white dark:bg-gray-800 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <img
-                      src={s.character?.image}
+                      src={characterImageSrc(s.character?.image)}
                       alt={s.character?.name}
                       className="w-6 h-6 rounded-full object-cover border border-pink-light dark:border-gray-700 shrink-0"
                     />

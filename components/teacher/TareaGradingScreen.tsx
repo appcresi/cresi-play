@@ -12,6 +12,7 @@ import TareaService, { isEntregaLate } from '@/lib/tareaService';
 import { LinkedActivityAttachment } from '@/components/tareas/LinkedActivityPreview';
 import type { Tarea, Entrega, LinkedActivity } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
+import { characterImageSrc } from '@/lib/characterImage';
 
 type GradingSubTab = 'instrucciones' | 'trabajo';
 
@@ -371,7 +372,7 @@ export const TareaGradingScreen = ({
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                       <img
-                                        src={s.character?.image}
+                                        src={characterImageSrc(s.character?.image)}
                                         alt={s.character?.name}
                                         className="w-8 h-8 rounded-full object-cover border border-pink-light dark:border-gray-700 shrink-0"
                                       />
@@ -398,7 +399,7 @@ export const TareaGradingScreen = ({
                     <>
                       <div className="flex items-center gap-3 mb-1">
                         <img
-                          src={selectedStudent.character?.image}
+                          src={characterImageSrc(selectedStudent.character?.image)}
                           alt={selectedStudent.character?.name}
                           className="w-10 h-10 rounded-full object-cover border border-pink-light dark:border-gray-700 shrink-0"
                         />

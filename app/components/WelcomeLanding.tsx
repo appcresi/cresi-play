@@ -99,7 +99,7 @@ const Reveal = ({
 
 // ---------- Datos ----------
 
-const HERO_CARD_IDS = ['trivias', 'simulador', 'moodtracker'];
+const HERO_CARD_IDS = ['trivias', 'simulador', 'saludmental'];
 const HERO_CARDS = HERO_CARD_IDS.map((id) => getActivityById(id)).filter(Boolean) as typeof ACTIVITIES;
 const HERO_ROTATIONS = ['-rotate-6', 'rotate-2', 'rotate-9'];
 
@@ -247,8 +247,7 @@ const WelcomeLanding = () => {
             >
               {/* Imagen protagonista: llena todo el header en vez de flotar chica en el medio */}
               <div
-                className="h-32 rounded-t-[1.3rem] relative overflow-hidden flex items-center justify-center"
-                style={{ backgroundColor: `${activity.color}20` }}
+                className="h-32 rounded-t-[1.3rem] relative overflow-hidden flex items-center justify-center bg-white"
               >
                 <Image
                   src={activity.image}
@@ -256,7 +255,16 @@ const WelcomeLanding = () => {
                   fill
                   sizes="224px"
                   priority
-                  className="object-contain scale-[1.35] p-1"
+                  className="object-contain p-2"
+                />
+                {/* Misma sombra del color de la actividad que las cards del inicio */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(to top, ${activity.color}66 0%, ${activity.color}1F 45%, transparent 75%)`,
+                    boxShadow: `inset 0 -12px 20px -12px ${activity.color}`,
+                  }}
                 />
                 <div
                   className="absolute bottom-2.5 left-2.5 w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md"

@@ -3,6 +3,7 @@ import { IconX, IconLoader, IconCheck, IconClock, IconStar } from '@tabler/icons
 import TareaService from '@/lib/tareaService';
 import type { Tarea, Entrega } from '@/types/tarea';
 import type { ClassroomStudent } from '@/types/classroom';
+import { characterImageSrc } from '@/lib/characterImage';
 
 export const TareaGradingModal = ({
   classroomId,
@@ -134,7 +135,7 @@ export const TareaGradingModal = ({
                     >
                       <div className="flex items-center gap-2.5">
                         <img
-                          src={s.character?.image}
+                          src={characterImageSrc(s.character?.image)}
                           alt={s.character?.name}
                           className="w-7 h-7 rounded-full object-cover border border-pink-light dark:border-gray-700"
                         />

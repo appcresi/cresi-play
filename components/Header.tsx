@@ -21,6 +21,7 @@ import { ActivityIcon } from "@/components/ActivityIcon";
 import ThemeToggle from "@/components/ThemeToggle";
 
 import cresiLogo from "@/public/cresi-logo.webp";
+import { characterImageSrc } from '@/lib/characterImage';
 
 interface NavigationLink {
   name: string;
@@ -160,7 +161,7 @@ export default function Header(): JSX.Element | null {
   // Nunca pasamos "" a src: algunos perfiles (docentes, o alumnos legacy sin
   // avatar elegido) tienen character.image vacío. Un src="" hace que el
   // navegador re-pida la página entera, no solo que la imagen falle.
-  const avatarSrc = profile?.profile?.character?.image || '/logocresi.svg';
+  const avatarSrc = characterImageSrc(profile?.profile?.character?.image) || '/logocresi.svg';
 
   useEffect(() => {
     document.body.style.paddingTop = showHeader ? '64px' : '0px';

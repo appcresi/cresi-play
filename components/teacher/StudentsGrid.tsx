@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { IconKey, IconX } from '@tabler/icons-react';
 import type { ClassroomStudent, PendingStudent } from '@/types/classroom';
 import { formatDate } from './utils';
+import { characterImageSrc } from '@/lib/characterImage';
 
 type SortKey = 'username' | 'lastActive';
 type SortDir = 'asc' | 'desc';
@@ -72,7 +73,7 @@ export const StudentsGrid = ({
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
                   <Image
-                    src={s.character?.image || '/logocresi.svg'}
+                    src={characterImageSrc(s.character?.image) || '/logocresi.svg'}
                     alt={s.character?.name ?? ''}
                     width={24}
                     height={24}

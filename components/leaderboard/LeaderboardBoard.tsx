@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { IconTrophy, IconUserQuestion } from '@tabler/icons-react';
 import { fetchLeaderboard } from '@/lib/leaderboardClient';
 import type { LeaderboardResponse, LeaderboardRow } from '@/lib/leaderboard';
+import { characterImageSrc } from '@/lib/characterImage';
 
 type Tab = 'week' | 'allTime';
 
@@ -32,7 +33,7 @@ function Row({ row }: { row: LeaderboardRow }) {
       </span>
       <span className="w-9 h-9 shrink-0 rounded-full overflow-hidden bg-pink dark:bg-gray-700 flex items-center justify-center">
         {row.characterImage ? (
-          <Image src={row.characterImage} alt="" width={36} height={36} className="object-cover" />
+          <Image src={characterImageSrc(row.characterImage)} alt="" width={36} height={36} className="object-cover" />
         ) : (
           <IconUserQuestion className="w-5 h-5 text-coral" />
         )}

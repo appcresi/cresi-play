@@ -340,8 +340,31 @@ const DataMuncher = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [answerResult]);
 
+  /**
+   * Pasar un nivel ya cuenta como haber completado DataMuncher. Antes solo
+   * contaba la victoria en los 7 niveles (35 preguntas) y casi nadie
+   * llegaba: en el panel figuraba 0% de finalización. La pantalla final
+   * ("qué sigue") se sigue mostrando recién al ganar el último nivel; acá
+   * se avisa en silencio y solo la primera vez, para no duplicar la
+   * analítica de las partidas que llegan hasta el final.
+   */
+  const markLevelPassed = () => {
+    const current = UserDataManager.loadUserData();
+    const updatedData = {
+      ...current,
+      progress: recordActivityProgress(current.progress, [
+        { key: ACTIVITY_TITLE, complete: true, touchTime: false }
+      ])
+    };
+    if (!becameCompleted(current.progress, updatedData.progress, ACTIVITY_TITLE)) return;
+    UserDataManager.saveUserData(updatedData);
+    setUserData(updatedData);
+    reportActivityFinished(ACTIVITY_TITLE, { firstTime: true, silent: true });
+  };
+
   const advanceLevel = () => {
     if (currentLevel < LEVELS.length - 1) {
+      markLevelPassed();
       setLevelTransition(true);
       setTimeout(() => {
         setCurrentLevel(prev => prev + 1);

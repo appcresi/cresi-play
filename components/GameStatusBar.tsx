@@ -8,6 +8,7 @@ import UserDataManager from '@/lib/userDataManager';
 import { auth } from '@/lib/firebaseAuth';
 import ThemeToggle from '@/components/ThemeToggle';
 import type { UserData } from '@/types/user';
+import { characterImageSrc } from '@/lib/characterImage';
 
 // Misma tipografía "con personalidad" que la home/onboarding, restringida
 // acá al título — el resto de la franja sigue en Mona Sans.
@@ -171,7 +172,7 @@ const GameStatusBar = ({
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-white dark:bg-gray-800 border-2 border-pink-light dark:border-gray-700 hover:border-coral transition-colors flex items-center justify-center shrink-0">
                   {userData.profile.character.image ? (
                     <img
-                      src={`/${userData.profile.character.image.replace(/^\/+/, '')}`}
+                      src={characterImageSrc(userData.profile.character.image)}
                       alt={userData.profile.character.name}
                       onError={(e) => {
                         e.currentTarget.onerror = null;
