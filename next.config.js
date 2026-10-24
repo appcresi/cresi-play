@@ -5,7 +5,9 @@ const nextConfig = {
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 año
-    dangerouslyAllowSVG: true,
+    // Sin dangerouslyAllowSVG: los .svg (el logo) se sirven tal cual, sin
+    // pasar por el optimizador — ahí estaba la falla crítica de octubre 2026
+    // (GHSA-2464-fhr4-w9xw). Un vector no necesita optimizarse.
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },

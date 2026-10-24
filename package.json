@@ -33,7 +33,7 @@
     "html2pdf.js": "^0.14.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.474.0",
-    "next": "^16.2.6",
+    "next": "^16.4.2",
     "postcss": "^8.4.29",
     "react": "^18.2.0",
     "react-dom": "18.2.0",
@@ -42,7 +42,7 @@
     "react-to-pdf": "^3.0.0",
     "recharts": "^2.15.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.3.3"
   },
   "devDependencies": {
@@ -52,7 +52,7 @@
     "@types/jsonwebtoken": "^9.0.3",
     "dotenv": "^17.4.2",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.5",
+    "eslint-config-next": "^16.4.2",
     "typescript": "^5.2.2",
     "vitest": "^4.1.11"
   },
