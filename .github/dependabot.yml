@@ -22,6 +22,11 @@ updates:
       # - eslint: eslint-config-next todavía no soporta ESLint 10.
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # - postcss: Next fija una versión exacta (next@16.4.2 → postcss 8.5.23) y el
+      #   proyecto tiene que usar esa misma. Si Dependabot sube solo la nuestra, quedan
+      #   dos copias y el build de Vercel (Linux) falla con "next/font/google queries
+      #   have exactly one entry". Se actualiza junto con Next, no por separado.
+      - dependency-name: postcss
 
   - package-ecosystem: github-actions
     directory: /
