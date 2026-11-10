@@ -52,6 +52,10 @@ describe('buildCsp (producción)', () => {
     expect(directive(csp, 'frame-src')).toContain('https://accounts.google.com');
   });
 
+  it('permite el reproductor de YouTube sin cookies (video tutorial de la clase modelo)', () => {
+    expect(directive(csp, 'frame-src')).toContain('https://www.youtube-nocookie.com');
+  });
+
   it('agrega el dominio de autenticación del proyecto para el popup de inicio de sesión', () => {
     expect(directive(csp, 'frame-src')).toContain('https://proyecto.firebaseapp.com');
     expect(directive(csp, 'connect-src')).toContain('https://proyecto.firebaseapp.com');

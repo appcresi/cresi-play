@@ -14,6 +14,8 @@ import { TareasFeedSummary } from '@/components/tareas/TareasFeedSummary';
 import { ProximasEntregasBox } from '@/components/tareas/ProximasEntregasBox';
 import TareaService from '@/lib/tareaService';
 import ClassroomService from '@/lib/classroomService';
+import { isModelClassroom } from '@/lib/modelClassroom';
+import { TutorialVideoCard } from './TutorialVideoCard';
 
 export const ClassroomDetailView = ({
   classroom,
@@ -305,6 +307,8 @@ export const ClassroomDetailView = ({
 
             {/* Columna grande: tareas, actividades y trivias */}
             <div className="space-y-4">
+              {isModelClassroom(classroom.id, teacherId) && <TutorialVideoCard />}
+
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-pink-light dark:border-gray-700 p-5">
                 <h3 className="text-sm font-medium text-ink dark:text-gray-100 mb-3">Tareas</h3>
                 <TareasFeedSummary
